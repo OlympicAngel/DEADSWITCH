@@ -1,22 +1,24 @@
-# TASK: F-012 Defense setup screen (OPS)
+# TASK: F-013 Battle report
 
 - Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
 - Pillar / milestone: Defense & offline / M3
-- Spec: docs/specs/SPEC-005-defense-setup.md
-- Sources: doc 10 s4, doc 03 s2, SPEC-001, SPEC-004
+- Spec: docs/specs/SPEC-006-battle-report.md
+- Sources: doc 10 s4 + s7, ADR-0003, ADR-0007, doc 07 s7
 
 ## Goal
-The OPS screen: read the threat, pick a posture, post defenders, see the AI's Confidence, Set & Go, lockdown, and choose how much the AI runs.
+A graphic-novel report after each raid: four rendered panels, the AI's (possibly edited) summary, the true loss ledger, and Verify to catch the AI.
 
 ## Steps
-- [x] 1. Sim: `AiSystem.Recommend` + `ConfidencePct`, autopilot uses them
-- [x] 2. UI: `Ops.uxml` + `Ops.uss` (threat card, posture cards, garrison sockets, readout, Set & Go, lockdown, delegation); preview
-- [x] 3. Unity: `OpsScreen` controller (bind, refresh on tick, commands, reasons); register in the HUD router
-- [ ] 4. Docs (SPEC-005, BACKLOG, HANDOFF)
+- [ ] 1. Sim: `[report]` config, report edit lie, `VerifyReport` command + `ReportVerified` event, tests
+- [ ] 2. Host: `BattleReport` view from the log (summary with edits, ledger, verify findings, captions); advisor verify lines
+- [ ] 3. Art: gate camera shots + raider silhouettes (`HubScene.ReportShots`)
+- [ ] 4. Preview: report mode in `tools/basepreview` (four stills, ink/halftone grade, composed page); iterate the look
+- [ ] 5. Unity: report stills (RenderTexture + graphic-novel shader), Report screen (UXML), HUD chip, OPS link
+- [ ] 6. Docs (SPEC-006, BACKLOG, HANDOFF)
 
 ## Notes
-- F-011 closed 2026-10-03 (advisor voice; review with `dotnet run --project src/Deadswitch.Cli -- advisor`).
+- F-012 closed 2026-10-03 (OPS screen).
 
 ## Blocked / questions
 - none

@@ -1,6 +1,6 @@
 # SPEC-005: Defense setup (OPS screen)
 
-- Status: In progress (F-012)
+- Status: Done (F-012); Editor play check pending
 - Pillar: Defense & offline (feeds AI relationship)
 - Touches: raids (SPEC-001 posture, garrison, OVERRIDE lockdown), crew (garrison takes people off duty), AI (estimate, Confidence, delegation ladder of SPEC-004)
 - Source rules: doc 10 s4 "Defense setup UI", doc 03 s2, SPEC-001 rules 5-6, SPEC-004 rules 3-4
@@ -21,9 +21,9 @@ Per-slot crew roles and dragging specific people (chips are counts in Tier 1), s
 7. **Delegation:** Manual / Routines / Autopilot segmented control with one line each; tap = `SetDelegation`.
 
 ## Acceptance criteria
-- [ ] Every control is a sim command; rejections are explained
-- [ ] Recommendation and Confidence come from one sim helper shared with autopilot
-- [ ] UI preview of the OPS screen at phone size: no clipping, 44 px targets, shape + label on the signature
+- [x] Every control is a sim command; rejections are explained
+- [x] Recommendation and Confidence come from one sim helper shared with autopilot
+- [x] UI preview of the OPS screen at phone size: no clipping, 44 px targets, shape + label on the signature
 
 ## Tests
 Existing defense/save/determinism tests cover the commands; the shared helper is covered by the autopilot path in the chunking and save tests.
