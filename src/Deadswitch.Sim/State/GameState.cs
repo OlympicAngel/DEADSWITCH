@@ -8,10 +8,10 @@ namespace Deadswitch.Sim.State
         public GameState(ulong seed, SimConfig config)
         {
             Rng = Pcg32.Create(seed);
-            Energy = config.EnergyStart;
-            Fuel = config.FuelStart;
-            Compute = config.ComputeStart;
-            People = config.PeopleStart;
+            Energy = config.Energy.Start;
+            Fuel = config.Fuel.Start;
+            Compute = config.Compute.Start;
+            People = config.People.Start;
         }
 
         public long Tick { get; set; }

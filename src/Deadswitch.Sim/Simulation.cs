@@ -43,12 +43,12 @@ namespace Deadswitch.Sim
             }
 
             bool hadEnergy = s.Energy > 0;
-            s.Energy = Clamp(s.Energy + c.EnergyGenPerTick - c.EnergyUpkeepPerTick, 0, c.EnergyCap);
+            s.Energy = Clamp(s.Energy + c.Energy.GenPerTick - c.Energy.UpkeepPerTick, 0, c.Energy.Cap);
 
-            if (s.Energy >= c.RackEnergyCostPerTick)
+            if (s.Energy >= c.Compute.RackEnergyCostPerTick)
             {
-                s.Energy -= c.RackEnergyCostPerTick;
-                s.Compute = Clamp(s.Compute + c.ComputePerTick, 0, c.ComputeCap);
+                s.Energy -= c.Compute.RackEnergyCostPerTick;
+                s.Compute = Clamp(s.Compute + c.Compute.PerTick, 0, c.Compute.Cap);
             }
 
             if (hadEnergy && s.Energy == 0)
@@ -69,14 +69,14 @@ namespace Deadswitch.Sim
             GameState s = State;
             SimConfig c = Config;
 
-            s.Corruption = Clamp(s.Corruption - c.CorruptionDecayPerHour, 0, c.CorruptionCap);
+            s.Corruption = Clamp(s.Corruption - c.Corruption.DecayPerHour, 0, c.Corruption.Cap);
 
             // Regrowth pauses during blackouts (Energy == 0).
-            if (s.Energy > 0 && s.People < c.PeopleCap)
+            if (s.Energy > 0 && s.People < c.People.Cap)
             {
-                int gap = c.PeopleCap - s.People;
-                int gain = ((gap * c.PeopleRegrowthPercentOfGapPerHour) + 99) / 100;
-                s.People = Clamp(s.People + gain, 0, c.PeopleCap);
+                int gap = c.People.Cap - s.People;
+                int gain = ((gap * c.People.RegrowthPctOfGapPerHour) + 99) / 100;
+                s.People = Clamp(s.People + gain, 0, c.People.Cap);
             }
         }
 
@@ -86,16 +86,16 @@ namespace Deadswitch.Sim
             SimConfig c = Config;
 
             // Always consume exactly one RNG draw per tick so cap checks never desync the stream.
-            bool roll = s.Rng.NextBelow(c.RaidMeanIntervalTicks) == 0;
-            if (!roll || s.RaidsToday >= c.MaxRaidsPerDay)
+            bool roll = s.Rng.NextBelow((uint)c.Raid.MeanIntervalTicks) == 0;
+            if (!roll || s.RaidsToday >= c.Raid.MaxPerDay)
             {
                 return;
             }
 
-            int loot = (s.Energy * c.RaidLootPercentOfEnergy) / 100;
-            if (loot > c.RaidLootCap)
+            int loot = (s.Energy * c.Raid.LootPctOfEnergy) / 100;
+            if (loot > c.Raid.LootCap)
             {
-                loot = c.RaidLootCap;
+                loot = c.Raid.LootCap;
             }
 
             s.Energy -= loot;

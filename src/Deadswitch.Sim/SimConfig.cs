@@ -1,8 +1,11 @@
+using Deadswitch.Sim.Config;
+
 namespace Deadswitch.Sim
 {
     /// <summary>
-    /// Tuning values. 1 tick = 1 game minute. Integers only.
-    /// Source of truth for numbers: docs/design/10_resolved_decisions.md (section 3). All are (tune).
+    /// Every tunable number in the sim, grouped into sections. 1 tick = 1 game minute. Integers only.
+    /// Code defaults are the doc 10 baseline; the game runs the shipped balance file
+    /// (<c>Resources/DeadswitchBalance.toml</c>, read with <see cref="BalanceText"/>), which may diverge while tuning.
     /// Treat instances as immutable after constructing a Simulation.
     /// </summary>
     public sealed class SimConfig
@@ -10,35 +13,40 @@ namespace Deadswitch.Sim
         public const int TicksPerHour = 60;
         public const int TicksPerDay = 1440;
 
-        public int EnergyStart = 200;
-        public int EnergyCap = 500;
-        public int EnergyGenPerTick = 8; // doc 10 said 6, but 6 - 4 upkeep - 3 rack = -1/min (blackout in ~3h). Corrected, see SPEC-001.
-        public int EnergyUpkeepPerTick = 4;
+        public EnergyConfig Energy = new EnergyConfig();
+        public FuelConfig Fuel = new FuelConfig();
+        public ComputeConfig Compute = new ComputeConfig();
+        public PeopleConfig People = new PeopleConfig();
+        public CorruptionConfig Corruption = new CorruptionConfig();
+        public RaidConfig Raid = new RaidConfig();
 
-        public int FuelStart = 100;
-        public int FuelCap = 300;
-
-        public int ComputeStart = 50;
-        public int ComputeCap = 100;
-        public int ComputePerTick = 1;
-        public int RackEnergyCostPerTick = 3;
-
-        public int PeopleStart = 12;
-        public int PeopleCap = 20;
-        public int PeopleRegrowthPercentOfGapPerHour = 5;
-
-        public int CorruptionCap = 100;
-        public int CorruptionDecayPerHour = 1;
-
-        /// <summary>Raid chance each tick is 1 / RaidMeanIntervalTicks (about every 6h in tier 1).</summary>
-        public uint RaidMeanIntervalTicks = 360;
-        public int RaidLootPercentOfEnergy = 20;
-        public int RaidLootCap = 60;
-        public int MaxRaidsPerDay = 3;
-
+        /// <summary>The doc 10 baseline values.</summary>
         public static SimConfig Tier1()
         {
             return new SimConfig();
+        }
+
+        /// <summary>Deep copy (round-trips through the balance text, which also proves the writer and reader agree).</summary>
+        public SimConfig Clone()
+        {
+            return BalanceText.Parse(BalanceText.Write(this));
+        }
+
+        /// <summary>Stable 64-bit identity of every value. See <see cref="ConfigHasher"/>.</summary>
+        public ulong ComputeHash()
+        {
+            return ConfigHasher.Hash(this);
+        }
+
+        /// <summary>Visits every section in a fixed order. The order defines the balance file layout and the config hash.</summary>
+        public void Visit(IConfigVisitor visitor)
+        {
+            Energy.Visit(visitor);
+            Fuel.Visit(visitor);
+            Compute.Visit(visitor);
+            People.Visit(visitor);
+            Corruption.Visit(visitor);
+            Raid.Visit(visitor);
         }
     }
 }

@@ -55,10 +55,10 @@ namespace Deadswitch.Sim.Tests
             {
                 sim.Step();
                 GameState s = sim.State;
-                Assert.InRange(s.Energy, 0, sim.Config.EnergyCap);
-                Assert.InRange(s.Compute, 0, sim.Config.ComputeCap);
-                Assert.InRange(s.People, 0, sim.Config.PeopleCap);
-                Assert.InRange(s.Corruption, 0, sim.Config.CorruptionCap);
+                Assert.InRange(s.Energy, 0, sim.Config.Energy.Cap);
+                Assert.InRange(s.Compute, 0, sim.Config.Compute.Cap);
+                Assert.InRange(s.People, 0, sim.Config.People.Cap);
+                Assert.InRange(s.Corruption, 0, sim.Config.Corruption.Cap);
             }
         }
 
@@ -74,7 +74,7 @@ namespace Deadswitch.Sim.Tests
 
             foreach (var day in perDay)
             {
-                Assert.True(day.Count() <= sim.Config.MaxRaidsPerDay);
+                Assert.True(day.Count() <= sim.Config.Raid.MaxPerDay);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Deadswitch.Sim.Tests
 
             foreach (SimEvent e in sim.Log.Events.Where(x => x.Kind == EventKind.RaidStarted))
             {
-                Assert.InRange(e.A, 0, sim.Config.RaidLootCap);
+                Assert.InRange(e.A, 0, sim.Config.Raid.LootCap);
             }
         }
     }

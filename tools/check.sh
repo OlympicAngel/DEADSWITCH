@@ -9,6 +9,7 @@ if [ -n "${DOTNET_ROOT:-}" ] && [ -x "$DOTNET_ROOT/dotnet" ]; then DOTNET="$DOTN
 
 step() { printf '\033[36m==> %s\033[0m\n' "$1"; }
 
+step "unity meta";      python3 tools/gen_meta.py --check
 step "restore";         "$DOTNET" restore DEADSWITCH.sln
 step "format (verify)"; "$DOTNET" format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore
 step "build";           "$DOTNET" build DEADSWITCH.sln -c Release --no-restore -warnaserror
