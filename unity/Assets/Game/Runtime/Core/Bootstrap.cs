@@ -10,6 +10,12 @@ namespace Deadswitch.Game.Core
     {
         public static GameObject Root { get; private set; }
 
+        /// <summary>
+        /// Raised once after the root and core systems exist. Assemblies the game assembly cannot reference
+        /// (for example URP rendering) attach their components here from a BeforeSceneLoad initializer.
+        /// </summary>
+        public static event System.Action<GameObject> Booted;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Boot()
         {
@@ -24,6 +30,9 @@ namespace Deadswitch.Game.Core
             Root.AddComponent<GameHost>();
             Root.AddComponent<UI.UiRoot>();
             Root.AddComponent<UI.Hud.HudController>();
+            Root.AddComponent<Base.BaseView>();
+            Root.AddComponent<Base.DroneCamera>();
+            Booted?.Invoke(Root);
         }
     }
 }

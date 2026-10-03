@@ -29,6 +29,34 @@ namespace Deadswitch.Game.UI
                 Polygon(32, 0.4f, 0f),
                 P(0.5f, 0.3f, 0.7f, 0.5f, 0.5f, 0.7f, 0.3f, 0.5f, 0.5f, 0.3f),
             },
+            ["bolt"] = new[]
+            {
+                P(0.58f, 0.06f, 0.24f, 0.56f, 0.5f, 0.56f, 0.4f, 0.94f, 0.76f, 0.42f, 0.5f, 0.42f, 0.58f, 0.06f),
+            },
+            ["chip"] = new[]
+            {
+                P(0.25f, 0.25f, 0.75f, 0.25f, 0.75f, 0.75f, 0.25f, 0.75f, 0.25f, 0.25f),
+                P(0.4f, 0.4f, 0.6f, 0.4f, 0.6f, 0.6f, 0.4f, 0.6f, 0.4f, 0.4f),
+                P(0.38f, 0.08f, 0.38f, 0.25f), P(0.62f, 0.08f, 0.62f, 0.25f),
+                P(0.38f, 0.75f, 0.38f, 0.92f), P(0.62f, 0.75f, 0.62f, 0.92f),
+                P(0.08f, 0.38f, 0.25f, 0.38f), P(0.08f, 0.62f, 0.25f, 0.62f),
+                P(0.75f, 0.38f, 0.92f, 0.38f), P(0.75f, 0.62f, 0.92f, 0.62f),
+            },
+            ["people"] = new[]
+            {
+                Polygon(16, 0.15f, 0f, 0.5f, 0.3f),
+                P(0.18f, 0.92f, 0.22f, 0.66f, 0.36f, 0.54f, 0.64f, 0.54f, 0.78f, 0.66f, 0.82f, 0.92f),
+            },
+            ["cross"] = new[]
+            {
+                P(0.38f, 0.1f, 0.62f, 0.1f, 0.62f, 0.38f, 0.9f, 0.38f, 0.9f, 0.62f, 0.62f, 0.62f, 0.62f, 0.9f, 0.38f, 0.9f, 0.38f, 0.62f, 0.1f, 0.62f, 0.1f, 0.38f, 0.38f, 0.38f, 0.38f, 0.1f),
+            },
+            ["battery"] = new[]
+            {
+                P(0.12f, 0.3f, 0.82f, 0.3f, 0.82f, 0.7f, 0.12f, 0.7f, 0.12f, 0.3f),
+                P(0.82f, 0.42f, 0.92f, 0.42f, 0.92f, 0.58f, 0.82f, 0.58f),
+                P(0.24f, 0.42f, 0.24f, 0.58f), P(0.4f, 0.42f, 0.4f, 0.58f), P(0.56f, 0.42f, 0.56f, 0.58f),
+            },
             ["ops"] = new[]
             {
                 Polygon(28, 0.3f, 0f),
@@ -99,16 +127,45 @@ namespace Deadswitch.Game.UI
             return pts;
         }
 
-        private static Vector2[] Polygon(int sides, float radius, float phase)
+        private static Vector2[] Polygon(int sides, float radius, float phase, float cx = 0.5f, float cy = 0.5f)
         {
             var pts = new Vector2[sides + 1];
             for (int i = 0; i <= sides; i++)
             {
                 float a = phase + (Mathf.PI * 2f * i / sides);
-                pts[i] = new Vector2(0.5f + (Mathf.Cos(a) * radius), 0.5f + (Mathf.Sin(a) * radius));
+                pts[i] = new Vector2(cx + (Mathf.Cos(a) * radius), cy + (Mathf.Sin(a) * radius));
             }
 
             return pts;
+        }
+
+        /// <summary>Glyph name for a facility kind.</summary>
+        public static string ForFacility(Deadswitch.Sim.State.FacilityKind kind)
+        {
+            switch (kind)
+            {
+                case Deadswitch.Sim.State.FacilityKind.Generator: return "bolt";
+                case Deadswitch.Sim.State.FacilityKind.ServerRack: return "chip";
+                case Deadswitch.Sim.State.FacilityKind.LifeSupport: return "cross";
+                case Deadswitch.Sim.State.FacilityKind.BatteryBank: return "battery";
+                case Deadswitch.Sim.State.FacilityKind.Turret: return "ops";
+                default: return "base";
+            }
+        }
+
+        /// <summary>A new icon element for code-built UI.</summary>
+        public static VisualElement Create(string glyph, string extraClass)
+        {
+            var el = new VisualElement { pickingMode = PickingMode.Ignore };
+            el.AddToClassList("ds-icon");
+            el.AddToClassList("ds-icon--" + glyph);
+            if (!string.IsNullOrEmpty(extraClass))
+            {
+                el.AddToClassList(extraClass);
+            }
+
+            Attach1(el);
+            return el;
         }
     }
 }

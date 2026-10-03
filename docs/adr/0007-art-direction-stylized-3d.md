@@ -1,6 +1,6 @@
 # ADR-0007: Stylized 3D realism with a drone-feed presentation
 
-- Status: Accepted
+- Status: Accepted (amended 2026-10-03: heroic realism)
 - Date: 2026-10-03
 
 ## Context
@@ -16,3 +16,6 @@ Render the world (base, map terrain, battle-report stills) as **semi-stylized 3D
 ## Alternatives considered
 - 2D gritty painted realism (previous direction): read as too illustrated; harder to show persistent damage across many base states.
 - Full photorealism: costly on mobile, poor readability at phone scale, and uncanny for small units.
+
+## Amendment (2026-10-03): heroic realism, not cartoon
+The owner rejected chunky/semi-cartoon forms. The world is **stylized realism ("heroic realism")**: believable proportions, layered PBR material wear, overcast grounded lighting, readable medium forms for the isometric camera. The full brief and avoid-list live in doc 11 (Master art direction). Implementation: procedural geometry plus a procedural PBR salvage shader shared by Unity and the headless preview.

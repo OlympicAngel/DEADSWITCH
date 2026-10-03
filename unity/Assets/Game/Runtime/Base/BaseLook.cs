@@ -37,6 +37,11 @@ namespace Deadswitch.Game.Base
         public float chromatic = 0.012f;
         public float envIntensity = 0.5f;
 
+        // Unity-only conversion factors (three.js uses physical light units). Tune on device.
+        public float unitySunScale = 0.6f;
+        public float unityPointScale = 0.3f;
+        public float unityAmbientScale = 1f;
+
         private static BaseLook _cached;
 
         public static BaseLook Load()

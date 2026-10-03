@@ -50,7 +50,7 @@ The owner drives work by saying **"continue"**. Follow [`docs/agents/continue.md
 - Keep going without asking unless truly blocked; record blockers in `TASK.md`.
 
 ## Quality bar
-Production-ready from the first commit, not prototypes. Every tunable goes in config (`SimConfig` + balance file; design tokens for visuals). Visual polish is a first-class requirement. See [`docs/agents/quality-bar.md`](docs/agents/quality-bar.md).
+Production-ready from the first commit, not prototypes. Every tunable goes in config (`SimConfig` + balance file; design tokens for visuals). Visual polish is a first-class requirement. See [`docs/agents/quality-bar.md`](docs/agents/quality-bar.md). The 3D world follows the **Master art direction** in `docs/design/11_visual_theme_and_motion.md` (heroic realism; never cartoon).
 
 ## Workflow
 1. **Spec first** for anything bigger than a bug fix: `docs/specs/TEMPLATE.md`. Keep specs short.
