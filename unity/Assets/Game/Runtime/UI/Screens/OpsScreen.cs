@@ -155,8 +155,8 @@ namespace Deadswitch.Game.UI.Screens
             Q("threat-quiet").EnableInClassList("is-hidden", raid);
             if (raid)
             {
-                Q<Label>("threat-gate").text = Names.Gate(s.RaidGateReported);
-                Q<Label>("threat-est").text = Fmt.Num(s.RaidEstimate);
+                Q<Label>("threat-gate").text = s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported);
+                Q<Label>("threat-est").text = s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?";
                 Q<Label>("threat-time").text = Fmt.Countdown(_host.SecondsUntilTick(s.RaidArriveTick));
             }
 
@@ -196,7 +196,7 @@ namespace Deadswitch.Game.UI.Screens
             Q<Label>("read-def").text = "DEF " + Fmt.Num(defense);
             Q<Label>("read-est").text = raid ? "EST " + Fmt.Num(s.RaidEstimate) : "EST --";
             var band = Q<Label>("confidence-band");
-            if (raid)
+            if (raid && s.RaidEstimate > 0)
             {
                 int conf = AiSystem.ConfidencePct(defense, s.RaidEstimate);
                 Q<Label>("confidence").text = conf.ToString(System.Globalization.CultureInfo.InvariantCulture);

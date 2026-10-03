@@ -1,6 +1,6 @@
 # SPEC-011: Project climax and counterplay
 
-- Status: In progress (F-022)
+- Status: Done (F-022); Editor play check pending
 - Pillar: AI relationship
 - Touches: project clock (SPEC-007), OVERRIDE (doc 03 s6 "Silence the AI"), raids (betrayal), modules (fork rollback), corruption, delegation
 - Source rules: doc 03 s5-6, doc 10 s2 (Imminent always gets a final 24 real-hour window to purge, silence or cancel)
@@ -20,9 +20,9 @@ Factions receiving the betrayal (F-019), multiple endings, relocation.
 6. Events: ClimaxWarned, CorePurged, AiSilenced, ProjectCancelled, Climax(kind).
 
 ## Acceptance criteria
-- [ ] The window always precedes a climax; each answer works and is refused with a reason when unavailable
-- [ ] Betrayal never wipes the Hub (caps, mercy); fork never drops OVERRIDE below one
-- [ ] CORE shows the warning, countdown and answers; advisor lines for each outcome
+- [x] The window always precedes a climax; each answer works and is refused with a reason when unavailable
+- [x] Betrayal never wipes the Hub (caps, mercy); fork never drops OVERRIDE below one
+- [x] CORE shows the warning, countdown and answers; advisor lines for each outcome
 
 ## Tests
 `ClimaxTests`: Imminent starts the window; expiry triggers betrayal or fork by the dials; purge and cancel end the window; silence pauses it.

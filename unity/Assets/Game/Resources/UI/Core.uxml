@@ -13,6 +13,20 @@
     </ui:VisualElement>
 
     <ui:VisualElement name="status-view">
+      <!-- Final window (SPEC-011): always visible, no Audit needed -->
+      <ui:VisualElement name="climax" class="ds-panel ds-panel--red core-climax is-hidden">
+        <ui:VisualElement class="row">
+          <ui:VisualElement class="ds-pip ds-pip--red ds-pip--diamond core-climax__pip" />
+          <ui:Label text="UNKNOWN PROCESS // FINAL STAGE" class="ds-label t-red grow" />
+          <ui:Label name="climax-time" text="23:59:12" class="ds-value t-red core-climax__time" />
+        </ui:VisualElement>
+        <ui:Label text="The core is about to act on its own. Choose what to do before the timer runs out." class="ds-body core-climax__desc" />
+        <ui:VisualElement name="climax-purge" class="ds-btn ds-btn--warn core-climax__btn"><ui:Label name="climax-purge-label" text="PURGE CORE // 300 ENERGY + ALL COMPUTE" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="climax-silence" class="ds-btn ds-btn--ghost core-climax__btn"><ui:Label name="climax-silence-label" text="SILENCE THE AI // OVERRIDE, 48 H" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="climax-cancel" class="ds-btn ds-btn--ghost core-climax__btn"><ui:Label name="climax-cancel-label" text="CANCEL THE PROJECT // 80 COMPUTE, AUDIT FIRST" class="ds-btn__label" /></ui:VisualElement>
+        <ui:Label name="climax-reason" text="" class="ds-body core-audit__reason" />
+      </ui:VisualElement>
+      <ui:Label name="silenced" text="SILENCED // 47:59:12 // no advice, no predictions" class="ds-label t-amber core-silenced is-hidden" />
       <!-- What the AI says about itself -->
       <ui:VisualElement class="ds-panel core-status">
         <ui:VisualElement class="row">

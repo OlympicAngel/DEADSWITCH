@@ -9,6 +9,13 @@
 .core-seg__item.is-selected { background-color: rgba(168, 213, 138, 0.14); }
 .core-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
 .core-seg__item.is-selected > .core-seg__label { color: var(--c-phosphor); }
+.core-climax { margin-bottom: var(--s-3); }
+.core-climax__pip { width: 16px; height: 16px; margin-right: var(--s-3); }
+.core-climax__time { font-size: var(--fs-lg); }
+.core-climax__desc { margin-top: var(--s-1); font-size: var(--fs-xs); }
+.core-climax__btn { margin-top: var(--s-2); min-height: 88px; }
+.core-climax__btn > .ds-btn__label { font-size: var(--fs-micro); }
+.core-silenced { margin-bottom: var(--s-3); }
 .core-section { margin-top: var(--s-4); margin-bottom: var(--s-2); }
 
 .core-status__value { margin-top: var(--s-2); }

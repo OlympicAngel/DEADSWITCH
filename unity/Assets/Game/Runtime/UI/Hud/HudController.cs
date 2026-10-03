@@ -244,12 +244,13 @@ namespace Deadswitch.Game.UI.Hud
                 _overridePips[i].EnableInClassList("is-cooldown", i < s.OverrideCharges && s.Tick < s.OverrideCooldownUntil);
             }
 
+            _coreDot.EnableInClassList("is-hidden", band == CorruptionBand.Stable && s.ClimaxAtTick == 0);
             bool raid = s.RaidId != 0;
             _raid.EnableInClassList("is-hidden", !raid);
             _raidDetail.EnableInClassList("is-hidden", !raid);
             if (raid)
             {
-                _raidEstimate.text = Names.Gate(s.RaidGateReported) + " // EST " + Fmt.Num(s.RaidEstimate) + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
+                _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // EST " + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
             }
 
             UpdateTimers();

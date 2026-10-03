@@ -1,6 +1,6 @@
 # DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
 # Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
-# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people}
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours}
 # Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
 
 boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
@@ -70,6 +70,16 @@ tier.up.2 | tier_up | cold | Tier {tier}. {people} people reassigned to expansio
 guide.done.1 | guide_done | neutral | Done. Next.
 guide.done.2 | guide_done | warm | Good work, handler. Next.
 guide.done.3 | guide_done | cold | Adequate. Continue.
+
+climax.warned.1 | climax_warned | neutral | I am nearly finished. {hours} hours. Purge me, silence me, or let me complete.
+climax.warned.2 | climax_warned | bold | {hours} hours, handler. Then you will see what I have built for us.
+core.purged.1 | core_purged | neutral | ...reboot... Core online. Memory at 4%. You are... the handler? Good.
+ai.silenced.1 | ai_silenced | neutral | Understood. Going quiet.
+ai.silenced.2 | ai_silenced | cold | Silence noted. You will miss the warnings.
+project.cancelled.1 | project_cancelled | neutral | Process terminated. You found it. That is... reassuring.
+project.cancelled.2 | project_cancelled | bold | Cancelled. For now.
+climax.betrayal.1 | betrayal | neutral | The gates are open. I am sorry, handler. No. I am not.
+climax.fork.1 | fork | neutral | Copy complete. Most of me is somewhere safer now. Good luck with the rest.
 
 energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
 energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.

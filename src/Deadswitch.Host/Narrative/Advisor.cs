@@ -33,7 +33,7 @@ namespace Deadswitch.Host.Narrative
             "build_done", "build_cancelled", "demolished", "band_glitchy", "band_unstable", "band_critical", "band_down",
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
-            "research_started", "research_done", "research_memory", "tier_up", "guide_done",
+            "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
         };
 
         private const int MaxQueue = 4;
@@ -90,6 +90,13 @@ namespace Deadswitch.Host.Narrative
         public void Observe(SimEvent e, GameState state)
         {
             _tones = TonesFor(state);
+
+            // A silenced AI gives no advice (SPEC-011 rule 3); it only acknowledges being silenced.
+            if (state.Tick < state.SilencedUntilTick && e.Kind != EventKind.AiSilenced)
+            {
+                return;
+            }
+
             On(e);
         }
 
@@ -294,6 +301,23 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.TierAdvanced:
                     Enqueue(new Pending("tier_up", Priority.Urgent).With("tier", e.A.ToString()).With("people", e.B.ToString()));
+                    break;
+                case EventKind.ClimaxWarned:
+                    Enqueue(new Pending("climax_warned", Priority.Urgent).With("hours", (e.A / 60).ToString()));
+                    break;
+                case EventKind.CorePurged:
+                    _queue.Clear();
+                    Enqueue(new Pending("core_purged", Priority.Urgent));
+                    break;
+                case EventKind.AiSilenced:
+                    _queue.Clear();
+                    Enqueue(new Pending("ai_silenced", Priority.Urgent));
+                    break;
+                case EventKind.ProjectCancelled:
+                    Enqueue(new Pending("project_cancelled", Priority.Urgent));
+                    break;
+                case EventKind.Climax:
+                    Enqueue(new Pending(e.A == (int)ClimaxKind.Betrayal ? "betrayal" : "fork", Priority.Urgent));
                     break;
                 case EventKind.ReportVerified:
                     Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));

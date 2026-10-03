@@ -35,6 +35,9 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
+            _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
+            _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
             _modules = new ModulesView(_ui.Q("modules-view"));
             _ui.Q("view-status").RegisterCallback<ClickEvent>(_ => ShowModules(false));
             _ui.Q("view-modules").RegisterCallback<ClickEvent>(_ => ShowModules(true));
@@ -50,6 +53,11 @@ namespace Deadswitch.Game.UI.Screens
                 if (_visible && _showModules)
                 {
                     _modules.Tick();
+                }
+
+                if (_visible && !_showModules)
+                {
+                    TickClimax();
                 }
             };
         }
@@ -90,6 +98,14 @@ namespace Deadswitch.Game.UI.Screens
 
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
+
+            bool window = s.ClimaxAtTick > 0;
+            _ui.Q("climax").EnableInClassList("is-hidden", !window);
+            Kit.SetButtonText(_ui.Q("climax-purge"), "PURGE CORE // " + c.Climax.PurgeEnergy + " ENERGY + ALL COMPUTE");
+            Kit.SetButtonText(_ui.Q("climax-silence"), "SILENCE THE AI // OVERRIDE, " + c.Climax.SilenceHours + " H");
+            Kit.SetButtonText(_ui.Q("climax-cancel"), "CANCEL THE PROJECT // " + c.Climax.CancelCompute + " COMPUTE" + (s.ClimaxAudited ? string.Empty : ", AUDIT FIRST"));
+            _ui.Q("climax-cancel").EnableInClassList("is-disabled", !s.ClimaxAudited);
+            TickClimax();
 
             int reported = ProjectSystem.ReportedCorruptionMilli(s, c);
             CorruptionBand band = CorruptionSystem.Band(c, reported);
@@ -141,6 +157,30 @@ namespace Deadswitch.Game.UI.Screens
             {
                 transcript.Add(Kit.Label("> " + line, "core-transcript__line"));
             }
+        }
+
+        private void TickClimax()
+        {
+            GameState s = _host.Sim.State;
+            if (s.ClimaxAtTick > 0)
+            {
+                _ui.Q<Label>("climax-time").text = Fmt.Countdown(_host.SecondsUntilTick(s.ClimaxAtTick));
+            }
+
+            bool silenced = ClimaxSystem.Silenced(s);
+            var label = _ui.Q<Label>("silenced");
+            label.EnableInClassList("is-hidden", !silenced);
+            if (silenced)
+            {
+                label.text = "SILENCED // " + Fmt.Countdown(_host.SecondsUntilTick(s.SilencedUntilTick)) + " // no advice, no predictions";
+            }
+        }
+
+        private void Answer(Command command)
+        {
+            CommandResult r = _host.Execute(command);
+            _ui.Q<Label>("climax-reason").text = r.Accepted ? string.Empty : Texts.Reason(r.Reason);
+            Refresh();
         }
 
         private void Audit()
