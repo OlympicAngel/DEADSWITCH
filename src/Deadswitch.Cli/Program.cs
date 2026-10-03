@@ -80,7 +80,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
-            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--report RAID|last]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -178,7 +178,8 @@ namespace Deadswitch.Cli
 
         /// <summary>
         /// art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...]: a scripted base after N days, for
-        /// tools/basepreview. --layout overrides the slots (e.g. Generator:5,ServerRack:3,None:0) to review assets.
+        /// tools/basepreview. --layout overrides the slots (e.g. Generator:5,ServerRack:3,None:0) to review assets;
+        /// --tier overrides the Hub tier the surroundings are drawn for (SPEC-013).
         /// </summary>
         private static int ArtCommand(string[] args)
         {
@@ -219,7 +220,8 @@ namespace Deadswitch.Cli
                 report = Deadswitch.Host.Reports.BattleReport.Build(sim.Log.Events, raid) ?? throw new UsageException("Raid " + raid + " has not resolved in this run.");
             }
 
-            ArtExport.Write(sim, outPath, (uint)seed, layout, report);
+            int tier = int.Parse(ValueAfter(rest, "--tier") ?? sim.State.Tier.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+            ArtExport.Write(sim, outPath, (uint)seed, layout, report, tier);
             Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
             for (int i = 0; i < sim.State.Slots.Count; i++)
             {

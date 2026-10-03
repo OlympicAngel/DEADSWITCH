@@ -22,7 +22,7 @@ namespace Deadswitch.Cli
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null)
+        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1)
         {
             var meshes = new List<MeshData>();
             var objects = new StringBuilder();
@@ -74,7 +74,7 @@ namespace Deadswitch.Cli
 
             int slots = layout?.Length ?? sim.State.Slots.Count;
             AddModel("terrain", new Model { Static = HubScene.Terrain(seed) }, Vector3.Zero, 0, true, false);
-            AddModel("surroundings", HubScene.Surroundings(seed, slots), Vector3.Zero, 0, true, false);
+            AddModel("surroundings", HubScene.Surroundings(seed, slots, tier), Vector3.Zero, 0, true, false);
             AddModel("core", Core.Build(seed), Vector3.Zero, 0, true, false);
             for (int i = 0; i < slots; i++)
             {

@@ -54,8 +54,20 @@ namespace Deadswitch.Art.World
         public const float HalfWidth = 12.0f;
         public const float MinX = -40f;
         public const float MaxX = 40f;
-        public const float MinZ = -42f;
+        public const float MinZ = -58f;
         public const float MaxZ = 44f;
+
+        /// <summary>Outer district wall line (SPEC-013), in front of the gate.</summary>
+        public const float DistrictZ = -35.5f;
+
+        /// <summary>Plots 6..9: the district outside the gate, on cut-and-fill pads either side of the road.</summary>
+        private static readonly Vector3[] DistrictPlots =
+        {
+            new Vector3(-9.4f, 0, -22.8f),
+            new Vector3(9.4f, 0, -22.8f),
+            new Vector3(-9.4f, 0, -30.2f),
+            new Vector3(9.4f, 0, -30.2f),
+        };
 
         private static readonly Vector3[] Plots =
         {
@@ -67,7 +79,7 @@ namespace Deadswitch.Art.World
             new Vector3(7.5f, 0, -8.6f),
         };
 
-        /// <summary>Plot center for a slot. Beyond the six designed plots, extra slots continue along the sides.</summary>
+        /// <summary>Plot center for a slot: six in the yard, four in the district, then along the lane.</summary>
         public static Vector3 SlotPosition(int slot, int slotCount)
         {
             if (slot < Plots.Length)
@@ -75,7 +87,12 @@ namespace Deadswitch.Art.World
                 return Plots[slot];
             }
 
-            int k = slot - Plots.Length;
+            if (slot < Plots.Length + DistrictPlots.Length)
+            {
+                return DistrictPlots[slot - Plots.Length];
+            }
+
+            int k = slot - Plots.Length - DistrictPlots.Length;
             return new Vector3((k % 2 == 0 ? -1 : 1) * 4.6f, 0, 3.2f - ((k / 2) * 7f));
         }
 
@@ -83,7 +100,8 @@ namespace Deadswitch.Art.World
         public static float SlotYaw(int slot, int slotCount)
         {
             Vector3 p = SlotPosition(slot, slotCount);
-            Vector3 f = new Vector3(0, 0, -34f) - p;
+            bool district = slot >= Plots.Length && slot < Plots.Length + DistrictPlots.Length;
+            Vector3 f = (district ? new Vector3(0, 0, p.Z - 5f) : new Vector3(0, 0, -34f)) - p;
             return (float)(Math.Atan2(-f.X, -f.Z) * 180.0 / Math.PI);
         }
 
@@ -101,11 +119,36 @@ namespace Deadswitch.Art.World
                 pts.Add(p + (Vector3.Normalize(new Vector3(-p.X, 0, -p.Z * 0.2f)) * 3.9f));
             }
 
+            for (int i = Plots.Length; i < Math.Min(slotCount, Plots.Length + DistrictPlots.Length); i++)
+            {
+                Vector3 p = SlotPosition(i, slotCount);
+                pts.Add(new Vector3(p.X * 0.42f, 0, p.Z + 1.5f));
+            }
+
             return pts.ToArray();
         }
 
-        /// <summary>Terrain height: flat courtyard, hill rising behind the bunker, banks on the sides, road out front.</summary>
+        /// <summary>Terrain height: flat courtyard, hill rising behind the bunker, banks on the sides, road out front, district pads cut flat.</summary>
         public static float Height(float x, float z, uint seed)
+        {
+            float pad = PadMask(x, z);
+            return pad <= 0f ? RawHeight(x, z, seed) : RawHeight(x, z, seed) * (1f - pad);
+        }
+
+        /// <summary>0..1: how much the district pads flatten the ground here (pads sit at y = 0).</summary>
+        public static float PadMask(float x, float z)
+        {
+            float m = 0f;
+            foreach (Vector3 p in DistrictPlots)
+            {
+                float k = (1f - Smooth(3.4f, 4.6f, Math.Abs(x - p.X))) * (1f - Smooth(3.4f, 4.6f, Math.Abs(z - p.Z)));
+                m = Math.Max(m, k);
+            }
+
+            return m;
+        }
+
+        private static float RawHeight(float x, float z, uint seed)
         {
             float n = (Noise.Fbm(x * 0.08f, z * 0.08f, seed + 5, 4) - 0.5f) * 2.6f;
             float back = Smooth(Core.FacadeZ + 2f, 30f, z);
@@ -163,7 +206,7 @@ namespace Deadswitch.Art.World
         /// Everything around the plots, static for the whole run: perimeter, gate checkpoint, courtyard work areas,
         /// utility poles with cables strung across the yard, side container stacks, hill, trees and the road.
         /// </summary>
-        public static Model Surroundings(uint seed, int slotCount)
+        public static Model Surroundings(uint seed, int slotCount, int tier = 1)
         {
             var m = new Model();
             var b = new MeshBuilder(seed);
@@ -177,6 +220,7 @@ namespace Deadswitch.Art.World
             Utilities(b, m, slotCount);
             Hill(b, rng, seed);
             Road(b, rng, seed);
+            District(b, m, new ArtRandom(seed + 71), seed, tier);
 
             m.Static = b.Mesh;
             m.Cones = b.Cones;
@@ -255,14 +299,14 @@ namespace Deadswitch.Art.World
                 StripedBarrier(b, new Vector3(x, Height(x, z, seed), z), rng.Range(-8f, 8f));
             }
 
-            foreach (Vector3 p in new[] { new Vector3(-8.6f, 0, FenceZ - 3.2f), new Vector3(-10.4f, 0, FenceZ - 5.0f), new Vector3(8.4f, 0, FenceZ - 5.6f), new Vector3(10.6f, 0, FenceZ - 3.6f), new Vector3(-7.2f, 0, FenceZ - 7.4f) })
+            foreach (Vector3 p in new[] { new Vector3(-8.6f, 0, FenceZ - 3.2f), new Vector3(-10.4f, 0, FenceZ - 5.0f), new Vector3(7.0f, 0, FenceZ - 4.6f), new Vector3(10.6f, 0, FenceZ - 3.6f), new Vector3(-6.0f, 0, FenceZ - 4.4f) })
             {
                 KitModules.Hedgehog(b, new Vector3(p.X, Height(p.X, p.Z, seed), p.Z), rng.Range(0f, 90f));
             }
 
-            KitModules.Pickup(b, new Vector3(7.8f, Height(7.8f, -21.5f, seed), -21.5f), 28f, Mat.SandSteel, true);
-            KitModules.Debris(b, new Vector3(-10.0f, Height(-10f, -22f, seed), -22f), 1.4f, rng);
-            KitModules.Debris(b, new Vector3(11.4f, Height(11.4f, -19.8f, seed), -19.8f), 1.0f, rng);
+            KitModules.Pickup(b, new Vector3(-16.4f, Height(-16.4f, -27.5f, seed), -27.5f), 28f, Mat.SandSteel, true);
+            KitModules.Debris(b, new Vector3(-15.6f, Height(-15.6f, -20.5f, seed), -20.5f), 1.4f, rng);
+            KitModules.Debris(b, new Vector3(15.2f, Height(15.2f, -18.6f, seed), -18.6f), 1.0f, rng);
             for (int i = 0; i < 3; i++)
             {
                 Vector3 p = new Vector3(8.2f + (i * 0.9f), Height(8.2f, FenceZ - 2.0f, seed), FenceZ - 2.0f + ((i % 2) * 0.7f));
@@ -425,6 +469,7 @@ namespace Deadswitch.Art.World
                 float x = rng.Range(MinX + 2f, MaxX - 2f);
                 float z = rng.Range(MinZ + 2f, MaxZ - 2f);
                 bool inYard = Math.Abs(x) < HalfWidth + 1f && z > FenceZ - 5f && z < Core.FacadeZ + 12f;
+                inYard |= Math.Abs(x) < 15.5f && z > DistrictZ - 3f && z < FenceZ;
                 if (inYard)
                 {
                     continue;
@@ -461,7 +506,7 @@ namespace Deadswitch.Art.World
             for (int i = 0; i < 4; i++)
             {
                 float z = FenceZ - 6f - (i * 7f);
-                var pole = new Vector3(-6.5f, Height(-6.5f, z, seed), z);
+                var pole = new Vector3(-4.7f, Height(-4.7f, z, seed), z);
                 Pole(b, pole, 6.0f, rng.Range(-7f, 7f));
                 Vector3 top = pole + new Vector3(0, 5.65f, 0);
                 if (prev.HasValue)
@@ -473,7 +518,176 @@ namespace Deadswitch.Art.World
                 prev = top;
             }
 
-            Truck(b, new Vector3(8.5f, Height(8.5f, -24f, seed), -24f), 64f);
+            Truck(b, new Vector3(17.0f, Height(17.0f, -27f, seed), -27f), 64f);
+        }
+
+        /// <summary>
+        /// The district (SPEC-013). Tier 1: cleared pads outside the gate, staked out with tape and rubble, the next
+        /// goal in plain view. Tier 2+: a scrap palisade and jersey wall enclose them, with a second gate, corner
+        /// towers and floodlight masts. Pads always get retaining walls where the ground falls away.
+        /// </summary>
+        private static void District(MeshBuilder b, Model m, ArtRandom rng, uint seed, int tier)
+        {
+            // the tree line south of the district closes the view (every tier)
+            var trees = new ArtRandom(seed + 77);
+            for (int i = 0; i < 44; i++)
+            {
+                float x = (trees.Next() < 0.5f ? -1 : 1) * trees.Range(5.5f, MaxX - 1f);
+                float z = trees.Range(MinZ + 1f, DistrictZ - 8f);
+                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), trees.Range(4.5f, 8.5f), seed + 1500 + (uint)i);
+            }
+
+            foreach (Vector3 p in DistrictPlots)
+            {
+                // cut-and-fill: retaining wall on the low (front) edge
+                float drop = -RawHeight(p.X, p.Z - 4.3f, seed);
+                if (drop > 0.35f)
+                {
+                    KitModules.RetainingWall(b, new Vector3(p.X, -drop, p.Z - 3.9f), 7.4f, drop + 0.15f, rng);
+                }
+
+                if (tier >= 2)
+                {
+                    continue;
+                }
+
+                // staked lot: corner stakes with hazard tape, rubble, a survey flag
+                var corners = new[]
+                {
+                    p + new Vector3(-2.9f, 0, -2.9f), p + new Vector3(2.9f, 0, -2.9f), p + new Vector3(2.9f, 0, 2.9f), p + new Vector3(-2.9f, 0, 2.9f),
+                };
+                for (int i = 0; i < 4; i++)
+                {
+                    Vector3 a = corners[i];
+                    Vector3 c = corners[(i + 1) % 4];
+                    b.Strut(a, a + new Vector3(rng.Range(-0.08f, 0.08f), 1.05f, 0), 0.05f, Mat.Wood);
+                    b.Box(a + new Vector3(0, 1.0f, 0), new Vector3(0.1f, 0.12f, 0.1f), Mat.PaintRed, 0.01f);
+                    if (rng.Next() < 0.8f)
+                    {
+                        KitParts.Cable(b, a + new Vector3(0, 0.9f, 0), c + new Vector3(0, 0.9f, 0), 0.25f, 0.018f, i % 2 == 0 ? Mat.PaintRed : Mat.PaintWhite);
+                    }
+                }
+
+                KitModules.Debris(b, p + new Vector3(rng.Range(-1.2f, 1.2f), 0, rng.Range(-1.2f, 1.2f)), rng.Range(0.8f, 1.3f), rng);
+                Props.Boulder(b, p + new Vector3(rng.Range(-1.8f, 1.8f), 0, rng.Range(-1.8f, 1.8f)), new Vector3(0.9f, 0.5f, 0.8f), seed + 1200 + (uint)rng.Range(0f, 100f), Mat.Rock);
+                Vector3 flag = p + new Vector3(Math.Sign(p.X) * -2.2f, 0, -2.2f);
+                b.Strut(flag, flag + new Vector3(0, 1.7f, 0), 0.03f, Mat.DarkSteel);
+                b.Box(flag + new Vector3(0.18f, 1.55f, 0), new Vector3(0.34f, 0.22f, 0.01f), Mat.PaintRed, 0f);
+            }
+
+            if (tier < 2)
+            {
+                return;
+            }
+
+            const float side = 13.8f;
+            Vector3 G(float x, float z) => new Vector3(x, Height(x, z, seed), z);
+
+            // side palisades from the old fence to the outer wall, sandbags at the foot on the inside
+            foreach (int s in new[] { -1, 1 })
+            {
+                Palisade(b, G(s * side, FenceZ - 0.4f), G(s * side, DistrictZ), s < 0, rng, seed);
+                Shapes.SandbagWall(b, G(s * (side - 0.8f), -19.5f), G(s * (side - 0.8f), -26.5f), 2);
+            }
+
+            // front wall: palisade behind a line of hazard-striped jerseys, open at the road
+            foreach (int s in new[] { -1, 1 })
+            {
+                Palisade(b, G(s * 3.4f, DistrictZ), G(s * side, DistrictZ), s > 0, rng, seed);
+                for (float x = 4.6f; x < side - 0.6f; x += 2.1f)
+                {
+                    StripedBarrier(b, G(s * x, DistrictZ - 0.8f), rng.Range(-4f, 4f));
+                }
+
+                // gate pillars: stacked concrete blocks with lamps and hazard paint
+                float gx = s * 3.0f;
+                Vector3 gp = G(gx, DistrictZ);
+                b.BoxOn(gp.X, gp.Y, gp.Z, 1.0f, 2.4f, 1.0f, Mat.Concrete, 0.08f);
+                b.BoxOn(gp.X, gp.Y + 2.4f, gp.Z, 0.8f, 2.6f, 0.8f, Mat.ConcreteDark, 0.06f);
+                b.BoxOn(gp.X, gp.Y + 5.0f, gp.Z, 0.9f, 0.14f, 0.9f, Mat.DarkSteel, 0.02f);
+                Shapes.Hazard(b, gp.X - 0.5f, gp.X + 0.5f, gp.Y + 0.3f, gp.Y + 1.6f, gp.Z - 0.51f, 4);
+                Props.Lamp(b, m, gp + new Vector3(0, 3.6f, -0.6f), true, 1.8f);
+                GateLeaf(b, gp + new Vector3(-s * 0.5f, 0, 0.1f), s < 0 ? 100f : 72f);
+
+                // corner tower and floodlight mast aimed into the district
+                KitModules.Watchtower(b, m, G(s * (side - 1.6f), DistrictZ + 1.9f), 5.6f);
+                Vector3 mast = G(s * (side - 0.4f), -17.8f);
+                KitParts.Mast(b, m, mast, 8.5f, true);
+                KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 8.2f, -0.3f), s * 140f);
+                KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 7.8f, 0.3f), s * 110f);
+            }
+
+            // sign gantry over the outer gate
+            float gy = Height(0, DistrictZ, seed);
+            KitParts.Truss(b, new Vector3(-3.0f, gy + 5.2f, DistrictZ), new Vector3(3.0f, gy + 5.2f, DistrictZ), 0.5f, 0.05f, Mat.DarkSteel);
+            b.Box(new Vector3(0, gy + 4.85f, DistrictZ - 0.12f), new Vector3(3.4f, 0.62f, 0.05f), Mat.OliveSteel, 0.02f);
+            Props.Stencil(b, "DISTRICT", new Vector3(-1.48f, gy + 4.66f, DistrictZ - 0.16f), 0.066f, Mat.PaintWhite);
+            KitParts.Spotlight(b, m, new Vector3(-2.2f, gy + 5.8f, DistrictZ - 0.2f), 180f);
+
+            // MG nest beside the road and tank traps beyond the wall
+            Vector3 nest = G(-5.6f, DistrictZ - 3.2f);
+            Shapes.SandbagRing(b, nest, 1.3f, 14, 3, 20f, 70f);
+            b.Strut(nest + new Vector3(0, 0.9f, 0), nest + new Vector3(0.2f, 1.0f, -1.2f), 0.06f, Mat.DarkSteel);
+            for (int i = 0; i < 5; i++)
+            {
+                float x = (i % 2 == 0 ? -1 : 1) * rng.Range(5.5f, 12f);
+                float z = DistrictZ - rng.Range(3.5f, 6f);
+                KitModules.Hedgehog(b, G(x, z), rng.Range(0f, 90f));
+            }
+
+            // power from the road poles into the district
+            for (int i = 0; i < DistrictPlots.Length; i++)
+            {
+                Vector3 p = DistrictPlots[i];
+                Vector3 box = new Vector3(p.X - (Math.Sign(p.X) * 3.5f), 0, p.Z + 2.2f);
+                KitParts.UtilityBox(b, box + new Vector3(0, 0.6f, 0));
+                b.Strut(box + new Vector3(0, 0.05f, 0), new Vector3(Math.Sign(p.X) * 1.6f, 0.05f, p.Z + 2.2f), 0.04f, Mat.Rubber);
+            }
+        }
+
+        /// <summary>
+        /// Scrap palisade from a to c: steel posts, corrugated sheets of uneven height (some patched, some leaning),
+        /// a top rail and raking braces on the inside. <paramref name="flip"/> turns the corrugated face the other way.
+        /// </summary>
+        private static void Palisade(MeshBuilder b, Vector3 a, Vector3 c, bool flip, ArtRandom rng, uint seed)
+        {
+            float len = Vector3.Distance(new Vector3(a.X, 0, a.Z), new Vector3(c.X, 0, c.Z));
+            int n = Math.Max(1, (int)(len / 1.4f));
+            Vector3 d = Vector3.Normalize(new Vector3(c.X - a.X, 0, c.Z - a.Z));
+            float yaw = (float)(Math.Atan2(-d.Z, d.X) * 180.0 / Math.PI) + (flip ? 180f : 0f);
+            Vector3 inside = Vector3.Cross(Vector3.UnitY, d) * (flip ? -1f : 1f);
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 p0 = Vector3.Lerp(a, c, i / (float)n);
+                Vector3 p1 = Vector3.Lerp(a, c, (i + 1) / (float)n);
+                Vector3 mid = (p0 + p1) * 0.5f;
+                mid.Y = Height(mid.X, mid.Z, seed);
+                float seg = Vector3.Distance(p0, p1);
+                float h = rng.Range(2.3f, 3.2f);
+                float lean = rng.Next() < 0.2f ? rng.Range(-6f, 6f) : 0f;
+
+                Vector3 g0 = new Vector3(p0.X, Height(p0.X, p0.Z, seed), p0.Z);
+                b.Strut(g0 - new Vector3(0, 0.3f, 0), g0 + new Vector3(0, 3.3f, 0), 0.07f, Mat.DarkSteel);
+
+                b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(lean)) * Matrix4x4.CreateRotationY(MeshBuilder.Deg(yaw)) * Matrix4x4.CreateTranslation(mid));
+                Mat sheet = rng.Next() < 0.3f ? Mat.OliveSteel : (rng.Next() < 0.5f ? Mat.Rust : Mat.SandSteel);
+                b.Corrugated(-seg * 0.5f, seg * 0.5f, -0.2f, h, -0.03f, sheet, 0.24f, 0.05f);
+                b.Box(new Vector3(0, (h * 0.5f) - 0.1f, 0.02f), new Vector3(seg, h + 0.2f, 0.03f), Mat.Rust, 0f);
+                if (rng.Next() < 0.25f)
+                {
+                    KitParts.Plate(b, new Vector3(rng.Range(-0.3f, 0.3f), rng.Range(0.6f, 1.6f), -0.1f), 0.7f, 0.6f, rng.Range(-12f, 12f), Mat.DarkSteel);
+                }
+
+                b.Pop();
+
+                if (i % 2 == 0)
+                {
+                    b.Strut(g0 + new Vector3(0, 2.4f, 0), g0 + (inside * 1.3f), 0.05f, Mat.DarkSteel);
+                }
+            }
+
+            Vector3 rail = new Vector3(0, 3.1f, 0);
+            b.Strut(new Vector3(a.X, Height(a.X, a.Z, seed), a.Z) + rail, new Vector3(c.X, Height(c.X, c.Z, seed), c.Z) + rail, 0.035f, Mat.DarkSteel);
         }
 
         /// <summary>Lighter tire tracks: gate to the door and loops around the plots (0..1).</summary>

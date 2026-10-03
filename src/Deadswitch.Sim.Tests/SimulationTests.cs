@@ -1,6 +1,7 @@
 using System.Linq;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 using Xunit;
 
 namespace Deadswitch.Sim.Tests
@@ -76,7 +77,7 @@ namespace Deadswitch.Sim.Tests
 
             foreach (var day in perDay)
             {
-                Assert.True(day.Count() <= sim.Config.Raid.MaxPerDay);
+                Assert.True(day.Count() <= RaidSystem.MaxPerDay(sim.State, sim.Config));
             }
         }
 

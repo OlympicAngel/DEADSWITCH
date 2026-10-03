@@ -11,7 +11,7 @@ Tier 2 is seen and felt: new plots outside the gate, an outer wall, stronger and
 
 ## Steps
 - [x] 1. Sim: `[tier]` slots_added, raid_strength_pct, extra_raids_per_day; tier-up appends plots; tests
-- [ ] 2. Art: district plots + flattened pads, staked lots (T1), outer wall/gate/towers (T2); export `--tier`; preview
+- [x] 2. Art: district plots + flattened pads, staked lots (T1), outer wall/gate/towers (T2); export `--tier`; preview
 - [ ] 3. Unity: rebuild on slot-count change, camera south pan by tier
 - [ ] 4. Docs (SPEC-013, BACKLOG, HANDOFF)
 
