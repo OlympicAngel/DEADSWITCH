@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-001)
+- Done: work loop for "continue" (`docs/agents/continue.md`, `TASK.md`, `docs/roadmap/BACKLOG.md`), production quality bar (`docs/agents/quality-bar.md`), skill pointers for Claude and Codex, `tools/check.sh`, cloud SessionStart hook that installs the .NET SDK, CI format step now blocking. Gate green on Linux.
+- Half-done / known issues: none.
+- Next: F-002 balance config (top Ready item in BACKLOG).
+- Decisions made (link ADR/spec): owner direction recorded in quality-bar.md: no throwaway prototypes, all tunables in config, heavy investment in visuals.
+
+---
+
 ### 2026-10-03 - Copilot - repository setup
 - Done: resumed Editor validation using the existing Unity Hub session (the user confirmed Hub is signed in); Unity 6000.3.25f1 opened `unity/`, resolved the existing Unity Personal entitlement, resolved URP dependencies and the local `com.deadswitch.sim` package, and produced `Assembly-CSharp` and editor assemblies without compiler errors. Unity import/cache artifacts and the editor log are on D:; C: remained at about 2.07 GB free. Updated the Unity README to clarify that Hub sign-in and Unity CLI auth are separate.
 - Half-done / known issues: Unity CLI itself reports no CLI sign-in, but this did not block opening the Editor through the Hub session or resolving the existing entitlement. No reason to request another sign-in. This is an empty project scaffold; application gameplay/UI implementation remains future work. iOS archive/signing requires macOS/Xcode.

@@ -27,7 +27,8 @@ If two sources conflict, stop and flag it in your reply. Do not silently pick on
 & "$env:DOTNET_ROOT\dotnet.exe" build DEADSWITCH.sln -warnaserror
 & "$env:DOTNET_ROOT\dotnet.exe" test DEADSWITCH.sln
 & "$env:DOTNET_ROOT\dotnet.exe" run --project src/Deadswitch.Cli -- 42 24  # seed, hours
-powershell -ExecutionPolicy Bypass -File tools\check.ps1  # full gate: format + build + test
+powershell -ExecutionPolicy Bypass -File tools\check.ps1  # full gate: format + build + test (Windows)
+tools/check.sh                                            # same gate on Linux/macOS/cloud sessions
 ```
 
 ## Hard rules (the sim core)
@@ -39,6 +40,15 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 - **No iteration over unordered collections** (`Dictionary`/`HashSet`) where order affects state. Use lists or sorted keys.
 - Every field added to `GameState` must be added to `StateHasher` in the same change.
 - Invariant: `Run(a); Run(b)` equals `Run(a+b)`. Keep the chunking test green.
+
+## Work loop ("continue")
+The owner drives work by saying **"continue"**. Follow [`docs/agents/continue.md`](docs/agents/continue.md):
+- `TASK.md` (root) = the one active feature and its step checklist. `docs/roadmap/BACKLOG.md` = ordered feature queue.
+- Resume the first unchecked step, or start the top `Ready` backlog item. **Commit and push after every finished step.**
+- Keep going without asking unless truly blocked; record blockers in `TASK.md`.
+
+## Quality bar
+Production-ready from the first commit, not prototypes. Every tunable goes in config (`SimConfig` + balance file; design tokens for visuals). Visual polish is a first-class requirement. See [`docs/agents/quality-bar.md`](docs/agents/quality-bar.md).
 
 ## Workflow
 1. **Spec first** for anything bigger than a bug fix: `docs/specs/TEMPLATE.md`. Keep specs short.
@@ -57,7 +67,8 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 - `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).
 - New behavior has tests; no existing test was weakened to make it pass.
 - No new warnings (warnings are errors).
-- Docs and HANDOFF updated.
+- Docs and HANDOFF updated; `TASK.md` and `BACKLOG.md` reflect reality.
+- Committed and pushed.
 
 ## Working with multiple agents
 Claude and Codex both work in this repo. To avoid collisions:
