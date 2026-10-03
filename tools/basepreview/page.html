@@ -140,9 +140,14 @@ for (const o of scene.objects) {
 }
 
 const cam = new THREE.PerspectiveCamera(look.fov, W / H, 1, 400);
-const ce = THREE.MathUtils.degToRad(look.camElevation), ca = THREE.MathUtils.degToRad(look.camAzimuth);
-cam.position.set(Math.cos(ce) * Math.sin(ca) * look.camDistance, Math.sin(ce) * look.camDistance, Math.cos(ce) * Math.cos(ca) * look.camDistance);
-cam.lookAt(new THREE.Vector3(...look.camTarget));
+// Close-up overrides for asset review: ?target=x,y,z (Unity space) &dist=N &az=deg.
+const camTarget = P.get('target') ? P.get('target').split(',').map(Number) : null;
+const camDist = +P.get('dist') || look.camDistance;
+const ce = THREE.MathUtils.degToRad(look.camElevation), ca = THREE.MathUtils.degToRad(P.get('az') !== null ? +P.get('az') : look.camAzimuth);
+const camAt = camTarget ? new THREE.Vector3(camTarget[0], camTarget[1], -camTarget[2]) : new THREE.Vector3(...look.camTarget);
+const camFrom = camTarget ? camAt : new THREE.Vector3();
+cam.position.set(camFrom.x + Math.cos(ce) * Math.sin(ca) * camDist, camFrom.y + Math.sin(ce) * camDist, camFrom.z + Math.cos(ce) * Math.cos(ca) * camDist);
+cam.lookAt(camAt);
 
 const composer = new EffectComposer(renderer);
 composer.setSize(W, H);

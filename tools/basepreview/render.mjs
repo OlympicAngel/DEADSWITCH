@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Renders artifacts/basepreview/scene.json (from `dotnet run --project src/Deadswitch.Cli -- art export`) to PNG.
-// usage: node tools/basepreview/render.mjs [--out file.png] [--w 1080] [--h 1920] [--t seconds]
+// usage: node tools/basepreview/render.mjs [--out file.png] [--w 1080] [--h 1920] [--t seconds] [--target x,y,z --dist N --az deg]
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -33,7 +33,8 @@ const browser = await playwright.chromium.launch({ args: ['--use-gl=angle', '--u
 const page = await browser.newPage({ viewport: { width: +w, height: +h } });
 page.on('console', m => { if (m.type() === 'error') console.error('page:', m.text()); });
 page.on('pageerror', e => console.error('page error:', e.message));
-await page.goto(`http://127.0.0.1:${port}/?w=${w}&h=${h}&t=${t}`);
+const extra = ['target', 'dist', 'az'].filter(k => opt(k, null) !== null).map(k => `&${k}=${opt(k)}`).join('');
+await page.goto(`http://127.0.0.1:${port}/?w=${w}&h=${h}&t=${t}${extra}`);
 await page.waitForFunction(() => window.__done, null, { timeout: 180000 });
 fs.mkdirSync(path.dirname(out), { recursive: true });
 await page.screenshot({ path: out });

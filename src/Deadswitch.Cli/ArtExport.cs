@@ -20,7 +20,7 @@ namespace Deadswitch.Cli
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        public static void Write(Simulation sim, string path, uint seed)
+        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null)
         {
             var meshes = new List<MeshData>();
             var objects = new StringBuilder();
@@ -70,7 +70,7 @@ namespace Deadswitch.Cli
                     .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append("]}");
             }
 
-            int slots = sim.State.Slots.Count;
+            int slots = layout?.Length ?? sim.State.Slots.Count;
             AddModel("terrain", new Model { Static = HubScene.Terrain(seed) }, Vector3.Zero, 0, true, false);
             AddModel("surroundings", HubScene.Surroundings(seed, slots), Vector3.Zero, 0, true, false);
             AddModel("core", Core.Build(seed), Vector3.Zero, 0, true, false);
@@ -78,7 +78,7 @@ namespace Deadswitch.Cli
             {
                 Vector3 pos = HubScene.SlotPosition(i, slots);
                 float yaw = HubScene.SlotYaw(i, slots);
-                SlotView v = SlotView.From(sim.State, i);
+                SlotView v = layout != null ? layout[i] : SlotView.From(sim.State, i);
                 AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i, v.Kind == FacilityKind.None && !v.UnderConstruction) }, pos, yaw, true, false);
                 if (v.Kind != FacilityKind.None)
                 {

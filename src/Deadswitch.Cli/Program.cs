@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Deadswitch.Art.World;
 using Deadswitch.Host.Persistence;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Config;
@@ -72,7 +73,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
-            w.WriteLine("  art export [--days N] [--seed N] [--out PATH]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -168,7 +169,10 @@ namespace Deadswitch.Cli
             return 0;
         }
 
-        /// <summary>art export [--days N] [--seed N] [--out PATH]: a scripted base after N days, for tools/basepreview.</summary>
+        /// <summary>
+        /// art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...]: a scripted base after N days, for
+        /// tools/basepreview. --layout overrides the slots (e.g. Generator:5,ServerRack:3,None:0) to review assets.
+        /// </summary>
         private static int ArtCommand(string[] args)
         {
             if (args.Length == 0 || args[0] != "export")
@@ -184,7 +188,23 @@ namespace Deadswitch.Cli
             var sim = new Simulation(seed, config);
             Deadswitch.Host.Dev.ScriptedPlayer.Play(sim, (long)(days * SimConfig.TicksPerDay));
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
-            ArtExport.Write(sim, outPath, (uint)seed);
+            SlotView[]? layout = null;
+            string? layoutArg = ValueAfter(rest, "--layout");
+            if (layoutArg != null)
+            {
+                layout = layoutArg.Split(',').Select(e =>
+                {
+                    string[] kv = e.Split(':');
+                    if (kv.Length != 2 || !Enum.TryParse(kv[0], out FacilityKind kind) || !int.TryParse(kv[1], out int level))
+                    {
+                        throw new UsageException("--layout entries look like Generator:3.");
+                    }
+
+                    return new SlotView(kind, level, true, false, FacilityKind.None, 0);
+                }).ToArray();
+            }
+
+            ArtExport.Write(sim, outPath, (uint)seed, layout);
             Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
             for (int i = 0; i < sim.State.Slots.Count; i++)
             {
