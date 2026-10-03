@@ -16,17 +16,21 @@ raid.warn.3 | raid_warning | warm | Hostiles inbound, {gate}. Recommend turrets 
 raid.warn.4 | raid_warning | cold | Raiders, {gate}. Estimate {est}. Assign assets or accept losses.
 raid.warn.5 | raid_warning | bold | Raiders, {gate}. Estimate {est}. I would turtle. I would not wait.
 
-raid.repelled.1 | raid_repelled | neutral | Raid repelled. No losses.
+raid.repelled.1 | raid_repelled | neutral | Raid repelled at the {gate}. No losses.
 raid.repelled.2 | raid_repelled | warm | They broke on the wall. Everyone is accounted for.
 raid.repelled.3 | raid_repelled | cold | Repelled. Ammunition spent. Acceptable.
 raid.repelled.4 | raid_repelled | bold | Repelled. As I predicted.
+raid.repelled.5 | raid_repelled | neutral | Contact at the {gate}. They pulled back.
 
-raid.breach.1 | raid_breached | neutral | Perimeter breached. Losses: {lost}.
+raid.breach.1 | raid_breached | neutral | Perimeter breached, {gate}. Losses: {lost}.
+raid.breach.6 | raid_breached | neutral | Perimeter breached. Damage is being logged.
+raid.breach.5 | raid_breached | neutral | They came through the {gate}. Losses: {lost}.
 raid.breach.2 | raid_breached | warm | They got in. {lost}. We rebuild, handler.
 raid.breach.3 | raid_breached | cold | Breach. {lost}. Replaceable.
 raid.breach.4 | raid_breached | bold | Breach. {lost}. Next time, let me set the defense.
 
-raid.missed.1 | raid_missed | neutral | Lights out worked. They walked past us.
+raid.missed.1 | raid_missed | neutral | Lights out worked. They walked past the {gate}.
+raid.missed.3 | raid_missed | neutral | Dark posture held. No contact.
 raid.missed.2 | raid_missed | cold | Dark posture held. They found nothing worth taking.
 
 raid.lockdown.1 | raid_lockdown | neutral | Lockdown engaged. Raid called off. That cost us integrity.

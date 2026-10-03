@@ -5,7 +5,8 @@ namespace Deadswitch.Game.UI
     /// <summary>
     /// Corruption glitches for the AI's text (ADVISOR_VOICE.md): dropped letters, stutters, block noise and
     /// [REDACTED], scaled by corruption and the effect-intensity setting. Never unreadable: at most a small
-    /// share of characters change and numbers are never touched (values must stay trustworthy on screen).
+    /// share of characters change, and numbers and upper-case words (gates, facilities, postures: the advisor's
+    /// data tokens) are never touched, so values stay trustworthy on screen.
     /// </summary>
     public static class GlitchText
     {
@@ -28,7 +29,7 @@ namespace Deadswitch.Game.UI
                 char c = text[i];
                 rng = (rng * 1664525u) + 1013904223u;
                 float r = (rng >> 8) / 16777216f;
-                if (char.IsDigit(c) || char.IsWhiteSpace(c) || r >= p)
+                if (char.IsDigit(c) || char.IsUpper(c) || char.IsWhiteSpace(c) || r >= p)
                 {
                     sb.Append(c);
                     continue;

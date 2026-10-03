@@ -85,7 +85,7 @@
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="raid-detail" class="hud-raidrow">
-        <ui:Label name="raid-estimate" text="EST 34 // DEF 12 // POSTURE NONE" class="hud-raidrow__text" />
+        <ui:Label name="raid-estimate" text="NORTH RIDGE // EST 34 // DEF 12 // TURTLE" class="hud-raidrow__text" />
         <ui:VisualElement name="raid-defend" class="ds-btn ds-btn--warn hud-raidrow__btn"><ui:Label text="DEFEND" class="ds-btn__label" /></ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>

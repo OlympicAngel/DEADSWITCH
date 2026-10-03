@@ -2,6 +2,7 @@ using System.Linq;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Game.UI.Screens;
+using Deadswitch.Host.Narrative;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
@@ -52,6 +53,8 @@ namespace Deadswitch.Game.UI.Hud
 
         public AdvisorTicker Advisor { get; private set; }
 
+        private AdvisorVoice _voice;
+
         public ScreenRouter Router { get; private set; }
 
         private void Awake()
@@ -95,6 +98,7 @@ namespace Deadswitch.Game.UI.Hud
             _overridePips = Q<VisualElement>("override-pips").Children().ToArray();
 
             Advisor = new AdvisorTicker(Q<Label>("advisor-text"));
+            _voice = new AdvisorVoice(_host, Advisor);
 
             Router = new ScreenRouter(Q<VisualElement>("screen"));
             Router.Register(new Base.BaseScreen(Router));
@@ -115,7 +119,6 @@ namespace Deadswitch.Game.UI.Hud
             _compute.Set(_host.Sim.State.Compute, true);
             _people.Set(_host.Sim.State.People, true);
             _core.Set(CorruptionSystem.Percent(_host.Sim.State.CorruptionMilli), true);
-            Advisor.Say("Core online. Power is the problem. Power is always the problem.");
         }
 
         private void OnDestroy()
@@ -125,6 +128,8 @@ namespace Deadswitch.Game.UI.Hud
                 _host.Ticked -= Refresh;
                 _host.EventRaised -= OnSimEvent;
             }
+
+            _voice?.Dispose();
 
             if (_ui != null)
             {
@@ -203,7 +208,7 @@ namespace Deadswitch.Game.UI.Hud
             _raidDetail.EnableInClassList("is-hidden", !raid);
             if (raid)
             {
-                _raidEstimate.text = "EST " + Fmt.Num(s.RaidEstimate) + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
+                _raidEstimate.text = Names.Gate(s.RaidGateReported) + " // EST " + Fmt.Num(s.RaidEstimate) + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
             }
 
             UpdateTimers();
@@ -221,6 +226,7 @@ namespace Deadswitch.Game.UI.Hud
             _people.Tick(dt);
             _core.Tick(dt);
             _gauge.Tick(dt);
+            _voice.Tick(dt);
             Advisor.Tick(dt);
             UpdateTimers();
         }

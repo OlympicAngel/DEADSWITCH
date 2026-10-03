@@ -14,7 +14,7 @@ The AI talks back: short lines for every major event, tone shaped by hidden Cold
 - [x] 2. Sim: raid gates (RaidVector / RaidContact), first lie + Boldness-scaled lies (AdvisorLied), tests
 - [x] 3. Sim: delegated build planner + offline autopilot defense (AiActed), 7-day delegated guard test
 - [x] 4. Host: advisor line engine + `AdvisorLines.txt` (50 lines) + parse test
-- [ ] 5. Unity: HUD wired to the advisor (events -> lines, tone, glitch), raid row shows the reported gate, then the contact gate
+- [x] 5. Unity: HUD wired to the advisor (events -> lines, tone, glitch), raid row shows the reported gate; resolution lines name the contact gate
 - [ ] 6. CLI `advisor` transcript for a scripted run; review the voice; docs (ADVISOR_VOICE, HANDOFF, BACKLOG)
 
 ## Notes

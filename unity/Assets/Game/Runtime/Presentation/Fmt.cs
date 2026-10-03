@@ -1,4 +1,5 @@
 using System.Globalization;
+using Deadswitch.Host.Narrative;
 using Deadswitch.Sim;
 using Deadswitch.Sim.State;
 
@@ -11,15 +12,7 @@ namespace Deadswitch.Game.Presentation
 
         public static string FacilityName(FacilityKind kind)
         {
-            switch (kind)
-            {
-                case FacilityKind.Generator: return "GENERATOR";
-                case FacilityKind.ServerRack: return "SERVER RACK";
-                case FacilityKind.LifeSupport: return "LIFE SUPPORT";
-                case FacilityKind.BatteryBank: return "BATTERY BANK";
-                case FacilityKind.Turret: return "TURRET";
-                default: return "EMPTY SLOT";
-            }
+            return Names.Facility(kind);
         }
 
         public static string FacilityBlurb(FacilityKind kind)

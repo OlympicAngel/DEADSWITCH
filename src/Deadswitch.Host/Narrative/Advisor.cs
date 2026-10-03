@@ -72,33 +72,34 @@ namespace Deadswitch.Host.Narrative
             }
         }
 
-        /// <summary>
-        /// Reads events <paramref name="from"/>.. of <paramref name="events"/>. A catch-up batch (offline time) is
-        /// summarized in one return line instead of replaying every event.
-        /// </summary>
-        public void Observe(IReadOnlyList<SimEvent> events, int from, GameState state, bool catchUp)
+        /// <summary>Reads one live event.</summary>
+        public void Observe(SimEvent e, GameState state)
         {
             _tones = TonesFor(state);
-            if (catchUp)
+            On(e);
+        }
+
+        /// <summary>
+        /// Offline catch-up (events [<paramref name="from"/>, <paramref name="to"/>)): summarized in one return line
+        /// instead of replaying every event.
+        /// </summary>
+        public void ObserveCatchUp(IReadOnlyList<SimEvent> events, int from, int to, GameState state)
+        {
+            _tones = TonesFor(state);
+            int raids = 0;
+            for (int i = from; i < to && i < events.Count; i++)
             {
-                int raids = 0;
-                for (int i = from; i < events.Count; i++)
+                if (events[i].Kind == EventKind.RaidResolved)
                 {
-                    if (events[i].Kind == EventKind.RaidResolved)
-                    {
-                        raids++;
-                    }
+                    raids++;
                 }
-
-                _queue.Clear();
-                Enqueue(new Pending("return", Priority.Urgent).With("raids", raids.ToString()));
-                return;
             }
 
-            for (int i = from; i < events.Count; i++)
-            {
-                On(events[i]);
-            }
+            _queue.Clear();
+            _breach = null;
+            _liedRaids.Clear();
+            _contactGate.Clear();
+            Enqueue(new Pending("return", Priority.Urgent).With("raids", raids.ToString()));
         }
 
         /// <summary>State-driven lines (low energy, with hysteresis).</summary>
@@ -271,17 +272,19 @@ namespace Deadswitch.Host.Narrative
 
         private void OnResolved(SimEvent e)
         {
+            // Resolution lines name the gate the raid really used: the on-screen cross-check (lie rule 2).
+            string hit = _contactGate.TryGetValue(e.A, out int contact) ? Names.Gate((RaidGate)contact) : string.Empty;
             switch ((RaidOutcome)e.B)
             {
                 case RaidOutcome.Repelled:
-                    Enqueue(new Pending("raid_repelled", Priority.Urgent));
+                    Enqueue(WithGate(new Pending("raid_repelled", Priority.Urgent), hit));
                     break;
                 case RaidOutcome.Breached:
-                    _breach = new Pending("raid_breached", Priority.Urgent);
+                    _breach = WithGate(new Pending("raid_breached", Priority.Urgent), hit);
                     Enqueue(_breach);
                     break;
                 case RaidOutcome.Missed:
-                    Enqueue(new Pending("raid_missed", Priority.Urgent));
+                    Enqueue(WithGate(new Pending("raid_missed", Priority.Urgent), hit));
                     break;
                 case RaidOutcome.Lockdown:
                     Enqueue(new Pending("raid_lockdown", Priority.Normal));
@@ -295,6 +298,11 @@ namespace Deadswitch.Host.Narrative
             }
 
             _contactGate.Remove(e.A);
+        }
+
+        private static Pending WithGate(Pending p, string gate)
+        {
+            return gate.Length > 0 ? p.With("gate", gate) : p;
         }
 
         private void Enqueue(Pending p)

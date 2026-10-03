@@ -72,6 +72,12 @@ namespace Deadswitch.Game.Core
 
         public bool IsReady => Sim != null;
 
+        /// <summary>True when this session started a fresh run (no save).</summary>
+        public bool IsNewRun { get; private set; }
+
+        /// <summary>The last offline catch-up, for listeners that start after it ran.</summary>
+        public CatchUpReport? LastCatchUp { get; private set; }
+
         public CommandResult Execute(Command command)
         {
             CommandResult result = Sim.Execute(command);
@@ -167,6 +173,7 @@ namespace Deadswitch.Game.Core
 
         private void NewRun()
         {
+            IsNewRun = true;
             ulong seed = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() ^ ((ulong)UnityEngine.Random.Range(int.MinValue, int.MaxValue) << 20);
             Sim = new Simulation(seed, Config);
             _dispatchedEvents = 0;
@@ -220,7 +227,8 @@ namespace Deadswitch.Game.Core
 
             int last2 = Sim.Log.Count;
             _dispatchedEvents = last2;
-            CaughtUp?.Invoke(new CatchUpReport(plan, first, last2));
+            LastCatchUp = new CatchUpReport(plan, first, last2);
+            CaughtUp?.Invoke(LastCatchUp.Value);
             Ticked?.Invoke();
         }
 
