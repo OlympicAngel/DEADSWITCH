@@ -41,6 +41,14 @@ The world should feel worn and physical; the interface should feel precise, purp
 
 **Avoid:** cartoon, mobile casual, toy-like, simplistic, clean surfaces, flat colors, plastic materials, exaggerated proportions, cel shading, fantasy architecture, sci-fi neon, cyberpunk, saturated colors, glossy metal, pristine assets, empty environment, low-detail textures, random clutter, noisy composition.
 
+**Environment construction rules (owner, 2026-10-03):**
+- Rebuild, don't decorate: no simple boxes. Buildings are layered structures assembled from modules, overhangs, extensions, welded plates, support beams, pipes, vents, antennas, scaffolding, balconies, ladders and machinery (roughly 3-5x the geometric complexity of the first pass).
+- Break every silhouette: no straight rectangular outlines; asymmetry, repairs, damage, additions and a believable construction history.
+- Verticality: catwalks, elevated platforms, stacked containers, retaining walls, staircases, cables strung between poles, rooftop equipment.
+- Flat surfaces get construction detail: exposed rebar, concrete seams, panel joints, ventilation, utility boxes, fuel tanks, generators, transformers, industrial machinery.
+- The settlement is crowded and organically expanded over decades, not designed. Dense, purposeful dressing: crates, pallets, tarps, barrels, fences, sandbags, debris piles, maintenance gear, work areas, abandoned vehicles.
+- Each building has a distinct silhouette and readable function from the isometric camera; large and medium forms over tiny details.
+
 **How we build it (no imported assets yet):** procedural geometry (`src/Deadswitch.Art`) with real-world proportions and bevelled medium forms; a procedural PBR "salvage" material (world-space noise layers for rust, chipped paint, dirt, soot, rain streaks, wetness, edge wear and bump) shared by Unity and the headless preview; SSAO, fog and warm practical lights. Hand-made or kitbashed assets may replace procedural ones later if they follow this brief.
 
 ## Prototype palette

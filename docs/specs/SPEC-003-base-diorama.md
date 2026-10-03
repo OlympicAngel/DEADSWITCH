@@ -9,7 +9,7 @@
 The Hub is a small, tactile 3D world seen through the AI's recon drone. Every facility's kind, level and state is readable at phone scale: higher levels visibly grow, powered facilities glow and move, shed ones go dark, unmanned ones blink amber, construction shows scaffolding. Tapping a slot opens its build/upgrade sheet.
 
 ## Rules
-1. **Art direction:** doc 11 Master art direction (heroic realism). Procedural, engine-agnostic geometry (`src/Deadswitch.Art`) with real-world proportions, thin bevels, smooth curved surfaces, medium-frequency detail. Deterministic per seed.
+1. **Art direction:** doc 11 Master art direction + Environment construction rules (heroic realism, modular layered construction, broken silhouettes, verticality, dense purposeful dressing); `docs/agents/environment-art.md`. Procedural, engine-agnostic geometry (`src/Deadswitch.Art`) with real-world proportions, thin bevels, smooth curved surfaces, medium-frequency detail. Deterministic per seed.
 2. **One procedural PBR salvage material model** (base, paint chips, rust, dirt, soot, rain streaks, wetness, edge wear, bump; vertex colors carry AO / edge / variation masks) shared by Unity (custom URP shader, URP Lit fallback) and the headless three.js preview.
 3. **Layout:** the AI core bunker at the center, `hub.slots` pads around it, perimeter barriers, ruined terrain, props.
 4. **Facility models per kind, growing per level** (new parts added at each level). Animated parts (fans, dishes, rotors) spin only while powered.
