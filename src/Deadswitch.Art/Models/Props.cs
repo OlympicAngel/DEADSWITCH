@@ -9,55 +9,87 @@ namespace Deadswitch.Art.Models
     public static class Props
     {
         /// <summary>
-        /// Corrugated shipping container on y = <paramref name="baseCenter"/>.Y, long side along X, door side facing -Z.
-        /// The door stands open on a warm lit interior when <paramref name="open"/> is set.
+        /// ISO-style shipping container (real proportions: 6.0 x 2.6 x 2.44 m at scale 1) on y = baseCenter.Y, long
+        /// axis X, doors on the -X end, long side facing -Z. Corrugated walls and roof, corner castings, rails,
+        /// optional cut-in doorway on the long side with a warm interior, stenciled label on the long side.
         /// </summary>
-        public static void Container(MeshBuilder b, Model m, Vector3 baseCenter, float length, float height, float depth, Mat mat, bool open, uint seed)
+        public static void Container(MeshBuilder b, Model m, Vector3 baseCenter, float length, float height, float depth, Mat mat, bool open, uint seed, string label = "")
         {
-            float x0 = baseCenter.X - (length * 0.5f);
-            float z0 = baseCenter.Z - (depth * 0.5f);
-            float y0 = baseCenter.Y;
-            b.BoxOn(baseCenter.X, y0, baseCenter.Z, length, height, depth, mat, 0.07f);
+            float hx = length * 0.5f;
+            float hz = depth * 0.5f;
+            const float post = 0.16f;
+            b.Push(Matrix4x4.CreateTranslation(baseCenter));
 
-            // frame: corner posts and rails
-            foreach (float x in new[] { x0 + 0.08f, x0 + length - 0.08f })
+            // inner core box (so gaps never show through) and corrugated skins
+            b.BoxOn(0, 0.12f, 0, length - 0.1f, height - 0.24f, depth - 0.12f, mat, 0.02f);
+            b.Corrugated(-hx + post, hx - post, 0.14f, height - 0.14f, -hz, mat);
+            b.Push(Matrix4x4.CreateRotationY(MeshBuilder.Deg(180f)));
+            b.Corrugated(-hx + post, hx - post, 0.14f, height - 0.14f, -hz, mat);
+            b.Pop();
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(90f)) * Matrix4x4.CreateTranslation(new Vector3(0, height - 0.04f, 0)));
+            b.Corrugated(-hx + post, hx - post, -hz + 0.06f, hz - 0.06f, 0f, mat, 0.6f, 0.025f);
+            b.Pop();
+
+            // frame: corner posts, top and bottom side rails, corner castings
+            foreach (int sx in new[] { -1, 1 })
             {
-                foreach (float z in new[] { z0 + 0.08f, z0 + depth - 0.08f })
+                foreach (int sz in new[] { -1, 1 })
                 {
-                    b.BoxOn(x, y0, z, 0.2f, height + 0.02f, 0.2f, Mat.DarkSteel, 0.03f);
+                    b.BoxOn(sx * (hx - (post * 0.5f)), 0, sz * (hz - (post * 0.5f)), post, height, post, mat, 0.02f);
+                    b.Box(new Vector3(sx * (hx - 0.09f), 0.09f, sz * (hz - 0.09f)), new Vector3(0.2f, 0.18f, 0.2f), Mat.DarkSteel, 0.02f);
+                    b.Box(new Vector3(sx * (hx - 0.09f), height - 0.09f, sz * (hz - 0.09f)), new Vector3(0.2f, 0.18f, 0.2f), Mat.DarkSteel, 0.02f);
                 }
+
+                b.Box(new Vector3(0, height - 0.07f, sx * (hz - 0.06f)), new Vector3(length, 0.14f, 0.14f), mat, 0.02f);
+                b.Box(new Vector3(0, 0.09f, sx * (hz - 0.06f)), new Vector3(length, 0.18f, 0.16f), Mat.DarkSteel, 0.02f);
             }
 
-            b.BoxOn(baseCenter.X, y0 + height - 0.12f, z0 + 0.05f, length, 0.14f, 0.14f, Mat.DarkSteel, 0.02f);
-            b.BoxOn(baseCenter.X, y0, z0 + 0.05f, length, 0.14f, 0.14f, Mat.DarkSteel, 0.02f);
-
-            // corrugation on the long front and back faces
-            int ribs = (int)(length / 0.26f);
-            for (int i = 1; i < ribs; i++)
+            // cargo doors on the -X end: two leaves, four vertical locking bars, handles
+            b.Box(new Vector3(-hx - 0.01f, height * 0.5f, 0), new Vector3(0.05f, height - 0.3f, depth - 0.3f), mat, 0.01f);
+            b.Box(new Vector3(-hx - 0.04f, height * 0.5f, 0), new Vector3(0.03f, height - 0.3f, 0.03f), Mat.DarkSteel, 0f);
+            foreach (float z in new[] { -0.75f, -0.35f, 0.35f, 0.75f })
             {
-                float x = x0 + (i * length / ribs);
-                b.Box(new Vector3(x, y0 + (height * 0.5f), z0 - 0.015f), new Vector3(0.07f, height * 0.86f, 0.05f), mat, 0.01f);
-                b.Box(new Vector3(x, y0 + (height * 0.5f), z0 + depth + 0.015f), new Vector3(0.07f, height * 0.86f, 0.05f), mat, 0.01f);
-            }
-
-            // roof dents and rust patches via darker plates
-            var rng = new ArtRandom(seed);
-            for (int i = 0; i < 3; i++)
-            {
-                b.Box(new Vector3(x0 + rng.Range(0.6f, length - 0.6f), y0 + height + 0.01f, baseCenter.Z + rng.Range(-depth * 0.3f, depth * 0.3f)), new Vector3(rng.Range(0.5f, 1.2f), 0.02f, rng.Range(0.4f, 0.9f)), Mat.Rust, 0.005f);
+                b.Box(new Vector3(-hx - 0.07f, height * 0.5f, z * depth / 2.44f), new Vector3(0.04f, height - 0.4f, 0.04f), Mat.DarkSteel, 0.01f);
+                b.Box(new Vector3(-hx - 0.1f, height * 0.42f, (z * depth / 2.44f) + 0.08f), new Vector3(0.05f, 0.05f, 0.18f), Mat.DarkSteel, 0.01f);
             }
 
             if (open)
             {
-                float dx = baseCenter.X - (length * 0.18f);
-                b.Box(new Vector3(dx, y0 + (height * 0.47f), z0 - 0.03f), new Vector3(1.3f, height * 0.78f, 0.06f), Mat.Interior, 0.01f);
-                b.Box(new Vector3(dx, y0 + (height * 0.47f), z0 - 0.06f), new Vector3(0.06f, height * 0.78f, 0.04f), Mat.DarkSteel, 0.005f);
-                // swung door leaf
-                b.Push(Matrix4x4.CreateRotationY(MeshBuilder.Deg(-70f)) * Matrix4x4.CreateTranslation(new Vector3(dx - 0.66f, y0, z0 - 0.05f)));
-                b.BoxOn(-0.33f, 0.05f, 0, 0.66f, height * 0.82f, 0.06f, mat, 0.02f);
+                // doorway cut into the long side, warm interior, plate door swung out
+                float dx = -length * 0.18f;
+                b.Box(new Vector3(dx, (height * 0.46f) + 0.05f, -hz - 0.07f), new Vector3(1.05f, (height * 0.8f) + 0.04f, 0.04f), Mat.Interior, 0.005f);
+                b.Box(new Vector3(dx, (height * 0.87f) + 0.05f, -hz - 0.1f), new Vector3(1.25f, 0.1f, 0.06f), Mat.DarkSteel, 0.01f);
+                b.Box(new Vector3(dx - 0.6f, (height * 0.46f) + 0.05f, -hz - 0.1f), new Vector3(0.08f, height * 0.82f, 0.06f), Mat.DarkSteel, 0.01f);
+                b.Box(new Vector3(dx + 0.6f, (height * 0.46f) + 0.05f, -hz - 0.1f), new Vector3(0.08f, height * 0.82f, 0.06f), Mat.DarkSteel, 0.01f);
+                b.Push(Matrix4x4.CreateRotationY(MeshBuilder.Deg(-75f)) * Matrix4x4.CreateTranslation(new Vector3(dx + 0.58f, 0.12f, -hz - 0.12f)));
+                b.BoxOn(0.5f, 0, 0, 1.0f, height * 0.8f, 0.05f, mat, 0.01f);
                 b.Pop();
-                m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(dx, y0 + (height * 0.5f), z0 - 0.9f)), Model.Amber, 1.4f, 4.5f, LightRole.Status));
+                b.BoxOn(dx, 0, -hz - 0.45f, 1.2f, 0.12f, 0.6f, Mat.DarkSteel, 0.02f);
+                Lamp(b, m, new Vector3(dx, height * 0.95f, -hz - 0.35f), true, 1.0f);
+                m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(dx, height * 0.5f, -hz - 0.9f)), Model.Amber, 1.4f, 4.5f, LightRole.Status));
             }
+
+            if (label.Length > 0)
+            {
+                float px = Math.Min(0.11f, (length * 0.42f) / (label.Length * 6f));
+                float x0 = (open ? 0.1f : -0.5f) * length * 0.5f - ((label.Length * 6f * px) * (open ? 0f : 0.5f));
+                Stencil(b, label, new Vector3(Math.Max(x0, -hx + 0.4f), height * 0.56f, -hz - 0.065f), px, Mat.PaintWhite);
+            }
+
+            b.Pop();
+        }
+
+        /// <summary>Wall or post lamp: housing, emissive lens, a point light and an optional volumetric cone.</summary>
+        public static void Lamp(MeshBuilder b, Model m, Vector3 p, bool cone, float intensity = 1.8f, LightRole role = LightRole.Ambient)
+        {
+            b.Box(p + new Vector3(0, 0.08f, 0), new Vector3(0.34f, 0.12f, 0.26f), Mat.DarkSteel, 0.03f);
+            b.Box(p, new Vector3(0.26f, 0.05f, 0.18f), Mat.LampAmber, 0.01f);
+            if (cone)
+            {
+                b.LightCone(p - new Vector3(0, 0.04f, 0), Math.Min(3.4f, b.TransformPoint(p).Y), 1.1f);
+            }
+
+            m.Lights.Add(new LightSpec(b.TransformPoint(p - new Vector3(0, 0.3f, 0)), Model.Amber, intensity, 7.5f, role));
         }
 
         public static void Stairs(MeshBuilder b, Vector3 bottom, float rise, float yawDeg, float width = 0.8f)
@@ -138,26 +170,36 @@ namespace Deadswitch.Art.Models
             }
         }
 
-        /// <summary>A chunky stylized person (about 1.8 m) facing -Z before yaw.</summary>
+        /// <summary>A survivor with believable proportions (1.78 m), facing -Z: work clothes, vest, helmet or cap, pack.</summary>
         public static MeshData Person(uint seed)
         {
-            var b = new MeshBuilder(seed) { AoHeight = 0.6f, AoFloor = 0.7f };
+            var b = new MeshBuilder(seed) { AoHeight = 0.5f, AoFloor = 0.75f, FaceJitter = 0.03f };
             var rng = new ArtRandom(seed);
-            Mat[] jackets = { Mat.OliveSteel, Mat.Tarp, Mat.TarpBlue, Mat.SandSteel, Mat.Rust };
+            Mat[] jackets = { Mat.OliveSteel, Mat.Tarp, Mat.TarpBlue, Mat.SandSteel, Mat.DarkSteel };
             Mat jacket = jackets[rng.Range(0, jackets.Length)];
-            Mat pants = rng.Next() < 0.5f ? Mat.DarkSteel : Mat.Wood;
-            b.BoxOn(-0.13f, 0, 0, 0.2f, 0.82f, 0.24f, pants, 0.05f);
-            b.BoxOn(0.13f, 0, 0, 0.2f, 0.82f, 0.24f, pants, 0.05f);
-            b.BoxOn(-0.13f, 0, -0.04f, 0.22f, 0.14f, 0.32f, Mat.Rubber, 0.04f);
-            b.BoxOn(0.13f, 0, -0.04f, 0.22f, 0.14f, 0.32f, Mat.Rubber, 0.04f);
-            b.BoxOn(0, 0.78f, 0, 0.56f, 0.62f, 0.34f, jacket, 0.1f);
-            b.BoxOn(-0.36f, 0.82f, 0, 0.16f, 0.56f, 0.18f, jacket, 0.06f);
-            b.BoxOn(0.36f, 0.82f, 0, 0.16f, 0.56f, 0.18f, jacket, 0.06f);
-            b.BoxOn(0, 0.85f, 0.24f, 0.4f, 0.45f, 0.18f, Mat.Tarp, 0.06f);
-            b.BoxOn(0, 1.38f, 0, 0.3f, 0.32f, 0.3f, Mat.Skin, 0.09f);
-            if (rng.Next() < 0.6f)
+            Mat pants = rng.Next() < 0.5f ? Mat.DarkSteel : Mat.Tarp;
+            const float r = 0.072f;
+            foreach (int s in new[] { -1, 1 })
             {
-                b.BoxOn(0, 1.62f, 0, 0.36f, 0.14f, 0.36f, rng.Next() < 0.5f ? Mat.OliveSteel : Mat.DarkSteel, 0.06f);
+                b.Capsule(new Vector3(s * 0.1f, 0.12f, 0.02f), new Vector3(s * 0.1f, 0.86f, 0f), r, pants, 8);
+                b.BoxOn(s * 0.1f, 0, -0.03f, 0.13f, 0.12f, 0.27f, Mat.Rubber, 0.04f);
+                b.Capsule(new Vector3(s * 0.24f, 1.42f, 0f), new Vector3(s * 0.28f, 0.98f, -0.04f), 0.058f, jacket, 8);
+                b.Sphere(new Vector3(s * 0.285f, 0.93f, -0.05f), new Vector3(0.055f), 4, 8, Mat.Skin);
+            }
+
+            b.Capsule(new Vector3(0, 0.98f, 0), new Vector3(0, 1.36f, 0), 0.19f, jacket, 12);
+            b.BoxOn(0, 1.0f, 0f, 0.4f, 0.42f, 0.3f, rng.Next() < 0.5f ? Mat.OliveSteel : Mat.SandSteel, 0.06f);
+            b.BoxOn(0, 0.95f, 0.2f, 0.3f, 0.42f, 0.16f, Mat.Tarp, 0.05f);
+            b.Capsule(new Vector3(0, 1.48f, 0), new Vector3(0, 1.54f, 0), 0.05f, Mat.Skin, 8);
+            b.Sphere(new Vector3(0, 1.64f, 0), new Vector3(0.1f, 0.115f, 0.105f), 5, 10, Mat.Skin);
+            float hat = rng.Next();
+            if (hat < 0.45f)
+            {
+                b.Sphere(new Vector3(0, 1.67f, 0), new Vector3(0.125f, 0.11f, 0.13f), 3, 10, Mat.OliveSteel, 0f, 0.5f);
+            }
+            else if (hat < 0.75f)
+            {
+                b.Sphere(new Vector3(0, 1.68f, 0), new Vector3(0.11f, 0.09f, 0.115f), 3, 10, Mat.DarkSteel, 0f, 0.5f);
             }
 
             return b.Mesh;
@@ -189,19 +231,45 @@ namespace Deadswitch.Art.Models
 
         private static readonly Dictionary<char, string[]> Font = new Dictionary<char, string[]>
         {
-            ['S'] = new[] { ".####", "#....", "#....", ".###.", "....#", "....#", "####." },
-            ['-'] = new[] { ".....", ".....", ".....", "#####", ".....", ".....", "....." },
-            ['1'] = new[] { "..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###." },
-            ['7'] = new[] { "#####", "....#", "...#.", "..#..", ".#...", ".#...", ".#..." },
-            ['0'] = new[] { ".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", ".###." },
+            ['A'] = new[] { ".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#" },
+            ['B'] = new[] { "####.", "#...#", "#...#", "####.", "#...#", "#...#", "####." },
+            ['C'] = new[] { ".####", "#....", "#....", "#....", "#....", "#....", ".####" },
             ['D'] = new[] { "####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####." },
             ['E'] = new[] { "#####", "#....", "#....", "####.", "#....", "#....", "#####" },
-            ['A'] = new[] { ".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#" },
-            ['W'] = new[] { "#...#", "#...#", "#...#", "#.#.#", "#.#.#", "##.##", "#...#" },
-            ['T'] = new[] { "#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.." },
-            ['C'] = new[] { ".####", "#....", "#....", "#....", "#....", "#....", ".####" },
+            ['F'] = new[] { "#####", "#....", "#....", "####.", "#....", "#....", "#...." },
+            ['G'] = new[] { ".####", "#....", "#....", "#.###", "#...#", "#...#", ".###." },
             ['H'] = new[] { "#...#", "#...#", "#...#", "#####", "#...#", "#...#", "#...#" },
+            ['I'] = new[] { ".###.", "..#..", "..#..", "..#..", "..#..", "..#..", ".###." },
+            ['J'] = new[] { "..###", "...#.", "...#.", "...#.", "#..#.", "#..#.", ".##.." },
+            ['K'] = new[] { "#...#", "#..#.", "#.#..", "##...", "#.#..", "#..#.", "#...#" },
+            ['L'] = new[] { "#....", "#....", "#....", "#....", "#....", "#....", "#####" },
+            ['M'] = new[] { "#...#", "##.##", "#.#.#", "#.#.#", "#...#", "#...#", "#...#" },
+            ['N'] = new[] { "#...#", "##..#", "#.#.#", "#..##", "#...#", "#...#", "#...#" },
+            ['O'] = new[] { ".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###." },
+            ['P'] = new[] { "####.", "#...#", "#...#", "####.", "#....", "#....", "#...." },
+            ['Q'] = new[] { ".###.", "#...#", "#...#", "#...#", "#.#.#", "#..#.", ".##.#" },
+            ['R'] = new[] { "####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#" },
+            ['S'] = new[] { ".####", "#....", "#....", ".###.", "....#", "....#", "####." },
+            ['T'] = new[] { "#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.." },
+            ['U'] = new[] { "#...#", "#...#", "#...#", "#...#", "#...#", "#...#", ".###." },
+            ['V'] = new[] { "#...#", "#...#", "#...#", "#...#", "#...#", ".#.#.", "..#.." },
+            ['W'] = new[] { "#...#", "#...#", "#...#", "#.#.#", "#.#.#", "##.##", "#...#" },
+            ['X'] = new[] { "#...#", "#...#", ".#.#.", "..#..", ".#.#.", "#...#", "#...#" },
+            ['Y'] = new[] { "#...#", "#...#", ".#.#.", "..#..", "..#..", "..#..", "..#.." },
+            ['Z'] = new[] { "#####", "....#", "...#.", "..#..", ".#...", "#....", "#####" },
+            ['0'] = new[] { ".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", ".###." },
+            ['1'] = new[] { "..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###." },
+            ['2'] = new[] { ".###.", "#...#", "....#", "...#.", "..#..", ".#...", "#####" },
+            ['3'] = new[] { "####.", "....#", "....#", ".###.", "....#", "....#", "####." },
+            ['4'] = new[] { "...#.", "..##.", ".#.#.", "#..#.", "#####", "...#.", "...#." },
+            ['5'] = new[] { "#####", "#....", "####.", "....#", "....#", "#...#", ".###." },
+            ['6'] = new[] { ".###.", "#....", "#....", "####.", "#...#", "#...#", ".###." },
+            ['7'] = new[] { "#####", "....#", "...#.", "..#..", ".#...", ".#...", ".#..." },
+            ['8'] = new[] { ".###.", "#...#", "#...#", ".###.", "#...#", "#...#", ".###." },
+            ['9'] = new[] { ".###.", "#...#", "#...#", ".####", "....#", "....#", ".###." },
+            ['-'] = new[] { ".....", ".....", ".....", "#####", ".....", ".....", "....." },
             ['+'] = new[] { ".....", "..#..", "..#..", "#####", "..#..", "..#..", "....." },
+            ['/'] = new[] { "....#", "...#.", "...#.", "..#..", ".#...", ".#...", "#...." },
         };
     }
 }

@@ -57,7 +57,12 @@ world.add(sun);
 const salvage = await (await fetch('/salvage.txt')).text();
 const shim = '#define float2 vec2\n#define float3 vec3\n#define float4 vec4\n#define lerp mix\n#define frac fract\n#define saturate(x) clamp(x, 0.0, 1.0)\n';
 const lin = c => new THREE.Color().setRGB(...c, THREE.SRGBColorSpace);
+const coneMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, vertexColors: true,
+  uniforms: { col: { value: new THREE.Color(1.0, 0.72, 0.42) }, k: { value: look.coneIntensity ?? 0.07 } },
+  vertexShader: 'varying float a; varying vec3 vn; varying vec3 vv; void main(){ a = color.r; vec4 mv = modelViewMatrix * vec4(position,1.); vv = normalize(-mv.xyz); vn = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }',
+  fragmentShader: 'uniform vec3 col; uniform float k; varying float a; varying vec3 vn; varying vec3 vv; void main(){ float rim = pow(clamp(abs(dot(normalize(vn), normalize(vv))), 0.0, 1.0), 1.5); gl_FragColor = vec4(col * k * a * a * a * rim * rim, 1.); }' });
 const mats = scene.palette.map((p, i) => (powered) => {
+  if (p.name === 'LightCone') return powered ? coneMat : new THREE.MeshBasicMaterial({ visible: false });
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 - p.smoothness, metalness: p.metallic, flatShading: false });
   m.color.setRGB(...p.color, THREE.SRGBColorSpace);
   const w = p.wear;
@@ -74,7 +79,7 @@ const mats = scene.palette.map((p, i) => (powered) => {
           .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = dsM;')
           .replace('#include <normal_fragment_maps>', `{ vec3 dpdx = dFdx(-vViewPosition), dpdy = dFdy(-vViewPosition); float dhx = dFdx(dsH), dhy = dFdy(dsH);
               vec3 r1 = cross(dpdy, normal), r2 = cross(normal, dpdx); float det = dot(dpdx, r1);
-              vec3 g = sign(det) * (dhx * r1 + dhy * r2) * 0.06; normal = normalize(abs(det) * normal - g); }`);
+              vec3 g = sign(det) * (dhx * r1 + dhy * r2) * 0.06; vec3 nn = abs(det) * normal - g; if (abs(det) > 1e-12 && dot(nn, nn) > 1e-20) normal = normalize(nn); }`);
     };
     m.customProgramCacheKey = () => 'salvage' + i;
   } else {
@@ -104,6 +109,7 @@ function mesh(md, powered) {
   const materials = scene.palette.map((_, i) => mat(i, powered));
   const m = new THREE.Mesh(g, materials);
   m.castShadow = true; m.receiveShadow = true;
+  // light cones must not cast shadows: split happens per group, so mark the whole mesh and rely on cone material depthWrite=false
   return m;
 }
 
@@ -115,6 +121,7 @@ for (const o of scene.objects) {
   root.rotation.y = o.yaw * Math.PI / 180;
   const md = scene.meshes[o.mesh];
   if (md.positions.length) root.add(mesh(md, o.powered));
+  if (o.cones >= 0 && o.powered) { const c = new THREE.Mesh(geometry(scene.meshes[o.cones]), scene.palette.map((_, i) => mat(i, true))); c.castShadow = false; c.receiveShadow = false; c.renderOrder = 10; root.add(c); }
   for (const p of o.parts) {
     const pivot = new THREE.Group(); pivot.position.set(...p.pivot);
     const pm = mesh(scene.meshes[p.mesh], o.powered);

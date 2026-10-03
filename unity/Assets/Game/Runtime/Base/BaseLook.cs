@@ -36,6 +36,8 @@ namespace Deadswitch.Game.Base
         public float vignette = 0.45f;
         public float chromatic = 0.012f;
         public float envIntensity = 0.5f;
+        public float coneIntensity = 0.07f;
+        public float aoIntensity = 1f;
 
         // Unity-only conversion factors (three.js uses physical light units). Tune on device.
         public float unitySunScale = 0.6f;

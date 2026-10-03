@@ -22,6 +22,9 @@ namespace Deadswitch.Art.Geometry
 
         public MeshData Mesh { get; } = new MeshData();
 
+        /// <summary>Volumetric light cones (additive, no shadows): kept apart from <see cref="Mesh"/>.</summary>
+        public MeshData Cones { get; } = new MeshData();
+
         public ArtRandom Random => _rng;
 
         /// <summary>Height (world, meters) over which ground contact darkening fades out.</summary>
@@ -313,6 +316,105 @@ namespace Deadswitch.Art.Geometry
                     Mesh.AddTriangle(mat, first, first + i, first + i + 1);
                 }
             }
+        }
+
+        /// <summary>A face with explicit local normals per corner (smooth curved surfaces).</summary>
+        public void FaceSmooth(Vector3 inside, Mat mat, Vector3[] pts, Vector3[] normals)
+        {
+            SmoothNormals = normals;
+            Face(inside, mat, 1f, pts);
+            SmoothNormals = null;
+        }
+
+        /// <summary>Smooth UV sphere (ellipsoid with <paramref name="radii"/>).</summary>
+        public void Sphere(Vector3 center, Vector3 radii, int lat, int lon, Mat mat, float latFrom = 0f, float latTo = 1f)
+        {
+            for (int i = 0; i < lat; i++)
+            {
+                float t0 = latFrom + ((latTo - latFrom) * i / lat);
+                float t1 = latFrom + ((latTo - latFrom) * (i + 1) / lat);
+                for (int j = 0; j < lon; j++)
+                {
+                    float a0 = (float)(Math.PI * 2 * j / lon);
+                    float a1 = (float)(Math.PI * 2 * (j + 1) / lon);
+                    Vector3 d00 = Dir(t0, a0), d01 = Dir(t0, a1), d11 = Dir(t1, a1), d10 = Dir(t1, a0);
+                    FaceSmooth(center, mat, new[] { center + (d00 * radii), center + (d01 * radii), center + (d11 * radii), center + (d10 * radii) },
+                        new[] { Vector3.Normalize(d00 / radii), Vector3.Normalize(d01 / radii), Vector3.Normalize(d11 / radii), Vector3.Normalize(d10 / radii) });
+                }
+            }
+
+            static Vector3 Dir(float t, float a)
+            {
+                double phi = Math.PI * t;
+                return new Vector3((float)(Math.Sin(phi) * Math.Cos(a)), (float)Math.Cos(phi), (float)(Math.Sin(phi) * Math.Sin(a)));
+            }
+        }
+
+        /// <summary>Capsule between two points (limbs, pipes with round ends).</summary>
+        public void Capsule(Vector3 a, Vector3 b, float radius, Mat mat, int segments = 10)
+        {
+            Vector3 d = b - a;
+            float len = d.Length();
+            Vector3 dir = d / Math.Max(0.0001f, len);
+            Vector3 up = Math.Abs(Vector3.Dot(dir, Vector3.UnitY)) > 0.95f ? Vector3.UnitX : Vector3.UnitY;
+            Vector3 x = Vector3.Normalize(Vector3.Cross(up, dir));
+            Vector3 y = Vector3.Cross(dir, x);
+            var basis = new Matrix4x4(x.X, x.Y, x.Z, 0, dir.X, dir.Y, dir.Z, 0, y.X, y.Y, y.Z, 0, a.X, a.Y, a.Z, 1);
+            Push(basis);
+            Frustum(Vector3.Zero, radius, radius, len, segments, mat, 0f, false);
+            Sphere(new Vector3(0, len, 0), new Vector3(radius), 3, segments, mat, 0f, 0.5f);
+            Sphere(Vector3.Zero, new Vector3(radius), 3, segments, mat, 0.5f, 1f);
+            Pop();
+        }
+
+        /// <summary>
+        /// Corrugated sheet in the local XY plane (ribs vertical), facing -Z, spanning x0..x1 and y0..y1 at depth z.
+        /// Trapezoid profile with real depth so the ribs read from the isometric camera.
+        /// </summary>
+        public void Corrugated(float x0, float x1, float y0, float y1, float z, Mat mat, float pitch = 0.28f, float depth = 0.05f)
+        {
+            int ribs = Math.Max(1, (int)Math.Round((x1 - x0) / pitch));
+            float w = (x1 - x0) / ribs;
+            var inside = new Vector3((x0 + x1) * 0.5f, (y0 + y1) * 0.5f, z + 1f);
+            for (int i = 0; i < ribs; i++)
+            {
+                float a = x0 + (i * w);
+                float[] xs = { a, a + (w * 0.3f), a + (w * 0.42f), a + (w * 0.88f), a + w };
+                float[] zs = { z, z, z - depth, z - depth, z };
+                for (int k = 0; k < 4; k++)
+                {
+                    Face(inside, mat, k == 1 || k == 3 ? 1.1f : 1f,
+                        new Vector3(xs[k], y0, zs[k]), new Vector3(xs[k + 1], y0, zs[k + 1]), new Vector3(xs[k + 1], y1, zs[k + 1]), new Vector3(xs[k], y1, zs[k]));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Soft volumetric light cone under a lamp (additive LightCone material). Vertex mask R fades from the
+        /// lamp toward the ground.
+        /// </summary>
+        public void LightCone(Vector3 apex, float height, float radius, int segments = 16)
+        {
+            for (int i = 0; i < segments; i++)
+            {
+                float a0 = (float)(Math.PI * 2 * i / segments);
+                float a1 = (float)(Math.PI * 2 * (i + 1) / segments);
+                Vector3 p0 = Vector3.Transform(apex + new Vector3((float)Math.Cos(a0) * 0.12f, 0, (float)Math.Sin(a0) * 0.12f), _m);
+                Vector3 p1 = Vector3.Transform(apex + new Vector3((float)Math.Cos(a1) * 0.12f, 0, (float)Math.Sin(a1) * 0.12f), _m);
+                Vector3 q0 = Vector3.Transform(apex + new Vector3((float)Math.Cos(a0) * radius, -height, (float)Math.Sin(a0) * radius), _m);
+                Vector3 q1 = Vector3.Transform(apex + new Vector3((float)Math.Cos(a1) * radius, -height, (float)Math.Sin(a1) * radius), _m);
+                Vector3 n = Vector3.Normalize(new Vector3((float)Math.Cos(a0), 0.2f, (float)Math.Sin(a0)));
+                int f = Cones.VertexCount;
+                Cones.AddVertex(p0, n, new Vector4(1f, 0, 0, 1));
+                Cones.AddVertex(p1, n, new Vector4(1f, 0, 0, 1));
+                Cones.AddVertex(q1, n, new Vector4(0f, 0, 0, 1));
+                Cones.AddVertex(q0, n, new Vector4(0f, 0, 0, 1));
+                Cones.AddTriangle(Mat.LightCone, f, f + 1, f + 2);
+                Cones.AddTriangle(Mat.LightCone, f, f + 2, f + 3);
+                Cones.AddTriangle(Mat.LightCone, f, f + 2, f + 1);
+                Cones.AddTriangle(Mat.LightCone, f, f + 3, f + 2);
+            }
+
         }
 
         /// <summary>A flat face with an explicit color multiplier per corner (terrain), no AO or jitter.</summary>

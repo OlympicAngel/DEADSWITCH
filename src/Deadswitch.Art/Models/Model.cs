@@ -82,6 +82,9 @@ namespace Deadswitch.Art.Models
     {
         public MeshData Static { get; set; } = new MeshData();
 
+        /// <summary>Additive light cones (render without shadows).</summary>
+        public MeshData Cones { get; set; } = new MeshData();
+
         public List<AnimPart> Parts { get; } = new List<AnimPart>();
 
         public List<LightSpec> Lights { get; } = new List<LightSpec>();

@@ -124,6 +124,7 @@ namespace Deadswitch.Art.Geometry
             new MaterialDef("Skin", 0x9C7860, 0f, 0.3f, Wear.None),
             new MaterialDef("Interior", 0x3A2E1E, 0f, 0.4f, Wear.None, 0xFFB86A, 1.6f, true),
             new MaterialDef("Rock", 0x5A564E, 0f, 0.12f, new Wear(0f, 0.05f, 0.45f, 0.3f, 0.9f, 1.1f, 0x46433D)),
+            new MaterialDef("LightCone", 0x000000, 0f, 0f, Wear.None, 0xFFC27A, 0.22f, true),
         };
 
         public static MaterialDef Get(Mat m)

@@ -50,21 +50,21 @@ namespace Deadswitch.Art.World
     /// </summary>
     public static class HubScene
     {
-        public const float FenceZ = -12.8f;
-        public const float HalfWidth = 13.5f;
-        public const float MinX = -36f;
-        public const float MaxX = 36f;
-        public const float MinZ = -38f;
-        public const float MaxZ = 40f;
+        public const float FenceZ = -13.6f;
+        public const float HalfWidth = 12.0f;
+        public const float MinX = -40f;
+        public const float MaxX = 40f;
+        public const float MinZ = -42f;
+        public const float MaxZ = 44f;
 
         private static readonly Vector3[] Plots =
         {
-            new Vector3(-8.4f, 0, 4.6f),
-            new Vector3(8.4f, 0, 4.6f),
-            new Vector3(-8.8f, 0, -3.2f),
-            new Vector3(8.8f, 0, -3.2f),
-            new Vector3(-6.2f, 0, -9.4f),
-            new Vector3(6.2f, 0, -9.4f),
+            new Vector3(-7.6f, 0, 7.0f),
+            new Vector3(7.6f, 0, 7.0f),
+            new Vector3(-7.9f, 0, -0.8f),
+            new Vector3(7.9f, 0, -0.8f),
+            new Vector3(-7.5f, 0, -8.6f),
+            new Vector3(7.5f, 0, -8.6f),
         };
 
         /// <summary>Plot center for a slot. Beyond the six designed plots, extra slots continue along the sides.</summary>
@@ -76,14 +76,14 @@ namespace Deadswitch.Art.World
             }
 
             int k = slot - Plots.Length;
-            return new Vector3((k % 2 == 0 ? -1 : 1) * 4.2f, 0, 3.2f - ((k / 2) * 6f));
+            return new Vector3((k % 2 == 0 ? -1 : 1) * 4.6f, 0, 3.2f - ((k / 2) * 7f));
         }
 
         /// <summary>Yaw (degrees) that turns a facility's front (-Z) toward the camera side of the courtyard.</summary>
         public static float SlotYaw(int slot, int slotCount)
         {
             Vector3 p = SlotPosition(slot, slotCount);
-            Vector3 f = new Vector3(0, 0, -26f) - p;
+            Vector3 f = new Vector3(0, 0, -34f) - p;
             return (float)(Math.Atan2(-f.X, -f.Z) * 180.0 / Math.PI);
         }
 
@@ -92,13 +92,13 @@ namespace Deadswitch.Art.World
         {
             var pts = new List<Vector3>
             {
-                new Vector3(0, 0, 6.6f), new Vector3(-1.6f, 0, 3.2f), new Vector3(1.8f, 0, 1.0f), new Vector3(-0.6f, 0, -2.5f),
-                new Vector3(0.8f, 0, -6.8f), new Vector3(0, 0, -11.4f), new Vector3(-3.6f, 0, 0.6f), new Vector3(3.8f, 0, 3.6f),
+                new Vector3(0, 0, 9.4f), new Vector3(-1.6f, 0, 5.0f), new Vector3(1.8f, 0, 1.6f), new Vector3(-0.8f, 0, -2.8f),
+                new Vector3(1.0f, 0, -7.4f), new Vector3(0, 0, -12.4f), new Vector3(-2.4f, 0, -10.0f), new Vector3(2.6f, 0, 6.2f),
             };
             for (int i = 0; i < Math.Min(slotCount, Plots.Length); i++)
             {
                 Vector3 p = SlotPosition(i, slotCount);
-                pts.Add(p + (Vector3.Normalize(new Vector3(-p.X, 0, -p.Z * 0.2f)) * 3.0f));
+                pts.Add(p + (Vector3.Normalize(new Vector3(-p.X, 0, -p.Z * 0.2f)) * 3.9f));
             }
 
             return pts.ToArray();
@@ -169,9 +169,9 @@ namespace Deadswitch.Art.World
             // Puddles: dark, glossy, catching the lamps.
             for (int i = 0; i < 16; i++)
             {
-                float x = rng.Range(-10f, 10f);
+                float x = rng.Range(-3.4f, 3.4f);
                 float z = rng.Range(FenceZ + 1f, Core.FacadeZ - 3f);
-                if (NearPlot(new Vector3(x, 0, z), slotCount, 2.8f))
+                if (NearPlot(new Vector3(x, 0, z), slotCount, 3.6f))
                 {
                     continue;
                 }
@@ -210,10 +210,10 @@ namespace Deadswitch.Art.World
                     b.Strut(new Vector3(x, 0.15f, FenceZ), new Vector3(x + 0.35f, 2.0f, FenceZ), 0.015f, Mat.DarkSteel);
                 }
 
-                Shapes.SandbagWall(b, new Vector3(side * 8.2f, 0, FenceZ + 0.6f), new Vector3(side * 12.8f, 0, FenceZ + 0.6f), 2);
-                b.BoxOn(side * 2.5f, 0, FenceZ, 0.45f, 3.2f, 0.45f, Mat.Concrete, 0.08f);
-                b.Strut(new Vector3(side * 2.5f, 3.2f, FenceZ), new Vector3(side * 2.5f, 3.2f, FenceZ - 0.6f), 0.07f, Mat.DarkSteel);
-                Shapes.Lamp(b, m, new Vector3(side * 2.5f, 3.1f, FenceZ - 0.65f), Mat.LampAmber, Model.Amber, 1.4f, 7f, LightRole.Ambient, 0.18f);
+                Shapes.SandbagWall(b, new Vector3(side * 9.2f, 0, FenceZ + 0.6f), new Vector3(side * 11.6f, 0, FenceZ + 0.6f), 2);
+                b.BoxOn(side * 2.5f, 0, FenceZ, 0.5f, 3.2f, 0.5f, Mat.Concrete, 0.06f);
+                b.Strut(new Vector3(side * 2.5f, 3.3f, FenceZ), new Vector3(side * 2.5f, 3.3f, FenceZ - 0.7f), 0.07f, Mat.DarkSteel);
+                Props.Lamp(b, m, new Vector3(side * 2.5f, 3.2f, FenceZ - 0.75f), true, 1.6f);
             }
 
             GateLeaf(b, new Vector3(-2.3f, 0, FenceZ), 0f);
@@ -237,32 +237,32 @@ namespace Deadswitch.Art.World
             // Side walls: sandbags and stacked spare containers in the back corners.
             foreach (int side in new[] { -1, 1 })
             {
-                Shapes.SandbagWall(b, new Vector3(side * HalfWidth, 0, FenceZ + 1f), new Vector3(side * HalfWidth, 0, -6.5f), 3);
-                b.Push(new Vector3(side * 12.6f, 0, 7.6f), side * 90f);
-                Props.Container(b, m, Vector3.Zero, 4.4f, 2.4f, 2.3f, side < 0 ? Mat.TarpBlue : Mat.Rust, false, seed + 40);
-                Props.Container(b, m, new Vector3(0.3f, 2.4f, 0.1f), 4.4f, 2.4f, 2.3f, Mat.OliveSteel, false, seed + 41);
+                Shapes.SandbagWall(b, new Vector3(side * HalfWidth, 0, FenceZ + 1f), new Vector3(side * HalfWidth, 0, -7.5f), 3);
+                b.Push(new Vector3(side * 13.6f, 0, 2.0f), side * 90f);
+                Props.Container(b, m, Vector3.Zero, 6.0f, 2.6f, 2.44f, side < 0 ? Mat.TarpBlue : Mat.Rust, false, seed + 40);
+                Props.Container(b, m, new Vector3(0.4f, 2.6f, 0.1f), 6.0f, 2.6f, 2.44f, Mat.OliveSteel, false, seed + 41);
                 b.Pop();
             }
 
             // Courtyard: lamp posts, a burn barrel, clutter, cable runs to the plots.
-            foreach (Vector3 lp in new[] { new Vector3(-3.6f, 0, 4.2f), new Vector3(3.8f, 0, -1.8f), new Vector3(-4.0f, 0, -6.0f) })
+            foreach (Vector3 lp in new[] { new Vector3(-3.6f, 0, 3.4f), new Vector3(3.7f, 0, -4.6f), new Vector3(-3.8f, 0, -11.6f) })
             {
-                b.Strut(lp, lp + new Vector3(0, 3.6f, 0), 0.11f, Mat.DarkSteel);
-                b.Strut(lp + new Vector3(0, 3.5f, 0), lp + new Vector3(0.7f, 3.6f, 0), 0.07f, Mat.DarkSteel);
-                Shapes.Lamp(b, m, lp + new Vector3(0.75f, 3.45f, 0), Mat.LampAmber, Model.Amber, 2.4f, 8f, LightRole.Ambient, 0.2f);
+                b.Frustum(lp, 0.09f, 0.07f, 4.2f, 8, Mat.DarkSteel, 0.01f);
+                b.Strut(lp + new Vector3(0, 4.1f, 0), lp + new Vector3(0.9f, 4.2f, 0), 0.07f, Mat.DarkSteel);
+                Props.Lamp(b, m, lp + new Vector3(0.95f, 4.05f, 0), true, 2.2f);
             }
 
-            Vector3 barrel = new Vector3(1.6f, 0, -4.2f);
+            Vector3 barrel = new Vector3(2.2f, 0, 2.6f);
             b.Frustum(barrel, 0.32f, 0.3f, 0.9f, 10, Mat.Rust, 0.04f);
             b.Box(barrel + new Vector3(0, 0.95f, 0), new Vector3(0.4f, 0.12f, 0.4f), Mat.Interior, 0.05f);
             m.Lights.Add(new LightSpec(barrel + new Vector3(0, 1.4f, 0), new Vector3(1f, 0.55f, 0.2f), 2.4f, 6f, LightRole.Ambient));
 
             for (int i = 0; i < 24; i++)
             {
-                float x = rng.Range(-12f, 12f);
+                float x = rng.Range(-11f, 11f);
                 float z = rng.Range(FenceZ + 1.2f, Core.FacadeZ - 2.6f);
                 var p = new Vector3(x, Height(x, z, seed), z);
-                if (NearPlot(p, slotCount, 3.0f) || Math.Abs(x) < 2.2f)
+                if (NearPlot(p, slotCount, 3.6f) || Math.Abs(x) < 3.2f)
                 {
                     continue;
                 }
@@ -286,7 +286,7 @@ namespace Deadswitch.Art.World
             }
 
             // Work clutter along the walls: pallets, sandbag piles, tarped stacks, a work light.
-            foreach (Vector3 c in new[] { new Vector3(-12f, 0, 1.5f), new Vector3(12.2f, 0, 1.0f), new Vector3(-11.5f, 0, -7f), new Vector3(11.8f, 0, -7.5f), new Vector3(-4.5f, 0, 7.4f), new Vector3(4.8f, 0, 7.2f) })
+            foreach (Vector3 c in new[] { new Vector3(-3.2f, 0, -5.6f), new Vector3(3.4f, 0, 4.6f), new Vector3(-5.4f, 0, 10.4f), new Vector3(5.6f, 0, 10.2f), new Vector3(-3.4f, 0, -12.6f), new Vector3(3.3f, 0, -12.2f) })
             {
                 b.Push(c, rng.Range(-20f, 20f));
                 b.BoxOn(0, 0, 0, 1.2f, 0.14f, 1.0f, Mat.Wood, 0.02f);
@@ -306,8 +306,8 @@ namespace Deadswitch.Art.World
             for (int s = 0; s < Math.Min(slotCount, Plots.Length); s++)
             {
                 Vector3 p = SlotPosition(s, slotCount);
-                Vector3 from = new Vector3(Math.Sign(p.X) * 1.6f, 0.06f, Core.FacadeZ - 2.4f);
-                b.Strut(from, new Vector3(p.X - (Math.Sign(p.X) * 2.4f), 0.04f, p.Z), 0.045f, Mat.Rubber);
+                Vector3 from = new Vector3(Math.Sign(p.X) * 1.4f, 0.06f, Core.FacadeZ - 2.6f);
+                b.Strut(from, new Vector3(p.X - (Math.Sign(p.X) * 3.3f), 0.04f, p.Z), 0.045f, Mat.Rubber);
             }
 
             // Hill: boulders at the foot of the slopes and pines climbing behind the bunker.
@@ -329,7 +329,7 @@ namespace Deadswitch.Art.World
             {
                 float x = rng.Range(MinX + 1f, MaxX - 1f);
                 float z = rng.Range(Core.FacadeZ + 6f, MaxZ - 1f);
-                if (Math.Abs(x) < 12f && z < Core.FacadeZ + 12f)
+                if (Math.Abs(x) < 15f && z < Core.FacadeZ + 12f)
                 {
                     continue;
                 }
@@ -348,16 +348,17 @@ namespace Deadswitch.Art.World
             for (int i = 0; i < 4; i++)
             {
                 float z = FenceZ - 6f - (i * 7f);
-                var pole = new Vector3(-5.5f, Height(-5.5f, z, seed), z);
+                var pole = new Vector3(-6.5f, Height(-6.5f, z, seed), z);
                 b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(rng.Range(-7f, 7f))) * Matrix4x4.CreateTranslation(pole));
                 b.Frustum(Vector3.Zero, 0.16f, 0.12f, 6f, 6, Mat.Wood, 0.02f);
                 b.Strut(new Vector3(-0.9f, 5.5f, 0), new Vector3(0.9f, 5.5f, 0), 0.1f, Mat.Wood);
                 b.Pop();
             }
 
-            Truck(b, new Vector3(7.5f, Height(7.5f, -21f, seed), -21f), 64f);
+            Truck(b, new Vector3(8.5f, Height(8.5f, -24f, seed), -24f), 64f);
 
             m.Static = b.Mesh;
+            m.Cones = b.Cones;
             return m;
         }
 
@@ -365,7 +366,7 @@ namespace Deadswitch.Art.World
         public static float Track(float x, float z)
         {
             float main = (float)Math.Exp(-Math.Pow((Math.Abs(x) - 0.9f) / 0.45f, 2)) * (z < Core.FacadeZ - 2f ? 1f : 0f);
-            float loop = (float)Math.Exp(-Math.Pow((new Vector2(x * 0.75f, z * 1.1f).Length() - 6.2f) / 0.6f, 2)) * 0.6f;
+            float loop = 0f;
             return Math.Min(1f, main + loop);
         }
 
@@ -444,7 +445,7 @@ namespace Deadswitch.Art.World
                 }
             }
 
-            return Math.Abs(p.X) < 5.5f && p.Z > Core.FacadeZ - 4.5f;
+            return Math.Abs(p.X) < 6f && p.Z > Core.FacadeZ - 4.5f;
         }
 
         private static float Smooth(float e0, float e1, float x)

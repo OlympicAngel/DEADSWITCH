@@ -30,6 +30,13 @@ namespace Deadswitch.Cli
             {
                 int meshIndex = meshes.Count;
                 meshes.Add(model.Static);
+                int coneIndex = -1;
+                if (!model.Cones.IsEmpty)
+                {
+                    coneIndex = meshes.Count;
+                    meshes.Add(model.Cones);
+                }
+
                 var parts = new StringBuilder();
                 foreach (AnimPart p in model.Parts)
                 {
@@ -55,6 +62,7 @@ namespace Deadswitch.Cli
 
                 objects.Append(count++ > 0 ? ",\n" : string.Empty)
                     .Append("{\"name\":\"").Append(name).Append("\",\"mesh\":").Append(meshIndex)
+                    .Append(",\"cones\":").Append(coneIndex)
                     .Append(",\"position\":").Append(V(pos))
                     .Append(",\"yaw\":").Append(F(-yaw))
                     .Append(",\"powered\":").Append(powered ? "true" : "false")

@@ -32,11 +32,11 @@
   "fov": 30,
   "camElevation": 43,
   "camAzimuth": 0,
-  "camDistance": 68,
+  "camDistance": 70,
   "camTarget": [
     0,
-    1.2,
-    -0.5
+    1.0,
+    -1.0
   ],
   "bloomStrength": 0.45,
   "bloomRadius": 0.5,
@@ -47,5 +47,6 @@
   "vignette": 0.45,
   "chromatic": 0.012,
   "envIntensity": 0.9,
-  "aoIntensity": 1.0
+  "aoIntensity": 1.0,
+  "coneIntensity": 0.12
 }

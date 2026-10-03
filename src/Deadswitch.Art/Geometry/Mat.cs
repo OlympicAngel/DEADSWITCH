@@ -30,5 +30,6 @@ namespace Deadswitch.Art.Geometry
         Skin = 24,
         Interior = 25,
         Rock = 26,
+        LightCone = 27,
     }
 }

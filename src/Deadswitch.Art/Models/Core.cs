@@ -10,7 +10,7 @@ namespace Deadswitch.Art.Models
     /// </summary>
     public static class Core
     {
-        public const float FacadeZ = 9.5f;
+        public const float FacadeZ = 12.5f;
 
         /// <summary>Where the core's light and the "CORE" label sit (in front of the door).</summary>
         public static readonly Vector3 DoorPoint = new Vector3(0, 0, FacadeZ - 0.6f);
@@ -23,11 +23,11 @@ namespace Deadswitch.Art.Models
             const float z = FacadeZ;
 
             // main mass, sunk into the hill
-            b.BoxOn(0, -0.5f, z + 6f, 30f, 9f, 12f, Mat.ConcreteDark, 0.3f);
-            b.BoxOn(0, -0.2f, z + 0.35f, 30.5f, 1.0f, 0.9f, Mat.Concrete, 0.12f);
+            b.BoxOn(0, -0.5f, z + 6f, 38f, 9.5f, 12f, Mat.ConcreteDark, 0.25f);
+            b.BoxOn(0, -0.2f, z + 0.35f, 38.5f, 1.0f, 0.9f, Mat.Concrete, 0.1f);
 
             // facade bays (pilasters) and horizontal bands
-            for (int i = -3; i <= 3; i++)
+            for (int i = -4; i <= 4; i++)
             {
                 if (i == 0)
                 {
@@ -37,10 +37,10 @@ namespace Deadswitch.Art.Models
                 b.BoxOn(i * 4.3f, 0, z - 0.25f, 0.9f, 7.6f, 0.6f, Mat.Concrete, 0.12f);
             }
 
-            b.BoxOn(0, 6.6f, z - 0.2f, 30f, 0.7f, 0.5f, Mat.Concrete, 0.1f);
+            b.BoxOn(0, 6.6f, z - 0.2f, 38f, 0.7f, 0.5f, Mat.Concrete, 0.08f);
             for (int i = 0; i < 22; i++)
             {
-                float gx = rng.Range(-14.5f, 14.5f);
+                float gx = rng.Range(-18.5f, 18.5f);
                 if (Math.Abs(gx) < 4f)
                 {
                     continue;
@@ -75,40 +75,79 @@ namespace Deadswitch.Art.Models
             // wall lamps by the door
             foreach (int sx in new[] { -1, 1 })
             {
-                b.Strut(new Vector3(sx * 3.1f, 3.6f, z - 1.8f), new Vector3(sx * 3.1f, 3.6f, z - 2.4f), 0.08f, Mat.DarkSteel);
-                Shapes.Lamp(b, m, new Vector3(sx * 3.1f, 3.5f, z - 2.45f), Mat.LampAmber, Model.Amber, 2.6f, 7f, LightRole.Ambient, 0.2f);
+                b.Strut(new Vector3(sx * 3.1f, 3.7f, z - 1.8f), new Vector3(sx * 3.1f, 3.7f, z - 2.5f), 0.08f, Mat.DarkSteel);
+                Props.Lamp(b, m, new Vector3(sx * 3.1f, 3.6f, z - 2.55f), true, 2.2f);
             }
 
             // stencil designation, faded
-            Props.Stencil(b, "S-17", new Vector3(-12.6f, 3.4f, z - 0.03f), 0.34f, Mat.PaintWhite);
-            Shapes.Hazard(b, 8.8f, 12.6f, 0.3f, 0.8f, z - 0.03f, 10);
+            Props.Stencil(b, "S-17", new Vector3(-15.4f, 3.4f, z - 0.03f), 0.36f, Mat.PaintWhite);
+            Shapes.Hazard(b, 10.8f, 14.6f, 0.3f, 0.8f, z - 0.03f, 10);
 
-            // collapsed roof slab overhang with broken edge and rebar
-            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(3.5f)) * Matrix4x4.CreateTranslation(new Vector3(0, 8.3f, z + 1.0f)));
-            b.Box(new Vector3(-3f, 0, 0), new Vector3(22f, 1.1f, 5.0f), Mat.Concrete, 0.2f);
-            for (int i = 0; i < 9; i++)
+            // facade panel joints (formwork seams) and a stepped, broken roofline
+            for (int i = 0; i < 18; i++)
             {
-                float x = -13.5f + (i * 2.4f) + rng.Range(-0.4f, 0.4f);
-                b.Box(new Vector3(x, rng.Range(-0.2f, 0.1f), -2.6f - rng.Range(0f, 0.6f)), new Vector3(rng.Range(1.0f, 2.2f), rng.Range(0.7f, 1.1f), rng.Range(0.6f, 1.4f)), Mat.Concrete, 0.12f);
-                b.Strut(new Vector3(x, 0, -2.4f), new Vector3(x + rng.Range(-0.3f, 0.3f), rng.Range(-0.6f, 0.4f), -3.6f - rng.Range(0f, 0.8f)), 0.05f, Mat.Rust);
+                float jx = -18.5f + (i * 2.2f);
+                if (Math.Abs(jx) > 3.8f)
+                {
+                    b.Box(new Vector3(jx, 3.3f, z - 0.02f), new Vector3(0.05f, 6.4f, 0.03f), Mat.ConcreteDark, 0f);
+                }
             }
 
-            b.Pop();
-            b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(-14f)) * Matrix4x4.CreateTranslation(new Vector3(11.5f, 7.0f, z + 1.6f)));
-            b.Box(Vector3.Zero, new Vector3(7f, 0.9f, 4.6f), Mat.Concrete, 0.18f);
-            b.Pop();
-            for (int i = 0; i < 9; i++)
+            b.Box(new Vector3(0, 3.3f, z - 0.02f), new Vector3(38f, 0.05f, 0.03f), Mat.ConcreteDark, 0f);
+            b.BoxOn(0, 8.0f, z + 0.9f, 38.6f, 0.9f, 2.2f, Mat.Concrete, 0.1f);
+            for (int i = 0; i < 12; i++)
             {
-                Props.Boulder(b, new Vector3(rng.Range(7f, 14f), rng.Range(0.3f, 1.2f), z - rng.Range(0.6f, 2.2f)), new Vector3(rng.Range(0.6f, 1.3f), rng.Range(0.4f, 0.8f), rng.Range(0.5f, 1.0f)), seed + (uint)i, Mat.Concrete);
+                float x = -18f + (i * 3.3f) + rng.Range(-0.5f, 0.5f);
+                float h = rng.Range(0.3f, 1.4f);
+                b.BoxOn(x, 8.9f, z + rng.Range(0.3f, 1.6f), rng.Range(1.6f, 3.0f), h, rng.Range(0.8f, 1.8f), Mat.Concrete, 0.1f);
+                if (rng.Next() < 0.6f)
+                {
+                    b.Strut(new Vector3(x, 8.9f + h, z + 0.6f), new Vector3(x + rng.Range(-0.4f, 0.4f), 9.6f + h, z + rng.Range(0f, 0.8f)), 0.04f, Mat.Rust);
+                    b.Strut(new Vector3(x + 0.3f, 8.9f + h, z + 0.6f), new Vector3(x + 0.3f + rng.Range(-0.4f, 0.4f), 9.4f + h, z + rng.Range(-0.4f, 0.4f)), 0.04f, Mat.Rust);
+                }
+            }
+
+            // collapsed corner: slab sheared down onto a rubble slope
+            b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(-22f)) * Matrix4x4.CreateRotationY(MeshBuilder.Deg(6f)) * Matrix4x4.CreateTranslation(new Vector3(15.5f, 5.6f, z + 0.9f)));
+            b.Box(Vector3.Zero, new Vector3(8f, 0.9f, 4.4f), Mat.Concrete, 0.12f);
+            b.Pop();
+            for (int i = 0; i < 16; i++)
+            {
+                Props.Boulder(b, new Vector3(rng.Range(11f, 19f), rng.Range(0.2f, 2.6f) * (1f - (i / 20f)), z - rng.Range(0.2f, 2.8f)), new Vector3(rng.Range(0.5f, 1.3f), rng.Range(0.35f, 0.8f), rng.Range(0.5f, 1.1f)), seed + (uint)i, i % 3 == 0 ? Mat.ConcreteDark : Mat.Concrete);
+            }
+
+            // rooftop: comms shack, antenna mast with guy wires, old gun emplacement, sandbags, moss
+            b.BoxOn(-6f, 8.9f, z + 3.0f, 3.2f, 2.2f, 2.6f, Mat.ConcreteDark, 0.08f);
+            b.BoxOn(-6f, 11.1f, z + 3.0f, 3.5f, 0.15f, 2.9f, Mat.Rust, 0.02f);
+            b.Box(new Vector3(-6.5f, 10.1f, z + 1.68f), new Vector3(0.9f, 0.6f, 0.04f), Mat.Interior, 0f);
+            Vector3 mast = new Vector3(-3.6f, 8.9f, z + 3.4f);
+            b.Frustum(mast, 0.16f, 0.07f, 9f, 8, Mat.DarkSteel, 0.01f);
+            for (int i = 1; i <= 5; i++)
+            {
+                b.Strut(mast + new Vector3(-0.6f, i * 1.6f, 0), mast + new Vector3(0.6f, i * 1.6f, 0), 0.03f, Mat.DarkSteel);
+            }
+
+            foreach (Vector3 g in new[] { new Vector3(-6.6f, 0, -2.4f), new Vector3(3.2f, 0, -1.8f), new Vector3(-0.6f, 0, 4.4f) })
+            {
+                b.Strut(mast + new Vector3(0, 8.6f, 0), mast + g, 0.015f, Mat.DarkSteel);
+            }
+
+            Shapes.Lamp(b, m, mast + new Vector3(0, 9.1f, 0), Mat.LampRed, Model.Red, 1.2f, 5f, LightRole.Ambient, 0.18f);
+            Shapes.SandbagRing(b, new Vector3(7f, 8.9f, z + 2.8f), 1.8f, 16, 2, 250f, 40f);
+            b.Frustum(new Vector3(7f, 8.9f, z + 2.8f), 0.6f, 0.5f, 0.6f, 12, Mat.DarkSteel, 0.03f);
+            b.CylinderZ(new Vector3(7f, 9.8f, z + 1.7f), 0.09f, 2.0f, 8, Mat.DarkSteel, 0.01f);
+            for (int i = 0; i < 26; i++)
+            {
+                Props.Boulder(b, new Vector3(rng.Range(-18f, 18f), 8.85f, z + rng.Range(0.6f, 7f)), new Vector3(rng.Range(0.4f, 1.1f), rng.Range(0.15f, 0.3f), rng.Range(0.4f, 1.0f)), seed + 40 + (uint)i, Mat.Foliage);
             }
 
             // pipes and cables along the facade
-            b.CylinderX(new Vector3(-8f, 5.8f, z - 0.7f), 0.18f, 12f, 10, Mat.Rust, 0.03f);
-            b.CylinderX(new Vector3(-8f, 5.35f, z - 0.65f), 0.1f, 12f, 8, Mat.DarkSteel, 0.02f);
+            b.CylinderX(new Vector3(-9f, 5.8f, z - 0.7f), 0.18f, 14f, 12, Mat.Rust, 0.03f);
+            b.CylinderX(new Vector3(-9f, 5.35f, z - 0.65f), 0.1f, 14f, 10, Mat.DarkSteel, 0.02f);
             b.Strut(new Vector3(-2.1f, 5.35f, z - 0.65f), new Vector3(-2.6f, 0.2f, z - 1.2f), 0.09f, Mat.Rubber);
 
             // scaffold tower with a blue tarp, left of the door
-            float sx0 = -7.6f;
+            float sx0 = -8.6f;
             foreach (float x in new[] { sx0 - 1.2f, sx0 + 1.2f })
             {
                 foreach (float dz in new[] { -2.2f, -0.6f })
@@ -139,6 +178,7 @@ namespace Deadswitch.Art.Models
             Shapes.Lamp(b, m, new Vector3(5.5f, 9.7f, z - 0.05f), Mat.LampAmber, Model.Amber, 2.0f, 10f, LightRole.Ambient, 0.3f);
 
             m.Static = b.Mesh;
+            m.Cones = b.Cones;
             return m;
         }
     }
