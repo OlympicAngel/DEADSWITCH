@@ -56,6 +56,8 @@ namespace Deadswitch.Game.UI.Hud
         private AdvisorVoice _voice;
         private CorruptionBand _trueBand = (CorruptionBand)(-1);
         private ReportScreen _report;
+        private Base.BaseScreen _baseScreen;
+        private OpeningFlow _opening;
         private VisualElement _reportChip;
         private int _chipRaid;
 
@@ -105,7 +107,8 @@ namespace Deadswitch.Game.UI.Hud
             _voice = new AdvisorVoice(_host, Advisor);
 
             Router = new ScreenRouter(Q<VisualElement>("screen"));
-            Router.Register(new Base.BaseScreen(Router));
+            _baseScreen = new Base.BaseScreen(Router);
+            Router.Register(_baseScreen);
             _report = new ReportScreen(Router);
             Router.Register(_report);
             Router.Register(new OpsScreen(OpenReport));
@@ -120,6 +123,7 @@ namespace Deadswitch.Game.UI.Hud
             Router.BindTab("ops", Q<VisualElement>("tab-ops"));
             Q<VisualElement>("raid-defend").RegisterCallback<ClickEvent>(_ => Router.Show("ops"));
             Router.Show("base");
+            _opening = new OpeningFlow(_host, _hud, _voice, _baseScreen);
 
             _host.Ticked += Refresh;
             _host.EventRaised += OnSimEvent;
@@ -263,6 +267,7 @@ namespace Deadswitch.Game.UI.Hud
             _people.Tick(dt);
             _core.Tick(dt);
             _gauge.Tick(dt);
+            _opening.Tick(dt);
             _voice.Tick(dt);
             Advisor.Tick(dt);
             UpdateTimers();

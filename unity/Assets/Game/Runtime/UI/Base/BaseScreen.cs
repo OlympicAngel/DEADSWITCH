@@ -58,6 +58,12 @@ namespace Deadswitch.Game.UI.Base
 
         public string Id => "base";
 
+        /// <summary>Points the opening guide at a plot (-1 clears).</summary>
+        public void Guide(int slot)
+        {
+            _labels.Guide(slot);
+        }
+
         public VisualElement Root { get; }
 
         public void OnShow()

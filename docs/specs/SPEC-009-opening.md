@@ -1,6 +1,6 @@
 # SPEC-009: Opening (prologue, boot sequence, first raids, guided first steps)
 
-- Status: In progress (F-016)
+- Status: Done (F-016); Editor play check pending
 - Pillar: AI relationship (first impression of the AI), Defense & offline
 - Touches: raids (scripted opening raid, protection window, first-lie raid), UI (boot reveal, guide), advisor (boot lines)
 - Source rules: doc 01 s7 (opening, first 30 minutes), doc 10 s7.4 (first lie in Tier 1), quality bar (no punitive pressure)
@@ -20,9 +20,9 @@ Voice-over, animated cutscenes beyond the drone feed, monetization, cloud accoun
 6. **Guide:** one objective at a time, derived from state (never stored): set a defense for the opening raid; build a Battery Bank; upgrade the Generator; start restoring a module; verify a battle report. Each shows a short reason and the control to use; completed objectives get an advisor line. The guide can be dismissed.
 
 ## Acceptance criteria
-- [ ] Opening raid at the scripted minute and strength; no other raid in protection; first lie on raid 2
-- [ ] Prologue and boot reveal on a new run only, skippable, reduced-motion safe
-- [ ] Guide objectives advance from real state
+- [x] Opening raid at the scripted minute and strength; no other raid in protection; first lie on raid 2
+- [x] Prologue and boot reveal on a new run only, skippable, reduced-motion safe
+- [x] Guide objectives advance from real state
 
 ## Tests
 `OpeningTests`: opening raid timing/strength and the protection window; first lie on the configured raid.

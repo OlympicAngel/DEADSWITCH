@@ -58,6 +58,15 @@ namespace Deadswitch.Game.UI.Hud
         /// <summary>The most recent lines, oldest first (CORE transcript).</summary>
         public System.Collections.Generic.IReadOnlyList<string> History => _history;
 
+        /// <summary>Holds lines back (e.g. during the prologue); queued lines play afterwards.</summary>
+        public bool Paused { get; set; }
+
+        /// <summary>A line for something the UI noticed (guide objectives).</summary>
+        public void Notify(string trigger)
+        {
+            _advisor.Notify(trigger);
+        }
+
         public void Dispose()
         {
             _host.EventRaised -= OnEvent;
@@ -66,6 +75,11 @@ namespace Deadswitch.Game.UI.Hud
 
         public void Tick(float dt)
         {
+            if (Paused)
+            {
+                return;
+            }
+
             _stateClock += dt;
             if (_stateClock >= StateCheckSeconds)
             {

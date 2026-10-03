@@ -97,6 +97,16 @@
     <!-- Screen area: the 3D base shows through; screens mount here -->
     <ui:VisualElement name="screen" class="hud-screen" />
 
+    <!-- Opening guide (SPEC-009 rule 6): one objective at a time -->
+    <ui:VisualElement name="guide" class="hud-guide is-hidden">
+      <ui:VisualElement class="hud-guide__pip" />
+      <ui:VisualElement class="hud-guide__body">
+        <ui:Label name="guide-title" text="OBJECTIVE // BUILD A BATTERY BANK" class="hud-guide__title" />
+        <ui:Label name="guide-reason" text="More stored energy for builds and raids. Tap an empty plot." class="hud-guide__reason" />
+      </ui:VisualElement>
+      <ui:VisualElement name="guide-close" class="hud-guide__close"><ui:Label text="X" class="hud-guide__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
     <ui:VisualElement name="advisor" class="hud-advisor">
       <ui:Label text="&gt;" class="hud-advisor__caret" />
       <ui:Label name="advisor-text" text="Power is the problem. Power is always the problem." class="hud-advisor__text" />

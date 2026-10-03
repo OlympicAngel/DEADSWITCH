@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Opening.uss" />
+  <!-- Prologue (SPEC-009 rule 4): typed cards over the dimmed drone feed, skippable. -->
+  <ui:VisualElement name="prologue" class="pro">
+    <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="ds-label pro__head" />
+    <ui:Label name="pro-text" text="They gave the war to a machine." class="pro__text" />
+    <ui:VisualElement name="pro-pips" class="row pro__pips">
+      <ui:VisualElement class="pro__pip is-on" />
+      <ui:VisualElement class="pro__pip" />
+      <ui:VisualElement class="pro__pip" />
+      <ui:VisualElement class="pro__pip" />
+      <ui:VisualElement class="pro__pip" />
+    </ui:VisualElement>
+    <ui:VisualElement name="pro-skip" class="ds-btn ds-btn--ghost pro__skip"><ui:Label text="SKIP" class="ds-btn__label" /></ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

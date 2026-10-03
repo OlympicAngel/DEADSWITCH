@@ -92,6 +92,28 @@
 .hud-next__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
 .hud-next__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); -unity-text-align: middle-right; }
 
+.hud-guide {
+    flex-direction: row;
+    align-items: center;
+    margin: 0 var(--s-5) var(--s-2) var(--s-5);
+    padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+    border-width: 1px;
+    border-left-width: 4px;
+    border-color: var(--c-amber-dim);
+    border-left-color: var(--c-amber);
+    background-color: rgba(20, 16, 8, 0.88);
+}
+.hud-guide.is-hidden { display: none; }
+.hud-guide__pip { width: 14px; height: 14px; margin-right: var(--s-3); background-color: var(--c-amber); rotate: 45deg; }
+.hud-guide__body { flex-grow: 1; flex-shrink: 1; }
+.hud-guide__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
+.hud-guide__reason { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: 2px; }
+.hud-guide__close { width: 88px; height: 88px; align-items: center; justify-content: center; }
+.hud-guide__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); color: var(--c-text-dim); }
+
+/* A control the guide points at */
+.is-guide { border-color: var(--c-amber); border-width: 3px; }
+
 .hud-report {
     flex-direction: row;
     align-items: center;

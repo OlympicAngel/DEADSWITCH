@@ -55,6 +55,15 @@ namespace Deadswitch.Game.UI.Base
             }
         }
 
+        /// <summary>Marks the plot the opening guide points at (-1 clears).</summary>
+        public void Guide(int slot)
+        {
+            for (int i = 0; i < _tags.Count; i++)
+            {
+                _tags[i].Root.EnableInClassList("is-guide", i == slot);
+            }
+        }
+
         /// <summary>Updates text and state from the sim (after ticks/commands).</summary>
         public void Refresh()
         {
