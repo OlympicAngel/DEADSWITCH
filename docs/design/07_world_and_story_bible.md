@@ -61,9 +61,10 @@ Gritty, tense, and cold, with dark humor from the AI. The world is hostile but n
 
 ## 7. Art direction
 
-- **Gritty painted realism** — dark, dusty, hand-painted environments and characters.
-- **Military terminal / CRT HUD** — green and amber glow, scanlines, glitches. This is the AI's interface.
-- **Dark 2D illustrated style** — heavy contrast, grain, and comic-like panels for battle reports.
+- **Stylized 3D realism** — real-time 3D with physically based materials (rust, concrete, mud, tarp, dust) and slightly chunky, simplified, semi-cartoonish forms and proportions. Grounded and tactile, never photoreal or cartoon-flat. See [ADR-0007](../adr/0007-art-direction-stylized-3d.md).
+- **Drone-feed camera** — the world is seen through the AI's recon sensors: a high three-quarter view, a light miniature (tilt-shift) feel, and very subtle sensor effects.
+- **Military terminal / CRT HUD** — green and amber glow, scanlines, glitches. This is the AI's interface, and the only flat 2D layer.
+- **Battle reports** — high-contrast stills rendered from the same 3D world, framed as dark graphic-novel panels.
 
 See [11_visual_theme_and_motion.md](./11_visual_theme_and_motion.md) for the visual system and prototype guidance. Its exact palette and motion suggestions are not locked decisions.
 

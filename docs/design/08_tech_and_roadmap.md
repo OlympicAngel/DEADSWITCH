@@ -18,7 +18,7 @@ Offline-first, with the option to go fully online later.
 
 1. On logout, the game records the player's defense setup, delegation level, and a timestamp.
 2. On return, the simulation advances from the last tick to now, using seeded events (scheduled waves, ambushes, world events).
-3. The result is turned into a **battle report** (illustrated panels), with the AI possibly editing it when corrupted.
+3. The result is turned into a **battle report** (graphic-novel panels of rendered stills), with the AI possibly editing it when corrupted.
 
 ## 2. Online plan (later)
 

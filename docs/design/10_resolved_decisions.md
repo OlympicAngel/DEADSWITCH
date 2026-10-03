@@ -134,7 +134,7 @@ A purge only forces a reboot if the hub falls undefended **and** the player igno
 | Purge | White/red | Continuous alarm, music cuts out |
 
 ### Battle report format
-- 4–6 illustrated panels plus a **loss ledger** (every loss as a line item).
+- 4–6 graphic-novel panels (rendered stills) plus a **loss ledger** (every loss as a line item).
 - The AI adds an annotation that may be altered. A **Verify** button costs compute to compare against scout data.
 
 ---
@@ -237,3 +237,4 @@ Based on pillar ranking (AI relationship, then economy, then defense, then offen
 | Date | Change | Why |
 |------|--------|-----|
 | 2026-10-03 | Tier 1 energy generation +6/min -> **+8/min** | With upkeep -4/min and server racks -3/min, +6 nets **-1/min**: the base blacks out after about 3 hours. At +8 the net is +1/min and the cap fills in about 5 hours. Verified by `Tier1Defaults_DoNotBlackOutOverAWeek` in `src/Deadswitch.Sim.Tests`. |
+| 2026-10-03 | Art direction: gritty 2D painted realism -> **stylized 3D realism with a subtle drone-feed camera**; battle reports become graphic-novel panels of rendered stills | Painted concepts read as too drawn; a grounded, semi-cartoonish 3D world is more tactile and readable on phones, and the drone camera expresses "you see through the AI". See ADR-0007; docs 07 and 11 updated. |

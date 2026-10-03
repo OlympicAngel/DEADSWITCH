@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - art direction
+- Done: switched art direction from 2D gritty painted realism to stylized 3D realism (semi-cartoonish PBR forms) seen through a subtle drone-feed camera; battle reports become graphic-novel panels of rendered stills. Added ADR-0007; updated docs 07, 08, 09 (superseded note), 10 (battle report wording + corrections log), 11, ADR-0001 context note, and `unity/README.md`.
+- Half-done / known issues: no 3D assets or URP post-processing set up yet; camera-effect intensity needs device testing against the effect-intensity and reduced-motion settings.
+- Next: concept-art passes for the five key screens in the new style; profile a URP base diorama on a low-end Android device early.
+- Decisions made (link ADR/spec): [ADR-0007](../adr/0007-art-direction-stylized-3d.md).
+
+---
+
 ### 2026-10-03 - Copilot - repository setup
 - Done: resumed Editor validation using the existing Unity Hub session (the user confirmed Hub is signed in); Unity 6000.3.25f1 opened `unity/`, resolved the existing Unity Personal entitlement, resolved URP dependencies and the local `com.deadswitch.sim` package, and produced `Assembly-CSharp` and editor assemblies without compiler errors. Unity import/cache artifacts and the editor log are on D:; C: remained at about 2.07 GB free. Updated the Unity README to clarify that Hub sign-in and Unity CLI auth are separate.
 - Half-done / known issues: Unity CLI itself reports no CLI sign-in, but this did not block opening the Editor through the Hub session or resolving the existing entitlement. No reason to request another sign-in. This is an empty project scaffold; application gameplay/UI implementation remains future work. iOS archive/signing requires macOS/Xcode.
