@@ -12,8 +12,8 @@ Facilities in Hub slots, a build/upgrade queue with timers, power priority with 
 ## Steps
 - [x] 1. Per-hour rate delivery (`Rates.PerTick`) + config sections (`hub`, `build`, `crew`, facility tables) with IntList keys; reader tests for lists
 - [x] 2. State: facility slots, build jobs, power priority (visitor; save format stays v1); starting layout; `EconomyQueries` (flows for UI)
-- [ ] 3. Construction system + commands Build/Upgrade/CancelJob/Demolish; tests
-- [ ] 4. Crew + power systems (priority, shedding hysteresis, blackout, manual power, SetPriority); production; population cap; tests
+- [x] 3. Construction system + commands Build/Upgrade/CancelJob/Demolish; tests
+- [x] 4. Crew + power systems (priority, shedding hysteresis, blackout, manual power, SetPriority); production; population cap; tests
 - [ ] 5. Determinism/save/replay/chunking with economy; sensible-builder 7-day guard; shipped balance file regenerated
 - [ ] 6. CLI shows economy; docs (SPEC status, balance numbers), HANDOFF/BACKLOG
 
