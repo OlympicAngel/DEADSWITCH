@@ -1,23 +1,23 @@
-# TASK: F-006 Pressure loop
+# TASK: F-007 Unity foundation
 
 - Status: Done
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: Base & economy + Defense / M1
-- Spec: docs/specs/SPEC-001-pressure-loop.md
-- Sources: doc 03 s3+s6, doc 04 s2-5, doc 10 s3-4
+- Pillar / milestone: platform / M2
+- Spec: ADR-0004 (offline catch-up), ADR-0009 (saves)
+- Sources: unity/README.md, ADR-0002, ADR-0004, doc 08 s1 + s6, quality bar
 
 ## Goal
-Raids announce themselves, the handler prepares (turrets, garrison, posture, OVERRIDE), and the loss ledger explains every loss. Corruption becomes a live system fed by unmanned facilities and OVERRIDE.
+Pressing Play (or launching on a phone) boots the game with no scene setup: the sim loads the shipped balance file, restores the save (or starts a new run), catches up offline time safely, ticks in real time, saves crash-safely on pause/quit, and exposes state + commands to the presentation layer. Unity code is compile-checked headlessly.
 
 ## Steps
-- [x] 1. FixedMath (integer log2/exp2/pow) for power^0.7
-- [x] 2. Corruption in milli-units with bands + automation load; OVERRIDE charges/cooldown/lockdown
-- [x] 3. Turret facility, garrison, postures, presence commands
-- [x] 4. Raid lifecycle: spawn -> warning (AI estimate) -> resolve vs defense, loot/casualties, loss ledger, mercy window
-- [x] 5. Balance file regenerated, CLI raid summary over 30 days x seeds, docs/HANDOFF/BACKLOG
+- [x] 1. `tools/UnityCompileCheck` project (Unity reference assemblies) wired into the gates; `Assets/Game` asmdef layout
+- [x] 2. Host: offline clock guard (elapsed, cap, desync) + session timestamp, in `Deadswitch.Host`
+- [x] 3. Unity: `.toml` ScriptedImporter, bootstrap (`RuntimeInitializeOnLoadMethod`), `GameHost` (load/new, catch-up, real-time ticking with time scale, autosave, pause/resume presence)
+- [x] 4. Settings (effect intensity, reduced motion, haptics, time scale for dev) persisted in PlayerPrefs; `GameEvents` bridge for the UI (sim events -> C# events)
+- [x] 5. Docs: unity/README, HANDOFF/BACKLOG
 
 ## Notes
-- Minimal testing: one FixedMath accuracy test; existing determinism/save/replay tests cover the rest (they hash all state).
+- No Unity Editor here: compile check uses UnityEngine.Modules 2021.3 reference assemblies; avoid APIs newer than 2021.3 or removed in Unity 6 in `Assets/Game` runtime code. Editor scripts are not compile-checked: keep them tiny.
 
 ## Blocked / questions
 - none

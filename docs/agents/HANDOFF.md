@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-007)
+- Done: `tools/UnityCompileCheck` (Unity reference assemblies, in gates + CI), `Deadswitch.Game` / `.Editor` asmdefs, `.toml` ScriptedImporter, code-only `Bootstrap`, `GameHost` (balance load, save/load, offline catch-up via `Deadswitch.Host.Timing.OfflineClock`, real-time ticking, autosave, presence on pause/resume, command path + event dispatch), `GameSettings`. `[host]` section in the balance file.
+- Half-done / known issues: **not yet run in the Unity Editor** (no Editor in the cloud session). First thing on the owner's machine: open `unity/`, press Play in SampleScene, check the Console for `[DEADSWITCH]` messages. Editor scripts are not compile-checked.
+- Next: F-008 visual system.
+- Decisions made (link ADR/spec): real time, 1 tick = 1 real minute (dev time scale in debug builds).
+
+---
+
 ### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-006)
 - Done: pressure loop per SPEC-001: `FixedMath` (Q16 log2/exp2/pow, power^0.7), corruption in milli-units with bands and automation load, OVERRIDE charges/regen/cooldown + Emergency Lockdown, Turret facility, garrison, postures (Turtle/Dark/Evacuate), presence command + offline penalty, raid lifecycle (warning with AI estimate -> resolve vs defense, breach-scaled loot + casualties), loss ledger events, mercy window. CLI `run --garrison/--posture/--away`. Event kind 1 renamed RaidStarted -> RaidWarning (pre-release, no saves shipped).
 - Half-done / known issues: AI estimate error exists but nothing displays it yet (F-011). Raid cadence open question unchanged.

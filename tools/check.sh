@@ -12,6 +12,8 @@ step() { printf '\033[36m==> %s\033[0m\n' "$1"; }
 step "unity meta";      python3 tools/gen_meta.py --check
 step "restore";         "$DOTNET" restore DEADSWITCH.sln
 step "format (verify)"; "$DOTNET" format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore
+"$DOTNET" format tools/UnityCompileCheck/UnityCompileCheck.csproj --verify-no-changes --severity warn
 step "build";           "$DOTNET" build DEADSWITCH.sln -c Release --no-restore -warnaserror
+step "unity compile check"; "$DOTNET" build tools/UnityCompileCheck -c Release -warnaserror
 step "test";            "$DOTNET" test DEADSWITCH.sln -c Release --no-build
 printf '\033[32mAll checks passed.\033[0m\n'

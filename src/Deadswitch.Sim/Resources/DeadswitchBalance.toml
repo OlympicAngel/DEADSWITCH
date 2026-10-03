@@ -194,6 +194,19 @@ casualty_pct = 50
 offline_unprepared_pct = 150
 
 # --------------------------------------------------------------------------------------------------
+# Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
+[host]
+
+# Offline time simulated on return is capped here (never grants unlimited progress). [1..10000]
+max_catch_up_hours = 168
+
+# A device clock that moved backwards by more than this raises a time desync. [0..10000]
+desync_tolerance_minutes = 5
+
+# Real seconds between autosaves while playing. [5..3600]
+autosave_seconds = 60
+
+# --------------------------------------------------------------------------------------------------
 # Generator: scavenged power plant. Output = energy per game hour.
 [facility_generator]
 

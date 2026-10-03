@@ -1,0 +1,14 @@
+{
+  "name": "Deadswitch.Game",
+  "rootNamespace": "Deadswitch.Game",
+  "references": [
+    "Deadswitch.Sim",
+    "Deadswitch.Host"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

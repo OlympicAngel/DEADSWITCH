@@ -22,5 +22,6 @@ Invoke-Step "unity meta" { python tools/gen_meta.py --check }
 Invoke-Step "restore" { & $dotnetExe restore DEADSWITCH.sln }
 Invoke-Step "format (verify)" { & $dotnetExe format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore }
 Invoke-Step "build" { & $dotnetExe build DEADSWITCH.sln -c Release --no-restore -warnaserror }
+Invoke-Step "unity compile check" { & $dotnetExe build tools/UnityCompileCheck -c Release -warnaserror }
 Invoke-Step "test" { & $dotnetExe test DEADSWITCH.sln -c Release --no-build }
 Write-Host "All checks passed." -ForegroundColor Green
