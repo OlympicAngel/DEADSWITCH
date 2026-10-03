@@ -8,7 +8,7 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-001 | Agent work loop: `continue` skill, `TASK.md`, backlog, quality bar, Linux gate, cloud session hook | M0 | Done | 2026-10-03 |
 | F-002 | Balance config: every tunable in `SimConfig` sections, human-editable balance file, validation, config hash, CLI dump/override | M0 | Done | 2026-10-03, ADR-0007 |
 | F-003 | Commands and typed event log: player input as tick-stamped commands, replay = seed + config + commands, event schema version | M0 | Done | 2026-10-03, ADR-0003 amendment |
-| F-004 | Save/snapshot format: versioned binary snapshot, restore equals continuous run, corruption-safe writes | M0 | Ready | Needs ADR-0008 |
+| F-004 | Save/snapshot format: versioned binary snapshot, restore equals continuous run, corruption-safe writes | M0 | Done | 2026-10-03, ADR-0008 |
 | F-005 | Economy core: facilities (generator, server rack, life support grid, battery, fuel depot), build/upgrade queue with timers, scaling upkeep, priority blackouts, fuel | M1 | Ready | SPEC-002 |
 | F-006 | Pressure loop: corruption bands + effect hooks, OVERRIDE charges/cooldown, defense posture + garrison slots, raid damage model (±15% variance), offline penalty, mercy window, loss ledger, attack cap | M1 | Ready | SPEC-001 |
 | F-007 | Balance scenario runner: scripted player profiles, 100 seeds x 30 days, loss ledger summary, soft-lock detection | M1 | Ready | M1 exit criterion |

@@ -1,23 +1,25 @@
-# TASK: F-003 Commands and typed event log
+# TASK: F-004 Save/snapshot format
 
 - Status: Done
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
 - Pillar / milestone: foundations / M0
-- Spec: ADR-0003 (amended: command log + replay)
-- Sources: ADR-0002, ADR-0003, docs/agents/sim-determinism.md, doc 03 s2 (delegation levels, first real command)
+- Spec: docs/adr/0008-save-format.md
+- Sources: ADR-0002, ADR-0003 (+ amendment), ADR-0004, ADR-0007, docs/agents/sim-determinism.md
 
 ## Goal
-All player input enters the sim as tick-stamped commands that are validated, applied deterministically between ticks, and recorded. Replaying seed + config + command log reproduces the exact state hash, which later powers saves, battle-report replays and server verification. Events carry typed payloads with a schema version.
+A run can be saved to bytes and restored so that continuing the restored run is bit-identical to never having stopped. Saves are versioned, checksummed and reject corruption with a clear error; balance changes between game versions never brick a save. One declaration of state fields drives the hasher and the serializer, so "every field must be hashed" can no longer be forgotten.
 
 ## Steps
-- [x] 1. Split `Simulation.Step` into systems (`Systems/*`) over a shared `SimContext`; behavior unchanged (hashes identical)
-- [x] 2. Command pipeline: `Command` (kind + int args), `CommandResult` with reject reasons, `Simulation.Execute`, `CommandLog`; first real command `SetDelegation` (Manual / Delegated / Autopilot)
-- [x] 3. Typed events: `SimEvent` with four payload ints and per-kind docs, `EventLog.SchemaVersion`, sequence numbers; `DelegationChanged` event
-- [x] 4. `Replay` (seed + config + commands -> state); tests: replay equals live run, chunking with commands, rejected commands not recorded
-- [x] 5. Docs: ADR-0003 amendment, determinism playbook (commands), HANDOFF/BACKLOG
+- [x] 1. `IStateVisitor` + `GameState.Visit` (fields declared once); `StateHasher` rebuilt on it (same coverage, new hash values)
+- [x] 2. Binary save format v1: header (magic, version, seed, config hash, schema versions), state, command log, event log, FNV-1a checksum; `SaveGame.Write/Read`; `Simulation` restore path
+- [x] 3. Tests: save/load/continue equals continuous run (many seeds, mid-day, with commands), corrupted/truncated/foreign bytes rejected, newer version rejected, config change loads with a flag
+- [x] 4. Atomic file store for hosts (temp + rename + .bak fallback) in a host-side helper; CLI `run --save/--load`
+- [x] 5. ADR-0008, determinism playbook (state visitor rule), HANDOFF/BACKLOG
 
 ## Notes
-- Commands apply between ticks at `State.Tick` (last completed tick). Rejected commands change nothing and are not recorded.
+- `GameState` moves from properties to public fields so the visitor can take `ref`.
+
+- Host services live in the new `src/Deadswitch.Host` package (Unity manifest updated).
 
 ## Blocked / questions
 - none

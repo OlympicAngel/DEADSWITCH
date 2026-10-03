@@ -2,7 +2,7 @@
 """Create missing Unity .meta files (stable random GUIDs) and delete orphaned ones.
 
 Unity needs a committed .meta next to every file and folder it imports: the sim package
-(src/Deadswitch.Sim) and unity/Assets. Agents without the Unity Editor run this after adding
+(src/Deadswitch.Sim, src/Deadswitch.Host) and unity/Assets. Agents without the Unity Editor run this after adding
 or removing files so GUIDs are created once and committed, never regenerated on each machine.
 
 Usage: python3 tools/gen_meta.py [--check]   (--check: exit 1 if anything would change)
@@ -12,7 +12,8 @@ import sys
 import uuid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TREES = [os.path.join(ROOT, "src", "Deadswitch.Sim"), os.path.join(ROOT, "unity", "Assets")]
+TREES = [os.path.join(ROOT, "src", "Deadswitch.Sim"), os.path.join(ROOT, "src", "Deadswitch.Host"),
+         os.path.join(ROOT, "unity", "Assets")]
 SKIP_DIRS = {"bin", "obj", ".vs"}
 SKIP_SUFFIX = (".meta", ".csproj.user")
 

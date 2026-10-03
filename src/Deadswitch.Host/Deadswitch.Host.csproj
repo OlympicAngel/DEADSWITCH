@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Engine-agnostic host services shared by Unity and the CLI: save files, offline catch-up planning,
+       clock guard, notification projection. May do I/O and read clocks (unlike Deadswitch.Sim),
+       but never references UnityEngine so it stays unit-testable. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Deadswitch.Host</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Deadswitch.Sim\Deadswitch.Sim.csproj" />
+  </ItemGroup>
+</Project>

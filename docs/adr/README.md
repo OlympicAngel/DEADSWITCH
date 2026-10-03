@@ -9,5 +9,6 @@
 | [0005](0005-repo-layout-and-agent-workflow.md) | Repo layout and multi-agent workflow | Accepted |
 | [0006](0006-monetization-plumbing.md) | Monetization plumbing: free demo + premium unlock | Accepted |
 | [0007](0007-balance-config-file.md) | Balance config file (sectioned `SimConfig`, strict TOML subset, config hash) | Accepted |
+| [0008](0008-save-format.md) | Save format v1 (state visitor, checksummed binary) and `Deadswitch.Host` package | Accepted |
 
 Process: `docs/agents/adr-writing.md`. Template: `0000-template.md`.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Deadswitch.Host.Persistence;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Config;
 using Deadswitch.Sim.Events;
@@ -13,7 +14,8 @@ namespace Deadswitch.Cli
     /// <summary>
     /// Headless tools for balancing and verification.
     /// <code>
-    /// run [--seed N] [--hours N] [--config PATH]   simulate and print the end state (default: shipped balance file)
+    /// run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE]
+    ///                                              simulate and print the end state (default: shipped balance file)
     /// config dump [--defaults] [--out PATH]        print the shipped balance file normalized, or the code defaults
     /// config check [PATH]                          strictly validate a balance file
     /// config diff [PATH]                           list values that differ from the code defaults (doc 10 baseline)
@@ -63,7 +65,7 @@ namespace Deadswitch.Cli
         {
             TextWriter w = code == 0 ? Console.Out : Console.Error;
             w.WriteLine("usage:");
-            w.WriteLine("  run [--seed N] [--hours N] [--config PATH]");
+            w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
@@ -90,12 +92,40 @@ namespace Deadswitch.Cli
         private static int Run(Options o)
         {
             SimConfig config = LoadConfig(o.ConfigPath, out string source);
-            var sim = new Simulation(o.Seed, config);
+            Simulation sim;
+            if (o.LoadPath != null)
+            {
+                SaveLoadReport report = new SaveFileStore(o.LoadPath).Load(config);
+                foreach (string problem in report.Problems)
+                {
+                    Console.Error.WriteLine("warning: " + problem);
+                }
+
+                if (report.Game == null)
+                {
+                    Console.Error.WriteLine("No readable save at " + o.LoadPath + ".");
+                    return 1;
+                }
+
+                sim = report.Game.Simulation;
+                Console.WriteLine("loaded " + o.LoadPath + " (" + report.Source + ", tick " + sim.State.Tick
+                    + (report.Game.ConfigChanged ? ", balance changed since save" : string.Empty) + ")");
+            }
+            else
+            {
+                sim = new Simulation(o.Seed, config);
+            }
+
             sim.Run(o.Hours * SimConfig.TicksPerHour);
+            if (o.SavePath != null)
+            {
+                new SaveFileStore(o.SavePath).Save(sim);
+                Console.WriteLine("saved " + o.SavePath);
+            }
 
             GameState s = sim.State;
             Console.WriteLine("config=" + source + " hash=" + Hex(config.ComputeHash()));
-            Console.WriteLine("seed=" + o.Seed + " hours=" + o.Hours + " tick=" + s.Tick);
+            Console.WriteLine("seed=" + sim.Seed + " hours=" + o.Hours + " tick=" + s.Tick);
             Console.WriteLine("energy=" + s.Energy + " fuel=" + s.Fuel + " compute=" + s.Compute
                 + " people=" + s.People + " corruption=" + s.Corruption);
             Console.WriteLine("raids=" + sim.Log.Events.Count(e => e.Kind == EventKind.RaidStarted)
@@ -219,6 +249,10 @@ namespace Deadswitch.Cli
 
             public string? ConfigPath { get; set; }
 
+            public string? LoadPath { get; set; }
+
+            public string? SavePath { get; set; }
+
             public static Options Parse(string[] args)
             {
                 var o = new Options();
@@ -245,6 +279,12 @@ namespace Deadswitch.Cli
                             break;
                         case "--config":
                             o.ConfigPath = Next();
+                            break;
+                        case "--load":
+                            o.LoadPath = Next();
+                            break;
+                        case "--save":
+                            o.SavePath = Next();
                             break;
                         default:
                             throw new UsageException("Unknown option '" + flag + "'.");

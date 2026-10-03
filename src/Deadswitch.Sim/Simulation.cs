@@ -21,6 +21,17 @@ namespace Deadswitch.Sim
             Commands = new CommandLog();
         }
 
+        /// <summary>Restores a run from a save (see <c>SaveGame.Load</c>).</summary>
+        internal Simulation(ulong seed, SimConfig config, GameState state, EventLog log, CommandLog commands)
+        {
+            Seed = seed;
+            Config = config;
+            State = state;
+            Log = log;
+            Context = new SimContext(State, Config, Log);
+            Commands = commands;
+        }
+
         public ulong Seed { get; }
 
         public SimConfig Config { get; }

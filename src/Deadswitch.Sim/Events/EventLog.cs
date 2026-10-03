@@ -20,6 +20,14 @@ namespace Deadswitch.Sim.Events
         /// <summary>Sequence number the next appended event receives.</summary>
         public long NextSeq { get; private set; }
 
+        /// <summary>Replaces the contents with a loaded log (save restore only).</summary>
+        internal void Restore(long nextSeq, List<SimEvent> events)
+        {
+            _events.Clear();
+            _events.AddRange(events);
+            NextSeq = nextSeq;
+        }
+
         public SimEvent Append(long tick, EventKind kind, int a = 0, int b = 0, int c = 0, int d = 0)
         {
             var e = new SimEvent(NextSeq, tick, kind, a, b, c, d);

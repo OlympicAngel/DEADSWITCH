@@ -1,38 +1,63 @@
 namespace Deadswitch.Sim.State
 {
-    /// <summary>FNV-1a 64-bit over every field of GameState. Used for determinism tests and later server verification.</summary>
+    /// <summary>
+    /// FNV-1a 64-bit over every field of <see cref="GameState"/> (via <see cref="GameState.Visit"/>).
+    /// Used by determinism tests, save verification and later server verification.
+    /// </summary>
     public static class StateHasher
     {
-        private const ulong Offset = 14695981039346656037UL;
-        private const ulong Prime = 1099511628211UL;
-
         public static ulong Hash(GameState s)
         {
-            ulong h = Offset;
-            h = Mix(h, unchecked((ulong)s.Tick));
-            h = Mix(h, unchecked((ulong)s.Energy));
-            h = Mix(h, unchecked((ulong)s.Fuel));
-            h = Mix(h, unchecked((ulong)s.Compute));
-            h = Mix(h, unchecked((ulong)s.People));
-            h = Mix(h, unchecked((ulong)s.Corruption));
-            h = Mix(h, unchecked((ulong)s.RaidsToday));
-            h = Mix(h, (ulong)s.Delegation);
-            h = Mix(h, s.Rng.State);
-            h = Mix(h, s.Rng.Inc);
-            return h;
+            var v = new Visitor();
+            s.Visit(v);
+            return v.Value;
         }
 
-        private static ulong Mix(ulong h, ulong v)
+        private sealed class Visitor : IStateVisitor
         {
-            unchecked
-            {
-                for (int i = 0; i < 8; i++)
-                {
-                    h ^= (v >> (i * 8)) & 0xFFUL;
-                    h *= Prime;
-                }
+            private const ulong Prime = 1099511628211UL;
+            private ulong _h = 14695981039346656037UL;
 
-                return h;
+            public ulong Value => _h;
+
+            public bool IsReading => false;
+
+            public void Int(ref int value)
+            {
+                Mix(unchecked((ulong)(uint)value), 4);
+            }
+
+            public void Long(ref long value)
+            {
+                Mix(unchecked((ulong)value), 8);
+            }
+
+            public void ULong(ref ulong value)
+            {
+                Mix(value, 8);
+            }
+
+            public void Bool(ref bool value)
+            {
+                Mix(value ? 1UL : 0UL, 1);
+            }
+
+            public int Count(int count)
+            {
+                Mix(unchecked((ulong)(uint)count), 4);
+                return count;
+            }
+
+            private void Mix(ulong v, int bytes)
+            {
+                unchecked
+                {
+                    for (int i = 0; i < bytes; i++)
+                    {
+                        _h ^= (v >> (i * 8)) & 0xFFUL;
+                        _h *= Prime;
+                    }
+                }
             }
         }
     }

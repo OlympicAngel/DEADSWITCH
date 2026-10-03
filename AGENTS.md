@@ -16,7 +16,8 @@ If two sources conflict, stop and flag it in your reply. Do not silently pick on
 | Path | Purpose |
 |------|---------|
 | `src/Deadswitch.Sim/` | Pure C# sim core (netstandard2.1). No Unity references. |
-| `src/Deadswitch.Sim.Tests/` | xUnit tests, incl. determinism tests |
+| `src/Deadswitch.Host/` | Engine-agnostic host services (save files, catch-up, clock guard). I/O allowed, no UnityEngine (ADR-0008) |
+| `src/Deadswitch.Sim.Tests/` | xUnit tests (sim + host), incl. determinism tests |
 | `src/Deadswitch.Cli/` | Headless sim runner for the paper prototype and balancing |
 | `unity/` | Unity project (UI, art, audio, platform glue). Consumes the sim as a local package |
 | `docs/` | Design, ADRs, specs, roadmap, narrative, agent playbooks |
@@ -39,7 +40,7 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 - **No wall-clock** in the sim (`DateTime`, `Stopwatch`). Time is `State.Tick` (1 tick = 1 game minute).
 - **No UnityEngine** references, no I/O, no static mutable state in `Deadswitch.Sim`.
 - **No iteration over unordered collections** (`Dictionary`/`HashSet`) where order affects state. Use lists or sorted keys.
-- Every field added to `GameState` must be added to `StateHasher` in the same change.
+- Every field of `GameState` is declared in `GameState.Visit` (drives the hash and the save format, ADR-0008). Layout change = bump `SaveGame.FormatVersion` + migration.
 - Invariant: `Run(a); Run(b)` equals `Run(a+b)`. Keep the chunking test green.
 
 ## Work loop ("continue")
