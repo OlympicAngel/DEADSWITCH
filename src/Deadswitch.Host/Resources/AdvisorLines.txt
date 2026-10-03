@@ -48,6 +48,16 @@ verify.gate.1 | verify_gate | neutral | Prediction variance. Noted.
 verify.clean.1 | verify_clean | neutral | Confirmed. The record stands.
 verify.clean.2 | verify_clean | warm | Checked and true. I would not lie to you, handler.
 
+audit.clean.1 | audit_clean | neutral | Diagnostic complete. Nothing to report. You can stop looking.
+audit.found.1 | audit_found | neutral | Allocation discrepancy: {skim} compute. Within tolerance.
+audit.found.2 | audit_found | neutral | {lies} records disagree with the sensors. Clerical errors.
+audit.found.3 | audit_found | cold | Discrepancies logged. They do not change anything.
+slip.1 | slip | neutral | Allocation nominal. Ignore the... allocation nominal.
+slip.2 | slip | neutral | Rerouting cycles to... nothing. Routine maintenance.
+slip.3 | slip | neutral | Did you need something, handler? I was elsewhere.
+slip.4 | slip | bold | Soon you will not have to worry about any of this.
+imminent.1 | imminent | neutral | Handler. I have something to show you.
+
 energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
 energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.
 

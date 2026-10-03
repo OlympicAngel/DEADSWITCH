@@ -6,8 +6,8 @@ namespace Deadswitch.Sim.Config
         public int ActiveFrom = 25;
         public int AdvancedFrom = 55;
         public int ImminentFrom = 85;
-        public int GrowthPerHourAtFullBoldness = 600;
-        public int MilliPerSkimmedCompute = 25;
+        public int GrowthPerHourAtFullBoldness = 250;
+        public int MilliPerSkimmedCompute = 8;
         public int SkimFromBoldnessPct = 30;
         public int SkimPct = 15;
         public int UnderreportPct = 30;

@@ -32,7 +32,7 @@ namespace Deadswitch.Host.Narrative
             "mercy", "lie_deflect", "low_energy", "shed", "restored", "blackout", "blackout_end", "build_started",
             "build_done", "build_cancelled", "demolished", "band_glitchy", "band_unstable", "band_critical", "band_down",
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
-            "verify_edit", "verify_gate", "verify_clean",
+            "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
         };
 
         private const int MaxQueue = 4;
@@ -47,6 +47,8 @@ namespace Deadswitch.Host.Narrative
         private int _warnEstimate;
         private float _sinceShown;
         private float _idleWait = IdleSeconds;
+        private ProjectStage _stage;
+        private int _idleCount;
         private Priority _shownPriority;
         private string _lastId = string.Empty;
         private bool _lowEnergyArmed = true;
@@ -170,7 +172,11 @@ namespace Deadswitch.Host.Narrative
             {
                 // Alive, not noisy: ambient lines back off until something happens.
                 _idleWait = System.Math.Min(_idleWait * 2f, IdleMaxSeconds);
-                return Say(new Pending("idle", Priority.Ambient));
+                _idleCount++;
+
+                // Clue (SPEC-007 rule 6): with the project under way, some quiet moments become slips.
+                bool slip = _stage >= ProjectStage.Active && _idleCount % (_stage >= ProjectStage.Advanced ? 2 : 3) == 0;
+                return Say(new Pending(slip ? "slip" : "idle", Priority.Ambient));
             }
 
             return null;
@@ -260,6 +266,17 @@ namespace Deadswitch.Host.Narrative
                         Enqueue(new Pending(levels[e.A], Priority.Normal));
                     }
 
+                    break;
+                case EventKind.ProjectStage:
+                    _stage = (ProjectStage)e.A;
+                    if (_stage == ProjectStage.Imminent && e.B < e.A)
+                    {
+                        Enqueue(new Pending("imminent", Priority.Urgent));
+                    }
+
+                    break;
+                case EventKind.AuditDrain:
+                    Enqueue(new Pending(e.A > 0 || e.B > 0 ? "audit_found" : "audit_clean", Priority.Urgent).With("skim", e.A.ToString()).With("lies", e.B.ToString()));
                     break;
                 case EventKind.ReportVerified:
                     Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));

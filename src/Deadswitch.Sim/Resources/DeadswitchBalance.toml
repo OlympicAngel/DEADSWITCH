@@ -254,10 +254,10 @@ advanced_from = 55
 imminent_from = 85
 
 # Project progress per game hour at 100% Boldness (scales linearly). [0..100000]
-growth_per_hour_at_full_boldness = 600
+growth_per_hour_at_full_boldness = 250
 
 # Project progress per compute point the AI skims. [0..100000]
-milli_per_skimmed_compute = 25
+milli_per_skimmed_compute = 8
 
 # The AI skims compute while Boldness is at least this %. [0..100]
 skim_from_boldness_pct = 30
