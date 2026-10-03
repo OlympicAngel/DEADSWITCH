@@ -11,7 +11,7 @@ namespace Deadswitch.Sim.Systems
         public static void Tick(SimContext ctx)
         {
             GameState s = ctx.State;
-            int available = s.People;
+            int available = s.People - s.Garrison;
             int load = 0;
             foreach (int id in s.PowerPriority)
             {

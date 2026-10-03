@@ -10,7 +10,7 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-003 | Commands and typed event log, replay | M0 | Done | 2026-10-03, ADR-0003 amendment |
 | F-004 | Save/snapshot format + crash-safe save store (`Deadswitch.Host`) | M0 | Done | 2026-10-03, ADR-0009 |
 | F-005 | Economy core: facilities, build/upgrade queue, power priority + shedding, crew, population cap | M1 | Done | 2026-10-03, SPEC-002 |
-| F-006 | Pressure loop: corruption (milli-units, bands, automation load), OVERRIDE charges/cooldown, turrets + defense posture + garrison, raid strength vs defense (±15%), offline penalty, mercy window, loss ledger | M1 | Ready | SPEC-001 |
+| F-006 | Pressure loop: corruption (milli-units, bands, automation load), OVERRIDE charges/cooldown, turrets + defense posture + garrison, raid strength vs defense (±15%), offline penalty, mercy window, loss ledger | M1 | Done | 2026-10-03, SPEC-001 |
 | F-007 | Unity foundation: compile-check project, code-only bootstrap, SimHost (real-time ticking), balance file import, save/load, offline catch-up, clock guard, settings | M2 | Ready | ADR-0004 |
 | F-008 | Visual system: design tokens (USS), fonts, CRT terminal overlay, motion helpers, headless UI preview tool | M2 | Ready | doc 11 |
 | F-009 | Terminal HUD + command bar: always-visible essentials, animated readouts, energy sparkline, Base / Map / AI / Ops navigation | M2 | Ready | doc 08 s4 |

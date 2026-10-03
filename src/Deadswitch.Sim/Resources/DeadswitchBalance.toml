@@ -52,30 +52,69 @@ cap = 20
 regrowth_pct_of_gap_per_hour = 5
 
 # --------------------------------------------------------------------------------------------------
-# Corruption: instability of the AI core (doc 03 s3, doc 10 s3).
+# Corruption: instability of the AI core, 0-100% stored as milli-units (doc 03 s3, doc 10 s3).
 [corruption]
 
-# Maximum corruption. [1..1000]
-cap = 100
+# Idle recovery per game hour (1000 = 1%). [0..100000]
+decay_milli_per_hour = 1000
 
-# Idle recovery per hour. [0..1000]
-decay_per_hour = 1
+# Added per game hour for each unmanned (AI-run) facility. [0..100000]
+automation_milli_per_hour = 150
+
+# Band start (percent): Glitchy. [1..100]
+glitchy_from = 31
+
+# Band start (percent): Unstable. [1..100]
+unstable_from = 61
+
+# Band start (percent): Critical. [1..100]
+critical_from = 86
 
 # --------------------------------------------------------------------------------------------------
-# Raids: fast, frequent, loot-focused attacks (doc 04 s3, doc 10 s4).
+# Raids: fast, frequent, loot-focused attacks (doc 04 s3, doc 10 s4, SPEC-001).
 [raid]
 
-# A raid triggers each tick with chance 1 / this value. [1..1000000]
+# A raid spawns each tick with chance 1 / this value. [1..1000000]
 mean_interval_ticks = 360
 
-# Share of current energy a raid takes. [0..100]
+# Attack cap per 24h (doc 10 s4: 3 in Tier 1). [0..100]
+max_per_day = 3
+
+# Warning before a spawned raid arrives. [0..10000]
+warning_minutes = 20
+
+# Strength floor of every raid. [0..1000000]
+base_strength = 20
+
+# Tall-poppy scaling: strength += coeff/1000 x power^exponent. [0..1000000]
+power_coeff_permille = 1000
+
+# Exponent on the power rating (doc 10: 0.7 = 700). [0..2000]
+power_exponent_permille = 700
+
+# Seeded variance on strength (doc 10: +/-15%). [0..100]
+variance_pct = 15
+
+# Energy share taken at a full breach. [0..100]
 loot_pct_of_energy = 20
 
-# Maximum energy a single raid can take (never a full wipe). [0..1000000]
+# Max energy one raid can take (never a full wipe). [0..1000000]
 loot_cap = 60
 
-# Offline attack cap per 24h (doc 10 s4: 3 in Tier 1). [0..100]
-max_per_day = 3
+# Compute share taken at a full breach. [0..100]
+compute_loot_pct = 15
+
+# Max compute one raid can take. [0..1000000]
+compute_loot_cap = 30
+
+# Max error of the AI's strength estimate per corruption band (Stable, Glitchy, Unstable, Critical). [4..4 items, each 0..100]
+estimate_error_pct_by_band = [0, 15, 35, 60]
+
+# No raids for this long after a devastating loss (doc 10 s4). [0..1000]
+mercy_hours = 6
+
+# Population loss in one raid that counts as devastating (doc 10: >25%). [1..100]
+devastating_pop_loss_pct = 25
 
 # --------------------------------------------------------------------------------------------------
 # Hub layout: facility slots (SPEC-002).
@@ -106,6 +145,53 @@ duplicate_cost_pct = 100
 
 # Output of a short-handed facility run by the AI, in percent of full output. [0..100]
 unmanned_output_pct = 50
+
+# --------------------------------------------------------------------------------------------------
+# OVERRIDE: limited charges, shared cooldown, corruption per use (doc 03 s6, doc 10 s3).
+[override]
+
+# Charges at the start of a run. [0..10]
+start_charges = 1
+
+# Maximum stored charges (v1: 3). [1..10]
+max_charges = 3
+
+# Game minutes per regenerated charge. [1..100000]
+regen_minutes = 720
+
+# Shared cooldown after any use. [0..100000]
+cooldown_minutes = 30
+
+# Corruption added per use (1000 = 1%). [0..100000]
+corruption_milli_per_use = 8000
+
+# --------------------------------------------------------------------------------------------------
+# Defense setup: garrison slots and postures (doc 04 s5, doc 10 s4).
+[defense]
+
+# People that can be posted as defenders (doc 10: 3-5). [0..100]
+garrison_slots = 5
+
+# Defense each garrisoned person adds. [0..10000]
+defense_per_defender = 4
+
+# Turtle posture: extra defense in percent. [0..1000]
+turtle_defense_pct = 50
+
+# Dark posture: chance a raid fails to find the Hub. [0..100]
+dark_miss_pct = 40
+
+# Dark posture: extra energy per game hour (signal masking). [0..100000]
+dark_upkeep_per_hour = 120
+
+# Evacuate posture: loot multiplier in percent (no casualties). [0..1000]
+evacuate_loot_pct = 150
+
+# Share of the garrison lost at a full breach (scales with breach). [0..100]
+casualty_pct = 50
+
+# Raid strength multiplier when the handler is away with no posture and no garrison. [100..1000]
+offline_unprepared_pct = 150
 
 # --------------------------------------------------------------------------------------------------
 # Generator: scavenged power plant. Output = energy per game hour.
@@ -194,3 +280,25 @@ output = [250, 600, 1100, 1800, 2800]
 
 # People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
 crew = [0, 0, 1, 1, 1]
+
+# --------------------------------------------------------------------------------------------------
+# Turret: automated Hub defense (doc 02 s6 Military). Output = defense rating while powered.
+[facility_turret]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [150, 250, 420, 700, 1150]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 10, 20, 40, 70]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [20, 45, 90, 180, 360]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [60, 100, 150, 220, 300]
+
+# Defense rating per level. [1..20 items, each 0..1000000]
+output = [20, 32, 48, 68, 92]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 1, 2, 2, 3]

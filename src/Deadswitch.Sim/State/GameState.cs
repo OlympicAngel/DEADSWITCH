@@ -19,7 +19,8 @@ namespace Deadswitch.Sim.State
 
         public int People;
 
-        public int Corruption;
+        /// <summary>0..100_000 (100_000 = 100%).</summary>
+        public int CorruptionMilli;
 
         public int RaidsToday;
 
@@ -32,6 +33,36 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Unmanned facilities run by the AI this tick (SPEC-002 rule 6). Feeds corruption in M2.</summary>
         public int AutomationLoad;
+
+        public int OverrideCharges;
+
+        public long OverrideNextChargeTick;
+
+        public long OverrideCooldownUntil;
+
+        public Posture Posture;
+
+        /// <summary>People posted as defenders (not available as crew).</summary>
+        public int Garrison;
+
+        /// <summary>Handler is away (host sends SetPresence at logout/login).</summary>
+        public bool Away;
+
+        /// <summary>Id the next raid receives.</summary>
+        public int NextRaidId = 1;
+
+        /// <summary>Id of the incoming raid, or 0.</summary>
+        public int RaidId;
+
+        public long RaidArriveTick;
+
+        /// <summary>True strength before variance.</summary>
+        public int RaidStrength;
+
+        /// <summary>What the AI told the handler (may be wrong when corrupted).</summary>
+        public int RaidEstimate;
+
+        public long MercyUntilTick;
 
         /// <summary>Hub slots; the index is the slot id.</summary>
         public List<FacilitySlot> Slots = new List<FacilitySlot>();
@@ -49,6 +80,8 @@ namespace Deadswitch.Sim.State
             Fuel = config.Fuel.Start;
             Compute = config.Compute.Start;
             People = config.People.Start;
+            OverrideCharges = config.Override.StartCharges;
+            OverrideNextChargeTick = config.Override.RegenMinutes;
 
             for (int i = 0; i < config.Hub.Slots; i++)
             {
@@ -92,7 +125,7 @@ namespace Deadswitch.Sim.State
             v.Int(ref Fuel);
             v.Int(ref Compute);
             v.Int(ref People);
-            v.Int(ref Corruption);
+            v.Int(ref CorruptionMilli);
             v.Int(ref RaidsToday);
 
             int delegation = (int)Delegation;
@@ -110,6 +143,20 @@ namespace Deadswitch.Sim.State
 
             v.Bool(ref Blackout);
             v.Int(ref AutomationLoad);
+            v.Int(ref OverrideCharges);
+            v.Long(ref OverrideNextChargeTick);
+            v.Long(ref OverrideCooldownUntil);
+            int posture = (int)Posture;
+            v.Int(ref posture);
+            Posture = (Posture)posture;
+            v.Int(ref Garrison);
+            v.Bool(ref Away);
+            v.Int(ref NextRaidId);
+            v.Int(ref RaidId);
+            v.Long(ref RaidArriveTick);
+            v.Int(ref RaidStrength);
+            v.Int(ref RaidEstimate);
+            v.Long(ref MercyUntilTick);
 
             int slotCount = v.Count(Slots.Count);
             Resize(Slots, slotCount);

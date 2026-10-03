@@ -66,7 +66,7 @@ namespace Deadswitch.Cli
         {
             TextWriter w = code == 0 ? Console.Out : Console.Error;
             w.WriteLine("usage:");
-            w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE]");
+            w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE] [--garrison N] [--posture none|turtle|dark|evacuate] [--away]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
@@ -117,6 +117,21 @@ namespace Deadswitch.Cli
                 sim = new Simulation(o.Seed, config);
             }
 
+            if (o.Garrison > 0)
+            {
+                Console.WriteLine("garrison: " + sim.Execute(Deadswitch.Sim.Commands.Command.SetGarrison(o.Garrison)));
+            }
+
+            if (o.Posture != Posture.None)
+            {
+                Console.WriteLine("posture: " + sim.Execute(Deadswitch.Sim.Commands.Command.SetPosture(o.Posture)));
+            }
+
+            if (o.Away)
+            {
+                sim.Execute(Deadswitch.Sim.Commands.Command.SetPresence(true));
+            }
+
             sim.Run(o.Hours * SimConfig.TicksPerHour);
             if (o.SavePath != null)
             {
@@ -128,7 +143,7 @@ namespace Deadswitch.Cli
             Console.WriteLine("config=" + source + " hash=" + Hex(config.ComputeHash()));
             Console.WriteLine("seed=" + sim.Seed + " hours=" + o.Hours + " tick=" + s.Tick);
             Console.WriteLine("energy=" + s.Energy + " fuel=" + s.Fuel + " compute=" + s.Compute
-                + " people=" + s.People + " corruption=" + s.Corruption);
+                + " people=" + s.People + " corruption=" + CorruptionSystem.Percent(s.CorruptionMilli) + "%");
             EconomyFlows f = Economy.Flows(s, sim.Config);
             Console.WriteLine("energy/h: +" + f.GenerationPerHour + " -" + f.CoreUpkeepPerHour + " core -" + f.FacilityUpkeepPerHour
                 + " facilities = " + f.NetEnergyPerHour + "  compute/h=" + f.ComputePerHour + "  caps: energy " + f.EnergyCap
@@ -140,7 +155,11 @@ namespace Deadswitch.Cli
                     + (slot.Enabled ? string.Empty : " OFF") + (slot.Powered ? string.Empty : " SHED") + (slot.Staffed ? string.Empty : " UNMANNED")));
             }
 
-            Console.WriteLine("raids=" + sim.Log.Events.Count(e => e.Kind == EventKind.RaidStarted)
+            Console.WriteLine("raids=" + sim.Log.Events.Count(e => e.Kind == EventKind.RaidWarning)
+                + " repelled=" + sim.Log.Events.Count(e => e.Kind == EventKind.RaidResolved && e.B == (int)RaidOutcome.Repelled)
+                + " breached=" + sim.Log.Events.Count(e => e.Kind == EventKind.RaidResolved && e.B == (int)RaidOutcome.Breached)
+                + " energy lost=" + sim.Log.Events.Where(e => e.Kind == EventKind.LossLine && e.B == (int)LossResource.Energy).Sum(e => e.C)
+                + " compute lost=" + sim.Log.Events.Where(e => e.Kind == EventKind.LossLine && e.B == (int)LossResource.Compute).Sum(e => e.C)
                 + " blackouts=" + sim.Log.Events.Count(e => e.Kind == EventKind.BlackoutStarted));
             Console.WriteLine("hash=" + Hex(StateHasher.Hash(s)));
             return 0;
@@ -283,6 +302,12 @@ namespace Deadswitch.Cli
 
             public string? SavePath { get; set; }
 
+            public int Garrison { get; set; }
+
+            public Posture Posture { get; set; }
+
+            public bool Away { get; set; }
+
             public static Options Parse(string[] args)
             {
                 var o = new Options();
@@ -315,6 +340,15 @@ namespace Deadswitch.Cli
                             break;
                         case "--save":
                             o.SavePath = Next();
+                            break;
+                        case "--garrison":
+                            o.Garrison = (int)ParseLong(Next(), "garrison");
+                            break;
+                        case "--posture":
+                            o.Posture = (Posture)Enum.Parse(typeof(Posture), Next(), true);
+                            break;
+                        case "--away":
+                            o.Away = true;
                             break;
                         default:
                             throw new UsageException("Unknown option '" + flag + "'.");

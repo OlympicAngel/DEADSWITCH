@@ -196,7 +196,7 @@ namespace Deadswitch.Sim.Systems
 
             return new EconomyFlows(
                 GenerationPerHour(s, c),
-                c.Energy.CoreUpkeepPerHour,
+                c.Energy.CoreUpkeepPerHour + (s.Posture == Posture.Dark ? c.Defense.DarkUpkeepPerHour : 0),
                 upkeep,
                 compute,
                 EnergyCap(s, c),

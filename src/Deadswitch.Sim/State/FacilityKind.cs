@@ -8,5 +8,6 @@ namespace Deadswitch.Sim.State
         ServerRack = 2,
         LifeSupport = 3,
         BatteryBank = 4,
+        Turret = 5,
     }
 }

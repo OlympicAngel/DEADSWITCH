@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.Events
     {
         None = 0,
 
-        /// <summary>A raid hit. A: energy looted.</summary>
-        RaidStarted = 1,
+        /// <summary>A raid is incoming. A: raid id, B: minutes until arrival, C: the AI's strength estimate (may be wrong).</summary>
+        RaidWarning = 1,
 
         /// <summary>The AI core lost power: no facility runs, regrowth pauses. No payload.</summary>
         BlackoutStarted = 2,
@@ -44,6 +44,30 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Power priority changed. A: slot, B: new rank (0 = highest).</summary>
         PriorityChanged = 12,
+
+        /// <summary>A raid ended. A: raid id, B: RaidOutcome, C: true strength, D: defense rating.</summary>
+        RaidResolved = 13,
+
+        /// <summary>Loss ledger line. A: raid id, B: LossResource, C: amount lost.</summary>
+        LossLine = 14,
+
+        /// <summary>Mercy window began after a devastating loss. A: raid id, B: minutes of protection.</summary>
+        MercyStarted = 15,
+
+        /// <summary>OVERRIDE used. A: OverrideKind, B: charges left, C: corruption added (milli).</summary>
+        OverrideUsed = 16,
+
+        /// <summary>Corruption crossed a band. A: new CorruptionBand, B: previous band, C: corruption (milli).</summary>
+        CorruptionBandChanged = 17,
+
+        /// <summary>Posture changed. A: new Posture, B: previous.</summary>
+        PostureSet = 18,
+
+        /// <summary>Garrison changed. A: new defenders, B: previous.</summary>
+        GarrisonSet = 19,
+
+        /// <summary>Handler presence changed. A: 1 = away, 0 = here.</summary>
+        PresenceSet = 20,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

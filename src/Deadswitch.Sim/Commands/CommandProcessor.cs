@@ -27,6 +27,14 @@ namespace Deadswitch.Sim.Commands
                     return EconomyCommands.SetFacilityPower(ctx, command);
                 case CommandKind.SetPriority:
                     return EconomyCommands.SetPriority(ctx, command);
+                case CommandKind.UseOverride:
+                    return DefenseCommands.UseOverride(ctx, command);
+                case CommandKind.SetPosture:
+                    return DefenseCommands.SetPosture(ctx, command);
+                case CommandKind.SetGarrison:
+                    return DefenseCommands.SetGarrison(ctx, command);
+                case CommandKind.SetPresence:
+                    return DefenseCommands.SetPresence(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

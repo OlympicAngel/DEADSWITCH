@@ -6,17 +6,17 @@ Each milestone has an exit criterion. Do not start the next milestone until it i
 ## M0 - Foundations (this scaffold)
 - [x] Repo structure, agent instructions, ADRs, CI, tooling
 - [x] Sim skeleton: Pcg32, GameState, tick loop, event log, hasher, tests, CLI
-- [ ] `pwsh tools/check.ps1` green on your machine
+- [x] `pwsh tools/check.ps1` green on your machine (Linux `tools/check.sh` verified)
 - [ ] `tools/setup-env.ps1` run; all toolchains on `D:`
 - [ ] Repo folder renamed to remove the space (optional but recommended)
 - **Exit:** clean clone builds and tests pass on a fresh machine.
 
 ## M1 - Paper prototype: the pressure loop (Phase 0)
 Spec: `docs/specs/SPEC-001-pressure-loop.md`
-- [ ] Energy, compute, people, corruption, one raid type in the sim
-- [ ] Defense setup input (posture + garrison slots) affecting raid outcome
-- [ ] Corruption bands 0-30 / 31-60 / 61-85 / 86-100 with effects hooks
-- [ ] OVERRIDE charges + shared cooldown (no UI)
+- [x] Energy, compute, people, corruption, one raid type in the sim
+- [x] Defense setup input (posture + garrison slots) affecting raid outcome
+- [x] Corruption bands 0-30 / 31-60 / 61-85 / 86-100 with effects hooks
+- [x] OVERRIDE charges + shared cooldown (no UI)
 - [ ] CLI scenario runner: scripted player behavior over N days, prints a loss ledger
 - [ ] Guard tests for intended feel (cadence, caps, no blackout, mercy window)
 - **Exit:** 30 simulated days across 100 seeds: no soft-locks, never wiped in one hit, raids feel like doc 10 section 4.

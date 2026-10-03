@@ -78,6 +78,7 @@ namespace Deadswitch.Sim
             CrewSystem.Tick(ctx);
             EnergySystem.Tick(ctx);
             ProductionSystem.Tick(ctx);
+            OverrideSystem.Tick(ctx);
 
             if (ctx.State.Tick % SimConfig.TicksPerHour == 0)
             {

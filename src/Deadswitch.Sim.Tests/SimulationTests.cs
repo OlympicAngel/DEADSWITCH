@@ -58,7 +58,7 @@ namespace Deadswitch.Sim.Tests
                 Assert.InRange(s.Energy, 0, sim.Config.Energy.Cap);
                 Assert.InRange(s.Compute, 0, sim.Config.Compute.Cap);
                 Assert.InRange(s.People, 0, sim.Config.People.Cap);
-                Assert.InRange(s.Corruption, 0, sim.Config.Corruption.Cap);
+                Assert.InRange(s.CorruptionMilli, 0, Deadswitch.Sim.Systems.CorruptionSystem.MaxMilli);
             }
         }
 
@@ -71,7 +71,7 @@ namespace Deadswitch.Sim.Tests
             sim.Run(30L * SimConfig.TicksPerDay);
 
             var perDay = sim.Log.Events
-                .Where(e => e.Kind == EventKind.RaidStarted)
+                .Where(e => e.Kind == EventKind.RaidWarning)
                 .GroupBy(e => e.Tick / SimConfig.TicksPerDay);
 
             foreach (var day in perDay)
@@ -100,9 +100,9 @@ namespace Deadswitch.Sim.Tests
             var sim = new Simulation(321UL, TestConfigs.Get(config));
             sim.Run(30L * SimConfig.TicksPerDay);
 
-            foreach (SimEvent e in sim.Log.Events.Where(x => x.Kind == EventKind.RaidStarted))
+            foreach (SimEvent e in sim.Log.Events.Where(x => x.Kind == EventKind.LossLine && x.B == (int)Deadswitch.Sim.State.LossResource.Energy))
             {
-                Assert.InRange(e.A, 0, sim.Config.Raid.LootCap);
+                Assert.InRange(e.C, 1, sim.Config.Raid.LootCap);
             }
         }
     }

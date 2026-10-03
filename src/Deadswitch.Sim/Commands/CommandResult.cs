@@ -40,6 +40,18 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Not enough compute for the cost.</summary>
         NotEnoughCompute = 12,
+
+        /// <summary>No OVERRIDE charge left.</summary>
+        NoCharges = 13,
+
+        /// <summary>The shared OVERRIDE cooldown is running.</summary>
+        OnCooldown = 14,
+
+        /// <summary>Nothing to act on (for example a lockdown with no incoming attack).</summary>
+        NoTarget = 15,
+
+        /// <summary>Not enough free people (crew or garrison).</summary>
+        NotEnoughPeople = 16,
     }
 
     public readonly struct CommandResult

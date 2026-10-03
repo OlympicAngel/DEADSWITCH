@@ -16,7 +16,8 @@ namespace Deadswitch.Sim.Systems
             SimConfig c = ctx.Config;
 
             long available = s.Energy + (long)Rates.PerTick(Economy.GenerationPerHour(s, c), s.Tick);
-            int core = Rates.PerTick(c.Energy.CoreUpkeepPerHour, s.Tick);
+            int coreRate = c.Energy.CoreUpkeepPerHour + (s.Posture == Posture.Dark ? c.Defense.DarkUpkeepPerHour : 0);
+            int core = Rates.PerTick(coreRate, s.Tick);
 
             bool wasBlackout = s.Blackout;
             if (available >= core)

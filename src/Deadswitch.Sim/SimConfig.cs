@@ -22,6 +22,8 @@ namespace Deadswitch.Sim
         public HubConfig Hub = new HubConfig();
         public BuildConfig Build = new BuildConfig();
         public CrewConfig Crew = new CrewConfig();
+        public OverrideConfig Override = new OverrideConfig();
+        public DefenseConfig Defense = new DefenseConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
         public FacilityConfig Generator = new FacilityConfig(
@@ -34,6 +36,17 @@ namespace Deadswitch.Sim
             upkeepPerHour: new[] { 0, 0, 0, 0, 0 },
             output: new[] { 480, 660, 900, 1200, 1560 },
             crew: new[] { 2, 2, 3, 3, 4 });
+
+        public FacilityConfig Turret = new FacilityConfig(
+            "facility_turret",
+            "Turret: automated Hub defense (doc 02 s6 Military). Output = defense rating while powered.",
+            "Defense rating per level.").Set(
+            costEnergy: new[] { 150, 250, 420, 700, 1150 },
+            costCompute: new[] { 0, 10, 20, 40, 70 },
+            buildMinutes: new[] { 20, 45, 90, 180, 360 },
+            upkeepPerHour: new[] { 60, 100, 150, 220, 300 },
+            output: new[] { 20, 32, 48, 68, 92 },
+            crew: new[] { 1, 1, 2, 2, 3 });
 
         public FacilityConfig ServerRack = new FacilityConfig(
             "facility_server_rack",
@@ -98,10 +111,13 @@ namespace Deadswitch.Sim
             Hub.Visit(visitor);
             Build.Visit(visitor);
             Crew.Visit(visitor);
+            Override.Visit(visitor);
+            Defense.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);
             LifeSupport.Visit(visitor);
             Battery.Visit(visitor);
+            Turret.Visit(visitor);
         }
 
         /// <summary>Table for a facility kind, or null for <see cref="State.FacilityKind.None"/> and unknown values.</summary>
@@ -117,6 +133,8 @@ namespace Deadswitch.Sim
                     return LifeSupport;
                 case State.FacilityKind.BatteryBank:
                     return Battery;
+                case State.FacilityKind.Turret:
+                    return Turret;
                 default:
                     return null;
             }
@@ -126,7 +144,7 @@ namespace Deadswitch.Sim
         public System.Collections.Generic.List<string> Validate()
         {
             var problems = new System.Collections.Generic.List<string>();
-            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery })
+            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret })
             {
                 int n = f.Output.Length;
                 if (f.CostEnergy.Length != n || f.CostCompute.Length != n || f.BuildMinutes.Length != n || f.UpkeepPerHour.Length != n || f.Crew.Length != n)
@@ -148,6 +166,16 @@ namespace Deadswitch.Sim
             if (People.Start > People.Cap)
             {
                 problems.Add("people.start must not exceed people.cap.");
+            }
+
+            if (!(Corruption.GlitchyFrom < Corruption.UnstableFrom && Corruption.UnstableFrom < Corruption.CriticalFrom))
+            {
+                problems.Add("corruption bands must increase: glitchy_from < unstable_from < critical_from.");
+            }
+
+            if (Override.StartCharges > Override.MaxCharges)
+            {
+                problems.Add("override.start_charges must not exceed override.max_charges.");
             }
 
             return problems;

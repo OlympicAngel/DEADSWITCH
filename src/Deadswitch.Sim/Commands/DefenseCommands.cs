@@ -1,0 +1,109 @@
+using Deadswitch.Sim.Events;
+using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
+
+namespace Deadswitch.Sim.Commands
+{
+    /// <summary>Defense setup, OVERRIDE and presence commands (SPEC-001).</summary>
+    internal static class DefenseCommands
+    {
+        public static CommandResult UseOverride(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            if (cmd.A != (int)OverrideKind.Lockdown || cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            if (s.OverrideCharges <= 0)
+            {
+                return CommandResult.Reject(RejectReason.NoCharges);
+            }
+
+            if (s.Tick < s.OverrideCooldownUntil)
+            {
+                return CommandResult.Reject(RejectReason.OnCooldown);
+            }
+
+            if (s.RaidId == 0)
+            {
+                return CommandResult.Reject(RejectReason.NoTarget);
+            }
+
+            if (s.OverrideCharges >= ctx.Config.Override.MaxCharges)
+            {
+                s.OverrideNextChargeTick = s.Tick + ctx.Config.Override.RegenMinutes;
+            }
+
+            s.OverrideCharges--;
+            s.OverrideCooldownUntil = s.Tick + ctx.Config.Override.CooldownMinutes;
+            int corruption = ctx.Config.Override.CorruptionMilliPerUse;
+            ctx.Emit(EventKind.OverrideUsed, cmd.A, s.OverrideCharges, corruption);
+            CorruptionSystem.Add(ctx, corruption);
+            RaidSystem.Lockdown(ctx);
+            return CommandResult.Ok;
+        }
+
+        public static CommandResult SetPosture(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            if (cmd.A < (int)Posture.None || cmd.A > (int)Posture.Evacuate || cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            if ((int)s.Posture == cmd.A)
+            {
+                return CommandResult.Reject(RejectReason.NoChange);
+            }
+
+            Posture previous = s.Posture;
+            s.Posture = (Posture)cmd.A;
+            ctx.Emit(EventKind.PostureSet, cmd.A, (int)previous);
+            return CommandResult.Ok;
+        }
+
+        public static CommandResult SetGarrison(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            if (cmd.A < 0 || cmd.A > ctx.Config.Defense.GarrisonSlots || cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            if (cmd.A > s.People)
+            {
+                return CommandResult.Reject(RejectReason.NotEnoughPeople);
+            }
+
+            if (cmd.A == s.Garrison)
+            {
+                return CommandResult.Reject(RejectReason.NoChange);
+            }
+
+            int previous = s.Garrison;
+            s.Garrison = cmd.A;
+            ctx.Emit(EventKind.GarrisonSet, cmd.A, previous);
+            return CommandResult.Ok;
+        }
+
+        public static CommandResult SetPresence(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            if ((cmd.A != 0 && cmd.A != 1) || cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            bool away = cmd.A == 1;
+            if (s.Away == away)
+            {
+                return CommandResult.Reject(RejectReason.NoChange);
+            }
+
+            s.Away = away;
+            ctx.Emit(EventKind.PresenceSet, cmd.A);
+            return CommandResult.Ok;
+        }
+    }
+}

@@ -30,6 +30,18 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Move a slot in the power/crew priority order. A: slot, B: new rank (0 = highest).</summary>
         SetPriority = 7,
+
+        /// <summary>Use an OVERRIDE charge. A: <see cref="OverrideKind"/>.</summary>
+        UseOverride = 8,
+
+        /// <summary>Set the defense posture. A: <see cref="Posture"/>.</summary>
+        SetPosture = 9,
+
+        /// <summary>Post defenders. A: number of people (0..garrison slots).</summary>
+        SetGarrison = 10,
+
+        /// <summary>Host-reported presence. A: 1 = away (logout), 0 = here.</summary>
+        SetPresence = 11,
     }
 
     /// <summary>
@@ -87,6 +99,26 @@ namespace Deadswitch.Sim.Commands
         public static Command SetPriority(int slot, int rank)
         {
             return new Command(CommandKind.SetPriority, slot, rank);
+        }
+
+        public static Command UseOverride(OverrideKind kind)
+        {
+            return new Command(CommandKind.UseOverride, (int)kind);
+        }
+
+        public static Command SetPosture(Posture posture)
+        {
+            return new Command(CommandKind.SetPosture, (int)posture);
+        }
+
+        public static Command SetGarrison(int defenders)
+        {
+            return new Command(CommandKind.SetGarrison, defenders);
+        }
+
+        public static Command SetPresence(bool away)
+        {
+            return new Command(CommandKind.SetPresence, away ? 1 : 0);
         }
 
         public override string ToString()

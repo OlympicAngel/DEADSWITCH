@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-006)
+- Done: pressure loop per SPEC-001: `FixedMath` (Q16 log2/exp2/pow, power^0.7), corruption in milli-units with bands and automation load, OVERRIDE charges/regen/cooldown + Emergency Lockdown, Turret facility, garrison, postures (Turtle/Dark/Evacuate), presence command + offline penalty, raid lifecycle (warning with AI estimate -> resolve vs defense, breach-scaled loot + casualties), loss ledger events, mercy window. CLI `run --garrison/--posture/--away`. Event kind 1 renamed RaidStarted -> RaidWarning (pre-release, no saves shipped).
+- Half-done / known issues: AI estimate error exists but nothing displays it yet (F-011). Raid cadence open question unchanged.
+- Next: F-007 Unity foundation.
+- Decisions made (link ADR/spec): SPEC-001 rewritten with all numbers in the balance file.
+
+---
+
 ### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-005)
 - Done: economy core per SPEC-002: Hub slots, 4 facility kinds with per-level tables in the balance file, construction queue (build/upgrade/cancel/demolish), power priority with shedding + restart hysteresis, blackout when the AI core is unpowered, crew with unmanned (AI-run) output and automation load, Life Support pop cap, Battery energy cap, per-hour rates delivered exactly per tick, CLI economy readout. Merged main (art direction now stylized 3D, ADR-0007); my ADRs renumbered to 0008 (balance) and 0009 (save). Owner rule adopted: minimal testing.
 - Half-done / known issues: none in sim. Backlog reshaped for the 3D base diorama (F-010).
