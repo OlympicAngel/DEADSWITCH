@@ -33,7 +33,7 @@ Spec: `docs/specs/SPEC-001-pressure-loop.md`
 - [ ] Logout/return flow, offline catch-up (ADR-0004), clock-cheat handling
 - [ ] All four signatures (raid, siege, virus, purge) + purge warning ladder
 - [ ] Mercy window, vacation shield, tribute standing orders
-- [ ] Battle report (4-6 panels + loss ledger + Verify)
+- [x] Battle report (4-6 panels + loss ledger + Verify)
 - [ ] Local notifications from projected attacks
 - **Exit:** close the app prepared and feel slightly nervous; return and read exactly what was lost and why.
 

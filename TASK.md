@@ -1,25 +1,22 @@
-# TASK: F-013 Battle report
+# TASK: F-014 Hidden project clock + Audit
 
 - Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: Defense & offline / M3
-- Spec: docs/specs/SPEC-006-battle-report.md
-- Sources: doc 10 s4 + s7, ADR-0003, ADR-0007, doc 07 s7
+- Pillar / milestone: AI relationship / M2
+- Spec: docs/specs/SPEC-007-project-and-audit.md
+- Sources: doc 03 s5, doc 10 s1.4 + s2 + s7
 
 ## Goal
-A graphic-novel report after each raid: four rendered panels, the AI's (possibly edited) summary, the true loss ledger, and Verify to catch the AI.
+A hidden project the AI grows from Boldness and skimmed compute, clues for the handler, and a paid Audit that shows the Core Profile.
 
 ## Steps
-- [x] 1. Sim: `[report]` config, report edit lie, `VerifyReport` command + `ReportVerified` event, tests
-- [x] 2. Host: `BattleReport` view from the log (summary with edits, ledger, verify findings, captions); advisor verify lines
-- [x] 3. Art: gate camera shots + raider silhouettes (`HubScene.ReportShots`)
-- [x] 4. Preview: report mode in `tools/basepreview` (four stills, ink/halftone grade, composed page); iterate the look
-- [x] 5. Unity: report stills (RenderTexture + graphic-novel shader), Report screen (UXML), HUD chip, OPS link
-- [ ] 6. Docs (SPEC-006, BACKLOG, HANDOFF)
+- [ ] 1. Sim: `[project]` config, clock + skim + stage events, reported corruption, `Audit` command, tests
+- [ ] 2. Host: advisor slips, imminent and audit lines; Core Profile view
+- [ ] 3. UI: CORE screen (AI status, Audit, Core Profile, recent transcript); HUD shows reported corruption; preview
+- [ ] 4. Docs (SPEC-007, BACKLOG, HANDOFF, roadmap)
 
 ## Notes
-- Report preview: `dotnet run --project src/Deadswitch.Cli -- art export --days 2 --seed 1 --report 1 --out artifacts/basepreview/report.json` then `node tools/basepreview/render.mjs --scene artifacts/basepreview/report.json --out artifacts/basepreview/report.png --report 1`.
-- F-012 closed 2026-10-03 (OPS screen).
+- F-013 closed 2026-10-03 (battle report).
 
 ## Blocked / questions
 - none

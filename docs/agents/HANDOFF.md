@@ -4,9 +4,10 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 
 ## State
 - Sim (M0-M2 core) done: config file (ADR-0008), commands/replay, saves v2 (ADR-0009, versioned visitor), economy (SPEC-002), pressure loop (SPEC-001), AI dials/delegation/lies (SPEC-004). `tools/check.sh` green.
-- Unity: code-only boot (`Runtime/Core/Bootstrap.cs`), `GameHost`, UI kit + HUD (UI Toolkit, `Resources/UI`). 3D base (SPEC-003) built from the modular kit (`Models/Kit*.cs`). Advisor voice: `Host/Narrative/Advisor` + `Resources/AdvisorLines.txt`, bridged by `UI/Hud/AdvisorVoice`. OPS screen (SPEC-005): `UI/Screens/OpsScreen` + `Resources/UI/Ops.uxml`.
+- Unity: code-only boot (`Runtime/Core/Bootstrap.cs`), `GameHost`, UI kit + HUD (UI Toolkit, `Resources/UI`). 3D base (SPEC-003) built from the modular kit (`Models/Kit*.cs`). Advisor voice: `Host/Narrative/Advisor` + `Resources/AdvisorLines.txt`, bridged by `UI/Hud/AdvisorVoice`. OPS screen (SPEC-005): `UI/Screens/OpsScreen` + `Resources/UI/Ops.uxml`. Battle report (SPEC-006): `Host/Reports/BattleReport` (view over the log), `Reports/ReportStills` + `Shaders/DeadswitchNovel.shader`, `UI/Screens/ReportScreen`.
 
 ## Not yet verified in the Unity Editor
+- Report stills use `RenderPipeline.SubmitRenderRequest` (`Rendering/ReportRender.cs`, Unity 2023.2+ API) with a `Camera.Render` fallback; check the four panels render and are graded.
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).
 
 ## Gotchas

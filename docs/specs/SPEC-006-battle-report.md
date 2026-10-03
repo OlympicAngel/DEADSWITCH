@@ -1,6 +1,6 @@
 # SPEC-006: Battle report
 
-- Status: In progress (F-013)
+- Status: Done (F-013); Unity stills unverified in the Editor
 - Pillar: Defense & offline, AI relationship
 - Touches: raids (SPEC-001 events and ledger), AI lies (SPEC-004 gate lie, report edits), compute economy (Verify cost), 3D base (panels are rendered stills of the compound, SPEC-003)
 - Source rules: doc 10 s4 "Battle report format" + s7, ADR-0003 (the report is a view over the true log), ADR-0007 (rendered stills), doc 07 s7
@@ -21,9 +21,9 @@ Animated replays, siege/virus/purge reports (F-018), scout data from operations 
 7. **Access:** a REPORT chip appears on the HUD after a raid resolves; the last report is reachable from OPS.
 
 ## Acceptance criteria
-- [ ] Report built from the log for every outcome (repelled, breached, missed, lockdown)
-- [ ] Edit lie recorded and caught by Verify; Verify cost and once-only enforced
-- [ ] Panels preview (headless) reads as graphic-novel stills of our base, phone size
+- [x] Report built from the log for every outcome (repelled, breached, missed, lockdown)
+- [x] Edit lie recorded and caught by Verify; Verify cost and once-only enforced
+- [x] Panels preview (headless) reads as graphic-novel stills of our base, phone size
 
 ## Tests
 `ReportTests`: Verify costs compute once and flags a planted gate lie; report built for a breach lists every loss line.
