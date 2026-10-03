@@ -1,5 +1,6 @@
-// URP lit shader that multiplies the base color by vertex color (procedural weathering from Deadswitch.Art).
-// Forward / Forward+ compatible; shadow, depth and depth-normal passes reuse URP Lit. Falls back to URP Lit.
+// URP lit shader for Deadswitch.Art meshes: the procedural salvage material (SalvageCommon.hlsl, shared with
+// tools/basepreview) layers chipped paint, rust, dirt, dust, rain streaks, wetness and bump from world noise
+// and vertex masks (R = AO, G = worn edge, B = variation). Forward / Forward+; shadow and depth passes reuse URP Lit.
 Shader "Deadswitch/VertexColorLit"
 {
     Properties
@@ -9,6 +10,9 @@ Shader "Deadswitch/VertexColorLit"
         _Metallic("Metallic", Range(0, 1)) = 0
         _Smoothness("Smoothness", Range(0, 1)) = 0.3
         [HDR] _EmissionColor("Emission", Color) = (0, 0, 0, 0)
+        _BareColor("Bare Substrate", Color) = (0.25, 0.25, 0.25, 1)
+        _Wear("Chip Rust Dirt Streak", Vector) = (0, 0, 0, 0)
+        _WearB("Bump Scale Ground Procedural", Vector) = (0, 1, 0, 0)
         _Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5
     }
 
@@ -34,6 +38,7 @@ Shader "Deadswitch/VertexColorLit"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "SalvageCommon.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
@@ -42,6 +47,9 @@ Shader "Deadswitch/VertexColorLit"
                 half _Smoothness;
                 half4 _EmissionColor;
                 half _Cutoff;
+                half4 _BareColor;
+                float4 _Wear;
+                float4 _WearB;
             CBUFFER_END
 
             struct Attributes
@@ -75,10 +83,36 @@ Shader "Deadswitch/VertexColorLit"
 
             half4 Frag(Varyings i) : SV_Target
             {
+                float3 n = NormalizeNormalPerPixel(i.normalWS);
+                float3 albedo = _BaseColor.rgb * i.color.r;
+                float rough = 1.0 - _Smoothness;
+                float metal = _Metallic;
+                if (_WearB.w > 0.5)
+                {
+                    float h;
+                    ds_salvage(i.positionWS, n, i.color.rgb, _BaseColor.rgb, _BareColor.rgb, _Metallic, 1.0 - _Smoothness,
+                               _Wear.x, _Wear.y, _Wear.z, _Wear.w, _WearB.x, _WearB.y, _WearB.z, albedo, rough, metal, h);
+
+                    // bump from screen-space height derivatives (Mikkelsen), matching the preview
+                    float3 dpdx = ddx(i.positionWS);
+                    float3 dpdy = ddy(i.positionWS);
+                    float dhx = ddx(h);
+                    float dhy = ddy(h);
+                    float3 r1 = cross(dpdy, n);
+                    float3 r2 = cross(n, dpdx);
+                    float det = dot(dpdx, r1);
+                    float3 g = sign(det) * (dhx * r1 + dhy * r2) * 0.06;
+                    float3 nn = abs(det) * n - g;
+                    if (abs(det) > 1e-12 && dot(nn, nn) > 1e-20)
+                    {
+                        n = normalize(nn);
+                    }
+                }
+
                 InputData inputData = (InputData)0;
                 inputData.positionWS = i.positionWS;
                 inputData.positionCS = i.positionCS;
-                inputData.normalWS = NormalizeNormalPerPixel(i.normalWS);
+                inputData.normalWS = n;
                 inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(i.positionWS);
                 inputData.shadowCoord = TransformWorldToShadowCoord(i.positionWS);
                 inputData.fogCoord = i.fogFactor;
@@ -87,9 +121,9 @@ Shader "Deadswitch/VertexColorLit"
                 inputData.shadowMask = half4(1, 1, 1, 1);
 
                 SurfaceData s = (SurfaceData)0;
-                s.albedo = _BaseColor.rgb * i.color.rgb;
-                s.metallic = _Metallic;
-                s.smoothness = _Smoothness;
+                s.albedo = albedo;
+                s.metallic = metal;
+                s.smoothness = 1.0 - rough;
                 s.occlusion = 1;
                 s.alpha = 1;
                 s.emission = _EmissionColor.rgb;

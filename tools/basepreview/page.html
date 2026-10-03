@@ -54,7 +54,7 @@ Object.assign(sun.shadow.camera, { left: -32, right: 32, top: 32, bottom: -32, n
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
 world.add(sun);
 
-const salvage = await (await fetch('/salvage.txt')).text();
+const salvage = (await (await fetch('/salvage.txt')).text()).replace(/^#(ifndef|define|endif).*$/gm, '');
 const shim = '#define float2 vec2\n#define float3 vec3\n#define float4 vec4\n#define lerp mix\n#define frac fract\n#define saturate(x) clamp(x, 0.0, 1.0)\n';
 const lin = c => new THREE.Color().setRGB(...c, THREE.SRGBColorSpace);
 const coneMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, vertexColors: true,

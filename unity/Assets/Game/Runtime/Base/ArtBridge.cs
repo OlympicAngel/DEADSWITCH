@@ -114,12 +114,24 @@ namespace Deadswitch.Game.Base
                 shader = Shader.Find("Universal Render Pipeline/Lit");
             }
 
-            float emissionScale = BaseLook.Load().emissionScale;
+            BaseLook look = BaseLook.Load();
+            float emissionScale = look.emissionScale;
+            Shader coneShader = Resources.Load<Shader>("Shaders/DeadswitchLightCone");
             _on = new Material[Palette.Count];
             _off = new Material[Palette.Count];
             for (int i = 0; i < Palette.Count; i++)
             {
                 MaterialDef d = Palette.Get((Mat)i);
+                if ((Mat)i == Mat.LightCone && coneShader != null)
+                {
+                    var cone = new Material(coneShader) { name = "DS LightCone" };
+                    cone.SetVector("_Color", Linear(d.EmissionColor.X, d.EmissionColor.Y, d.EmissionColor.Z, 1f));
+                    cone.SetFloat("_Intensity", look.coneIntensity);
+                    _on[i] = cone;
+                    _off[i] = cone;
+                    continue;
+                }
+
                 _on[i] = Make(shader, d, true, emissionScale);
                 _off[i] = d.IsLamp ? Make(shader, d, false, emissionScale) : _on[i];
             }
@@ -131,6 +143,11 @@ namespace Deadswitch.Game.Base
             m.SetVector("_BaseColor", Linear(d.BaseColor.X, d.BaseColor.Y, d.BaseColor.Z, 1f));
             m.SetFloat("_Metallic", d.Metallic);
             m.SetFloat("_Smoothness", d.Smoothness);
+            Wear w = d.Wear;
+            bool procedural = w.Ground || (w.Chip + w.Rust + w.Dirt + w.Streak + w.Bump) > 0f;
+            m.SetVector("_BareColor", Linear(w.Bare.X, w.Bare.Y, w.Bare.Z, 1f));
+            m.SetVector("_Wear", new Vector4(w.Chip, w.Rust, w.Dirt, w.Streak));
+            m.SetVector("_WearB", new Vector4(w.Bump, w.Scale, w.Ground ? 1f : 0f, procedural ? 1f : 0f));
             if (lit && d.EmissionIntensity > 0f)
             {
                 Vector4 e = Linear(d.EmissionColor.X, d.EmissionColor.Y, d.EmissionColor.Z, 1f) * (d.EmissionIntensity * emissionScale);

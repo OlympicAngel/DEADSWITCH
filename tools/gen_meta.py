@@ -33,6 +33,7 @@ TEXT_IMPORTER = {
     ".uss": None,
     ".tss": None,
     ".shader": "ShaderImporter",
+    ".hlsl": None,
 }
 
 

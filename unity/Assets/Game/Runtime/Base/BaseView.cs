@@ -188,6 +188,7 @@ namespace Deadswitch.Game.Base
             o.Beacons.Clear();
             o.StatusLights.Clear();
             o.Renderers.Clear();
+            o.Cones.Clear();
             o.Built = true;
             o.Height = 0.5f;
 
@@ -213,6 +214,11 @@ namespace Deadswitch.Game.Base
         {
             GameObject body = MeshObject("Facility", model.Static, o.Root, v.Powered);
             o.Renderers.Add(body.GetComponent<MeshRenderer>());
+            GameObject cones = ConeObject(model, o.Root);
+            if (cones != null)
+            {
+                o.Cones.Add(cones);
+            }
             foreach (AnimPart part in model.Parts)
             {
                 var pivot = new GameObject("Part").transform;
@@ -254,6 +260,11 @@ namespace Deadswitch.Game.Base
             foreach (Light l in o.StatusLights)
             {
                 l.enabled = v.Powered;
+            }
+
+            foreach (GameObject c in o.Cones)
+            {
+                c.SetActive(v.Powered);
             }
 
             foreach (Light l in o.Beacons)
@@ -347,12 +358,28 @@ namespace Deadswitch.Game.Base
             GameObject go = MeshObject(name, model.Static, parent, powered);
             go.transform.localPosition = position;
             go.transform.localRotation = Quaternion.Euler(0, yaw, 0);
+            ConeObject(model, go.transform);
             foreach (LightSpec spec in model.Lights)
             {
                 PointLight(spec, go.transform);
             }
 
             return go;
+        }
+
+        /// <summary>Additive light cones render apart from the shadow-casting mesh.</summary>
+        private static GameObject ConeObject(Model model, Transform parent)
+        {
+            if (model.Cones.IsEmpty)
+            {
+                return null;
+            }
+
+            GameObject cones = MeshObject("Light Cones", model.Cones, parent, true);
+            MeshRenderer r = cones.GetComponent<MeshRenderer>();
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            return cones;
         }
 
         private static GameObject MeshObject(string name, Deadswitch.Art.Geometry.MeshData data, Transform parent, bool powered)
@@ -420,6 +447,7 @@ namespace Deadswitch.Game.Base
             public readonly List<Light> Beacons = new List<Light>();
             public readonly List<Light> StatusLights = new List<Light>();
             public readonly List<MeshRenderer> Renderers = new List<MeshRenderer>();
+            public readonly List<GameObject> Cones = new List<GameObject>();
         }
 
         private sealed class PartState

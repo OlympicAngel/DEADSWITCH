@@ -1,4 +1,6 @@
-// Shared salvage-material math (doc 11 Master art direction). This text is the single source: the Unity
+#ifndef DS_SALVAGE_COMMON
+#define DS_SALVAGE_COMMON
+// Shared salvage-material math (doc 11 Master art direction). This file is the single source: the Unity
 // shader (DeadswitchLit.shader, HLSL) and tools/basepreview (GLSL) both include it; it uses only syntax that
 // is valid in both after the preview's #define shim (float2/3/4 -> vec2/3/4, lerp -> mix, saturate -> clamp).
 float ds_hash(float3 p)
@@ -90,3 +92,4 @@ void ds_salvage(float3 wp, float3 n, float3 masks, float3 baseCol, float3 bareCo
     albedo *= lerp(1.0, ao, 0.75);
     height = (n2 * 0.6 + n3 * 0.4 + chipMask * 0.3) * bump;
 }
+#endif
