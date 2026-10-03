@@ -1,7 +1,7 @@
 # Playbook: Balance tuning
 
 1. Every number is a placeholder `(tune)` until a prototype run says otherwise.
-2. Numbers live in **one place**: declared in a `SimConfig` section (`src/Deadswitch.Sim/Config/*Config.cs`) with a range and description, valued in the shipped balance file `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml` (ADR-0007). Name the unit: `PerTick`, `PerHour`, `Ticks`, `Pct` (0-100), `Permille`, `Bp`, `Cap`.
+2. Numbers live in **one place**: declared in a `SimConfig` section (`src/Deadswitch.Sim/Config/*Config.cs`) with a range and description, valued in the shipped balance file `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml` (ADR-0008). Name the unit: `PerTick`, `PerHour`, `Ticks`, `Pct` (0-100), `Permille`, `Bp`, `Cap`.
    - **Tweak a value:** edit the shipped file, then `dotnet run --project src/Deadswitch.Cli -- config check` and the tests.
    - **Add a tunable:** add the field + one `v.Int(...)` line in its section's `Visit`, use it in the sim, then regenerate the file with `config dump --out src/Deadswitch.Sim/Resources/DeadswitchBalance.toml` (keeps your edited values) and run `python3 tools/gen_meta.py` if you added files.
    - **See what diverges from doc 10:** `config diff`.

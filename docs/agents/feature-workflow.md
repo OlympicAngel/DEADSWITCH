@@ -5,7 +5,7 @@
 3. **Check systemic impact and fairness**: name relevant system interactions; trace costs, counterplay, failure, recovery, and offline behavior where applicable. Do not force irrelevant coupling.
 4. **Protect decision status and scope**: keep locked decisions, proposals, open questions, and *(tune)* values distinct. Ask before material changes to canon, scope, balance, rewards, loss, timers, monetization, notifications, accessibility, or intended player emotion.
 5. **Write or update a spec** (`docs/specs/TEMPLATE.md`) for work bigger than a bug fix: goal, non-goals, rules, acceptance criteria, and tests. Keep it under one page.
-6. **Tests first or alongside** in `Deadswitch.Sim.Tests`. Sim changes need determinism and cap/limit coverage where relevant.
+6. **Minimal tests** in `Deadswitch.Sim.Tests`: only for tricky, silent-failure logic (determinism, replay/save, parsing, soft-lock guards), 1-3 per feature. Verify the rest with a quick CLI run or preview screenshot.
 7. **Implement rules in the sim**, then wire Unity UI on top. The UI never owns game rules.
 8. **Run the gate**: `pwsh tools/check.ps1` (or the equivalent commands documented in `README.md`).
 9. **Update docs**: owning spec/design source, doc 10's corrections log if numbers or resolved decisions changed, and `docs/agents/HANDOFF.md`.

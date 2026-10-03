@@ -6,7 +6,7 @@ The owner's direction (2026-10-03): **no throwaway prototypes.** Everything we b
 - Production structure from the first commit: clear modules, no "temp" hacks, no dead code, no TODO without a BACKLOG item.
 - **Every tunable lives in config**, never as a literal in logic. Sim: `SimConfig` sections, mirrored in the balance file. Presentation: design tokens (colors, spacing, durations, easing) in one place. Mark design placeholders *(tune)*.
 - Use real math where it improves feel or fairness (fixed-point curves, easing, smoothing, logistic/soft caps, exponent scaling via integer tables). In the sim it must stay integer/fixed-point (see `sim-determinism.md`).
-- Tests for every rule; guard tests for intended feel (caps, cadence, no soft-lock).
+- Minimal testing: tests only where a bug would be silent and costly (determinism, saves, parsing, soft-lock guards). Verify everything else by running it.
 - Errors are handled, not swallowed. Saves are versioned. Nothing blocks the main thread on mobile.
 
 ## Visual and motion bar

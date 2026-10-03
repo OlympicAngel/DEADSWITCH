@@ -50,7 +50,7 @@ namespace Deadswitch.Sim.Persistence
     }
 
     /// <summary>
-    /// Versioned binary snapshot of a run (ADR-0008): header, state (via <see cref="GameState.Visit"/>),
+    /// Versioned binary snapshot of a run (ADR-0009): header, state (via <see cref="GameState.Visit"/>),
     /// command log, event log, FNV-1a checksum. Pure bytes: hosts own file I/O.
     /// </summary>
     public static class SaveGame

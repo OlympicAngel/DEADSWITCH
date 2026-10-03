@@ -4,7 +4,7 @@
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
 - Pillar / milestone: Base & economy / M1
 - Spec: docs/specs/SPEC-002-economy-core.md
-- Sources: doc 02 s1-8, doc 10 s1.3 + s3, doc 03 s3, ADR-0007, ADR-0008
+- Sources: doc 02 s1-8, doc 10 s1.3 + s3, doc 03 s3, ADR-0008, ADR-0009
 
 ## Goal
 Facilities in Hub slots, a build/upgrade queue with timers, power priority with shedding and blackout, crew and unmanned (AI-run) facilities, population cap from Life Support. Growth always costs more upkeep; shortages are the handler's planned trade-off.

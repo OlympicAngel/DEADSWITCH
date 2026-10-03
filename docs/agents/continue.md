@@ -19,7 +19,7 @@ Use when the user says **"continue"** (or "go on", "next", "keep going"), or at 
    - `Status: Done` or no active feature → take the **top `Ready` item** in `BACKLOG.md`, set it `In progress`, and rewrite `TASK.md` from the template at the bottom of this file.
 4. **Plan the feature** (only when starting one): follow `docs/agents/feature-workflow.md` and `docs/agents/quality-bar.md`. Break it into 4-12 steps, each one commit-sized and testable. Write them into `TASK.md` before coding.
 5. **Do one step at a time.** For each step:
-   1. Implement with tests (sim) or a verification path (Unity/visuals: compile check + preview screenshot, see quality bar).
+   1. Implement, then verify the cheapest way that proves it works (CLI run, compile check, preview screenshot). Add a test only for tricky, silent-failure logic (minimal-testing rule).
    2. Run the gate. Fix everything. Never weaken a test.
    3. Tick the step in `TASK.md`, add any notes/decisions under **Notes**.
    4. Commit (Conventional Commits) and **push**. One step = one commit is the default.

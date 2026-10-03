@@ -37,7 +37,7 @@ namespace Deadswitch.Host.Persistence
     }
 
     /// <summary>
-    /// Crash-safe save file with one backup (ADR-0008). Writes go to <c>.tmp</c>, are flushed to disk,
+    /// Crash-safe save file with one backup (ADR-0009). Writes go to <c>.tmp</c>, are flushed to disk,
     /// then rotated: primary becomes <c>.bak</c>, tmp becomes primary. At every moment at least one
     /// complete copy exists. Loads try the primary, then the backup.
     /// </summary>

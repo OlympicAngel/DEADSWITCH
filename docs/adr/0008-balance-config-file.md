@@ -1,4 +1,4 @@
-# ADR-0007: Balance config file
+# ADR-0008: Balance config file
 
 - Status: Accepted
 - Date: 2026-10-03
@@ -12,7 +12,7 @@ The owner wants every number tweakable without touching code. The sim, the CLI b
 - The game runs the **shipped file** `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml` (inside the sim UPM package so Unity can load it from `Resources`). Code defaults are the doc 10 baseline and the lenient fallback for missing keys.
 - Reading is pure string processing; callers (CLI, tests, Unity) load the text.
 - Errors carry line numbers. Strict mode (tests, CLI, CI) rejects unknown, duplicate, missing, malformed and out-of-range values. Lenient mode (game) keeps defaults for missing keys and reports warnings.
-- Saves and replays store the config hash (ADR-0008 save format).
+- Saves and replays store the config hash (ADR-0009 save format).
 
 ## Consequences
 - Good: one place to tune; typos fail loudly; feel guard tests run on the shipped file; no reflection (IL2CPP-safe); deterministic order.

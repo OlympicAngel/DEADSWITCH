@@ -5,7 +5,7 @@ namespace Deadswitch.Sim.State
 {
     /// <summary>
     /// All mutable sim state. Every field must be declared in <see cref="Visit"/>, which drives both the
-    /// state hash and the save format (ADR-0008). Public fields so the visitor can take them by ref.
+    /// state hash and the save format (ADR-0009). Public fields so the visitor can take them by ref.
     /// </summary>
     public sealed class GameState
     {

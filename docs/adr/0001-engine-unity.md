@@ -4,7 +4,7 @@
 - Date: 2026-10-03
 
 ## Context
-Mobile-first, offline-first, 2D painted art with a CRT/terminal HUD and a living base view. Needs mature mobile plumbing: in-app purchase, rewarded ads, local notifications, home-screen widgets, haptics, cloud save. Team is small and uses AI coding agents, so a typed language with a strong ecosystem helps.
+Mobile-first, offline-first, 2D painted art (art direction since changed to stylized 3D, see ADR-0007) with a CRT/terminal HUD and a living base view. Needs mature mobile plumbing: in-app purchase, rewarded ads, local notifications, home-screen widgets, haptics, cloud save. Team is small and uses AI coding agents, so a typed language with a strong ecosystem helps.
 
 ## Decision
 Use **Unity 6 LTS (6000.x)** with C#. Game rules live outside Unity in `Deadswitch.Sim` (ADR-0002); Unity is the presentation and platform layer.

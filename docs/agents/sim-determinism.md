@@ -26,7 +26,9 @@ The sim must produce **bit-identical** results for the same seed + inputs on eve
 - New per-tick logic is a system in `Systems/`, called from `Simulation.Step` in an explicit position.
 
 ## Checklist for any sim change
-- [ ] New state field added to `GameState` **and** `GameState.Visit` (hash + save). Save layout changed? Bump `SaveGame.FormatVersion` and add a migration (ADR-0008).
+Owner rule: minimal testing. The existing determinism, chunking, replay and save tests already cover new state automatically (they hash all of `GameState`), so new mechanics usually need **no new test** beyond extending a scenario those tests run. Add a test only for tricky rules that could fail silently.
+
+- [ ] New state field added to `GameState` **and** `GameState.Visit` (hash + save). Save layout changed? Bump `SaveGame.FormatVersion` and add a migration (ADR-0009).
 - [ ] Test: save, load, continue equals a continuous run.
 - [ ] New randomness uses `state.Rng` and always draws the same number of times per tick.
 - [ ] Test: same seed gives same hash; different seed diverges.

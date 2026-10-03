@@ -2,7 +2,7 @@ namespace Deadswitch.Sim.Config
 {
     /// <summary>
     /// FNV-1a 64 over every key and value in visit order. Saves and replays store it so a run can be
-    /// re-simulated with the exact config that produced it (ADR-0007).
+    /// re-simulated with the exact config that produced it (ADR-0008).
     /// </summary>
     public static class ConfigHasher
     {

@@ -16,7 +16,7 @@ If two sources conflict, stop and flag it in your reply. Do not silently pick on
 | Path | Purpose |
 |------|---------|
 | `src/Deadswitch.Sim/` | Pure C# sim core (netstandard2.1). No Unity references. |
-| `src/Deadswitch.Host/` | Engine-agnostic host services (save files, catch-up, clock guard). I/O allowed, no UnityEngine (ADR-0008) |
+| `src/Deadswitch.Host/` | Engine-agnostic host services (save files, catch-up, clock guard). I/O allowed, no UnityEngine (ADR-0009) |
 | `src/Deadswitch.Sim.Tests/` | xUnit tests (sim + host), incl. determinism tests |
 | `src/Deadswitch.Cli/` | Headless sim runner for the paper prototype and balancing |
 | `unity/` | Unity project (UI, art, audio, platform glue). Consumes the sim as a local package |
@@ -40,7 +40,7 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 - **No wall-clock** in the sim (`DateTime`, `Stopwatch`). Time is `State.Tick` (1 tick = 1 game minute).
 - **No UnityEngine** references, no I/O, no static mutable state in `Deadswitch.Sim`.
 - **No iteration over unordered collections** (`Dictionary`/`HashSet`) where order affects state. Use lists or sorted keys.
-- Every field of `GameState` is declared in `GameState.Visit` (drives the hash and the save format, ADR-0008). Layout change = bump `SaveGame.FormatVersion` + migration.
+- Every field of `GameState` is declared in `GameState.Visit` (drives the hash and the save format, ADR-0009). Layout change = bump `SaveGame.FormatVersion` + migration.
 - Invariant: `Run(a); Run(b)` equals `Run(a+b)`. Keep the chunking test green.
 
 ## Work loop ("continue")
@@ -54,7 +54,7 @@ Production-ready from the first commit, not prototypes. Every tunable goes in co
 
 ## Workflow
 1. **Spec first** for anything bigger than a bug fix: `docs/specs/TEMPLATE.md`. Keep specs short.
-2. **Tests first or alongside.** Sim changes need tests. Determinism and cap/limit tests are mandatory for new mechanics.
+2. **Minimal testing (owner rule, 2026-10-03).** Tests are a cost. Write one only for tricky logic where a bug would be silent and costly (determinism, save/replay, parsing, economy math that could soft-lock) or as one regression test for a fixed bug. Usually 1-3 per feature. Prefer a quick CLI/manual check. Keep existing tests; never weaken them.
 3. **Small PRs.** One concern per branch. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
 4. **Decisions get ADRs.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
 5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log, and `docs/agents/HANDOFF.md`.
@@ -67,7 +67,7 @@ Production-ready from the first commit, not prototypes. Every tunable goes in co
 
 ## Definition of done
 - `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).
-- New behavior has tests; no existing test was weakened to make it pass.
+- Risky behavior has a minimal test (see Workflow 2); no existing test was weakened to make it pass.
 - No new warnings (warnings are errors).
 - Docs and HANDOFF updated; `TASK.md` and `BACKLOG.md` reflect reality.
 - Committed and pushed.
@@ -83,7 +83,7 @@ Claude and Codex both work in this repo. To avoid collisions:
 - Do not commit secrets, keystores, or `Library/` / `Temp/` from Unity.
 - Do not add dependencies to `Deadswitch.Sim` (it must stay dependency-free).
 - Do not install tooling on `C:`. All dev tooling lives under `D:\dev` (see `tools/setup-env.ps1`).
-- Do not invent balance numbers silently. Declare them in a `SimConfig` section and the shipped balance file (`src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`, ADR-0007) and log them in the corrections log if they change doc 10.
+- Do not invent balance numbers silently. Declare them in a `SimConfig` section and the shipped balance file (`src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`, ADR-0008) and log them in the corrections log if they change doc 10.
 
 ## Style
 - C# 9 (Unity-compatible), block-scoped namespaces, braces always, `_camelCase` private fields.

@@ -52,7 +52,7 @@
 - Long-term: mastery challenges and legacy score.
 
 ### Presentation and platform
-- Art: gritty painted realism, CRT terminal HUD, dark illustrated report panels.
+- Art: gritty painted realism, CRT terminal HUD, dark illustrated report panels. *(Superseded: stylized 3D realism, see doc 10 section 11 and ADR-0007.)*
 - Audio: ambient dread, glitchy AI voice, dynamic music with silence before big attacks, alarms and haptics.
 - UI: command bar, living base view, gesture-driven, one-handed.
 - Notifications: attack alerts, in-character, lock-screen widget, fully opt-in.
