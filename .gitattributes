@@ -22,3 +22,4 @@
 
 # Small runtime fonts are stored directly (no LFS): cloud agent sessions cannot upload LFS objects.
 unity/Assets/Game/Resources/Fonts/*.ttf !filter !diff !merge binary
+docs/media/*.png !filter !diff !merge binary

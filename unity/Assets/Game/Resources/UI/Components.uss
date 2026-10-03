@@ -1,0 +1,296 @@
+/* DEADSWITCH component kit: the AI's field terminal. Uses Tokens.uss variables only. */
+
+/* ---------- Typography ---------- */
+.ds-display {
+    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
+    font-size: var(--fs-lg);
+    letter-spacing: 3px;
+    color: var(--c-text);
+}
+
+.ds-title {
+    -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
+    font-size: var(--fs-md);
+    letter-spacing: 4px;
+    color: var(--c-text);
+}
+
+.ds-label {
+    -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
+    font-size: var(--fs-micro);
+    letter-spacing: 4px;
+    color: var(--c-text-dim);
+}
+
+.ds-body {
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+    white-space: normal;
+}
+
+.ds-value {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-lg);
+    color: var(--c-text);
+}
+
+.ds-value--hero {
+    font-size: var(--fs-xl);
+}
+
+.ds-unit {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    margin-left: var(--s-1);
+    padding-bottom: var(--s-1);
+}
+
+.ds-mono {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Regular");
+}
+
+.t-phosphor { color: var(--c-phosphor); text-shadow: 0 0 10px var(--c-phosphor-glow); }
+.t-amber { color: var(--c-amber); text-shadow: 0 0 10px var(--c-amber-glow); }
+.t-red { color: var(--c-red); text-shadow: 0 0 10px var(--c-red-glow); }
+.t-magenta { color: var(--c-magenta); }
+.t-dim { color: var(--c-text-dim); }
+.t-faint { color: var(--c-text-faint); }
+
+/* Unity labels carry theme padding; the kit owns spacing. */
+.ds-root Label {
+    padding: 0;
+    margin: 0;
+}
+
+/* ---------- Layout helpers ---------- */
+.row { flex-direction: row; align-items: center; }
+.row--baseline { flex-direction: row; align-items: flex-end; }
+.col { flex-direction: column; }
+.grow { flex-grow: 1; }
+.spacer { flex-grow: 1; }
+.gap-r > * { margin-right: var(--s-3); }
+
+/* ---------- Panel with corner brackets ---------- */
+.ds-panel {
+    background-color: var(--c-panel);
+    border-width: 1px;
+    border-color: var(--c-line);
+    border-radius: var(--r-sm);
+    padding: var(--s-4) var(--s-5);
+}
+
+.ds-panel--raised { background-color: var(--c-panel-raised); }
+.ds-panel--sunken { background-color: var(--c-panel-sunken); }
+
+.ds-corner {
+    position: absolute;
+    width: var(--corner);
+    height: var(--corner);
+    border-color: var(--c-line-strong);
+}
+
+.ds-corner--tl { left: -1px; top: -1px; border-left-width: var(--bw); border-top-width: var(--bw); }
+.ds-corner--tr { right: -1px; top: -1px; border-right-width: var(--bw); border-top-width: var(--bw); }
+.ds-corner--bl { left: -1px; bottom: -1px; border-left-width: var(--bw); border-bottom-width: var(--bw); }
+.ds-corner--br { right: -1px; bottom: -1px; border-right-width: var(--bw); border-bottom-width: var(--bw); }
+
+.ds-panel--amber { border-color: var(--c-amber-dim); }
+.ds-panel--amber > .ds-corner { border-color: var(--c-amber); }
+.ds-panel--red { border-color: var(--c-red-glow); }
+.ds-panel--red > .ds-corner { border-color: var(--c-red); }
+
+.ds-panel__header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--s-3);
+}
+
+.ds-divider {
+    height: 1px;
+    background-color: var(--c-line);
+    margin: var(--s-3) 0;
+}
+
+/* ---------- Buttons ---------- */
+.ds-btn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch);
+    padding: 0 var(--s-6);
+    border-width: var(--bw);
+    border-radius: var(--r-sm);
+    border-color: var(--c-line-strong);
+    background-color: rgba(168, 213, 138, 0.08);
+    transition-property: scale, background-color, border-color;
+    transition-duration: 0.12s;
+    transition-timing-function: ease-out-cubic;
+}
+
+.ds-btn:hover { background-color: rgba(168, 213, 138, 0.14); }
+.ds-btn:active { scale: 0.97 0.97; background-color: rgba(168, 213, 138, 0.22); }
+
+.ds-btn__label {
+    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
+    font-size: var(--fs-sm);
+    letter-spacing: 4px;
+    color: var(--c-phosphor);
+}
+
+.ds-btn--primary { background-color: var(--c-phosphor); border-color: var(--c-phosphor); }
+.ds-btn--primary:hover { background-color: #B9E29C; }
+.ds-btn--primary > .ds-btn__label { color: var(--c-world); }
+
+.ds-btn--warn { border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.12); }
+.ds-btn--warn > .ds-btn__label { color: var(--c-amber); }
+
+.ds-btn--ghost { border-color: var(--c-line-mid); background-color: rgba(0, 0, 0, 0); }
+.ds-btn--ghost > .ds-btn__label { color: var(--c-text-dim); }
+
+.ds-btn.is-disabled { opacity: 0.38; }
+
+/* ---------- Segmented meter ---------- */
+.ds-meter {
+    flex-direction: row;
+    height: 14px;
+    margin-top: var(--s-2);
+}
+
+.ds-meter__seg {
+    flex-grow: 1;
+    margin-right: 3px;
+    background-color: rgba(168, 213, 138, 0.1);
+}
+
+.ds-meter__seg.is-on { background-color: var(--c-phosphor); }
+.ds-meter--amber > .ds-meter__seg.is-on { background-color: var(--c-amber); }
+.ds-meter--red > .ds-meter__seg.is-on { background-color: var(--c-red); }
+.ds-meter--magenta > .ds-meter__seg.is-on { background-color: var(--c-magenta); }
+
+/* ---------- Chips and badges ---------- */
+.ds-chip {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-1) var(--s-3);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    border-radius: var(--r-sm);
+    background-color: var(--c-panel-sunken);
+}
+
+.ds-chip__label {
+    -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
+    font-size: var(--fs-micro);
+    letter-spacing: 3px;
+    color: var(--c-text-dim);
+}
+
+.ds-chip--amber { border-color: var(--c-amber-dim); }
+.ds-chip--amber > .ds-chip__label { color: var(--c-amber); }
+.ds-chip--phosphor { border-color: var(--c-phosphor-dim); }
+.ds-chip--phosphor > .ds-chip__label { color: var(--c-phosphor); }
+.ds-chip--red { border-color: var(--c-red); }
+.ds-chip--red > .ds-chip__label { color: var(--c-red); }
+
+/* Status pip: shape + color (colorblind-safe). */
+.ds-pip {
+    width: 12px;
+    height: 12px;
+    margin-right: var(--s-2);
+    background-color: var(--c-phosphor);
+}
+
+.ds-pip--diamond { rotate: 45deg; }
+.ds-pip--amber { background-color: var(--c-amber); }
+.ds-pip--red { background-color: var(--c-red); }
+.ds-pip--off { background-color: var(--c-text-faint); }
+
+/* ---------- Alert banner ---------- */
+.ds-banner {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-3) var(--s-4);
+    border-left-width: 6px;
+    border-color: var(--c-amber);
+    background-color: rgba(52, 38, 14, 0.92);
+}
+
+.ds-banner--red { border-color: var(--c-red); background-color: rgba(58, 18, 16, 0.92); }
+
+/* ---------- Tab bar ---------- */
+.ds-tabbar {
+    flex-direction: row;
+    background-color: var(--c-panel-solid);
+    border-top-width: 1px;
+    border-color: var(--c-line-mid);
+}
+
+.ds-tab {
+    flex-grow: 1;
+    flex-basis: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 132px;
+    border-top-width: 4px;
+    border-color: rgba(0, 0, 0, 0);
+    transition-property: background-color, border-color;
+    transition-duration: 0.24s;
+}
+
+.ds-tab__icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--s-2);
+}
+
+.ds-tab__label {
+    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
+    font-size: var(--fs-micro);
+    letter-spacing: 4px;
+    color: var(--c-text-dim);
+}
+
+.ds-tab.is-active { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.07); }
+.ds-tab.is-active > .ds-tab__label { color: var(--c-phosphor); }
+
+/* ---------- Bottom sheet ---------- */
+.ds-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--c-panel-solid);
+    border-top-width: var(--bw);
+    border-color: var(--c-line-strong);
+    padding: var(--s-5) var(--s-6) var(--s-8) var(--s-6);
+    transition-property: translate, opacity;
+    transition-duration: 0.28s;
+    transition-timing-function: ease-out-cubic;
+}
+
+.ds-sheet.is-hidden { translate: 0 110%; opacity: 0; }
+
+.ds-sheet__grip {
+    align-self: center;
+    width: 96px;
+    height: 6px;
+    background-color: var(--c-line-mid);
+    margin-bottom: var(--s-4);
+}
+
+/* ---------- Key/value rows ---------- */
+.ds-kv {
+    flex-direction: row;
+    align-items: center;
+    min-height: 56px;
+    border-bottom-width: 1px;
+    border-color: var(--c-line);
+}
+
+.ds-kv__key { flex-grow: 1; color: var(--c-text-dim); font-size: var(--fs-sm); }
+.ds-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); }
+
+/* ---------- Custom drawn ---------- */
+.ds-sparkline { height: 64px; }
+.ds-gauge { width: 132px; height: 132px; }
