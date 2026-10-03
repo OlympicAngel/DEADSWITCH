@@ -1,6 +1,6 @@
 # SPEC-003: Living base diorama (3D)
 
-- Status: In progress (F-010)
+- Status: Done (F-010); Unity play-mode check pending on the owner's machine
 - Pillar: Base & economy (presentation), AI relationship (the drone camera is the AI's eye)
 - Touches: economy (facility kinds, levels, power, crew, construction), defense (turrets, raid damage later), corruption (sensor noise)
 - Source rules: ADR-0007, doc 11 (world, camera, base), doc 06 s3 (visible progression), quality bar
@@ -18,6 +18,6 @@ The Hub is a small, tactile 3D world seen through the AI's recon drone. Every fa
 7. **Interaction:** tap a pad -> select (highlight ring) -> slot sheet: build options (cost, time, effect) or upgrade/power/demolish with clear costs and reasons when unavailable.
 
 ## Acceptance criteria
-- [ ] Headless preview of a day-7 base passes the doc 11 avoid-list review (no cartoon, flat or plastic look) and reads at phone scale
-- [ ] All facility kinds L1-L5 distinguishable at phone scale
-- [ ] Slot sheet builds/upgrades through commands with rejection reasons shown
+- [x] Headless preview of a day-7 base passes the doc 11 avoid-list review (no cartoon, flat or plastic look) and reads at phone scale
+- [x] All facility kinds L1-L5 distinguishable at phone scale
+- [x] Slot sheet builds/upgrades through commands with rejection reasons shown

@@ -14,8 +14,8 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-007 | Unity foundation: compile-check project, code-only bootstrap, SimHost (real-time ticking), balance file import, save/load, offline catch-up, clock guard, settings | M2 | Done | 2026-10-03 |
 | F-008 | Visual system: design tokens (USS), fonts, CRT terminal overlay, motion helpers, headless UI preview tool | M2 | Done | 2026-10-03 |
 | F-009 | Terminal HUD + command bar: always-visible essentials, animated readouts, energy sparkline, Base / Map / AI / Ops navigation | M2 | Done | 2026-10-03 |
-| F-010 | 3D base diorama: heroic-realism compound (procedural geometry + procedural PBR salvage shader), drone-feed camera, slot selection, build/upgrade sheet, power/crew states visible | M2 | In progress | ADR-0007, doc 11 |
-| F-011 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation effects, glitch text by corruption, 50 lines, the first lie | M2 | Ready | ADVISOR_VOICE |
+| F-010 | 3D base diorama: heroic-realism compound (procedural geometry + procedural PBR salvage shader), drone-feed camera, slot selection, build/upgrade sheet, power/crew states visible | M2 | Done 2026-10-03 | ADR-0007, doc 11 |
+| F-011 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation effects, glitch text by corruption, 50 lines, the first lie | M2 | In progress | ADVISOR_VOICE |
 | F-012 | Defense setup screen: posture, crew chips, AI Confidence readout, Set & Go | M3 | Ready | doc 10 s4 |
 | F-013 | Battle report: graphic-novel panels of rendered stills, loss ledger, AI annotation, Verify | M3 | Ready | ADR-0003, ADR-0007 |
 | F-014 | Hidden project clock + Audit tool (Core Profile readout) | M2 | Ready | doc 10 s2 |
@@ -24,4 +24,5 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | Ready | ADR-0004 |
 | F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
 | F-019 | Factions + per-faction heat, world map | M5 | Later | |
+| F-020 | Ruthless choices: forced labor surge, purge, sacrifice (raise Coldness, lower loyalty) | M3 | Later | doc 03 s1, doc 10 s1.3 |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Later | fold into CLI |
