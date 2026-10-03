@@ -22,8 +22,8 @@ Spec: `docs/specs/SPEC-001-pressure-loop.md`
 - **Exit:** 30 simulated days across 100 seeds: no soft-locks, never wiped in one hit, raids feel like doc 10 section 4.
 
 ## M2 - AI relationship core (Phase 1, pillar 1)
-- [ ] Coldness / Boldness dials (hidden), delegation levels (Manual / Delegated / Offline autopilot)
-- [ ] Advisor line system with lie rules (`docs/narrative/ADVISOR_VOICE.md`); the first lie
+- [x] Coldness / Boldness dials (hidden), delegation levels (Manual / Delegated / Offline autopilot)
+- [x] Advisor line system with lie rules (`docs/narrative/ADVISOR_VOICE.md`); the first lie
 - [ ] Hidden project clock (Dormant / Active / Advanced / Imminent) + Audit tool
 - [ ] Module trunk M1-M3 + one field (8 nodes)
 - [ ] Terminal HUD in Unity (text-first, always-visible essentials)

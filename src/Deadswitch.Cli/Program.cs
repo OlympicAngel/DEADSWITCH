@@ -44,6 +44,8 @@ namespace Deadswitch.Cli
                         return ConfigCommand(rest);
                     case "art":
                         return ArtCommand(rest);
+                    case "advisor":
+                        return AdvisorCommand(rest);
                     case "help":
                     case "--help":
                     case "-h":
@@ -70,6 +72,7 @@ namespace Deadswitch.Cli
             TextWriter w = code == 0 ? Console.Out : Console.Error;
             w.WriteLine("usage:");
             w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE] [--garrison N] [--posture none|turtle|dark|evacuate] [--away]");
+            w.WriteLine("  advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
@@ -212,6 +215,22 @@ namespace Deadswitch.Cli
                 Console.WriteLine("  slot " + i + ": " + (slot.IsEmpty ? "-" : slot.Kind + " L" + slot.Level));
             }
 
+            return 0;
+        }
+
+        /// <summary>advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]: the AI's lines over a run.</summary>
+        private static int AdvisorCommand(string[] args)
+        {
+            double days = double.Parse(ValueAfter(args, "--days") ?? "3", CultureInfo.InvariantCulture);
+            ulong seed = ParseULong(ValueAfter(args, "--seed") ?? "42", "seed");
+            string level = ValueAfter(args, "--delegation") ?? "manual";
+            if (!Enum.TryParse(level, true, out DelegationLevel delegation))
+            {
+                throw new UsageException("--delegation is manual, delegated or autopilot.");
+            }
+
+            var sim = new Simulation(seed, LoadConfig(null, out _));
+            AdvisorTranscript.Write(sim, (long)(days * SimConfig.TicksPerDay), delegation, args.Contains("--away"), Console.Out);
             return 0;
         }
 

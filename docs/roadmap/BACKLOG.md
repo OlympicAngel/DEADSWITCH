@@ -15,8 +15,8 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-008 | Visual system: design tokens (USS), fonts, CRT terminal overlay, motion helpers, headless UI preview tool | M2 | Done | 2026-10-03 |
 | F-009 | Terminal HUD + command bar: always-visible essentials, animated readouts, energy sparkline, Base / Map / AI / Ops navigation | M2 | Done | 2026-10-03 |
 | F-010 | 3D base diorama: heroic-realism compound (procedural geometry + procedural PBR salvage shader), drone-feed camera, slot selection, build/upgrade sheet, power/crew states visible | M2 | Done 2026-10-03 | ADR-0007, doc 11 |
-| F-011 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation effects, glitch text by corruption, 50 lines, the first lie | M2 | In progress | ADVISOR_VOICE |
-| F-012 | Defense setup screen: posture, crew chips, AI Confidence readout, Set & Go | M3 | Ready | doc 10 s4 |
+| F-011 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation effects, glitch text by corruption, 50 lines, the first lie | M2 | Done 2026-10-03 | ADVISOR_VOICE |
+| F-012 | Defense setup screen (OPS): posture, crew chips, AI Confidence readout, delegation selector (Manual / Delegated / Autopilot), Set & Go | M3 | In progress | doc 10 s4 |
 | F-013 | Battle report: graphic-novel panels of rendered stills, loss ledger, AI annotation, Verify | M3 | Ready | ADR-0003, ADR-0007 |
 | F-014 | Hidden project clock + Audit tool (Core Profile readout) | M2 | Ready | doc 10 s2 |
 | F-015 | Module tree: trunk M1-M3 + first field (8 nodes), research timers, Tier 2 gate | M2 | Ready | doc 10 s6 |

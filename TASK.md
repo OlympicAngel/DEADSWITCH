@@ -1,25 +1,22 @@
-# TASK: F-011 AI advisor
+# TASK: F-012 Defense setup screen (OPS)
 
 - Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: AI relationship / M2
-- Spec: docs/specs/SPEC-004-ai-advisor.md
-- Sources: doc 03 s1-2, doc 10 s1.4 + s7, docs/narrative/ADVISOR_VOICE.md
+- Pillar / milestone: Defense & offline / M3
+- Spec: docs/specs/SPEC-005-defense-setup.md
+- Sources: doc 10 s4, doc 03 s2, SPEC-001, SPEC-004
 
 ## Goal
-The AI talks back: short lines for every major event, tone shaped by hidden Coldness/Boldness dials, a delegation ladder that saves the handler time and makes the AI bolder, and a first, checkable lie about where a raid hits.
+The OPS screen: read the threat, pick a posture, post defenders, see the AI's Confidence, Set & Go, lockdown, and choose how much the AI runs.
 
 ## Steps
-- [x] 1. Sim: `[ai]` config, dials in GameState (versioned visitor, save v2), Boldness from delegation
-- [x] 2. Sim: raid gates (RaidVector / RaidContact), first lie + Boldness-scaled lies (AdvisorLied), tests
-- [x] 3. Sim: delegated build planner + offline autopilot defense (AiActed), 7-day delegated guard test
-- [x] 4. Host: advisor line engine + `AdvisorLines.txt` (50 lines) + parse test
-- [x] 5. Unity: HUD wired to the advisor (events -> lines, tone, glitch), raid row shows the reported gate; resolution lines name the contact gate
-- [ ] 6. CLI `advisor` transcript for a scripted run; review the voice; docs (ADVISOR_VOICE, HANDOFF, BACKLOG)
+- [ ] 1. Sim: `AiSystem.Recommend` + `ConfidencePct`, autopilot uses them
+- [ ] 2. UI: `Ops.uxml` + `Ops.uss` (threat card, posture cards, garrison sockets, readout, Set & Go, lockdown, delegation); preview
+- [ ] 3. Unity: `OpsScreen` controller (bind, refresh on tick, commands, reasons); register in the HUD router
+- [ ] 4. Docs (SPEC-005, BACKLOG, HANDOFF)
 
 ## Notes
-- F-010 closed 2026-10-03; its Unity play-mode check is listed in HANDOFF (owner's machine).
-- Gates use the spawn tick's unused miss draw: RNG stays at four draws per tick.
+- F-011 closed 2026-10-03 (advisor voice; review with `dotnet run --project src/Deadswitch.Cli -- advisor`).
 
 ## Blocked / questions
 - none

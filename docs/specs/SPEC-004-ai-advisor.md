@@ -1,6 +1,6 @@
 # SPEC-004: The AI advisor (voice, dials, delegation, the first lie)
 
-- Status: In progress (F-011)
+- Status: Done (F-011)
 - Pillar: AI relationship
 - Touches: defense (raid gates, autopilot posture), economy (delegated build queue), corruption (glitch voice, estimate error), offline play (autopilot while away), audit (F-014 reads the lie record)
 - Source rules: doc 03 s1-2 and s5, doc 10 s1.4 and s7, `docs/narrative/ADVISOR_VOICE.md`
@@ -25,10 +25,10 @@ Coldness triggers (forced labor, purges, sacrifices arrive with those choices, B
 9. **Glitch:** the line text glitches by corruption band x effect intensity (existing ticker); numbers and gate names stay readable.
 
 ## Acceptance criteria
-- [ ] 50 lines covering boot, raids (warning, repelled, breached, missed, lockdown, mercy), power (low, shed, blackout), construction, corruption bands, OVERRIDE, delegation, autopilot actions, the lie and its deflection, idle
-- [ ] Delegated: a 7-day run with no handler input never blacks out and grows (guard test)
-- [ ] First raid warning reports the opposite of the true gate; the contact event reveals it
-- [ ] Determinism, chunking and save/load hold with the new state
+- [x] 50 lines covering boot, raids (warning, repelled, breached, missed, lockdown, mercy), power (low, shed, blackout), construction, corruption bands, OVERRIDE, delegation, autopilot actions, the lie and its deflection, idle
+- [x] Delegated: a 7-day run with no handler input never blacks out and grows (guard test)
+- [x] First raid warning reports the opposite of the true gate; the contact event reveals it
+- [x] Determinism, chunking and save/load hold with the new state
 
 ## Tests
 `AdvisorTests` (sim): first-lie gate, delegated 7-day guard. Existing determinism/chunking/save tests cover the new fields. `AdvisorLinesTests` (host): the shipped file parses and every trigger has a neutral line.

@@ -17,8 +17,10 @@ namespace Deadswitch.Host.Narrative
         /// <summary>Minimum seconds a line stays before a normal line replaces it (urgent lines may interrupt).</summary>
         public const float MinHoldSeconds = 4.5f;
 
-        /// <summary>Quiet seconds before an ambient line.</summary>
-        public const float IdleSeconds = 45f;
+        /// <summary>Quiet seconds before the first ambient line; each further one waits twice as long, up to the max.</summary>
+        public const float IdleSeconds = 90f;
+
+        public const float IdleMaxSeconds = 900f;
 
         /// <summary>Normal lines older than this are dropped (the moment has passed).</summary>
         public const float StaleSeconds = 20f;
@@ -43,6 +45,7 @@ namespace Deadswitch.Host.Narrative
         private int _warnMinutes;
         private int _warnEstimate;
         private float _sinceShown;
+        private float _idleWait = IdleSeconds;
         private Priority _shownPriority;
         private string _lastId = string.Empty;
         private bool _lowEnergyArmed = true;
@@ -162,8 +165,10 @@ namespace Deadswitch.Host.Narrative
                 }
             }
 
-            if (_queue.Count == 0 && _sinceShown >= IdleSeconds)
+            if (_queue.Count == 0 && _sinceShown >= _idleWait)
             {
+                // Alive, not noisy: ambient lines back off until something happens.
+                _idleWait = System.Math.Min(_idleWait * 2f, IdleMaxSeconds);
                 return Say(new Pending("idle", Priority.Ambient));
             }
 
@@ -349,6 +354,11 @@ namespace Deadswitch.Host.Narrative
 
             _lastId = line.Id;
             _sinceShown = 0f;
+            if (p.Priority != Priority.Ambient)
+            {
+                _idleWait = IdleSeconds;
+            }
+
             _shownPriority = p.Priority;
             return Format(line.Text, p.Vars);
         }
