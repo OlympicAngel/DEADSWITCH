@@ -4,7 +4,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 
 ## State
 - Sim (M0-M1) done: config file (ADR-0008), commands/replay, saves (ADR-0009), economy (SPEC-002), pressure loop (SPEC-001). `tools/check.sh` green.
-- Unity: code-only boot (`Runtime/Core/Bootstrap.cs`), `GameHost`, UI kit + HUD (UI Toolkit, `Resources/UI`). 3D base (SPEC-003, F-010) in progress: art direction reworked to a dense container compound against a ruined bunker (owner reference, 2026-10-03).
+- Unity: code-only boot (`Runtime/Core/Bootstrap.cs`), `GameHost`, UI kit + HUD (UI Toolkit, `Resources/UI`). 3D base (SPEC-003, F-010) in progress: world rebuilt from the modular kit (`Models/Kit*.cs`) per the doc 11 master art direction and construction rules; Unity side not yet run in the Editor.
 
 ## Not yet verified in the Unity Editor
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).

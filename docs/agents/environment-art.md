@@ -15,3 +15,5 @@ Use for any 3D world asset (facilities, bunker, props, terrain dressing) in `src
 - Kit modules live in `src/Deadswitch.Art/Models/Kit*.cs`; facilities in `Facilities.cs` compose them per level (each level adds modules, never just scales).
 - Materials: palette slots + the salvage shader (`SalvageCommon.hlsl`). Worn edges come from bevel faces; give large flat areas seams, plates or stains.
 - Verify every change with `dotnet run --project src/Deadswitch.Cli -- art export --days N` + `node tools/basepreview/render.mjs`, and review against the doc 11 avoid-list (no cube aesthetic, no empty ground, no plastic/flat look).
+- Review every kind and level, not just the scripted base: `art export --layout Generator:5,ServerRack:5,LifeSupport:5,BatteryBank:5,Turret:5,None:0 --out artifacts/basepreview/show.json`, then `render.mjs --scene artifacts/basepreview/show.json` for the overview and `--target x,y,z --dist 24 --w 900 --h 900` for close-ups of one plot (slot positions: `HubScene.SlotPosition`).
+- Budget check (fully upgraded base, 2026-10-03): ~200k triangles total; facilities 6-18k each, bunker ~42k, surroundings ~62k.
