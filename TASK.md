@@ -11,7 +11,7 @@ Research the trunk and the Logistics field (8 nodes, exclusive pairs), feel each
 
 ## Steps
 - [x] 1. Sim: `[modules]` + `[tier]` config, catalog, state v5, research system + commands, node effects, TierUp, tests
-- [ ] 2. UI: MODULES view in CORE (tree, progress, node detail, tier checklist); preview
+- [x] 2. UI: MODULES view in CORE (tree, progress, node detail, tier checklist); preview
 - [ ] 3. Advisor lines (research started/done, tier up); docs (SPEC-008, BACKLOG, HANDOFF, roadmap)
 
 ## Notes

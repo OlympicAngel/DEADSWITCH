@@ -1,0 +1,60 @@
+/* MODULES (SPEC-008). Tokens only. */
+
+.mod { flex-grow: 1; }
+
+.mod-tier { padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.mod-gate { flex-direction: row; align-items: center; margin-top: var(--s-2); }
+.mod-gate__pip { width: 16px; height: 16px; margin-right: var(--s-3); border-width: var(--bw); border-color: var(--c-amber); rotate: 45deg; }
+.mod-gate__pip.is-ok { background-color: var(--c-phosphor); border-color: var(--c-phosphor); rotate: 0deg; }
+.mod-gate__text { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text); white-space: normal; flex-shrink: 1; }
+.mod-tier__btn { margin-top: var(--s-3); min-height: 96px; }
+
+.mod-research { margin-top: var(--s-3); padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.mod-research.is-hidden { display: none; }
+.mod-research__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-amber); margin-left: var(--s-3); }
+.mod-research__eta { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); }
+.mod-bar { height: 12px; margin-top: var(--s-2); background-color: rgba(232, 180, 92, 0.12); }
+.mod-bar__fill { height: 100%; width: 40%; background-color: var(--c-amber); }
+
+.mod-tree { align-items: flex-start; margin-top: var(--s-3); }
+.mod-trunk { width: 27%; align-items: stretch; margin-right: var(--s-3); }
+.mod-field { flex-grow: 1; flex-shrink: 1; }
+.mod-col__title { margin-bottom: var(--s-2); }
+.mod-tierlabel { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-faint); margin: var(--s-1) 0 var(--s-1) 0; }
+.mod-row { margin-bottom: var(--s-2); align-items: stretch; }
+.mod-row > .mod-node { flex-grow: 1; flex-basis: 0; margin-right: var(--s-2); }
+.mod-row > .mod-node:last-child { margin-right: 0; }
+.mod-or { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); color: var(--c-amber); margin: 0 var(--s-2) 0 0; -unity-text-align: middle-center; }
+.mod-link { width: 2px; height: 14px; margin-left: 28px; background-color: var(--c-line-mid); }
+
+.mod-node {
+    min-height: 104px;
+    padding: var(--s-2) var(--s-2);
+    border-width: var(--bw);
+    border-color: var(--c-line-mid);
+    background-color: var(--c-panel-sunken);
+    transition-property: border-color, background-color, scale;
+    transition-duration: 0.12s;
+}
+.mod-node:active { scale: 0.97 0.97; }
+.mod-node__code { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); }
+.mod-node__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 1px; color: var(--c-text); white-space: normal; margin-top: 2px; }
+.mod-node__state { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: 18px; letter-spacing: 2px; color: var(--c-text-faint); margin-top: var(--s-1); }
+.mod-node.is-restored { border-color: var(--c-phosphor-dim); background-color: rgba(168, 213, 138, 0.1); }
+.mod-node.is-restored .mod-node__state { color: var(--c-phosphor); }
+.mod-node.is-available { border-color: var(--c-phosphor); }
+.mod-node.is-available .mod-node__state { color: var(--c-phosphor); }
+.mod-node.is-active { border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.1); }
+.mod-node.is-active .mod-node__state { color: var(--c-amber); }
+.mod-node.is-locked { opacity: 0.55; }
+.mod-node.is-excluded { opacity: 0.35; }
+.mod-node.is-selected { border-color: var(--c-white); }
+
+.mod-detail { margin-top: var(--s-2); }
+.mod-detail__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 2px; color: var(--c-text); }
+.mod-detail__desc { margin-top: var(--s-1); font-size: var(--fs-xs); }
+.mod-detail__cost { margin-top: var(--s-2); }
+.mod-cost { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); margin-right: var(--s-5); }
+.mod-cost.is-short { color: var(--c-red); }
+.mod-detail__btn { margin-top: var(--s-3); min-height: 96px; }
+.mod-reason { margin-top: var(--s-1); color: var(--c-amber); font-size: var(--fs-xs); }

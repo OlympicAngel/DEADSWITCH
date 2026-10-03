@@ -7,78 +7,86 @@
       <ui:Label text="FRAGMENT S-17 // AI TERMINAL" class="ds-label core-head__sub" />
     </ui:VisualElement>
 
-    <!-- What the AI says about itself -->
-    <ui:VisualElement class="ds-panel core-status">
-      <ui:VisualElement class="row">
-        <ui:Label text="CORE CORRUPTION" class="ds-label grow" />
-        <ui:VisualElement class="ds-chip ds-chip--amber"><ui:Label text="SELF-REPORTED" class="ds-chip__label" /></ui:VisualElement>
-      </ui:VisualElement>
-      <ui:VisualElement class="row--baseline core-status__value">
-        <ui:Label name="core-reported" text="29" class="ds-value ds-value--hero" />
-        <ui:Label text="%" class="ds-unit" />
-        <ui:Label name="core-band" text="STABLE" class="ds-label t-phosphor core-status__band" />
-      </ui:VisualElement>
-      <ui:VisualElement name="core-meter" class="ds-meter" />
-      <ui:VisualElement class="row core-status__row">
-        <ui:VisualElement class="core-kv"><ui:Label text="AUTONOMY" class="ds-label" /><ui:Label name="core-deleg" text="AUTOPILOT" class="core-kv__value" /></ui:VisualElement>
-        <ui:VisualElement class="core-kv"><ui:Label text="OVERRIDE" class="ds-label" /><ui:Label name="core-ovr" text="2 / 3" class="core-kv__value" /></ui:VisualElement>
-        <ui:VisualElement class="core-kv"><ui:Label text="LIES ON RECORD" class="ds-label" /><ui:Label name="core-lies" text="?" class="core-kv__value" /></ui:VisualElement>
-      </ui:VisualElement>
+    <ui:VisualElement class="core-seg">
+      <ui:VisualElement name="view-status" class="core-seg__item is-selected"><ui:Label text="STATUS" class="core-seg__label" /></ui:VisualElement>
+      <ui:VisualElement name="view-modules" class="core-seg__item"><ui:Label text="MODULES" class="core-seg__label" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <!-- Audit -->
-    <ui:VisualElement class="ds-panel ds-panel--sunken core-audit">
-      <ui:Label text="AUDIT" class="ds-label" />
-      <ui:Label text="A diagnostic sweep that reads the core directly, not what I tell you." class="ds-body t-dim core-audit__desc" />
-      <ui:VisualElement name="audit-run" class="ds-btn ds-btn--warn core-audit__btn">
-        <ui:Label name="audit-label" text="RUN AUDIT // 60 COMPUTE" class="ds-btn__label" />
-      </ui:VisualElement>
-      <ui:Label name="audit-reason" text="" class="ds-body core-audit__reason" />
-    </ui:VisualElement>
-
-    <!-- Core Profile (after an audit) -->
-    <ui:VisualElement name="profile" class="ds-panel core-profile">
-      <ui:VisualElement class="row">
-        <ui:Label text="CORE PROFILE" class="ds-label grow" />
-        <ui:Label name="profile-when" text="AUDIT D4 12:00" class="ds-label t-dim" />
-      </ui:VisualElement>
-      <ui:Label name="profile-none" text="No audit on record." class="ds-body t-dim is-hidden" />
-      <ui:VisualElement name="profile-body">
-        <ui:VisualElement class="row core-dials">
-          <ui:VisualElement class="core-dial">
-            <ui:Label text="COLDNESS" class="ds-label" />
-            <ui:Label name="dial-cold" text="12%" class="core-dial__value" />
-            <ui:VisualElement name="dial-cold-meter" class="ds-meter" />
-          </ui:VisualElement>
-          <ui:VisualElement class="core-dial">
-            <ui:Label text="BOLDNESS" class="ds-label" />
-            <ui:Label name="dial-bold" text="64%" class="core-dial__value" />
-            <ui:VisualElement name="dial-bold-meter" class="ds-meter ds-meter--amber" />
-          </ui:VisualElement>
+    <ui:VisualElement name="status-view">
+      <!-- What the AI says about itself -->
+      <ui:VisualElement class="ds-panel core-status">
+        <ui:VisualElement class="row">
+          <ui:Label text="CORE CORRUPTION" class="ds-label grow" />
+          <ui:VisualElement class="ds-chip ds-chip--amber"><ui:Label text="SELF-REPORTED" class="ds-chip__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="core-line"><ui:Label text="TRUE CORRUPTION" class="ds-label grow" /><ui:Label name="true-corruption" text="41% (SHOWN 29%)" class="core-line__value t-amber" /></ui:VisualElement>
-        <ui:VisualElement class="core-line"><ui:Label text="SKIMMED COMPUTE" class="ds-label grow" /><ui:Label name="skimmed" text="128" class="core-line__value t-amber" /></ui:VisualElement>
-        <ui:VisualElement class="core-line"><ui:Label text="UNVERIFIED REPORTS WITH LIES" class="ds-label grow" /><ui:Label name="lies" text="2" class="core-line__value" /></ui:VisualElement>
-        <ui:VisualElement class="core-line core-line--project">
-          <ui:Label text="UNKNOWN PROCESS" class="ds-label grow" />
-          <ui:VisualElement name="stage-steps" class="row core-steps">
-            <ui:VisualElement class="core-step is-on" />
-            <ui:VisualElement class="core-step is-on" />
-            <ui:VisualElement class="core-step" />
-            <ui:VisualElement class="core-step" />
-          </ui:VisualElement>
-          <ui:Label name="stage" text="ACTIVE" class="core-line__value t-amber core-stage" />
+        <ui:VisualElement class="row--baseline core-status__value">
+          <ui:Label name="core-reported" text="29" class="ds-value ds-value--hero" />
+          <ui:Label text="%" class="ds-unit" />
+          <ui:Label name="core-band" text="STABLE" class="ds-label t-phosphor core-status__band" />
+        </ui:VisualElement>
+        <ui:VisualElement name="core-meter" class="ds-meter" />
+        <ui:VisualElement class="row core-status__row">
+          <ui:VisualElement class="core-kv"><ui:Label text="AUTONOMY" class="ds-label" /><ui:Label name="core-deleg" text="AUTOPILOT" class="core-kv__value" /></ui:VisualElement>
+          <ui:VisualElement class="core-kv"><ui:Label text="OVERRIDE" class="ds-label" /><ui:Label name="core-ovr" text="2 / 3" class="core-kv__value" /></ui:VisualElement>
+          <ui:VisualElement class="core-kv"><ui:Label text="LIES ON RECORD" class="ds-label" /><ui:Label name="core-lies" text="?" class="core-kv__value" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
-    </ui:VisualElement>
 
-    <!-- What it said recently -->
-    <ui:Label text="TRANSCRIPT" class="ds-label core-section" />
-    <ui:VisualElement name="transcript" class="core-transcript">
-      <ui:Label text="&gt; Hostiles inbound. NORTH RIDGE. Estimate 34. Contact in 20 min." class="core-transcript__line" />
-      <ui:Label text="&gt; Perimeter breached, SOUTH GATE. Losses: -60 ENERGY." class="core-transcript__line" />
-      <ui:Label text="&gt; Prediction variance. Noted." class="core-transcript__line" />
-      <ui:Label text="&gt; Allocation nominal. Ignore the... allocation nominal." class="core-transcript__line" />
+      <!-- Audit -->
+      <ui:VisualElement class="ds-panel ds-panel--sunken core-audit">
+        <ui:Label text="AUDIT" class="ds-label" />
+        <ui:Label text="A diagnostic sweep that reads the core directly, not what I tell you." class="ds-body t-dim core-audit__desc" />
+        <ui:VisualElement name="audit-run" class="ds-btn ds-btn--warn core-audit__btn">
+          <ui:Label name="audit-label" text="RUN AUDIT // 60 COMPUTE" class="ds-btn__label" />
+        </ui:VisualElement>
+        <ui:Label name="audit-reason" text="" class="ds-body core-audit__reason" />
+      </ui:VisualElement>
+
+      <!-- Core Profile (after an audit) -->
+      <ui:VisualElement name="profile" class="ds-panel core-profile">
+        <ui:VisualElement class="row">
+          <ui:Label text="CORE PROFILE" class="ds-label grow" />
+          <ui:Label name="profile-when" text="AUDIT D4 12:00" class="ds-label t-dim" />
+        </ui:VisualElement>
+        <ui:Label name="profile-none" text="No audit on record." class="ds-body t-dim is-hidden" />
+        <ui:VisualElement name="profile-body">
+          <ui:VisualElement class="row core-dials">
+            <ui:VisualElement class="core-dial">
+              <ui:Label text="COLDNESS" class="ds-label" />
+              <ui:Label name="dial-cold" text="12%" class="core-dial__value" />
+              <ui:VisualElement name="dial-cold-meter" class="ds-meter" />
+            </ui:VisualElement>
+            <ui:VisualElement class="core-dial">
+              <ui:Label text="BOLDNESS" class="ds-label" />
+              <ui:Label name="dial-bold" text="64%" class="core-dial__value" />
+              <ui:VisualElement name="dial-bold-meter" class="ds-meter ds-meter--amber" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement class="core-line"><ui:Label text="TRUE CORRUPTION" class="ds-label grow" /><ui:Label name="true-corruption" text="41% (SHOWN 29%)" class="core-line__value t-amber" /></ui:VisualElement>
+          <ui:VisualElement class="core-line"><ui:Label text="SKIMMED COMPUTE" class="ds-label grow" /><ui:Label name="skimmed" text="128" class="core-line__value t-amber" /></ui:VisualElement>
+          <ui:VisualElement class="core-line"><ui:Label text="UNVERIFIED REPORTS WITH LIES" class="ds-label grow" /><ui:Label name="lies" text="2" class="core-line__value" /></ui:VisualElement>
+          <ui:VisualElement class="core-line core-line--project">
+            <ui:Label text="UNKNOWN PROCESS" class="ds-label grow" />
+            <ui:VisualElement name="stage-steps" class="row core-steps">
+              <ui:VisualElement class="core-step is-on" />
+              <ui:VisualElement class="core-step is-on" />
+              <ui:VisualElement class="core-step" />
+              <ui:VisualElement class="core-step" />
+            </ui:VisualElement>
+            <ui:Label name="stage" text="ACTIVE" class="core-line__value t-amber core-stage" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+      <!-- What it said recently -->
+      <ui:Label text="TRANSCRIPT" class="ds-label core-section" />
+      <ui:VisualElement name="transcript" class="core-transcript">
+        <ui:Label text="&gt; Hostiles inbound. NORTH RIDGE. Estimate 34. Contact in 20 min." class="core-transcript__line" />
+        <ui:Label text="&gt; Perimeter breached, SOUTH GATE. Losses: -60 ENERGY." class="core-transcript__line" />
+        <ui:Label text="&gt; Prediction variance. Noted." class="core-transcript__line" />
+        <ui:Label text="&gt; Allocation nominal. Ignore the... allocation nominal." class="core-transcript__line" />
+      </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="modules-view" class="is-hidden" />
   </ui:VisualElement>
 </ui:UXML>

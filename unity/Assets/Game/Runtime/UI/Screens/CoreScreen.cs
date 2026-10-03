@@ -22,7 +22,9 @@ namespace Deadswitch.Game.UI.Screens
         private readonly GameHost _host;
         private readonly VisualElement _ui;
         private readonly System.Func<IReadOnlyList<string>> _history;
+        private readonly ModulesView _modules;
         private bool _visible;
+        private bool _showModules;
 
         public CoreScreen(System.Func<IReadOnlyList<string>> history)
         {
@@ -33,11 +35,21 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _modules = new ModulesView(_ui.Q("modules-view"));
+            _ui.Q("view-status").RegisterCallback<ClickEvent>(_ => ShowModules(false));
+            _ui.Q("view-modules").RegisterCallback<ClickEvent>(_ => ShowModules(true));
             _host.Ticked += () =>
             {
                 if (_visible)
                 {
                     Refresh();
+                }
+            };
+            UiRoot.Instance.Frame += _ =>
+            {
+                if (_visible && _showModules)
+                {
+                    _modules.Tick();
                 }
             };
         }
@@ -58,8 +70,24 @@ namespace Deadswitch.Game.UI.Screens
             _visible = false;
         }
 
+        private void ShowModules(bool on)
+        {
+            _showModules = on;
+            _ui.Q("view-status").EnableInClassList("is-selected", !on);
+            _ui.Q("view-modules").EnableInClassList("is-selected", on);
+            _ui.Q("status-view").EnableInClassList("is-hidden", on);
+            _ui.Q("modules-view").EnableInClassList("is-hidden", !on);
+            Refresh();
+        }
+
         private void Refresh()
         {
+            if (_showModules)
+            {
+                _modules.Refresh();
+                return;
+            }
+
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
 
