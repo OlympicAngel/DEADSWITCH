@@ -27,7 +27,13 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Current defense rating: powered turrets + garrison, with the posture modifier.</summary>
         public static int Rating(GameState s, SimConfig c)
         {
-            int total = s.Garrison * c.Defense.DefensePerDefender;
+            return Rating(s, c, s.Posture, s.Garrison);
+        }
+
+        /// <summary>Defense rating the Hub would have with another posture and garrison (setup previews, advice).</summary>
+        public static int Rating(GameState s, SimConfig c, Posture posture, int garrison)
+        {
+            int total = garrison * c.Defense.DefensePerDefender;
             foreach (FacilitySlot slot in s.Slots)
             {
                 if (slot.Kind == FacilityKind.Turret && Economy.IsRunning(slot))
@@ -36,7 +42,7 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
-            if (s.Posture == Posture.Turtle)
+            if (posture == Posture.Turtle)
             {
                 total = SimMath.PctFloor(total, 100 + c.Defense.TurtleDefensePct);
             }

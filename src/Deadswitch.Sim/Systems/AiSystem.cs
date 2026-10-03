@@ -44,31 +44,70 @@ namespace Deadswitch.Sim.Systems
         public static void OnRaidWarning(SimContext ctx)
         {
             GameState s = ctx.State;
-            SimConfig c = ctx.Config;
             if (s.Delegation != DelegationLevel.Autopilot || !s.Away || s.Posture != Posture.None)
             {
                 return;
             }
 
-            long estimate = (long)s.RaidEstimate * 100;
-            int defense = Defense.Rating(s, c);
-            if (estimate > (long)defense * c.Ai.AutopilotEvacuatePct)
-            {
-                DefenseCommands.SetGarrison(ctx, Command.SetGarrison(0));
-                DefenseCommands.SetPosture(ctx, Command.SetPosture(Posture.Evacuate));
-            }
-            else if (estimate > (long)defense * c.Ai.AutopilotTurtlePct)
-            {
-                int garrison = SimMath.Clamp(s.People, 0, c.Defense.GarrisonSlots);
-                DefenseCommands.SetGarrison(ctx, Command.SetGarrison(garrison));
-                DefenseCommands.SetPosture(ctx, Command.SetPosture(Posture.Turtle));
-            }
-            else
+            Recommend(s, ctx.Config, out Posture posture, out int garrison);
+            if (posture == Posture.None)
             {
                 return;
             }
 
+            DefenseCommands.SetGarrison(ctx, Command.SetGarrison(garrison));
+            DefenseCommands.SetPosture(ctx, Command.SetPosture(posture));
             ctx.Emit(EventKind.AiActed, (int)AiActionKind.Defend, (int)s.Posture, s.Garrison, s.RaidEstimate);
+        }
+
+        /// <summary>
+        /// The AI's defense advice for the incoming raid (autopilot and Set &amp; Go, SPEC-005 rule 5), judged by its
+        /// estimate: enough defense -> keep things as they are (None); outmatched -> Turtle with the full garrison;
+        /// hopeless -> Evacuate. Without a raid: None.
+        /// </summary>
+        public static void Recommend(GameState s, SimConfig c, out Posture posture, out int garrison)
+        {
+            if (s.RaidId == 0)
+            {
+                posture = Posture.None;
+                garrison = 0;
+                return;
+            }
+
+            long estimate = (long)s.RaidEstimate * 100;
+            int full = SimMath.Clamp(s.People, 0, c.Defense.GarrisonSlots);
+            int turtleDefense = Defense.Rating(s, c, Posture.Turtle, full);
+            if (estimate <= (long)Defense.Rating(s, c) * c.Ai.AutopilotTurtlePct)
+            {
+                posture = Posture.None;
+                garrison = s.Posture == Posture.None ? s.Garrison : 0;
+            }
+            else if (estimate <= (long)turtleDefense * c.Ai.AutopilotEvacuatePct)
+            {
+                posture = Posture.Turtle;
+                garrison = full;
+            }
+            else
+            {
+                posture = Posture.Evacuate;
+                garrison = 0;
+            }
+        }
+
+        /// <summary>
+        /// The AI's Confidence in a defense against its own estimate (SPEC-005 rule 4), 0..100 in steps of 5:
+        /// (DEF / estimate - 40%) mapped over 120 points. Wrong whenever the estimate is.
+        /// </summary>
+        public static int ConfidencePct(int defense, int estimate)
+        {
+            if (estimate <= 0)
+            {
+                return 100;
+            }
+
+            long ratio = (long)defense * 100 / estimate;
+            int pct = (int)SimMath.Clamp((int)System.Math.Min(ratio, 1000) - 40, 0, 120) * 100 / 120;
+            return (pct + 2) / 5 * 5;
         }
 
         /// <summary>Power first, then the missing basics, then the lowest-level facility the energy budget can carry.</summary>
