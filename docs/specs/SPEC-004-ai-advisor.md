@@ -11,7 +11,7 @@ The AI is a voice the handler lives with: short terminal lines that react to wha
 Player value: the base talks back (feedback for every major event), delegation is a real time-saver with a felt cost, and the first lie is a discovery moment ("it said north").
 
 ## Non-goals
-Coldness triggers (forced labor, purges, sacrifices arrive with those choices, BACKLOG F-020), the Audit/Core Profile readout (F-014), scout cross-checks (operations), battle-report Verify (F-013), voice audio, the hidden project's influence on lies (F-014).
+Coldness triggers (forced labor, purges, sacrifices arrive with those choices, BACKLOG F-021), the Audit/Core Profile readout (F-014), scout cross-checks (operations), battle-report Verify (F-013), voice audio, the hidden project's influence on lies (F-014).
 
 ## Rules (numbers *(tune)*, in the balance file `[ai]`)
 1. **Dials** (hidden, doc 10 s1.4): `Coldness` and `Boldness` in milli-units `0..100_000`, saved and hashed. Coldness has no Tier 1 trigger yet (it shapes tone only once it rises).

@@ -24,5 +24,5 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | Ready | ADR-0004 |
 | F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
 | F-019 | Factions + per-faction heat, world map | M5 | Later | |
-| F-020 | Ruthless choices: forced labor surge, purge, sacrifice (raise Coldness, lower loyalty) | M3 | Later | doc 03 s1, doc 10 s1.3 |
+| F-021 | Ruthless choices: forced labor surge, purge, sacrifice (raise Coldness, lower loyalty) | M3 | Later | doc 03 s1, doc 10 s1.3 |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Later | fold into CLI |

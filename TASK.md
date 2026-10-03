@@ -1,26 +1,25 @@
-# TASK: F-010 3D base diorama
+# TASK: F-011 AI advisor
 
 - Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: presentation / M2
-- Spec: docs/specs/SPEC-003-base-diorama.md
-- Sources: ADR-0007, doc 11, doc 06 s3
+- Pillar / milestone: AI relationship / M2
+- Spec: docs/specs/SPEC-004-ai-advisor.md
+- Sources: doc 03 s1-2, doc 10 s1.4 + s7, docs/narrative/ADVISOR_VOICE.md
 
 ## Goal
-A procedural stylized-3D Hub seen through a drone camera; facilities show kind, level and state; tapping a pad opens the build/upgrade sheet.
+The AI talks back: short lines for every major event, tone shaped by hidden Coldness/Boldness dials, a delegation ladder that saves the handler time and makes the AI bolder, and a first, checkable lie about where a raid hits.
 
 ## Steps
-- [x] 1. `src/Deadswitch.Art`: MeshBuilder (bevelled boxes, cylinders, frustums), palette, weathering vertex colors
-- [x] 2. Models: AI core bunker, 5 facility kinds x 5 levels, scaffold, pad, props, terrain, perimeter; `HubScene` composition from GameState (rebuilt from the modular kit per doc 11 construction rules)
-- [x] 3. CLI `art export` + `tools/basepreview` (three.js, PBR, shadows, tilt-shift, grain) -> PNG; iterate on looks
-- [ ] 4. Unity: mesh conversion, vertex-color URP shader (+ Lit fallback), lights, `BaseView` sync with state, animated parts, beacons
-- [ ] 5. Drone camera (drift, drag/pinch bounds) + URP post (DOF tilt-shift, grain, CA, vignette, bloom)
-- [ ] 6. Slot picking + slot sheet UI (build/upgrade/power/demolish) via commands; preview
-- [ ] 7. Docs, HANDOFF/BACKLOG
+- [ ] 1. Sim: `[ai]` config, dials in GameState (versioned visitor, save v2), Boldness from delegation
+- [ ] 2. Sim: raid gates (RaidVector / RaidContact), first lie + Boldness-scaled lies (AdvisorLied), tests
+- [ ] 3. Sim: delegated build planner + offline autopilot defense (AiActed), 7-day delegated guard test
+- [ ] 4. Host: advisor line engine + `AdvisorLines.txt` (50 lines) + parse test
+- [ ] 5. Unity: HUD wired to the advisor (events -> lines, tone, glitch), raid row shows the reported gate, then the contact gate
+- [ ] 6. CLI `advisor` transcript for a scripted run; review the voice; docs (ADVISOR_VOICE, HANDOFF, BACKLOG)
 
 ## Notes
-- Unity C# for URP (Volume, post overrides) is outside the compile check (no URP reference assemblies): keep it isolated in `Runtime/Rendering/` and simple.
-- Preview: `dotnet run --project src/Deadswitch.Cli -- art export --days 7` then `node tools/basepreview/render.mjs` (first time: `cd tools/basepreview && npm install`). Look values live in `unity/Assets/Game/Resources/Base/BaseLook.json` (shared by Unity and the preview). Asset review: see `docs/agents/environment-art.md`.
+- F-010 closed 2026-10-03; its Unity play-mode check is listed in HANDOFF (owner's machine).
+- Gates use the spawn tick's unused miss draw: RNG stays at four draws per tick.
 
 ## Blocked / questions
 - none
