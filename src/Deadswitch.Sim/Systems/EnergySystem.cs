@@ -68,7 +68,7 @@ namespace Deadswitch.Sim.Systems
                 }
                 else
                 {
-                    int perHour = Economy.UpkeepPerHour(c, slot);
+                    int perHour = Economy.UpkeepPerHour(s, c, slot);
                     int need = Rates.PerTick(perHour, s.Tick);
                     long threshold = slot.Powered ? need : (long)need + perHour;
                     powered = available >= threshold;

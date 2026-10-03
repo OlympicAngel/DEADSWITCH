@@ -75,6 +75,7 @@ namespace Deadswitch.Sim
 
             RaidSystem.StartOfTick(ctx);
             ConstructionSystem.Tick(ctx);
+            Modules.Tick(ctx);
             CrewSystem.Tick(ctx);
             EnergySystem.Tick(ctx);
             ProductionSystem.Tick(ctx);

@@ -15,7 +15,7 @@ namespace Deadswitch.Sim.Systems
             {
                 if (slot.Kind == FacilityKind.ServerRack && Economy.IsRunning(slot))
                 {
-                    computePerHour += Economy.EffectiveOutput(c, slot);
+                    computePerHour += Economy.EffectiveOutput(s, c, slot);
                 }
             }
 

@@ -38,6 +38,14 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.NoChange: return "Already set.";
                 case RejectReason.NoReport: return "That record has been purged. I keep the last ten.";
                 case RejectReason.AlreadyVerified: return "Already verified. The record stands.";
+                case RejectReason.Locked: return "Locked. It needs a higher tier or the module before it.";
+                case RejectReason.Excluded: return "You chose the other path. I cannot hold both.";
+                case RejectReason.AlreadyRestored: return "Already restored.";
+                case RejectReason.ResearchBusy: return "One restoration at a time. My memory is fragile.";
+                case RejectReason.GateBuild: return "The Hub is not ready: more facility levels or more surplus power.";
+                case RejectReason.GateModule: return "My memory is not ready. Restore the trunk module first.";
+                case RejectReason.GatePeople: return "Not enough free people to send out.";
+                case RejectReason.MaxTier: return "This is as far as I can see.";
                 default: return "Command refused.";
             }
         }

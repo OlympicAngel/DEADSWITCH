@@ -58,6 +58,30 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>That report was already verified.</summary>
         AlreadyVerified = 18,
+
+        /// <summary>The module needs a higher tier or its prerequisite first.</summary>
+        Locked = 19,
+
+        /// <summary>The other half of this exclusive choice was restored.</summary>
+        Excluded = 20,
+
+        /// <summary>The module is already restored.</summary>
+        AlreadyRestored = 21,
+
+        /// <summary>Another module is being researched.</summary>
+        ResearchBusy = 22,
+
+        /// <summary>Tier-up: build threshold not met (facility levels or net energy).</summary>
+        GateBuild = 23,
+
+        /// <summary>Tier-up: the trunk memory module is not restored.</summary>
+        GateModule = 24,
+
+        /// <summary>Tier-up: not enough free people to pay the human cost.</summary>
+        GatePeople = 25,
+
+        /// <summary>No higher tier in this build.</summary>
+        MaxTier = 26,
     }
 
     public readonly struct CommandResult

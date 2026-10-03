@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007).</summary>
-        public const int LayoutVersion = 4;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008).</summary>
+        public const int LayoutVersion = 5;
 
         public long Tick;
 
@@ -96,6 +96,23 @@ namespace Deadswitch.Sim.State
 
         /// <summary>The Audit is available again from this tick.</summary>
         public long AuditReadyTick;
+
+        /// <summary>Hub tier (1 = Bunker).</summary>
+        public int Tier = 1;
+
+        /// <summary>Restored modules: bit n set for ModuleNode n.</summary>
+        public ulong Modules;
+
+        /// <summary>Module being researched (ModuleNode), or 0.</summary>
+        public int ResearchNode;
+
+        public long ResearchStartTick;
+
+        public long ResearchCompleteTick;
+
+        public int ResearchPaidEnergy;
+
+        public int ResearchPaidCompute;
 
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
@@ -257,6 +274,17 @@ namespace Deadswitch.Sim.State
                 v.Int(ref ProjectMilli);
                 v.Int(ref SkimmedSinceAudit);
                 v.Long(ref AuditReadyTick);
+            }
+
+            if (v.Version >= 5)
+            {
+                v.Int(ref Tier);
+                v.ULong(ref Modules);
+                v.Int(ref ResearchNode);
+                v.Long(ref ResearchStartTick);
+                v.Long(ref ResearchCompleteTick);
+                v.Int(ref ResearchPaidEnergy);
+                v.Int(ref ResearchPaidCompute);
             }
         }
 

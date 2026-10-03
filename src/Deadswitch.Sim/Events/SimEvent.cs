@@ -92,6 +92,18 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Audit findings. A: compute skimmed since the last audit, B: unverified lies on record, C: compute spent.</summary>
         AuditDrain = 28,
+
+        /// <summary>Module research started. A: ModuleNode, B: minutes.</summary>
+        ResearchStarted = 29,
+
+        /// <summary>Module restored. A: ModuleNode.</summary>
+        ResearchCompleted = 30,
+
+        /// <summary>Research cancelled. A: ModuleNode, B: energy refunded, C: compute refunded.</summary>
+        ResearchCancelled = 31,
+
+        /// <summary>The Hub advanced a tier. A: new tier, B: people who left to expand.</summary>
+        TierAdvanced = 32,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

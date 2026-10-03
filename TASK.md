@@ -10,7 +10,7 @@
 Research the trunk and the Logistics field (8 nodes, exclusive pairs), feel each node in the economy, and open Tier 2 through three gates.
 
 ## Steps
-- [ ] 1. Sim: `[modules]` + `[tier]` config, catalog, state v5, research system + commands, node effects, TierUp, tests
+- [x] 1. Sim: `[modules]` + `[tier]` config, catalog, state v5, research system + commands, node effects, TierUp, tests
 - [ ] 2. UI: MODULES view in CORE (tree, progress, node detail, tier checklist); preview
 - [ ] 3. Advisor lines (research started/done, tier up); docs (SPEC-008, BACKLOG, HANDOFF, roadmap)
 

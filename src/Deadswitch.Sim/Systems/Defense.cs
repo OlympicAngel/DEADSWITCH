@@ -38,7 +38,7 @@ namespace Deadswitch.Sim.Systems
             {
                 if (slot.Kind == FacilityKind.Turret && Economy.IsRunning(slot))
                 {
-                    total += Economy.EffectiveOutput(c, slot);
+                    total += Economy.EffectiveOutput(s, c, slot);
                 }
             }
 

@@ -97,8 +97,8 @@ namespace Deadswitch.Sim.Commands
                 return CommandResult.Reject(RejectReason.NoJob);
             }
 
-            int energy = SimMath.PctFloor(job.PaidEnergy, ctx.Config.Build.CancelRefundPct);
-            int compute = SimMath.PctFloor(job.PaidCompute, ctx.Config.Build.CancelRefundPct);
+            int energy = SimMath.PctFloor(job.PaidEnergy, Economy.RefundPct(s, ctx.Config, ctx.Config.Build.CancelRefundPct));
+            int compute = SimMath.PctFloor(job.PaidCompute, Economy.RefundPct(s, ctx.Config, ctx.Config.Build.CancelRefundPct));
             Refund(ctx, energy, compute);
             s.Jobs.Remove(job);
             s.PlanHoldUntilTick = s.Tick + SimConfig.TicksPerHour;
@@ -127,8 +127,8 @@ namespace Deadswitch.Sim.Commands
             }
 
             FacilityConfig f = c.Facility(slot.Kind)!;
-            int energy = SimMath.PctFloor(f.CostEnergy[slot.Level - 1], c.Build.DemolishRefundPct);
-            int compute = SimMath.PctFloor(f.CostCompute[slot.Level - 1], c.Build.DemolishRefundPct);
+            int energy = SimMath.PctFloor(f.CostEnergy[slot.Level - 1], Economy.RefundPct(s, c, c.Build.DemolishRefundPct));
+            int compute = SimMath.PctFloor(f.CostCompute[slot.Level - 1], Economy.RefundPct(s, c, c.Build.DemolishRefundPct));
             FacilityKind kind = slot.Kind;
             slot.Clear();
             Refund(ctx, energy, compute);
@@ -235,7 +235,7 @@ namespace Deadswitch.Sim.Commands
         private static void StartJob(SimContext ctx, int slot, FacilityKind kind, int targetLevel, int energy, int compute)
         {
             GameState s = ctx.State;
-            int minutes = ctx.Config.Facility(kind)!.BuildMinutes[targetLevel - 1];
+            int minutes = Economy.BuildMinutes(ctx.State, ctx.Config, kind, targetLevel);
             s.Energy -= energy;
             s.Compute -= compute;
             s.Jobs.Add(new BuildJob

@@ -44,13 +44,19 @@ namespace Deadswitch.Sim.Systems
     /// <summary>Pure queries over the economy (no state changes). Used by systems, commands and the UI.</summary>
     public static class Economy
     {
-        public static int OutputPct(SimConfig c, FacilitySlot slot)
+        /// <summary>Output share for crew: full when staffed, reduced when the AI runs it (LG6 raises it).</summary>
+        public static int OutputPct(GameState s, SimConfig c, FacilitySlot slot)
         {
-            return slot.Staffed ? 100 : c.Crew.UnmannedOutputPct;
+            if (slot.Staffed)
+            {
+                return 100;
+            }
+
+            return Modules.Has(s, ModuleNode.LG6) ? c.Modules.AutomationUnmannedPct : c.Crew.UnmannedOutputPct;
         }
 
-        /// <summary>Effective per-hour output of a running facility, after crew.</summary>
-        public static int EffectiveOutput(SimConfig c, FacilitySlot slot)
+        /// <summary>Effective per-hour output of a running facility, after crew and module bonuses (SPEC-008).</summary>
+        public static int EffectiveOutput(GameState s, SimConfig c, FacilitySlot slot)
         {
             FacilityConfig? f = c.Facility(slot.Kind);
             if (f == null || slot.Level <= 0)
@@ -58,13 +64,49 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
-            return SimMath.PctFloor(f.Output[slot.Level - 1], OutputPct(c, slot));
+            return SimMath.PctFloor(f.Output[slot.Level - 1], OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind));
         }
 
-        public static int UpkeepPerHour(SimConfig c, FacilitySlot slot)
+        /// <summary>Module output bonus for a facility kind, in percentage points.</summary>
+        public static int BonusPct(GameState s, SimConfig c, FacilityKind kind)
+        {
+            switch (kind)
+            {
+                case FacilityKind.ServerRack:
+                    return Modules.Has(s, ModuleNode.LG2A) ? c.Modules.OverclockPct : 0;
+                case FacilityKind.BatteryBank:
+                    return Modules.Has(s, ModuleNode.LG2B) ? c.Modules.DeepCellsPct : 0;
+                case FacilityKind.Generator:
+                    return Modules.Has(s, ModuleNode.LG5B) ? c.Modules.FuelCellsPct : 0;
+                default:
+                    return 0;
+            }
+        }
+
+        /// <summary>Build minutes for a target level after LG4 Prefab Assembly (at least one minute).</summary>
+        public static int BuildMinutes(GameState s, SimConfig c, FacilityKind kind, int targetLevel)
+        {
+            int minutes = c.Facility(kind)!.BuildMinutes[targetLevel - 1];
+            return Modules.Has(s, ModuleNode.LG4) ? System.Math.Max(1, SimMath.PctFloor(minutes, 100 - c.Modules.PrefabPct)) : minutes;
+        }
+
+        /// <summary>Refund percent for cancel or demolish after LG5A Salvage Doctrine.</summary>
+        public static int RefundPct(GameState s, SimConfig c, int basePct)
+        {
+            return Modules.Has(s, ModuleNode.LG5A) ? System.Math.Min(100, basePct + c.Modules.SalvagePts) : basePct;
+        }
+
+        /// <summary>Upkeep per hour after LG1 Load Balancing (generators excluded: their upkeep is net in output).</summary>
+        public static int UpkeepPerHour(GameState s, SimConfig c, FacilitySlot slot)
         {
             FacilityConfig? f = c.Facility(slot.Kind);
-            return f == null || slot.Level <= 0 ? 0 : f.UpkeepPerHour[slot.Level - 1];
+            if (f == null || slot.Level <= 0)
+            {
+                return 0;
+            }
+
+            int upkeep = f.UpkeepPerHour[slot.Level - 1];
+            return slot.Kind != FacilityKind.Generator && Modules.Has(s, ModuleNode.LG1) ? SimMath.PctCeil(upkeep, 100 - c.Modules.LoadBalancingPct) : upkeep;
         }
 
         public static int CrewNeeded(SimConfig c, FacilitySlot slot)
@@ -87,7 +129,7 @@ namespace Deadswitch.Sim.Systems
             {
                 if (slot.Kind == FacilityKind.Generator && slot.Enabled)
                 {
-                    total += EffectiveOutput(c, slot) - UpkeepPerHour(c, slot);
+                    total += EffectiveOutput(s, c, slot) - UpkeepPerHour(s, c, slot);
                 }
             }
 
@@ -101,7 +143,7 @@ namespace Deadswitch.Sim.Systems
             {
                 if (slot.Kind == FacilityKind.BatteryBank && IsRunning(slot))
                 {
-                    cap += EffectiveOutput(c, slot);
+                    cap += EffectiveOutput(s, c, slot);
                 }
             }
 
@@ -110,12 +152,12 @@ namespace Deadswitch.Sim.Systems
 
         public static int PopulationCap(GameState s, SimConfig c)
         {
-            int cap = c.People.Cap;
+            int cap = c.People.Cap + c.Tier.PopBonus[SimMath.Clamp(s.Tier - 1, 0, c.Tier.PopBonus.Length - 1)] + (Modules.HasHabitat(s) ? c.Modules.HabitatPop : 0);
             foreach (FacilitySlot slot in s.Slots)
             {
                 if (slot.Kind == FacilityKind.LifeSupport && IsRunning(slot))
                 {
-                    cap += EffectiveOutput(c, slot);
+                    cap += EffectiveOutput(s, c, slot);
                 }
             }
 
@@ -187,10 +229,10 @@ namespace Deadswitch.Sim.Systems
                     continue;
                 }
 
-                upkeep += UpkeepPerHour(c, slot);
+                upkeep += UpkeepPerHour(s, c, slot);
                 if (slot.Kind == FacilityKind.ServerRack)
                 {
-                    compute += EffectiveOutput(c, slot);
+                    compute += EffectiveOutput(s, c, slot);
                 }
             }
 

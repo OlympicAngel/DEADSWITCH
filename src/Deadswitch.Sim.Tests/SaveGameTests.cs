@@ -23,12 +23,14 @@ namespace Deadswitch.Sim.Tests
             continuous.Run(splitTick);
             continuous.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
             continuous.Execute(Command.SetPresence(true));
+            continuous.Execute(Command.StartResearch(ModuleNode.LG1));
             continuous.Run(total - splitTick);
 
             var first = new Simulation(seed);
             first.Run(splitTick);
             first.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
             first.Execute(Command.SetPresence(true));
+            first.Execute(Command.StartResearch(ModuleNode.LG1));
             byte[] bytes = SaveGame.Write(first);
             LoadedGame loaded = SaveGame.Load(bytes, SimConfig.Tier1());
             loaded.Simulation.Run(total - splitTick);

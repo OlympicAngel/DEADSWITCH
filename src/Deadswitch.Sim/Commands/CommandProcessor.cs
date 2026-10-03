@@ -1,5 +1,6 @@
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 
 namespace Deadswitch.Sim.Commands
 {
@@ -39,6 +40,12 @@ namespace Deadswitch.Sim.Commands
                     return DefenseCommands.VerifyReport(ctx, command);
                 case CommandKind.Audit:
                     return DefenseCommands.Audit(ctx, command);
+                case CommandKind.StartResearch:
+                    return Modules.Start(ctx, command);
+                case CommandKind.CancelResearch:
+                    return Modules.Cancel(ctx, command);
+                case CommandKind.TierUp:
+                    return Modules.TierUp(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

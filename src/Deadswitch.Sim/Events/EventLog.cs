@@ -9,7 +9,7 @@ namespace Deadswitch.Sim.Events
     public sealed class EventLog
     {
         /// <summary>Bump when an existing event kind changes payload meaning.</summary>
-        public const int SchemaVersion = 4;
+        public const int SchemaVersion = 5;
 
         private readonly List<SimEvent> _events = new List<SimEvent>();
 

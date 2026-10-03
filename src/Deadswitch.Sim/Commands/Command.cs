@@ -48,6 +48,15 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Run the Audit (SPEC-007).</summary>
         Audit = 13,
+
+        /// <summary>A: ModuleNode. Start researching a module (SPEC-008).</summary>
+        StartResearch = 14,
+
+        /// <summary>No args. Cancel the running research.</summary>
+        CancelResearch = 15,
+
+        /// <summary>No args. Advance the Hub a tier through the three gates.</summary>
+        TierUp = 16,
     }
 
     /// <summary>
@@ -130,6 +139,21 @@ namespace Deadswitch.Sim.Commands
         public static Command Audit()
         {
             return new Command(CommandKind.Audit);
+        }
+
+        public static Command StartResearch(ModuleNode node)
+        {
+            return new Command(CommandKind.StartResearch, (int)node);
+        }
+
+        public static Command CancelResearch()
+        {
+            return new Command(CommandKind.CancelResearch);
+        }
+
+        public static Command TierUp()
+        {
+            return new Command(CommandKind.TierUp);
         }
 
         public static Command SetPresence(bool away)

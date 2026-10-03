@@ -155,7 +155,7 @@ namespace Deadswitch.Game.UI.Base
                 body.Add(Kit.Label(Texts.Output(kind, f.Output[0]) + upkeep, "opt__desc"));
                 body.Add(Cost(host, energy, compute));
                 opt.Add(body);
-                opt.Add(Kit.Label(Fmt.Countdown(f.BuildMinutes[0] * 60.0 / host.Settings.DevTimeScale), "opt__time"));
+                opt.Add(Kit.Label(Fmt.Countdown(Economy.BuildMinutes(host.Sim.State, host.Config, kind, 1) * 60.0 / host.Settings.DevTimeScale), "opt__time"));
                 FacilityKind k = kind;
                 opt.RegisterCallback<ClickEvent>(_ => Run(Command.Build(Slot, k)));
                 _content.Add(opt);
@@ -216,7 +216,7 @@ namespace Deadswitch.Game.UI.Base
             if (!max)
             {
                 Economy.UpgradeCost(c, slot.Kind, slot.Level, out int energy, out int compute);
-                var up = Kit.Button("UPGRADE  " + Fmt.Countdown(f.BuildMinutes[slot.Level] * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Upgrade(Slot)), "ds-btn--primary", "sheet__primary");
+                var up = Kit.Button("UPGRADE  " + Fmt.Countdown(Economy.BuildMinutes(host.Sim.State, c, slot.Kind, slot.Level + 1) * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Upgrade(Slot)), "ds-btn--primary", "sheet__primary");
                 up.EnableInClassList("is-disabled", s.Energy < energy || s.Compute < compute);
                 actions.Add(up);
                 _content.Add(Cost(host, energy, compute));
