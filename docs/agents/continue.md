@@ -7,7 +7,7 @@ Use when the user says **"continue"** (or "go on", "next", "keep going"), or at 
 |------|------|-----------|
 | `TASK.md` (repo root) | The **one active feature**: goal, sources, step checklist, notes, blockers. Live state. | Updated after every step |
 | `docs/roadmap/BACKLOG.md` | Ordered **feature queue** (F-NNN) with status. What comes next. | When a feature starts/finishes, or scope is discovered |
-| `docs/agents/HANDOFF.md` | Append-only **session log**. | End of each feature and each session |
+| `docs/agents/HANDOFF.md` | Short **current-state snapshot** (unverified things, gotchas). Edited in place, never a log. | Only when something non-obvious changes |
 
 `docs/roadmap/ROADMAP.md` stays the milestone view; tick its boxes when a feature completes one.
 
@@ -26,14 +26,15 @@ Use when the user says **"continue"** (or "go on", "next", "keep going"), or at 
 6. **Finish the feature** when every step is ticked:
    - Definition of done in `AGENTS.md` holds (gate green, tests, docs).
    - `BACKLOG.md`: mark `Done` with the date. Tick any ROADMAP boxes it completes. Update the spec status.
-   - Append a `HANDOFF.md` entry (done / half-done / next / decisions).
+   - Update `HANDOFF.md` only if the state or a gotcha changed (edit in place, keep it short).
    - Set `TASK.md` to `Status: Done` with a one-line summary, then immediately start the next feature (step 3). Commit and push.
 7. **Keep going** without asking, unless blocked. A real blocker is a decision the source-of-truth order cannot settle (canon conflict, material scope/balance/monetization/accessibility change, something only the user can do such as signing in to Unity). Write it under **Blocked / questions** in `TASK.md`, push, tell the user in one short paragraph, and continue with the next unblocked step or feature.
 8. **Before the session ends** (or context runs low): `TASK.md` must describe exactly where you stopped, everything committed and pushed.
 
 ## Rules
+- **Do not pollute markdown.** Edit existing text instead of appending; no session diaries, no repeated summaries, no restating what git or the code already shows. Every line must still be true and useful next month.
 - One active feature at a time. Discovered work goes into `BACKLOG.md` (as `Ready` or `Later`), not into the current feature, unless it blocks it.
-- Keep `TASK.md` short and current. Delete stale notes; history lives in git and `HANDOFF.md`.
+- Keep `TASK.md` short and current. Delete stale notes; history lives in git.
 - Do not reorder `BACKLOG.md` priorities silently. Add a note with the reason if you do.
 - Push after every commit to the branch named by the session/user. Never force-push shared branches.
 

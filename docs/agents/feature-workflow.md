@@ -8,5 +8,5 @@
 6. **Minimal tests** in `Deadswitch.Sim.Tests`: only for tricky, silent-failure logic (determinism, replay/save, parsing, soft-lock guards), 1-3 per feature. Verify the rest with a quick CLI run or preview screenshot.
 7. **Implement rules in the sim**, then wire Unity UI on top. The UI never owns game rules.
 8. **Run the gate**: `pwsh tools/check.ps1` (or the equivalent commands documented in `README.md`).
-9. **Update docs**: owning spec/design source, doc 10's corrections log if numbers or resolved decisions changed, and `docs/agents/HANDOFF.md`.
+9. **Update docs in place**: owning spec/design source, doc 10's corrections log if numbers or resolved decisions changed. No logs or duplicate summaries.
 10. **Open the PR** using the template. One concern per PR.

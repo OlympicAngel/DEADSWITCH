@@ -57,7 +57,7 @@ Production-ready from the first commit, not prototypes. Every tunable goes in co
 2. **Minimal testing (owner rule, 2026-10-03).** Tests are a cost. Write one only for tricky logic where a bug would be silent and costly (determinism, save/replay, parsing, economy math that could soft-lock) or as one regression test for a fixed bug. Usually 1-3 per feature. Prefer a quick CLI/manual check. Keep existing tests; never weaken them.
 3. **Small PRs.** One concern per branch. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
 4. **Decisions get ADRs.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
-5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log, and `docs/agents/HANDOFF.md`.
+5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log. Edit docs in place and keep them lean: no logs, no duplicated summaries (owner rule). `docs/agents/HANDOFF.md` is a short current-state snapshot, not a diary.
 
 ## Design Quality
 - For game ideas and player-facing changes, identify the player value, the satisfying action/result, the feedback that makes it legible, and the next meaningful choice. Aim for earned "one more turn" momentum, not pressure to keep checking in.
@@ -69,14 +69,14 @@ Production-ready from the first commit, not prototypes. Every tunable goes in co
 - `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).
 - Risky behavior has a minimal test (see Workflow 2); no existing test was weakened to make it pass.
 - No new warnings (warnings are errors).
-- Docs and HANDOFF updated; `TASK.md` and `BACKLOG.md` reflect reality.
+- Docs reflect reality (edited in place); `TASK.md` and `BACKLOG.md` are current.
 - Committed and pushed.
 
 ## Working with multiple agents
 Claude and Codex both work in this repo. To avoid collisions:
 - One agent per branch. Use git worktrees for parallel work (`git worktree add ../ds-feat-x feat/x`).
 - Do not edit the same file as another active branch without saying so in `docs/agents/HANDOFF.md`.
-- At the end of a session, append to `docs/agents/HANDOFF.md`: what changed, what is half-done, what to do next.
+- Keep `TASK.md` accurate at the end of a session; touch `docs/agents/HANDOFF.md` only when the current state or a gotcha changed.
 
 ## Do not
 - Do not rename or move `docs/design/*` numbered files (they are cross-referenced).

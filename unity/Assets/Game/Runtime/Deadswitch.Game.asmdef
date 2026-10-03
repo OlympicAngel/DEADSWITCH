@@ -3,7 +3,8 @@
   "rootNamespace": "Deadswitch.Game",
   "references": [
     "Deadswitch.Sim",
-    "Deadswitch.Host"
+    "Deadswitch.Host",
+    "Deadswitch.Art"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

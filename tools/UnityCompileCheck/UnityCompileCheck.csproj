@@ -11,7 +11,7 @@
     <DefineConstants>$(DefineConstants);UNITY_COMPILE_CHECK</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../unity/Assets/Game/**/*.cs" Exclude="../../unity/Assets/Game/**/Editor/**" />
+    <Compile Include="../../unity/Assets/Game/**/*.cs" Exclude="../../unity/Assets/Game/**/Editor/**;../../unity/Assets/Game/Runtime/Rendering/**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" PrivateAssets="all" />
@@ -19,5 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Deadswitch.Sim/Deadswitch.Sim.csproj" />
     <ProjectReference Include="../../src/Deadswitch.Host/Deadswitch.Host.csproj" />
+    <ProjectReference Include="../../src/Deadswitch.Art/Deadswitch.Art.csproj" />
   </ItemGroup>
 </Project>

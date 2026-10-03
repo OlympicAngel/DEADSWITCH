@@ -21,7 +21,7 @@ if (!fs.existsSync(THREE_DIR)) { console.error('Run: (cd tools/basepreview && np
 const types = { '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html' };
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);
-  let file = url === '/' ? path.join(HERE, 'page.html') : url === '/scene.json' ? scenePath : url === '/look.json' ? path.join(HERE, 'look.json')
+  let file = url === '/' ? path.join(HERE, 'page.html') : url === '/scene.json' ? scenePath : url === '/look.json' ? path.join(ROOT, 'unity/Assets/Game/Resources/Base/BaseLook.json')
     : url.startsWith('/three/') ? path.join(THREE_DIR, url.slice(7)) : null;
   if (!file || !fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
   res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });
