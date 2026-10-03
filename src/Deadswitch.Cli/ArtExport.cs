@@ -99,7 +99,11 @@ namespace Deadswitch.Cli
                     .Append("{\"name\":\"").Append(d.Name).Append("\",\"color\":").Append(V3(d.BaseColor))
                     .Append(",\"metallic\":").Append(F(d.Metallic)).Append(",\"smoothness\":").Append(F(d.Smoothness))
                     .Append(",\"emission\":").Append(V3(d.EmissionColor)).Append(",\"emissionIntensity\":").Append(F(d.EmissionIntensity))
-                    .Append(",\"lamp\":").Append(d.IsLamp ? "true" : "false").Append('}');
+                    .Append(",\"lamp\":").Append(d.IsLamp ? "true" : "false")
+                    .Append(",\"wear\":{\"chip\":").Append(F(d.Wear.Chip)).Append(",\"rust\":").Append(F(d.Wear.Rust))
+                    .Append(",\"dirt\":").Append(F(d.Wear.Dirt)).Append(",\"streak\":").Append(F(d.Wear.Streak))
+                    .Append(",\"bump\":").Append(F(d.Wear.Bump)).Append(",\"scale\":").Append(F(d.Wear.Scale))
+                    .Append(",\"bare\":").Append(V3(d.Wear.Bare)).Append(",\"ground\":").Append(d.Wear.Ground ? "true" : "false").Append("}}");
             }
 
             sb.Append("],\n\"objects\":[\n").Append(objects).Append("],\n\"meshes\":[\n");

@@ -33,6 +33,9 @@ namespace Deadswitch.Art.Geometry
         /// <summary>Per-face brightness jitter (+/-).</summary>
         public float FaceJitter { get; set; } = 0.06f;
 
+        /// <summary>When set, the next Face uses these local normals per point (smooth curved surfaces).</summary>
+        private Vector3[]? SmoothNormals { get; set; }
+
         /// <summary>World-space offset of this builder's origin (for AO when building parts in local space).</summary>
         public float GroundOffset { get; set; }
 
@@ -174,7 +177,14 @@ namespace Deadswitch.Art.Geometry
                     Vector3 p11 = Ring(baseCenter, rings[k + 1].r, rings[k + 1].y, a1);
                     Vector3 p10 = Ring(baseCenter, rings[k + 1].r, rings[k + 1].y, a0);
                     Vector3 sideCenter = baseCenter + new Vector3(0, (rings[k].y + rings[k + 1].y) * 0.5f, 0);
+                    if (segments >= 8)
+                    {
+                        float slope = (rings[k].r - rings[k + 1].r) / Math.Max(0.0001f, rings[k + 1].y - rings[k].y);
+                        SmoothNormals = new[] { RadialNormal(a0, slope), RadialNormal(a1, slope), RadialNormal(a1, slope), RadialNormal(a0, slope) };
+                    }
+
                     Face(sideCenter, mat, wear, p00, p01, p11, p10);
+                    SmoothNormals = null;
                 }
             }
 
@@ -272,15 +282,24 @@ namespace Deadswitch.Art.Geometry
                 normal = -normal;
             }
 
-            float jitter = 1f + ((_rng.Next() - 0.5f) * 2f * FaceJitter);
+            // Vertex color = masks for the salvage shader: R = baked AO/brightness, G = worn edge, B = variation.
+            float variation = _rng.Next();
+            float jitter = 1f + ((variation - 0.5f) * 2f * FaceJitter);
+            float edge = tint > 1.05f ? 1f : 0f;
+            float dark = tint > 1.05f ? 1f : tint;
             int first = Mesh.VertexCount;
             for (int i = 0; i < n; i++)
             {
                 float y = w[i].Y + GroundOffset;
                 float t = Math.Max(0f, Math.Min(1f, y / AoHeight));
                 float ao = AoFloor + ((1f - AoFloor) * t * t * (3f - (2f * t)));
-                float k = ao * jitter * tint;
-                Mesh.AddVertex(w[i], normal, new Vector4(k, k, k, 1f));
+                Vector3 vn = SmoothNormals != null ? Vector3.Normalize(Vector3.TransformNormal(SmoothNormals[i], _m)) : normal;
+                if (SmoothNormals != null && Vector3.Dot(vn, normal) < 0f)
+                {
+                    vn = -vn;
+                }
+
+                Mesh.AddVertex(w[i], vn, new Vector4(ao * jitter * dark, edge, variation, 1f));
             }
 
             for (int i = 1; i < n - 1; i++)
@@ -316,7 +335,7 @@ namespace Deadswitch.Art.Geometry
             int first = Mesh.VertexCount;
             for (int i = 0; i < w.Length; i++)
             {
-                Mesh.AddVertex(w[i], normal, new Vector4(tints[i], tints[i], tints[i], 1f));
+                Mesh.AddVertex(w[i], normal, new Vector4(tints[i], 0f, 0.5f, 1f));
             }
 
             for (int i = 1; i < w.Length - 1; i++)
@@ -330,6 +349,11 @@ namespace Deadswitch.Art.Geometry
                     Mesh.AddTriangle(mat, first, first + i, first + i + 1);
                 }
             }
+        }
+
+        private static Vector3 RadialNormal(float a, float slope)
+        {
+            return Vector3.Normalize(new Vector3((float)Math.Cos(a), slope, (float)Math.Sin(a)));
         }
 
         private static Vector3 Ring(Vector3 c, float r, float y, float a)
