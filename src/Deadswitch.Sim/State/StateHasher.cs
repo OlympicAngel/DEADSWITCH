@@ -16,6 +16,7 @@ namespace Deadswitch.Sim.State
             h = Mix(h, unchecked((ulong)s.People));
             h = Mix(h, unchecked((ulong)s.Corruption));
             h = Mix(h, unchecked((ulong)s.RaidsToday));
+            h = Mix(h, (ulong)s.Delegation);
             h = Mix(h, s.Rng.State);
             h = Mix(h, s.Rng.Inc);
             return h;

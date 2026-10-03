@@ -28,6 +28,8 @@ namespace Deadswitch.Sim.State
 
         public int RaidsToday { get; set; }
 
+        public DelegationLevel Delegation { get; set; }
+
         public Pcg32 Rng { get; set; }
     }
 }

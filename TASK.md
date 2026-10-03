@@ -1,28 +1,23 @@
-# TASK: F-002 Balance config
+# TASK: F-003 Commands and typed event log
 
 - Status: Done
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
 - Pillar / milestone: foundations / M0
-- Spec: docs/adr/0007-balance-config-file.md
-- Sources: doc 10 s3 (numbers), docs/agents/balance-tuning.md, docs/agents/sim-determinism.md, docs/agents/quality-bar.md
+- Spec: ADR-0003 (amended: command log + replay)
+- Sources: ADR-0002, ADR-0003, docs/agents/sim-determinism.md, doc 03 s2 (delegation levels, first real command)
 
 ## Goal
-Every tunable number lives in one human-editable balance file that the sim, CLI, tests and Unity all read. Designers tweak the file, run the CLI or tests, and see the effect; bad edits fail loudly with line numbers. Saves/replays can tell which config produced them (config hash).
+All player input enters the sim as tick-stamped commands that are validated, applied deterministically between ticks, and recorded. Replaying seed + config + command log reproduces the exact state hash, which later powers saves, battle-report replays and server verification. Events carry typed payloads with a schema version.
 
 ## Steps
-- [x] 1. Config visitor infrastructure (`IConfigVisitor`) + `SimConfig` split into sections with ranges and descriptions; existing code migrated; tests
-- [x] 2. Balance file reader/writer (TOML subset) with strict validation: unknown, duplicate, missing, out-of-range, malformed values reported with line numbers; round-trip tests
-- [x] 3. Config hash + clone; tests
-- [x] 4. Shipped balance file `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`; tests load it strictly; feel guard tests run on the shipped file
-- [x] 5. CLI: `run [--config path] [--seed n] [--hours n]`, `config dump`, `config check <path>`; defaults to the shipped file
-- [x] 6. ADR-0007, balance-tuning playbook, README/AGENTS command updates, BACKLOG/HANDOFF
+- [x] 1. Split `Simulation.Step` into systems (`Systems/*`) over a shared `SimContext`; behavior unchanged (hashes identical)
+- [x] 2. Command pipeline: `Command` (kind + int args), `CommandResult` with reject reasons, `Simulation.Execute`, `CommandLog`; first real command `SetDelegation` (Manual / Delegated / Autopilot)
+- [x] 3. Typed events: `SimEvent` with four payload ints and per-kind docs, `EventLog.SchemaVersion`, sequence numbers; `DelegationChanged` event
+- [x] 4. `Replay` (seed + config + commands -> state); tests: replay equals live run, chunking with commands, rejected commands not recorded
+- [x] 5. Docs: ADR-0003 amendment, determinism playbook (commands), HANDOFF/BACKLOG
 
 ## Notes
-- Code defaults = doc 10 baseline. The shipped file is what the game runs; it may diverge while tuning (log in doc 10 corrections when it changes a doc 10 number).
-- Fixed-point naming: `Pct` (0-100), `Permille` (0-1000), `Bp` (basis points, 0-10000). Units in names: `PerTick`, `PerHour`, `Ticks`, `Cap`.
-
-- `tools/gen_meta.py` creates Unity .meta files for new files in the sim package and `unity/Assets` (gate checks it).
-- Bool and IntList readers have no shipped keys yet; add reader tests with the first such key (F-005).
+- Commands apply between ticks at `State.Tick` (last completed tick). Rejected commands change nothing and are not recorded.
 
 ## Blocked / questions
 - none

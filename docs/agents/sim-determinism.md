@@ -19,11 +19,18 @@ The sim must produce **bit-identical** results for the same seed + inputs on eve
 | LINQ `OrderBy` without a total order key | Unstable ties | add a unique tiebreaker (id) |
 | Threads / async in the tick | Non-deterministic order | single-threaded tick |
 
+## Commands, events, systems
+- Player input only through `Simulation.Execute(Command)`. Never mutate `GameState` from outside the sim (Unity included).
+- Command handlers validate first and must not touch state, RNG or the log when rejecting.
+- New command/event/enum values go at the end with explicit numbers; document payload args on the enum member.
+- New per-tick logic is a system in `Systems/`, called from `Simulation.Step` in an explicit position.
+
 ## Checklist for any sim change
 - [ ] New state field added to `GameState` **and** `StateHasher`.
 - [ ] New randomness uses `state.Rng` and always draws the same number of times per tick.
 - [ ] Test: same seed gives same hash; different seed diverges.
 - [ ] Test: chunked run equals single run.
+- [ ] Test: replay (seed + config + command log) equals the live run when commands are involved.
 - [ ] Test: any cap or limit rule (loot cap, offline attack cap, resource caps).
 - [ ] Offline attack cap and mercy window rules from doc 10 section 4 still hold.
 

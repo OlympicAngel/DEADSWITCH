@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-003)
+- Done: `Simulation.Step` split into `Systems/` over `SimContext` (hashes verified identical before adding state); command pipeline (`Command`, `CommandResult`/`RejectReason`, `CommandProcessor`, `CommandLog`), first command `SetDelegation`; typed `SimEvent` (Seq + 4 payloads, `EventLog.SchemaVersion`); `Replay`. 50 tests green.
+- Half-done / known issues: `GameState` is still hashed by hand in `StateHasher`; F-004 replaces that with a single state visitor shared by hasher and save serializer.
+- Next: F-004 save/snapshot format (ADR-0008).
+- Decisions made (link ADR/spec): ADR-0003 amendment (commands apply between ticks; rejected commands leave no trace).
+
+---
+
 ### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-002)
 - Done: sectioned `SimConfig` (`src/Deadswitch.Sim/Config/`), strict balance file reader/writer with line-numbered issues, config hash, `ConfigEntries` diff, shipped `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`, CLI `run/config dump/check/diff`, feel guards on defaults + shipped file, ADR-0007, `tools/gen_meta.py` (+ gate check). 37 tests green.
 - Half-done / known issues: Bool/IntList readers have no shipped keys yet (add tests with the first one). Unity does not load the file yet (F-008: ScriptedImporter for `.toml` + Resources load).
