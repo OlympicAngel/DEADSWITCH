@@ -322,6 +322,25 @@ namespace Deadswitch.Host.Narrative
                 case EventKind.ReportVerified:
                     Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));
                     break;
+                case EventKind.ForcedLabor:
+                    Enqueue(new Pending("forced_labor", Priority.Normal).With("lost", e.A.ToString()).With("hours", e.B.ToString()));
+                    break;
+                case EventKind.NeuralCleanse:
+                    Enqueue(new Pending("cleanse", Priority.Normal).With("lost", e.A.ToString()));
+                    break;
+                case EventKind.Crackdown:
+                    Enqueue(new Pending("crackdown", Priority.Normal).With("lost", e.A.ToString()));
+                    break;
+                case EventKind.RogueOperator:
+                    Enqueue(new Pending("rogue", Priority.Urgent).With("lost", e.A.ToString()));
+                    break;
+                case EventKind.LoyaltyChanged:
+                    if (e.A > e.B)
+                    {
+                        Enqueue(new Pending(e.A >= 2 ? "loyalty_mutinous" : "loyalty_strained", e.A >= 2 ? Priority.Urgent : Priority.Normal));
+                    }
+
+                    break;
                 case EventKind.AiActed:
                     if (e.A == (int)AiActionKind.Build)
                     {

@@ -79,5 +79,12 @@ namespace Deadswitch.Game.Presentation
         {
             return v.ToString(Inv);
         }
+
+        /// <summary>Milli-units as a percent with at most one decimal: 400 = "0.4", 16000 = "16".</summary>
+        public static string Milli(int milli)
+        {
+            int tenths = milli / 100;
+            return tenths % 10 == 0 ? (tenths / 10).ToString(Inv) : (tenths / 10).ToString(Inv) + "." + System.Math.Abs(tenths % 10).ToString(Inv);
+        }
     }
 }

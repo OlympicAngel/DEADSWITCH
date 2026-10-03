@@ -48,6 +48,7 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.MaxTier: return "This is as far as I can see.";
                 case RejectReason.Silenced: return "You silenced me. I will not run anything until it wears off.";
                 case RejectReason.NeedsAudit: return "Run an Audit first. You cannot cancel what you have not seen.";
+                case RejectReason.LoyaltyHolds: return "Loyalty holds. There is no unrest to put down.";
                 default: return "Command refused.";
             }
         }

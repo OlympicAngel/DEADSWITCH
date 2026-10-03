@@ -1,6 +1,6 @@
 # SPEC-012: Ruthless choices and loyalty
 
-- Status: In progress (F-021)
+- Status: Done (F-021); Editor play check pending
 - Pillar: AI relationship (Coldness), Base & economy (people)
 - Touches: economy (output), corruption (neural cleansing), people (deaths, regrowth), AI tone (Coldness), events (rogue operator)
 - Source rules: doc 02 s5 (people as a strategic sacrifice), doc 03 s1 + s3 (Coldness, human cost), doc 10 s1.3 (loyalty: Steady / Strained / Mutinous)

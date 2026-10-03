@@ -114,6 +114,8 @@ namespace Deadswitch.Game.UI.Hud
             Router.Register(new OpsScreen(OpenReport));
             Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings")));
             Router.Register(new SettingsScreen(Router));
+            Router.Register(new WorkforceScreen(Router));
+            Q<VisualElement>("people-cell").RegisterCallback<ClickEvent>(_ => Router.Show("workforce"));
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
             Router.Register(new LockedScreen("map", "SECTOR MAP", "Long-range sensors are dark. I can see the perimeter. Nothing past it.", "RESTORE MODULE M1"));

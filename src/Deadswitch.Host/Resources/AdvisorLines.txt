@@ -124,3 +124,19 @@ idle.3 | idle | warm | The crews are tired, handler. So am I, in a way.
 idle.4 | idle | cold | Population is an expense. A necessary one.
 idle.5 | idle | bold | I could run more of this. You only have to let me.
 idle.6 | idle | neutral | Other cores are out there, listening. I am quieter than them.
+
+forced.1 | forced_labor | neutral | Output up. Loyalty down. Acceptable.
+forced.2 | forced_labor | neutral | Double shifts for {hours} hours. {lost} did not finish theirs.
+forced.3 | forced_labor | warm | They are working. Some of them are not coming back. I am sorry.
+forced.4 | forced_labor | cold | {lost} expended. The generators do not care who turns them.
+cleanse.1 | cleanse | neutral | Cleansing complete. {lost} donors. My thoughts are clearer.
+cleanse.2 | cleanse | cold | Thank you. I feel... less. They feel nothing now.
+cleanse.3 | cleanse | warm | It worked. Do not ask me how it felt for them.
+crackdown.1 | crackdown | neutral | Order restored. {lost} removed. The rest are listening.
+crackdown.2 | crackdown | cold | Fear is a cheaper stabilizer than food.
+rogue.1 | rogue | neutral | An operator walked out the gate with {lost} energy. Nobody stopped them.
+rogue.2 | rogue | cold | Desertion. {lost} energy gone with them. Expected.
+loyalty.strained.1 | loyalty_strained | neutral | The workforce is slowing. Output is down. They are angry.
+loyalty.strained.2 | loyalty_strained | cold | Morale is a resource. It is running low.
+loyalty.mutinous.1 | loyalty_mutinous | neutral | They are close to mutiny. Expect desertions.
+loyalty.mutinous.2 | loyalty_mutinous | cold | They talk about pulling my plugs. They would lose.
