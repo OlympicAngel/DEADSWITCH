@@ -1,22 +1,20 @@
 namespace Deadswitch.Sim.Config
 {
-    /// <summary>Energy: a continuous flow with upkeep (doc 02 s3, doc 10 s3).</summary>
+    /// <summary>Energy: a continuous flow with upkeep (doc 02 s3, doc 10 s3). Generation comes from Generator facilities.</summary>
     public sealed class EnergyConfig : IConfigSection
     {
         public int Start = 200;
         public int Cap = 500;
 
-        /// <summary>doc 10 said 6, but 6 - 4 upkeep - 3 rack = -1/min (blackout in about 3h). Corrected, see doc 10 s11.</summary>
-        public int GenPerTick = 8;
-        public int UpkeepPerTick = 4;
+        /// <summary>doc 10 s3: -4/min. The AI core is always powered first.</summary>
+        public int CoreUpkeepPerHour = 240;
 
         public void Visit(IConfigVisitor v)
         {
-            v.BeginSection("energy", "Energy: continuous flow with upkeep (doc 02 s3, doc 10 s3).");
+            v.BeginSection("energy", "Energy: continuous flow with upkeep (doc 02 s3, doc 10 s3). Generation comes from Generators.");
             v.Int("start", ref Start, 0, 1_000_000, "Energy at the start of a run.");
-            v.Int("cap", ref Cap, 1, 1_000_000, "Storage cap.");
-            v.Int("gen_per_tick", ref GenPerTick, 0, 10_000, "Base generation per tick (1 tick = 1 game minute).");
-            v.Int("upkeep_per_tick", ref UpkeepPerTick, 0, 10_000, "Base upkeep per tick before facilities.");
+            v.Int("cap", ref Cap, 1, 1_000_000, "Storage cap before Battery Banks.");
+            v.Int("core_upkeep_per_hour", ref CoreUpkeepPerHour, 0, 1_000_000, "AI core upkeep per game hour, paid before any facility. Unpaid = blackout.");
             v.EndSection();
         }
     }

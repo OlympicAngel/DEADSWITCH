@@ -6,20 +6,17 @@
 # `dotnet run --project src/Deadswitch.Cli -- config check`. See docs/agents/balance-tuning.md.
 
 # --------------------------------------------------------------------------------------------------
-# Energy: continuous flow with upkeep (doc 02 s3, doc 10 s3).
+# Energy: continuous flow with upkeep (doc 02 s3, doc 10 s3). Generation comes from Generators.
 [energy]
 
 # Energy at the start of a run. [0..1000000]
 start = 200
 
-# Storage cap. [1..1000000]
+# Storage cap before Battery Banks. [1..1000000]
 cap = 500
 
-# Base generation per tick (1 tick = 1 game minute). [0..10000]
-gen_per_tick = 8
-
-# Base upkeep per tick before facilities. [0..10000]
-upkeep_per_tick = 4
+# AI core upkeep per game hour, paid before any facility. Unpaid = blackout. [0..1000000]
+core_upkeep_per_hour = 240
 
 # --------------------------------------------------------------------------------------------------
 # Fuel: consumable for vehicles, raids, outposts and operations (doc 10 s3, s5).
@@ -32,7 +29,7 @@ start = 100
 cap = 300
 
 # --------------------------------------------------------------------------------------------------
-# Compute: the AI's processing power. Server racks turn energy into compute (doc 02 s4).
+# Compute: the AI's processing power, produced by Server Racks (doc 02 s4).
 [compute]
 
 # Compute at the start of a run. [0..1000000]
@@ -40,12 +37,6 @@ start = 50
 
 # Storage cap. [1..1000000]
 cap = 100
-
-# Compute produced per tick while racks are powered. [0..10000]
-per_tick = 1
-
-# Energy the racks burn per tick to produce compute. [0..10000]
-rack_energy_cost_per_tick = 3
 
 # --------------------------------------------------------------------------------------------------
 # People: scarce, slow-growing, can be lost (doc 02 s5, doc 10 s1.3).
@@ -85,3 +76,121 @@ loot_cap = 60
 
 # Offline attack cap per 24h (doc 10 s4: 3 in Tier 1). [0..100]
 max_per_day = 3
+
+# --------------------------------------------------------------------------------------------------
+# Hub layout: facility slots (SPEC-002).
+[hub]
+
+# Facility slots in the Tier 1 Hub. Slot 0 starts with a Generator, slot 1 with a Server Rack. [2..64]
+slots = 6
+
+# --------------------------------------------------------------------------------------------------
+# Construction queue (SPEC-002 rule 4).
+[build]
+
+# Construction jobs that can run at the same time. [1..16]
+queue_slots = 1
+
+# Share of the paid cost returned when a job is cancelled. [0..100]
+cancel_refund_pct = 50
+
+# Share of the current level's cost returned when a facility is demolished. [0..100]
+demolish_refund_pct = 25
+
+# Diminishing returns: building another facility of a kind you already have costs +this percent per existing one. [0..1000]
+duplicate_cost_pct = 100
+
+# --------------------------------------------------------------------------------------------------
+# Crewing: people run facilities; the AI runs the rest at reduced output (doc 02 s5).
+[crew]
+
+# Output of a short-handed facility run by the AI, in percent of full output. [0..100]
+unmanned_output_pct = 50
+
+# --------------------------------------------------------------------------------------------------
+# Generator: scavenged power plant. Output = energy per game hour.
+[facility_generator]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [300, 260, 450, 780, 1350]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 0, 10, 25, 50]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [30, 45, 90, 180, 360]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 0, 0, 0]
+
+# Energy generated per game hour, per level. [1..20 items, each 0..1000000]
+output = [480, 660, 900, 1200, 1560]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [2, 2, 3, 3, 4]
+
+# --------------------------------------------------------------------------------------------------
+# Server Rack: burns energy to produce compute for the AI (doc 02 s4). Output = compute per game hour.
+[facility_server_rack]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [120, 220, 400, 700, 1200]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 15, 30, 60, 100]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [15, 40, 80, 160, 320]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [180, 300, 450, 660, 930]
+
+# Compute produced per game hour, per level. [1..20 items, each 0..1000000]
+output = [60, 100, 150, 210, 280]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 1, 2, 2, 3]
+
+# --------------------------------------------------------------------------------------------------
+# Life Support Grid: raises the population cap while powered (doc 10 s1.3).
+[facility_life_support]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [200, 340, 560, 900, 1400]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 10, 20, 40, 70]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [60, 120, 240, 420, 720]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [120, 210, 330, 480, 660]
+
+# Population cap bonus per level. [1..20 items, each 0..1000000]
+output = [6, 12, 20, 30, 42]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 2, 2, 3, 3]
+
+# --------------------------------------------------------------------------------------------------
+# Battery Bank: raises the energy storage cap while powered.
+[facility_battery_bank]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [100, 200, 380, 650, 1050]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 0, 10, 20, 40]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [15, 40, 80, 150, 300]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 30, 60, 120]
+
+# Energy cap bonus per level. [1..20 items, each 0..1000000]
+output = [250, 600, 1100, 1800, 2800]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [0, 0, 1, 1, 1]

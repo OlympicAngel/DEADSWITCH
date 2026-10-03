@@ -2,19 +2,21 @@ using Deadswitch.Sim.State;
 
 namespace Deadswitch.Sim.Systems
 {
-    /// <summary>Hourly population regrowth toward the cap, paused during blackouts (doc 10 s1.3).</summary>
+    /// <summary>
+    /// Hourly population regrowth toward the current cap (base + powered Life Support), paused during
+    /// blackouts (doc 10 s1.3). A lowered cap never kills anyone; it only stops regrowth.
+    /// </summary>
     public static class PeopleSystem
     {
         public static void Hourly(SimContext ctx)
         {
             GameState s = ctx.State;
-            SimConfig c = ctx.Config;
-
-            if (s.Energy > 0 && s.People < c.People.Cap)
+            int cap = Economy.PopulationCap(s, ctx.Config);
+            if (!s.Blackout && s.People < cap)
             {
-                int gap = c.People.Cap - s.People;
-                int gain = SimMath.PctCeil(gap, c.People.RegrowthPctOfGapPerHour);
-                s.People = SimMath.Clamp(s.People + gain, 0, c.People.Cap);
+                int gap = cap - s.People;
+                int gain = SimMath.PctCeil(gap, ctx.Config.People.RegrowthPctOfGapPerHour);
+                s.People = SimMath.Clamp(s.People + gain, 0, cap);
             }
         }
     }

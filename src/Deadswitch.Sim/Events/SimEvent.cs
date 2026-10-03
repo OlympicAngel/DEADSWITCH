@@ -12,11 +12,38 @@ namespace Deadswitch.Sim.Events
         /// <summary>A raid hit. A: energy looted.</summary>
         RaidStarted = 1,
 
-        /// <summary>Energy reached zero this tick. No payload.</summary>
+        /// <summary>The AI core lost power: no facility runs, regrowth pauses. No payload.</summary>
         BlackoutStarted = 2,
 
         /// <summary>Delegation level changed by command. A: new level, B: previous level (see DelegationLevel).</summary>
         DelegationChanged = 3,
+
+        /// <summary>The AI core is powered again. No payload.</summary>
+        BlackoutEnded = 4,
+
+        /// <summary>Construction started. A: slot, B: FacilityKind, C: target level, D: build minutes.</summary>
+        BuildStarted = 5,
+
+        /// <summary>Construction finished. A: slot, B: FacilityKind, C: new level.</summary>
+        BuildCompleted = 6,
+
+        /// <summary>Construction cancelled. A: slot, B: energy refunded, C: compute refunded.</summary>
+        BuildCancelled = 7,
+
+        /// <summary>Facility demolished. A: slot, B: FacilityKind, C: energy refunded, D: compute refunded.</summary>
+        FacilityDemolished = 8,
+
+        /// <summary>Facility lost power to priority shedding. A: slot, B: FacilityKind.</summary>
+        FacilityShed = 9,
+
+        /// <summary>Facility powered again. A: slot, B: FacilityKind.</summary>
+        FacilityRestored = 10,
+
+        /// <summary>Handler switched a facility. A: slot, B: 1 = on, 0 = off.</summary>
+        FacilityPowerSet = 11,
+
+        /// <summary>Power priority changed. A: slot, B: new rank (0 = highest).</summary>
+        PriorityChanged = 12,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

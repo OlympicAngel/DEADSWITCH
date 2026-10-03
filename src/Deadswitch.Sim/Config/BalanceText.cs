@@ -85,6 +85,11 @@ namespace Deadswitch.Sim.Config
             var reader = new Reader(entries, issues, mode);
             config.Visit(reader);
             reader.ReportUnknownKeys();
+            foreach (string problem in config.Validate())
+            {
+                issues.Add(new ConfigIssue(ConfigIssueSeverity.Error, 0, string.Empty, problem));
+            }
+
             return new BalanceReadResult(config, issues);
         }
 

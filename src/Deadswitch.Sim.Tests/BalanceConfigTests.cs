@@ -20,11 +20,11 @@ namespace Deadswitch.Sim.Tests
         [Fact]
         public void EditedValueIsApplied()
         {
-            string text = DefaultText.Replace("gen_per_tick = 8", "gen_per_tick = 11");
+            string text = DefaultText.Replace("core_upkeep_per_hour = 240", "core_upkeep_per_hour = 300");
 
             SimConfig config = BalanceText.Parse(text);
 
-            Assert.Equal(11, config.Energy.GenPerTick);
+            Assert.Equal(300, config.Energy.CoreUpkeepPerHour);
         }
 
         [Fact]
@@ -40,14 +40,14 @@ namespace Deadswitch.Sim.Tests
         [Fact]
         public void UnknownKey_IsAnErrorWithLineNumber()
         {
-            string text = DefaultText.Replace("[energy]\n", "[energy]\ngen_per_tik = 9\n");
-            int expectedLine = text.Split('\n').ToList().FindIndex(l => l.StartsWith("gen_per_tik", System.StringComparison.Ordinal)) + 1;
+            string text = DefaultText.Replace("[energy]\n", "[energy]\ncore_upkep_per_hour = 9\n");
+            int expectedLine = text.Split('\n').ToList().FindIndex(l => l.StartsWith("core_upkep_per_hour", System.StringComparison.Ordinal)) + 1;
 
             BalanceReadResult result = BalanceText.Read(text, BalanceReadMode.Strict);
 
             ConfigIssue issue = Assert.Single(result.Issues);
             Assert.Equal(ConfigIssueSeverity.Error, issue.Severity);
-            Assert.Equal("energy.gen_per_tik", issue.Key);
+            Assert.Equal("energy.core_upkep_per_hour", issue.Key);
             Assert.Equal(expectedLine, issue.Line);
         }
 
@@ -64,7 +64,7 @@ namespace Deadswitch.Sim.Tests
         [Fact]
         public void MissingKey_StrictIsError_LenientKeepsDefault()
         {
-            string text = DefaultText.Replace("gen_per_tick = 8\n", string.Empty);
+            string text = DefaultText.Replace("core_upkeep_per_hour = 240\n", string.Empty);
 
             BalanceReadResult strict = BalanceText.Read(text, BalanceReadMode.Strict);
             BalanceReadResult lenient = BalanceText.Read(text, BalanceReadMode.Lenient);
@@ -72,27 +72,27 @@ namespace Deadswitch.Sim.Tests
             Assert.True(strict.HasErrors);
             Assert.False(lenient.HasErrors);
             ConfigIssue warning = Assert.Single(lenient.Issues);
-            Assert.Equal("energy.gen_per_tick", warning.Key);
-            Assert.Equal(new SimConfig().Energy.GenPerTick, lenient.Config.Energy.GenPerTick);
+            Assert.Equal("energy.core_upkeep_per_hour", warning.Key);
+            Assert.Equal(new SimConfig().Energy.CoreUpkeepPerHour, lenient.Config.Energy.CoreUpkeepPerHour);
         }
 
         [Theory]
-        [InlineData("gen_per_tick = -1", "out of range")]
-        [InlineData("gen_per_tick = 10001", "out of range")]
-        [InlineData("gen_per_tick = eight", "not an integer")]
-        [InlineData("gen_per_tick = 8.5", "not an integer")]
-        [InlineData("gen_per_tick = 99999999999", "not an integer")]
-        [InlineData("gen_per_tick = _8", "not an integer")]
+        [InlineData("core_upkeep_per_hour = -1", "out of range")]
+        [InlineData("core_upkeep_per_hour = 1000001", "out of range")]
+        [InlineData("core_upkeep_per_hour = eight", "not an integer")]
+        [InlineData("core_upkeep_per_hour = 8.5", "not an integer")]
+        [InlineData("core_upkeep_per_hour = 99999999999", "not an integer")]
+        [InlineData("core_upkeep_per_hour = _8", "not an integer")]
         public void InvalidValue_IsAnErrorAndKeepsDefault(string line, string expected)
         {
-            string text = DefaultText.Replace("gen_per_tick = 8", line);
+            string text = DefaultText.Replace("core_upkeep_per_hour = 240", line);
 
             BalanceReadResult result = BalanceText.Read(text, BalanceReadMode.Lenient);
 
             ConfigIssue issue = Assert.Single(result.Issues);
             Assert.Equal(ConfigIssueSeverity.Error, issue.Severity);
             Assert.Contains(expected, issue.Message);
-            Assert.Equal(8, result.Config.Energy.GenPerTick);
+            Assert.Equal(240, result.Config.Energy.CoreUpkeepPerHour);
         }
 
         [Theory]
@@ -110,6 +110,52 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void IntList_IsParsed()
+        {
+            string text = DefaultText.Replace("output = [480, 660, 900, 1200, 1560]", "output = [ 500 ,700,1_000, 1200, 1600 ]");
+
+            SimConfig config = BalanceText.Parse(text);
+
+            Assert.Equal(new[] { 500, 700, 1000, 1200, 1600 }, config.Generator.Output);
+        }
+
+        [Theory]
+        [InlineData("output = 480", "not a list")]
+        [InlineData("output = [480, x]", "not an integer")]
+        [InlineData("output = [480, -5, 900, 1200, 1560]", "out of range")]
+        [InlineData("output = []", "items")]
+        [InlineData("output = [480, 660, 900, 1200, 1560,]", "not an integer")]
+        public void InvalidIntList_IsAnError(string line, string expected)
+        {
+            string text = DefaultText.Replace("output = [480, 660, 900, 1200, 1560]", line);
+
+            BalanceReadResult result = BalanceText.Read(text, BalanceReadMode.Lenient);
+
+            Assert.Contains(result.Issues, i => i.Severity == ConfigIssueSeverity.Error && i.Message.Contains(expected));
+            Assert.Equal(480, result.Config.Generator.Output[0]);
+        }
+
+        [Fact]
+        public void MismatchedFacilityTableLengths_FailValidation()
+        {
+            string text = DefaultText.Replace("output = [480, 660, 900, 1200, 1560]", "output = [480, 660, 900]");
+
+            BalanceReadResult result = BalanceText.Read(text, BalanceReadMode.Strict);
+
+            Assert.Contains(result.Issues, i => i.Message.Contains("facility_generator") && i.Message.Contains("same length"));
+        }
+
+        [Fact]
+        public void StartAboveCap_FailsValidation()
+        {
+            string text = DefaultText.Replace("start = 200", "start = 900");
+
+            BalanceReadResult result = BalanceText.Read(text, BalanceReadMode.Strict);
+
+            Assert.Contains(result.Issues, i => i.Message.Contains("energy.start"));
+        }
+
+        [Fact]
         public void KeyBeforeAnySection_IsAnError()
         {
             BalanceReadResult result = BalanceText.Read("cap = 1\n" + DefaultText, BalanceReadMode.Strict);
@@ -120,12 +166,12 @@ namespace Deadswitch.Sim.Tests
         [Fact]
         public void Parse_ThrowsWithEveryIssueInTheMessage()
         {
-            string text = DefaultText.Replace("gen_per_tick = 8", "gen_per_tick = x").Replace("[fuel]\n", "[fuel]\nnope = 1\n");
+            string text = DefaultText.Replace("core_upkeep_per_hour = 240", "core_upkeep_per_hour = x").Replace("[fuel]\n", "[fuel]\nnope = 1\n");
 
             var ex = Assert.Throws<BalanceConfigException>(() => BalanceText.Parse(text));
 
             Assert.Equal(2, ex.Issues.Count);
-            Assert.Contains("energy.gen_per_tick", ex.Message);
+            Assert.Contains("energy.core_upkeep_per_hour", ex.Message);
             Assert.Contains("fuel.nope", ex.Message);
         }
 

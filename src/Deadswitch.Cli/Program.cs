@@ -148,7 +148,7 @@ namespace Deadswitch.Cli
                     {
                         bool defaults = rest.Contains("--defaults");
                         string? outPath = ValueAfter(rest, "--out");
-                        SimConfig config = defaults ? SimConfig.Tier1() : LoadConfig(null, out _);
+                        SimConfig config = defaults ? SimConfig.Tier1() : LoadForDump();
                         string text = BalanceText.Write(config);
                         if (outPath != null)
                         {
@@ -192,6 +192,24 @@ namespace Deadswitch.Cli
                 default:
                     throw new UsageException("Unknown config subcommand '" + args[0] + "'.");
             }
+        }
+
+        /// <summary>Lenient read so `dump` can migrate the shipped file after keys were added or removed, keeping edited values.</summary>
+        private static SimConfig LoadForDump()
+        {
+            string path = BalanceFile.LocateShipped();
+            BalanceReadResult result = BalanceText.Read(File.ReadAllText(path), BalanceReadMode.Lenient);
+            foreach (ConfigIssue issue in result.Issues)
+            {
+                Console.Error.WriteLine(path + ": " + issue);
+            }
+
+            if (result.HasErrors)
+            {
+                throw new BalanceConfigException(result.Issues);
+            }
+
+            return result.Config;
         }
 
         private static SimConfig LoadConfig(string? path, out string source)

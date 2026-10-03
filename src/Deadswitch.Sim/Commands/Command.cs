@@ -12,6 +12,24 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>A: target <see cref="DelegationLevel"/>.</summary>
         SetDelegation = 1,
+
+        /// <summary>Build a new facility. A: slot, B: <see cref="FacilityKind"/>.</summary>
+        Build = 2,
+
+        /// <summary>Upgrade a facility by one level. A: slot.</summary>
+        Upgrade = 3,
+
+        /// <summary>Cancel the construction job on a slot (partial refund). A: slot.</summary>
+        CancelJob = 4,
+
+        /// <summary>Demolish a facility (partial refund). A: slot.</summary>
+        Demolish = 5,
+
+        /// <summary>Switch a facility on or off. A: slot, B: 1 = on, 0 = off.</summary>
+        SetFacilityPower = 6,
+
+        /// <summary>Move a slot in the power/crew priority order. A: slot, B: new rank (0 = highest).</summary>
+        SetPriority = 7,
     }
 
     /// <summary>
@@ -39,6 +57,36 @@ namespace Deadswitch.Sim.Commands
         public static Command SetDelegation(DelegationLevel level)
         {
             return new Command(CommandKind.SetDelegation, (int)level);
+        }
+
+        public static Command Build(int slot, FacilityKind kind)
+        {
+            return new Command(CommandKind.Build, slot, (int)kind);
+        }
+
+        public static Command Upgrade(int slot)
+        {
+            return new Command(CommandKind.Upgrade, slot);
+        }
+
+        public static Command CancelJob(int slot)
+        {
+            return new Command(CommandKind.CancelJob, slot);
+        }
+
+        public static Command Demolish(int slot)
+        {
+            return new Command(CommandKind.Demolish, slot);
+        }
+
+        public static Command SetFacilityPower(int slot, bool on)
+        {
+            return new Command(CommandKind.SetFacilityPower, slot, on ? 1 : 0);
+        }
+
+        public static Command SetPriority(int slot, int rank)
+        {
+            return new Command(CommandKind.SetPriority, slot, rank);
         }
 
         public override string ToString()

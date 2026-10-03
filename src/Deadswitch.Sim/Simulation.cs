@@ -74,7 +74,10 @@ namespace Deadswitch.Sim
             ctx.State.Tick++;
 
             RaidSystem.StartOfTick(ctx);
+            ConstructionSystem.Tick(ctx);
+            CrewSystem.Tick(ctx);
             EnergySystem.Tick(ctx);
+            ProductionSystem.Tick(ctx);
 
             if (ctx.State.Tick % SimConfig.TicksPerHour == 0)
             {

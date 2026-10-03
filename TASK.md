@@ -1,25 +1,24 @@
-# TASK: F-004 Save/snapshot format
+# TASK: F-005 Economy core
 
-- Status: Done
+- Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: foundations / M0
-- Spec: docs/adr/0008-save-format.md
-- Sources: ADR-0002, ADR-0003 (+ amendment), ADR-0004, ADR-0007, docs/agents/sim-determinism.md
+- Pillar / milestone: Base & economy / M1
+- Spec: docs/specs/SPEC-002-economy-core.md
+- Sources: doc 02 s1-8, doc 10 s1.3 + s3, doc 03 s3, ADR-0007, ADR-0008
 
 ## Goal
-A run can be saved to bytes and restored so that continuing the restored run is bit-identical to never having stopped. Saves are versioned, checksummed and reject corruption with a clear error; balance changes between game versions never brick a save. One declaration of state fields drives the hasher and the serializer, so "every field must be hashed" can no longer be forgotten.
+Facilities in Hub slots, a build/upgrade queue with timers, power priority with shedding and blackout, crew and unmanned (AI-run) facilities, population cap from Life Support. Growth always costs more upkeep; shortages are the handler's planned trade-off.
 
 ## Steps
-- [x] 1. `IStateVisitor` + `GameState.Visit` (fields declared once); `StateHasher` rebuilt on it (same coverage, new hash values)
-- [x] 2. Binary save format v1: header (magic, version, seed, config hash, schema versions), state, command log, event log, FNV-1a checksum; `SaveGame.Write/Read`; `Simulation` restore path
-- [x] 3. Tests: save/load/continue equals continuous run (many seeds, mid-day, with commands), corrupted/truncated/foreign bytes rejected, newer version rejected, config change loads with a flag
-- [x] 4. Atomic file store for hosts (temp + rename + .bak fallback) in a host-side helper; CLI `run --save/--load`
-- [x] 5. ADR-0008, determinism playbook (state visitor rule), HANDOFF/BACKLOG
+- [x] 1. Per-hour rate delivery (`Rates.PerTick`) + config sections (`hub`, `build`, `crew`, facility tables) with IntList keys; reader tests for lists
+- [x] 2. State: facility slots, build jobs, power priority (visitor; save format stays v1); starting layout; `EconomyQueries` (flows for UI)
+- [ ] 3. Construction system + commands Build/Upgrade/CancelJob/Demolish; tests
+- [ ] 4. Crew + power systems (priority, shedding hysteresis, blackout, manual power, SetPriority); production; population cap; tests
+- [ ] 5. Determinism/save/replay/chunking with economy; sensible-builder 7-day guard; shipped balance file regenerated
+- [ ] 6. CLI shows economy; docs (SPEC status, balance numbers), HANDOFF/BACKLOG
 
 ## Notes
-- `GameState` moves from properties to public fields so the visitor can take `ref`.
-
-- Host services live in the new `src/Deadswitch.Host` package (Unity manifest updated).
+- Save format stays v1: no saves have shipped yet. From the first public build on, layout changes need a version bump + migration.
 
 ## Blocked / questions
 - none

@@ -15,6 +15,18 @@ namespace Deadswitch.Sim.Commands
             {
                 case CommandKind.SetDelegation:
                     return SetDelegation(ctx, command);
+                case CommandKind.Build:
+                    return EconomyCommands.Build(ctx, command);
+                case CommandKind.Upgrade:
+                    return EconomyCommands.Upgrade(ctx, command);
+                case CommandKind.CancelJob:
+                    return EconomyCommands.CancelJob(ctx, command);
+                case CommandKind.Demolish:
+                    return EconomyCommands.Demolish(ctx, command);
+                case CommandKind.SetFacilityPower:
+                    return EconomyCommands.SetFacilityPower(ctx, command);
+                case CommandKind.SetPriority:
+                    return EconomyCommands.SetPriority(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

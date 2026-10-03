@@ -13,6 +13,33 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>The command would change nothing (for example, setting the current level again).</summary>
         NoChange = 3,
+
+        /// <summary>The slot id does not exist.</summary>
+        InvalidSlot = 4,
+
+        /// <summary>The slot already holds a facility.</summary>
+        SlotOccupied = 5,
+
+        /// <summary>The slot is empty.</summary>
+        SlotEmpty = 6,
+
+        /// <summary>A construction job is already working on this slot.</summary>
+        JobInProgress = 7,
+
+        /// <summary>No construction job on this slot.</summary>
+        NoJob = 8,
+
+        /// <summary>Every construction queue slot is busy.</summary>
+        QueueFull = 9,
+
+        /// <summary>The facility is at its maximum level.</summary>
+        MaxLevel = 10,
+
+        /// <summary>Not enough energy for the cost.</summary>
+        NotEnoughEnergy = 11,
+
+        /// <summary>Not enough compute for the cost.</summary>
+        NotEnoughCompute = 12,
     }
 
     public readonly struct CommandResult
