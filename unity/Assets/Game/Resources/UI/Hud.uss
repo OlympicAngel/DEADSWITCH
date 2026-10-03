@@ -1,170 +1,158 @@
-/* Terminal HUD (F-009). Kit classes + tokens only. */
+/* Terminal HUD over the drone feed (owner reference, 2026-10-03). Kit classes + tokens only. */
 
 .hud { flex-grow: 1; }
 
-.hud-status {
-    padding: var(--s-6) var(--s-8) 0 var(--s-8);
-    background-color: rgba(10, 13, 11, 0.55);
+/* ---------- Resource bar ---------- */
+.hud-top {
+    flex-direction: row;
+    background-color: rgba(10, 13, 12, 0.88);
     border-bottom-width: 1px;
-    border-color: var(--c-line);
-    padding-bottom: var(--s-4);
+    border-color: var(--c-line-mid);
+    padding: var(--s-4) var(--s-4) var(--s-3) var(--s-4);
 }
 
-.hud-topline { flex-direction: row; align-items: center; margin-bottom: var(--s-5); }
+.hud-cell { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; padding: 0 var(--s-2); }
+.hud-cell + .hud-cell { border-left-width: 1px; border-color: var(--c-line); }
+.hud-cell__icon { width: 46px; height: 46px; margin-right: var(--s-2); --icon-color: var(--c-phosphor); }
+.hud-cell__gauge { width: 54px; height: 54px; margin-right: var(--s-2); }
+.hud-cell__body { flex-shrink: 1; }
 
-.hud-sigil {
-    width: 44px;
-    height: 44px;
-    margin-right: var(--s-4);
-    border-width: var(--bw);
-    border-color: var(--c-phosphor);
-    rotate: 45deg;
-    scale: 0.72 0.72;
-}
-
-.hud-hubname { letter-spacing: 5px; }
-
-.hud-clock {
+.hud-cell__value {
     -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
     font-size: var(--fs-md);
     color: var(--c-text);
-    letter-spacing: 2px;
 }
 
-.hud-override { align-items: flex-end; }
-.hud-override__label { margin-bottom: var(--s-2); }
-
-.hud-opip {
-    width: 22px;
-    height: 22px;
-    margin-left: var(--s-3);
-    border-width: var(--bw);
-    border-color: var(--c-amber-dim);
-    rotate: 45deg;
+.hud-cell__cap {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-micro);
+    color: var(--c-text-dim);
+    padding-bottom: 3px;
 }
 
-.hud-opip.is-on { background-color: var(--c-amber); border-color: var(--c-amber); }
-.hud-opip.is-cooldown { border-color: var(--c-text-faint); background-color: rgba(232, 180, 92, 0.25); }
-
-.hud-panels { flex-direction: row; align-items: stretch; }
-
-.hud-energy { flex-grow: 1.35; flex-basis: 0; margin-right: var(--s-3); padding: var(--s-4); }
-
-.hud-col { flex-grow: 1; flex-basis: 0; margin-right: var(--s-3); }
-
-.hud-mini { flex-grow: 1; padding: var(--s-3) var(--s-4); }
-.hud-mini + .hud-mini { margin-top: var(--s-3); }
-
-.hud-core { width: 200px; align-items: center; padding: var(--s-3) var(--s-2); }
-
-.hud-valuerow { margin-top: var(--s-1); }
-
-.hud-big { font-size: var(--fs-xl); }
-.hud-mid { font-size: var(--fs-lg); }
-
-.hud-delta {
+.hud-cell__rate {
     -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
     font-size: var(--fs-micro);
     letter-spacing: 1px;
 }
 
-.hud-spark { height: 52px; margin-top: var(--s-2); }
+/* ---------- Drone frame ---------- */
+.hud-frame {
+    position: absolute;
+    left: var(--s-6);
+    right: var(--s-6);
+    top: 136px;
+    bottom: 236px;
+}
 
-.hud-gauge {
-    width: 150px;
-    height: 150px;
+.hud-bracket { position: absolute; width: 56px; height: 56px; border-color: var(--c-phosphor-dim); }
+.hud-bracket--tl { left: 0; top: 0; border-left-width: 3px; border-top-width: 3px; }
+.hud-bracket--tr { right: 0; top: 0; border-right-width: 3px; border-top-width: 3px; }
+.hud-bracket--bl { left: 0; bottom: 0; border-left-width: 3px; border-bottom-width: 3px; }
+.hud-bracket--br { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; }
+
+.hud-frame__top { flex-direction: row; align-items: flex-start; padding: var(--s-5) var(--s-5) 0 var(--s-6); }
+
+.hud-feed { flex-shrink: 0; }
+
+.hud-feed__line {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-micro);
+    letter-spacing: 2px;
+    color: var(--c-phosphor-dim);
+}
+
+.hud-right { align-items: flex-end; }
+
+.hud-alert {
     flex-direction: row;
     align-items: center;
-    justify-content: center;
-    margin: var(--s-1) 0;
+    padding: var(--s-2) var(--s-4);
+    border-width: 2px;
+    border-color: var(--c-amber);
+    background-color: rgba(48, 34, 12, 0.88);
 }
 
-.hud-gauge__value {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
-    font-size: var(--fs-lg);
-}
+.hud-alert.is-hidden { display: none; }
+.hud-alert__pip { width: 18px; height: 18px; margin-right: var(--s-3); }
+.hud-alert__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
+.hud-alert__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); color: var(--c-amber); text-shadow: 0 0 10px var(--c-amber-glow); }
 
-.hud-gauge__unit {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
-    font-size: var(--fs-xs);
-    color: var(--c-text-dim);
+.hud-next {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-2) var(--s-3);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    background-color: rgba(10, 13, 12, 0.72);
     margin-top: var(--s-2);
 }
 
-.hud-band {
-    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
-    font-size: var(--fs-micro);
-    letter-spacing: 4px;
-}
+.hud-next .ds-pip { width: 10px; height: 10px; }
+.hud-next__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
+.hud-next__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); -unity-text-align: middle-right; }
 
-.hud-strip { flex-direction: row; margin-top: var(--s-4); }
+.hud-override { flex-direction: row; align-items: center; margin-top: var(--s-3); }
+.hud-override__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-dim); margin-right: var(--s-1); }
+.hud-opip { width: 18px; height: 18px; margin-left: var(--s-3); border-width: var(--bw); border-color: var(--c-amber-dim); rotate: 45deg; }
+.hud-opip.is-on { background-color: var(--c-amber); border-color: var(--c-amber); }
+.hud-opip.is-cooldown { border-color: var(--c-text-faint); background-color: rgba(232, 180, 92, 0.25); }
 
-.hud-next { flex-grow: 1; min-height: 64px; margin-right: var(--s-3); }
-
-.hud-next__time {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
-    font-size: var(--fs-sm);
-    color: var(--c-text);
-}
-
-.hud-threat { min-height: 64px; }
-
-.hud-threat__level {
-    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
-    font-size: var(--fs-xs);
-    letter-spacing: 3px;
-    margin-left: var(--s-4);
-}
-
-.hud-advisor {
+.hud-raidrow {
     flex-direction: row;
-    align-items: flex-start;
-    margin-top: var(--s-4);
-    min-height: 48px;
+    align-items: center;
+    justify-content: flex-end;
+    margin: var(--s-3) var(--s-5) 0 0;
 }
 
-.hud-advisor__caret {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
-    font-size: var(--fs-sm);
-    color: var(--c-phosphor);
-    margin-right: var(--s-3);
-}
-
-.hud-advisor__text {
-    flex-grow: 1;
-    flex-shrink: 1;
-    white-space: normal;
-    font-size: var(--fs-sm);
-    color: var(--c-phosphor);
-    text-shadow: 0 0 8px var(--c-phosphor-glow);
-}
-
-.hud-raid { margin-top: var(--s-4); padding-right: var(--s-3); }
-.hud-raid.is-hidden { display: none; }
-.hud-raid__pip { width: 20px; height: 20px; margin-right: var(--s-4); }
-.hud-raid__title { margin-right: var(--s-4); }
-
-.hud-raid__sub {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
-    font-size: var(--fs-micro);
-    color: var(--c-text-dim);
-    margin-top: var(--s-1);
-}
-
-.hud-raid__time {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
-    font-size: var(--fs-md);
-}
-
-.hud-raid__btn { min-height: 96px; padding: 0 var(--s-5); }
+.hud-raidrow.is-hidden { display: none; }
+.hud-raidrow__text { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-amber); margin-right: var(--s-3); }
+.hud-raidrow__btn { min-height: 88px; padding: 0 var(--s-5); }
 
 .hud-screen { flex-grow: 1; }
 
-.hud-tabbar { padding-bottom: var(--s-4); }
+/* ---------- Advisor ---------- */
+.hud-advisor {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: var(--s-3) var(--s-6);
+    background-color: rgba(8, 11, 10, 0.78);
+    border-top-width: 1px;
+    border-color: var(--c-line);
+    min-height: 72px;
+}
 
-/* Procedural icons are drawn by Icons.cs; this sets the stroke color. */
-.ds-icon { --icon-color: var(--c-text-dim); }
-.ds-tab.is-active > .ds-icon { --icon-color: var(--c-phosphor); }
+.hud-advisor__caret { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-phosphor); margin-right: var(--s-3); }
+.hud-advisor__text { flex-grow: 1; flex-shrink: 1; white-space: normal; font-size: var(--fs-xs); color: var(--c-phosphor); text-shadow: 0 0 8px var(--c-phosphor-glow); }
+
+/* ---------- Command bar (boxed tabs) ---------- */
+.hud-tabs {
+    flex-direction: row;
+    background-color: rgba(10, 13, 12, 0.94);
+    padding: var(--s-3) var(--s-3) var(--s-5) var(--s-3);
+}
+
+.hud-tab {
+    flex-grow: 1;
+    flex-basis: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 128px;
+    margin: 0 var(--s-1);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    background-color: rgba(28, 34, 31, 0.6);
+    transition-property: background-color, border-color;
+    transition-duration: 0.2s;
+}
+
+.hud-tab__icon { width: 48px; height: 48px; margin-bottom: var(--s-2); --icon-color: var(--c-text-dim); }
+.hud-tab__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 4px; color: var(--c-text-dim); }
+.hud-tab.is-active { border-color: var(--c-phosphor); border-top-width: 4px; background-color: rgba(168, 213, 138, 0.1); }
+.hud-tab.is-active > .hud-tab__label { color: var(--c-phosphor); }
+.hud-tab.is-active > .hud-tab__icon { --icon-color: var(--c-phosphor); }
+.hud-tab__dot { position: absolute; top: var(--s-3); right: var(--s-4); width: 14px; height: 14px; border-radius: 7px; background-color: var(--c-amber); }
+.hud-tab__dot.is-hidden { display: none; }
 
 /* Locked destination (systems offline in this run) */
 .screen-locked { justify-content: center; padding: 0 var(--s-8); }

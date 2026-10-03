@@ -37,15 +37,14 @@ namespace Deadswitch.Game.UI.Hud
         private Label _clock;
         private Label _nextLabel;
         private Label _nextTime;
-        private Label _threat;
         private Label _raidTime;
         private Label _raidEstimate;
         private VisualElement _nextPip;
-        private VisualElement _energyMeter;
         private VisualElement _raid;
+        private VisualElement _raidDetail;
+        private VisualElement _coreDot;
         private VisualElement _coreGaugeEl;
         private VisualElement[] _overridePips;
-        private Sparkline _spark;
         private ArcGauge _gauge;
         private CorruptionBand _band = (CorruptionBand)(-1);
 
@@ -86,25 +85,27 @@ namespace Deadswitch.Game.UI.Hud
             _nextLabel = Q<Label>("next-label");
             _nextTime = Q<Label>("next-time");
             _nextPip = Q<VisualElement>("next-pip");
-            _threat = Q<Label>("threat-level");
             _raid = Q<VisualElement>("raid-banner");
+            _raidDetail = Q<VisualElement>("raid-detail");
+            _coreDot = Q<VisualElement>("core-dot");
             _raidTime = Q<Label>("raid-time");
             _raidEstimate = Q<Label>("raid-estimate");
-            _energyMeter = Q<VisualElement>("energy-meter");
             _coreGaugeEl = Q<VisualElement>("core-gauge");
-            _spark = new Sparkline(Q<VisualElement>("energy-spark"), 90);
             _gauge = new ArcGauge(_coreGaugeEl);
             _overridePips = Q<VisualElement>("override-pips").Children().ToArray();
 
             Advisor = new AdvisorTicker(Q<Label>("advisor-text"));
 
             Router = new ScreenRouter(Q<VisualElement>("screen"));
+            Router.Register(new Base.BaseScreen(Router));
             Router.Register(new LockedScreen("map", "SECTOR MAP", "Long-range sensors are dark. I can see the perimeter. Nothing past it.", "RESTORE MODULE M1"));
+            Q<Label>("feed-id").text = "DRONE_RECON_" + ((_host.Sim.Seed % 89) + 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));
             Router.BindTab("core", Q<VisualElement>("tab-core"));
             Router.BindTab("ops", Q<VisualElement>("tab-ops"));
             Q<VisualElement>("raid-defend").RegisterCallback<ClickEvent>(_ => Router.Show("ops"));
+            Router.Show("base");
 
             _host.Ticked += Refresh;
             _host.EventRaised += OnSimEvent;
@@ -142,7 +143,7 @@ namespace Deadswitch.Game.UI.Hud
             if (e.Kind == EventKind.RaidWarning)
             {
                 Feedback.Alert();
-                Motion.To(_raid, 0.42f, Ease.OutBack, t => _raid.style.scale = new Scale(new Vector3(0.9f + (0.1f * t), 0.9f + (0.1f * t), 1f)));
+                Motion.To(_raid, 0.42f, Ease.OutBack, t => _raid.style.scale = new Scale(new Vector3(0.85f + (0.15f * t), 0.85f + (0.15f * t), 1f)));
             }
         }
 
@@ -156,16 +157,12 @@ namespace Deadswitch.Game.UI.Hud
             _energy.Set(s.Energy);
             _energyCap.text = "/" + Fmt.Num(f.EnergyCap);
             int net = f.NetEnergyPerHour;
-            _energyNet.text = s.Blackout ? "BLACKOUT" : Fmt.Signed(net) + "/H";
+            _energyNet.text = s.Blackout ? "BLACKOUT" : Fmt.Signed(net) + "/h";
             SetTone(_energyNet, s.Blackout ? "t-red" : (net >= 0 ? "t-phosphor" : "t-amber"));
-            Kit.SetMeter(_energyMeter, f.EnergyCap > 0 ? (float)s.Energy / f.EnergyCap : 0f);
-            _energyMeter.EnableInClassList("ds-meter--amber", net < 0 && !s.Blackout);
-            _energyMeter.EnableInClassList("ds-meter--red", s.Blackout);
-            _spark.Push(s.Energy);
 
             _compute.Set(s.Compute);
             _computeCap.text = "/" + Fmt.Num(c.Compute.Cap);
-            _computeRate.text = Fmt.Signed(f.ComputePerHour) + "/H";
+            _computeRate.text = Fmt.Signed(f.ComputePerHour) + "/h";
 
             _people.Set(s.People);
             _peopleCap.text = "/" + Fmt.Num(f.PopulationCap);
@@ -185,6 +182,7 @@ namespace Deadswitch.Game.UI.Hud
                 SetTone(_coreValue, tone);
                 _coreGaugeEl.EnableInClassList("ds-gauge--amber", band == CorruptionBand.Glitchy);
                 _coreGaugeEl.EnableInClassList("ds-gauge--red", band >= CorruptionBand.Unstable);
+                _coreDot.EnableInClassList("is-hidden", band == CorruptionBand.Stable);
                 float weight = GlitchText.BandWeight((int)band) * _host.Settings.Effects;
                 Advisor.SetGlitch(weight);
                 _ui.SetGlitch(weight);
@@ -202,14 +200,11 @@ namespace Deadswitch.Game.UI.Hud
 
             bool raid = s.RaidId != 0;
             _raid.EnableInClassList("is-hidden", !raid);
+            _raidDetail.EnableInClassList("is-hidden", !raid);
             if (raid)
             {
-                _raidEstimate.text = "EST. " + Fmt.Num(s.RaidEstimate) + "  //  DEF " + Fmt.Num(Defense.Rating(s, c)) + "  //  " + Fmt.PostureName(s.Posture);
+                _raidEstimate.text = "EST " + Fmt.Num(s.RaidEstimate) + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
             }
-
-            bool mercy = s.Tick < s.MercyUntilTick;
-            _threat.text = raid ? "RAID" : (mercy ? "SHIELDED" : "LOW");
-            SetTone(_threat, raid ? "t-amber" : "t-phosphor");
 
             UpdateTimers();
         }
