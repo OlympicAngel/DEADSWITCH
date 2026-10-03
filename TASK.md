@@ -1,21 +1,22 @@
-# TASK: F-015 Module tree + Tier 2 gate
+# TASK: F-016 Boot sequence + opening flow
 
-- Status: Done
+- Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: AI relationship, Base & economy / M2
-- Spec: docs/specs/SPEC-008-modules-and-tier.md
-- Sources: doc 10 s6 + s1.3, doc 03 s7, doc 06 s2
+- Pillar / milestone: AI relationship / M4
+- Spec: docs/specs/SPEC-009-opening.md
+- Sources: doc 01 s7, doc 10 s7.4
 
 ## Goal
-Research the trunk and the Logistics field (8 nodes, exclusive pairs), feel each node in the economy, and open Tier 2 through three gates.
+Prologue, boot sequence, a beatable opening raid, early protection, the first real hit with the first lie, and a short objective guide.
 
 ## Steps
-- [x] 1. Sim: `[modules]` + `[tier]` config, catalog, state v5, research system + commands, node effects, TierUp, tests
-- [x] 2. UI: MODULES view in CORE (tree, progress, node detail, tier checklist); preview
-- [x] 3. Advisor lines (research started/done, tier up); docs (SPEC-008, BACKLOG, HANDOFF, roadmap)
+- [ ] 1. Sim: `[opening]` config (opening raid, protection), `ai.first_lie_raid`, tests
+- [ ] 2. Host: opening guide (objectives from state), prologue cards
+- [ ] 3. Unity: prologue overlay, boot reveal of the HUD, guide chip with control highlight; previews
+- [ ] 4. Docs (SPEC-009, SPEC-004 first-lie note, BACKLOG, HANDOFF)
 
 ## Notes
-- F-014 closed 2026-10-03 (project clock + Audit, CORE terminal).
+- F-015 closed 2026-10-03 (modules + Tier 2 gate).
 
 ## Blocked / questions
 - none
