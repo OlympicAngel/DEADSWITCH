@@ -29,4 +29,4 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-022 | Project climax: final 24h warning at Imminent, counterplay (purge core, silence the AI via OVERRIDE, cancel AI actions), betrayal / fork events | M3 | Done 2026-10-03 | doc 03 s5-6, doc 10 s2 |
 | F-023 | Tier 2 district: new plots outside the walls, visual evolution of the compound per tier, Tier 2 threats scaling | M3 | Done 2026-10-03 | doc 06 s2-3 |
 | F-024 | Settings and accessibility screen: effect intensity, reduced motion, haptics, text scale, alerts; reachable from CORE | M4 | Done 2026-10-03 | doc 08 s6, doc 10 (assists), quality bar |
-| F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Later | fold into CLI |
+| F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Done 2026-10-03 | fold into CLI |

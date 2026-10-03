@@ -7,8 +7,9 @@ namespace Deadswitch.Host.Dev
 {
     /// <summary>
     /// A sensible scripted handler for balancing runs, previews and development fast-forward: keeps net power
-    /// positive, builds storage, people, defense and compute, upgrades steadily, and sets a defense posture
-    /// when a raid is announced. Uses only public commands (no state edits).
+    /// positive, builds storage, people, defense and compute, upgrades steadily, researches modules, tiers up
+    /// when every gate is clear, and sets a defense posture when a raid is announced. Uses only public commands
+    /// (no state edits).
     /// </summary>
     public static class ScriptedPlayer
     {
@@ -38,6 +39,13 @@ namespace Deadswitch.Host.Dev
                 sim.Execute(Command.SetGarrison(0));
             }
 
+            Research(sim);
+            TierGates gates = Modules.Gates(s, sim.Config);
+            if (gates.Build && gates.ModuleRestored && gates.PeopleAvailable)
+            {
+                sim.Execute(Command.TierUp());
+            }
+
             if (s.Jobs.Count >= sim.Config.Build.QueueSlots)
             {
                 return;
@@ -62,14 +70,59 @@ namespace Deadswitch.Host.Dev
                 }
             }
 
-            FacilityKind[] upgrades = { FacilityKind.BatteryBank, FacilityKind.ServerRack, FacilityKind.Turret, FacilityKind.LifeSupport, FacilityKind.Generator };
-            foreach (FacilityKind kind in upgrades)
+            // plots beyond the first set (the district): alternate power and compute
+            int free = FreeSlot(s);
+            if (free >= 0 && f.NetEnergyPerHour > 300)
             {
-                if (f.NetEnergyPerHour > 260 && TryUpgrade(sim, kind))
+                FacilityKind kind = Economy.CountOfKind(s, FacilityKind.Generator) <= Economy.CountOfKind(s, FacilityKind.ServerRack) ? FacilityKind.Generator : FacilityKind.ServerRack;
+                if (sim.Execute(Command.Build(free, kind)).Accepted)
                 {
                     return;
                 }
             }
+
+            FacilityKind[] upgrades = { FacilityKind.BatteryBank, FacilityKind.ServerRack, FacilityKind.Turret, FacilityKind.LifeSupport, FacilityKind.Generator };
+            // spend when power is comfortable or storage is nearly full (a competent handler does not sit on a full cap)
+            bool flush = f.NetEnergyPerHour > 260 || (f.NetEnergyPerHour > 120 && s.Energy * 10 >= f.EnergyCap * 7);
+            foreach (FacilityKind kind in upgrades)
+            {
+                if (flush && TryUpgrade(sim, kind))
+                {
+                    return;
+                }
+            }
+        }
+
+        /// <summary>Restores the first available module (catalog order: trunk first) while energy is comfortable.</summary>
+        private static void Research(Simulation sim)
+        {
+            GameState s = sim.State;
+            if (s.ResearchNode != 0 || s.Energy * 2 < Economy.Flows(s, sim.Config).EnergyCap)
+            {
+                return;
+            }
+
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (Modules.Availability(s, d.Node) == RejectReason.None)
+                {
+                    sim.Execute(Command.StartResearch(d.Node));
+                    return;
+                }
+            }
+        }
+
+        private static int FreeSlot(GameState s)
+        {
+            for (int i = 0; i < s.Slots.Count; i++)
+            {
+                if (s.Slots[i].IsEmpty && s.JobForSlot(i) == null)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private static int Upkeep(Simulation sim, FacilityKind kind)

@@ -11,6 +11,9 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Local notifications (SPEC-010): install `com.unity.mobile.notifications` (Package Manager) to activate `Runtime/Notifications/Mobile` (versionDefines); without it alerts only log. Check Android 13 permission prompt and iOS authorization on device.
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).
 
+## Open decision (owner)
+- Balance pacing (SPEC-014 findings): Tier 2 is reached on day 2 and all tiers within ~2 weeks; corruption never sticks. Needs a target Tier 1 length before retuning economy costs/gates.
+
 ## Gotchas
 - Saves that reached Tier 2 before F-023 have no district plots (no migration; pre-release).
 - Git LFS uploads fail from cloud sessions: binaries go in the non-LFS overrides at the end of `.gitattributes`.

@@ -49,6 +49,8 @@ namespace Deadswitch.Cli
                         return AdvisorCommand(rest);
                     case "report":
                         return ReportCommand(rest);
+                    case "balance":
+                        return BalanceCommand(rest);
                     case "help":
                     case "--help":
                     case "-h":
@@ -77,6 +79,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE] [--garrison N] [--posture none|turtle|dark|evacuate] [--away]");
             w.WriteLine("  report [--days N] [--seed N] [--raid ID] [--verify]");
             w.WriteLine("  advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]");
+            w.WriteLine("  balance [--seeds N] [--days N] [--profile active|casual|autopilot|idle|all] [--out PATH]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
@@ -230,6 +233,30 @@ namespace Deadswitch.Cli
             }
 
             return 0;
+        }
+
+        /// <summary>balance [--seeds N] [--days N] [--profile NAME|all] [--out PATH]: the SPEC-014 report; exit 1 on a failed guard.</summary>
+        private static int BalanceCommand(string[] args)
+        {
+            int seeds = (int)ParseLong(ValueAfter(args, "--seeds") ?? "100", "seeds");
+            int days = (int)ParseLong(ValueAfter(args, "--days") ?? "30", "days");
+            string profile = ValueAfter(args, "--profile") ?? "all";
+            string[] profiles = profile == "all" ? BalanceRunner.Profiles : new[] { profile };
+            if (seeds < 1 || days < 1 || profiles.Any(p => !BalanceRunner.Profiles.Contains(p)))
+            {
+                throw new UsageException("balance needs --seeds >= 1, --days >= 1 and --profile " + string.Join("|", BalanceRunner.Profiles) + "|all.");
+            }
+
+            var report = new StringWriter(CultureInfo.InvariantCulture);
+            bool ok = BalanceRunner.Run(LoadConfig(null, out _), seeds, days, profiles, report);
+            string? outPath = ValueAfter(args, "--out");
+            if (outPath != null)
+            {
+                File.WriteAllText(outPath, report.ToString());
+            }
+
+            Console.Write(report.ToString());
+            return ok ? 0 : 1;
         }
 
         /// <summary>advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]: the AI's lines over a run.</summary>
