@@ -1,0 +1,42 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vs/
+*.user
+*.suo
+
+# .NET (build output goes to /artifacts, see Directory.Build.props)
+artifacts/
+bin/
+obj/
+TestResults/
+*.nupkg
+.nuget/
+
+# Unity (project lives in /unity)
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Bb]uild/
+unity/[Bb]uilds/
+unity/[Ll]ogs/
+unity/[Uu]ser[Ss]ettings/
+unity/*.csproj
+unity/*.sln
+unity/.vsconfig
+unity/ProjectSettings/*.user
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+# NEVER ignore .meta files - Unity needs them committed
+
+# Secrets / local
+.env
+.env.*
+*.local
+local.settings.json
+
+# Agent local state
+.claude/settings.local.json
+.claude/worktrees/

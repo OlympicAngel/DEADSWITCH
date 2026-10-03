@@ -1,0 +1,12 @@
+# Architecture Decision Records
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [0001](0001-engine-unity.md) | Unity (C#) as the game engine | Accepted |
+| [0002](0002-deterministic-sim-core.md) | Engine-agnostic deterministic simulation core | Accepted |
+| [0003](0003-event-log-and-snapshots.md) | Append-only event log with snapshots | Accepted |
+| [0004](0004-offline-catchup-and-notifications.md) | Offline catch-up, clock-cheat handling, local notifications | Accepted |
+| [0005](0005-repo-layout-and-agent-workflow.md) | Repo layout and multi-agent workflow | Accepted |
+| [0006](0006-monetization-plumbing.md) | Monetization plumbing: free demo + premium unlock | Accepted |
+
+Process: `docs/agents/adr-writing.md`. Template: `0000-template.md`.

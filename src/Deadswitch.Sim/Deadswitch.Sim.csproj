@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Engine-agnostic simulation core. netstandard2.1 so Unity can consume it.
+       RULES: no UnityEngine refs, no floats/doubles in sim state, no System.Random,
+       no DateTime/Stopwatch. See docs/agents/sim-determinism.md -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Deadswitch.Sim</AssemblyName>
+  </PropertyGroup>
+</Project>

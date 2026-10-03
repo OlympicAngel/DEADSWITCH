@@ -1,0 +1,72 @@
+# AGENTS.md — DEADSWITCH
+
+Instructions for any AI coding agent (Codex, Claude Code, others) and for humans. Read this first.
+
+## What this is
+DEADSWITCH: a mobile, offline-first (online-ready) post-apocalyptic strategy game. The player controls a damaged fragment of the war AI that ended the world, and cannot fully trust it. Stack: **Unity (C#)** front end + an **engine-agnostic deterministic C# simulation core**.
+
+## Source of truth (in priority order)
+1. `docs/design/10_resolved_decisions.md` — wins over everything below it.
+2. `docs/adr/` — accepted architecture decisions.
+3. `docs/design/00..09` — the full design.
+4. `docs/specs/SPEC-*.md` — the feature you are working on.
+If two sources conflict, stop and flag it in your reply. Do not silently pick one.
+
+## Repo map
+| Path | Purpose |
+|------|---------|
+| `src/Deadswitch.Sim/` | Pure C# sim core (netstandard2.1). No Unity references. |
+| `src/Deadswitch.Sim.Tests/` | xUnit tests, incl. determinism tests |
+| `src/Deadswitch.Cli/` | Headless sim runner for the paper prototype and balancing |
+| `unity/` | Unity project (UI, art, audio, platform glue). Consumes the sim as a local package |
+| `docs/` | Design, ADRs, specs, roadmap, narrative, agent playbooks |
+| `tools/` | PowerShell scripts: env setup, checks, repo restructure |
+
+## Commands
+```
+dotnet build DEADSWITCH.sln -warnaserror
+dotnet test  DEADSWITCH.sln
+dotnet run --project src/Deadswitch.Cli -- 42 24     # seed, hours
+pwsh tools/check.ps1                                  # full gate: format + build + test
+```
+
+## Hard rules (the sim core)
+Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summary:
+- **No floats or doubles** in sim state or sim math. Integers / fixed-point only.
+- **Only `Pcg32`** for randomness. No `System.Random`, no `Guid.NewGuid`, no `Mathf`.
+- **No wall-clock** in the sim (`DateTime`, `Stopwatch`). Time is `State.Tick` (1 tick = 1 game minute).
+- **No UnityEngine** references, no I/O, no static mutable state in `Deadswitch.Sim`.
+- **No iteration over unordered collections** (`Dictionary`/`HashSet`) where order affects state. Use lists or sorted keys.
+- Every field added to `GameState` must be added to `StateHasher` in the same change.
+- Invariant: `Run(a); Run(b)` equals `Run(a+b)`. Keep the chunking test green.
+
+## Workflow
+1. **Spec first** for anything bigger than a bug fix: `docs/specs/TEMPLATE.md`. Keep specs short.
+2. **Tests first or alongside.** Sim changes need tests. Determinism and cap/limit tests are mandatory for new mechanics.
+3. **Small PRs.** One concern per branch. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+4. **Decisions get ADRs.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
+5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log, and `docs/agents/HANDOFF.md`.
+
+## Definition of done
+- `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).
+- New behavior has tests; no existing test was weakened to make it pass.
+- No new warnings (warnings are errors).
+- Docs and HANDOFF updated.
+
+## Working with multiple agents
+Claude and Codex both work in this repo. To avoid collisions:
+- One agent per branch. Use git worktrees for parallel work (`git worktree add ../ds-feat-x feat/x`).
+- Do not edit the same file as another active branch without saying so in `docs/agents/HANDOFF.md`.
+- At the end of a session, append to `docs/agents/HANDOFF.md`: what changed, what is half-done, what to do next.
+
+## Do not
+- Do not rename or move `docs/design/*` numbered files (they are cross-referenced).
+- Do not commit secrets, keystores, or `Library/` / `Temp/` from Unity.
+- Do not add dependencies to `Deadswitch.Sim` (it must stay dependency-free).
+- Do not install tooling on `C:`. All dev tooling lives under `D:\dev` (see `tools/setup-env.ps1`).
+- Do not invent balance numbers silently. Put them in `SimConfig` with a comment and log them in the corrections log if they change doc 10.
+
+## Style
+- C# 9 (Unity-compatible), block-scoped namespaces, braces always, `_camelCase` private fields.
+- Names from the glossary in `docs/design/07_world_and_story_bible.md`: Core, Hub, Outpost, Corruption, Heat, Override, Signature, Purge, Relocation.
+- Player-facing text: AI advisor voice rules in `docs/narrative/ADVISOR_VOICE.md`.
