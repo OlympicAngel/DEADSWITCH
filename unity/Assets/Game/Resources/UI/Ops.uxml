@@ -123,6 +123,13 @@
       <ui:VisualElement name="deleg-autopilot" class="ops-seg__item"><ui:Label text="AUTOPILOT" class="ops-seg__label" /></ui:VisualElement>
     </ui:VisualElement>
     <ui:Label name="deleg-desc" text="I only advise. You run everything." class="ds-body t-dim ops-seg__desc" />
+    <ui:VisualElement class="row ops-alerts">
+      <ui:VisualElement class="grow">
+        <ui:Label text="ALERTS WHILE AWAY" class="ds-label" />
+        <ui:Label text="I forecast the next day when you leave: raids, finished work, power loss. Nothing else." class="ds-body t-dim ops-alerts__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement name="alerts-toggle" class="ops-toggle"><ui:Label name="alerts-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
     <ui:Label name="ops-reason" text="" class="ds-body ops-reason" />
   </ui:VisualElement>
 </ui:UXML>

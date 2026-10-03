@@ -90,6 +90,12 @@
 .ops-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
 .ops-seg__item.is-selected > .ops-seg__label { color: var(--c-phosphor); }
 .ops-seg__desc { margin-top: var(--s-2); }
+.ops-alerts { margin-top: var(--s-4); align-items: center; }
+.ops-alerts__desc { font-size: var(--fs-micro); margin-top: var(--s-1); margin-right: var(--s-4); }
+.ops-toggle { width: 180px; min-height: 88px; align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); }
+.ops-toggle.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+.ops-toggle__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
+.ops-toggle.is-on > .ops-toggle__label { color: var(--c-phosphor); }
 .ops-reason { margin-top: var(--s-2); color: var(--c-amber); }
 
 .is-hidden { display: none; }

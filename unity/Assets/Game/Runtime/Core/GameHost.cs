@@ -210,6 +210,7 @@ namespace Deadswitch.Game.Core
 
         private void CatchUp()
         {
+            Notifications.LocalAlerts.OnReturn();
             long now = NowMs();
             if (!_stamp.TryRead(out long last))
             {
@@ -313,6 +314,7 @@ namespace Deadswitch.Game.Core
             }
 
             SaveNow();
+            Notifications.LocalAlerts.OnLeave(this);
         }
     }
 }

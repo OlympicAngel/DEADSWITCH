@@ -66,6 +66,11 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             _setGo.RegisterCallback<ClickEvent>(_ => SetAndGo());
+            Q("alerts-toggle").RegisterCallback<ClickEvent>(_ =>
+            {
+                Notifications.LocalAlerts.SetEnabled(!Notifications.LocalAlerts.Enabled);
+                Refresh();
+            });
             _lockdown.RegisterCallback<ClickEvent>(_ => Run(Command.UseOverride(OverrideKind.Lockdown)));
             Q("last-report").RegisterCallback<ClickEvent>(_ => openReport(BattleReport.LatestRaidId(_host.Sim.Log.Events)));
             BuildSockets();
@@ -222,6 +227,9 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             Q<Label>("deleg-desc").text = DelegationLines[(int)s.Delegation];
+            bool alerts = Notifications.LocalAlerts.Enabled;
+            Q("alerts-toggle").EnableInClassList("is-on", alerts);
+            Q<Label>("alerts-label").text = alerts ? "ON" : "OFF";
         }
 
         private void SetAndGo()

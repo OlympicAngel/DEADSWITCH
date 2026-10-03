@@ -1,6 +1,6 @@
 # SPEC-010: Logout projection and local notifications
 
-- Status: In progress (F-017)
+- Status: Done (F-017); device check pending
 - Pillar: Defense & offline, AI relationship
 - Touches: offline catch-up (ADR-0004), raids (warnings while away, the AI's estimate), construction and research timers, settings (opt-in)
 - Source rules: ADR-0004 decision 3, doc 11 "Notifications" surface priority, AGENTS design quality (no coercive notifications)
@@ -18,9 +18,9 @@ Server push, rich media, notification actions, tribute reminders (F-018+).
 4. **Tone:** short, factual, AI voice; no guilt, no countdown pressure, no "come back" lines.
 
 ## Acceptance criteria
-- [ ] Projection is a pure function of the live sim (live state hash unchanged) and lists the expected raids
-- [ ] Opt-in toggle; schedule on pause/quit, cancel on resume
-- [ ] Mobile backend compiles only when com.unity.mobile.notifications is installed (no hard dependency)
+- [x] Projection is a pure function of the live sim (live state hash unchanged) and lists the expected raids
+- [x] Opt-in toggle; schedule on pause/quit, cancel on resume
+- [x] Mobile backend compiles only when com.unity.mobile.notifications is installed (no hard dependency)
 
 ## Tests
 `ProjectionTests`: live sim unchanged; projected raid warnings match a copy run forward.

@@ -21,7 +21,7 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-014 | Hidden project clock + Audit tool (Core Profile readout) | M2 | Done 2026-10-03 | doc 10 s2 |
 | F-015 | Module tree: trunk M1-M3 + first field (8 nodes), research timers, Tier 2 gate | M2 | Done 2026-10-03 | doc 10 s6 |
 | F-016 | Boot sequence + opening flow (early protection, first hit) | M4 | Done 2026-10-03 | doc 01 s7 |
-| F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | In progress | ADR-0004 |
+| F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | Done 2026-10-03 | ADR-0004 |
 | F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
 | F-019 | Factions + per-faction heat, world map | M5 | Later | |
 | F-021 | Ruthless choices: forced labor surge, purge, sacrifice (raise Coldness, lower loyalty) | M3 | Later | doc 03 s1, doc 10 s1.3 |
