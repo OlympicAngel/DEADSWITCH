@@ -93,7 +93,7 @@ namespace Deadswitch.Art.World
             var pts = new List<Vector3>
             {
                 new Vector3(0, 0, 9.4f), new Vector3(-1.6f, 0, 5.0f), new Vector3(1.8f, 0, 1.6f), new Vector3(-0.8f, 0, -2.8f),
-                new Vector3(1.0f, 0, -7.4f), new Vector3(0, 0, -12.4f), new Vector3(-2.4f, 0, -10.0f), new Vector3(2.6f, 0, 6.2f),
+                new Vector3(1.0f, 0, -7.4f), new Vector3(0, 0, -12.4f), new Vector3(-2.4f, 0, -10.0f), new Vector3(1.9f, 0, 6.2f),
             };
             for (int i = 0; i < Math.Min(slotCount, Plots.Length); i++)
             {
@@ -159,158 +159,267 @@ namespace Deadswitch.Art.World
             return b.Mesh;
         }
 
-        /// <summary>Fence, gate, walls, lamps, clutter, puddles, rocks, trees. Static for the whole run.</summary>
+        /// <summary>
+        /// Everything around the plots, static for the whole run: perimeter, gate checkpoint, courtyard work areas,
+        /// utility poles with cables strung across the yard, side container stacks, hill, trees and the road.
+        /// </summary>
         public static Model Surroundings(uint seed, int slotCount)
         {
             var m = new Model();
             var b = new MeshBuilder(seed);
             var rng = new ArtRandom(seed + 13);
 
-            // Puddles: dark, glossy, catching the lamps.
-            for (int i = 0; i < 16; i++)
+            Puddles(b, rng, seed, slotCount);
+            Perimeter(b, m, rng);
+            Checkpoint(b, m, rng, seed);
+            SideStacks(b, m, rng);
+            Courtyard(b, m, rng, seed);
+            Utilities(b, m, slotCount);
+            Hill(b, rng, seed);
+            Road(b, rng, seed);
+
+            m.Static = b.Mesh;
+            m.Cones = b.Cones;
+            return m;
+        }
+
+        private static void Puddles(MeshBuilder b, ArtRandom rng, uint seed, int slotCount)
+        {
+            for (int i = 0; i < 18; i++)
             {
-                float x = rng.Range(-3.4f, 3.4f);
+                float x = rng.Range(-3.0f, 3.0f);
                 float z = rng.Range(FenceZ + 1f, Core.FacadeZ - 3f);
                 if (NearPlot(new Vector3(x, 0, z), slotCount, 3.6f))
                 {
                     continue;
                 }
 
-                Puddle(b, new Vector3(x, Height(x, z, seed) + 0.02f, z), rng.Range(0.6f, 1.8f), rng.Range(0.4f, 1.1f), rng);
+                Puddle(b, new Vector3(x, Height(x, z, seed) + 0.02f, z), rng.Range(0.5f, 1.6f), rng.Range(0.4f, 1.1f), rng);
             }
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 7; i++)
             {
                 float z = FenceZ - 3f - (i * 3.3f);
                 Puddle(b, new Vector3(rng.Range(-1.6f, 1.6f), Height(0, z, seed) + 0.02f, z), rng.Range(0.8f, 1.6f), rng.Range(0.4f, 0.8f), rng);
             }
+        }
 
-            // Front fence with a gate (one leaf swung open), lamps on the gate posts.
-            for (float x = -HalfWidth; x <= HalfWidth + 0.01f; x += 1.7f)
-            {
-                if (Math.Abs(x) < 2.4f)
-                {
-                    continue;
-                }
-
-                b.Strut(new Vector3(x, 0, FenceZ), new Vector3(x, 2.1f, FenceZ), 0.1f, Mat.DarkSteel);
-            }
-
+        /// <summary>Front fence runs with concrete gate posts and a sign gantry, sandbagged side walls.</summary>
+        private static void Perimeter(MeshBuilder b, Model m, ArtRandom rng)
+        {
             foreach (int side in new[] { -1, 1 })
             {
-                float xa = side * 2.6f;
-                float xb = side * HalfWidth;
-                for (float y = 0.3f; y < 2.1f; y += 0.6f)
-                {
-                    b.Strut(new Vector3(xa, y, FenceZ), new Vector3(xb, y, FenceZ), 0.03f, Mat.DarkSteel);
-                }
+                KitModules.Fence(b, new Vector3(side * 3.0f, 0, FenceZ), new Vector3(side * HalfWidth, 0, FenceZ), 2.1f);
+                KitModules.Fence(b, new Vector3(side * HalfWidth, 0, FenceZ), new Vector3(side * HalfWidth, 0, -7.0f), 2.1f);
+                Shapes.SandbagWall(b, new Vector3(side * 8.6f, 0, FenceZ + 0.6f), new Vector3(side * 11.6f, 0, FenceZ + 0.6f), 3);
+                Shapes.SandbagWall(b, new Vector3(side * (HalfWidth - 0.6f), 0, FenceZ + 1f), new Vector3(side * (HalfWidth - 0.6f), 0, -7.5f), 3);
 
-                for (float x = Math.Min(xa, xb); x < Math.Max(xa, xb); x += 0.35f)
-                {
-                    b.Strut(new Vector3(x, 0.15f, FenceZ), new Vector3(x + 0.35f, 2.0f, FenceZ), 0.015f, Mat.DarkSteel);
-                }
-
-                Shapes.SandbagWall(b, new Vector3(side * 9.2f, 0, FenceZ + 0.6f), new Vector3(side * 11.6f, 0, FenceZ + 0.6f), 2);
-                b.BoxOn(side * 2.5f, 0, FenceZ, 0.5f, 3.2f, 0.5f, Mat.Concrete, 0.06f);
-                b.Strut(new Vector3(side * 2.5f, 3.3f, FenceZ), new Vector3(side * 2.5f, 3.3f, FenceZ - 0.7f), 0.07f, Mat.DarkSteel);
-                Props.Lamp(b, m, new Vector3(side * 2.5f, 3.2f, FenceZ - 0.75f), true, 1.6f);
+                // gate posts: concrete blocks with steel caps and lamps
+                b.BoxOn(side * 2.6f, 0, FenceZ, 0.7f, 4.4f, 0.7f, Mat.Concrete, 0.08f);
+                b.BoxOn(side * 2.6f, 4.4f, FenceZ, 0.8f, 0.12f, 0.8f, Mat.DarkSteel, 0.02f);
+                b.Strut(new Vector3(side * 2.6f, 3.3f, FenceZ), new Vector3(side * 2.6f, 3.3f, FenceZ - 0.7f), 0.07f, Mat.DarkSteel);
+                Props.Lamp(b, m, new Vector3(side * 2.6f, 3.2f, FenceZ - 0.75f), true, 1.6f);
+                Shapes.Hazard(b, (side * 2.6f) - 0.35f, (side * 2.6f) + 0.35f, 0.3f, 1.3f, FenceZ - 0.36f, 4);
             }
+
+            // sign gantry across the gate
+            KitParts.Truss(b, new Vector3(-2.6f, 4.55f, FenceZ), new Vector3(2.6f, 4.55f, FenceZ), 0.45f, 0.05f, Mat.DarkSteel);
+            b.Box(new Vector3(0, 4.25f, FenceZ - 0.1f), new Vector3(2.6f, 0.6f, 0.05f), Mat.OliveSteel, 0.02f);
+            Props.Stencil(b, "S-17", new Vector3(-0.66f, 4.08f, FenceZ - 0.14f), 0.066f, Mat.PaintWhite);
+            KitParts.Spotlight(b, m, new Vector3(1.8f, 5.2f, FenceZ - 0.2f), 180f);
 
             GateLeaf(b, new Vector3(-2.3f, 0, FenceZ), 0f);
             GateLeaf(b, new Vector3(2.3f, 0, FenceZ), 115f);
+        }
 
-            // Striped barriers and tires outside the gate.
+        /// <summary>Outside the gate: watchtower, guard booth, barrier chicane, tank traps, wreck, debris.</summary>
+        private static void Checkpoint(MeshBuilder b, Model m, ArtRandom rng, uint seed)
+        {
+            KitModules.Watchtower(b, m, new Vector3(-5.2f, Height(-5.2f, FenceZ - 2.6f, seed), FenceZ - 2.6f), 5.2f);
+
+            // guard booth: welded plate walls under a shed roof, lit window
+            Vector3 booth = new Vector3(4.8f, Height(4.8f, FenceZ - 2.2f, seed), FenceZ - 2.2f);
+            b.BoxOn(booth.X, booth.Y, booth.Z, 2.0f, 2.3f, 1.8f, Mat.OliveSteel, 0.05f);
+            b.Box(booth + new Vector3(-0.2f, 1.45f, -0.92f), new Vector3(1.1f, 0.6f, 0.03f), Mat.Interior, 0f);
+            b.Box(booth + new Vector3(-0.2f, 1.1f, -0.98f), new Vector3(1.3f, 0.06f, 0.14f), Mat.DarkSteel, 0.01f);
+            KitParts.Plate(b, booth + new Vector3(0.6f, 0.7f, -0.93f), 0.6f, 0.5f, 4f);
+            KitModules.Shed(b, booth + new Vector3(0, 0, 0.1f), 2.4f, 2.2f, 2.5f, 2.7f, Mat.Rust, false);
+            m.Lights.Add(new LightSpec(booth + new Vector3(-0.2f, 1.5f, -1.4f), Model.Amber, 1.2f, 4f, LightRole.Ambient));
+            Shapes.SandbagWall(b, booth + new Vector3(-1.3f, 0, -1.4f), booth + new Vector3(1.2f, 0, -1.5f), 2);
+
+            // barrier chicane and tank traps
             for (int i = 0; i < 4; i++)
             {
-                float x = (i < 2 ? -1 : 1) * (4.5f + ((i % 2) * 2.2f));
-                float z = FenceZ - 2.4f - (i % 2);
-                StripedBarrier(b, new Vector3(x, Height(x, z, seed), z), rng.Range(-12f, 12f));
+                float x = (i < 2 ? -1 : 1) * (2.6f + ((i % 2) * 2.4f));
+                float z = FenceZ - 4.6f - ((i % 2) * 1.2f) - (i < 2 ? 0f : 2.4f);
+                StripedBarrier(b, new Vector3(x, Height(x, z, seed), z), rng.Range(-8f, 8f));
             }
 
-            for (int i = 0; i < 2; i++)
+            foreach (Vector3 p in new[] { new Vector3(-8.6f, 0, FenceZ - 3.2f), new Vector3(-10.4f, 0, FenceZ - 5.0f), new Vector3(8.4f, 0, FenceZ - 5.6f), new Vector3(10.6f, 0, FenceZ - 3.6f), new Vector3(-7.2f, 0, FenceZ - 7.4f) })
             {
-                Vector3 p = new Vector3(8.5f + i, Height(8.5f, FenceZ - 3.5f, seed), FenceZ - 3.5f + (i * 0.8f));
-                b.Frustum(p, 0.42f, 0.42f, 0.26f, 10, Mat.Rubber, 0.09f);
-                b.Frustum(p + new Vector3(0, 0.26f, 0), 0.42f, 0.42f, 0.26f, 10, Mat.Rubber, 0.09f);
+                KitModules.Hedgehog(b, new Vector3(p.X, Height(p.X, p.Z, seed), p.Z), rng.Range(0f, 90f));
             }
 
-            // Side walls: sandbags and stacked spare containers in the back corners.
+            KitModules.Pickup(b, new Vector3(7.8f, Height(7.8f, -21.5f, seed), -21.5f), 28f, Mat.SandSteel, true);
+            KitModules.Debris(b, new Vector3(-10.0f, Height(-10f, -22f, seed), -22f), 1.4f, rng);
+            KitModules.Debris(b, new Vector3(11.4f, Height(11.4f, -19.8f, seed), -19.8f), 1.0f, rng);
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 p = new Vector3(8.2f + (i * 0.9f), Height(8.2f, FenceZ - 2.0f, seed), FenceZ - 2.0f + ((i % 2) * 0.7f));
+                for (int k = 0; k < 3 - i; k++)
+                {
+                    b.Frustum(p + new Vector3(0, k * 0.26f, 0), 0.42f, 0.42f, 0.26f, 12, Mat.Rubber, 0.09f);
+                }
+            }
+
+            Shapes.SandbagWall(b, new Vector3(-11.4f, Height(-11.4f, FenceZ - 1.6f, seed), FenceZ - 1.6f), new Vector3(-7.6f, Height(-7.6f, FenceZ - 1.4f, seed), FenceZ - 1.4f), 2);
+        }
+
+        /// <summary>Back corners: stacked, lived-in containers behind the side walls.</summary>
+        private static void SideStacks(MeshBuilder b, Model m, ArtRandom rng)
+        {
             foreach (int side in new[] { -1, 1 })
             {
-                Shapes.SandbagWall(b, new Vector3(side * HalfWidth, 0, FenceZ + 1f), new Vector3(side * HalfWidth, 0, -7.5f), 3);
-                b.Push(new Vector3(side * 13.6f, 0, 2.0f), side * 90f);
-                Props.Container(b, m, Vector3.Zero, 6.0f, 2.6f, 2.44f, side < 0 ? Mat.TarpBlue : Mat.Rust, false, seed + 40);
-                Props.Container(b, m, new Vector3(0.4f, 2.6f, 0.1f), 6.0f, 2.6f, 2.44f, Mat.OliveSteel, false, seed + 41);
+                b.Push(new Vector3(side * 13.8f, 0, 2.0f), side * 90f);
+                KitModules.ContainerBlock(b, m, Vector3.Zero, 6.0f, side < 0 ? Mat.TarpBlue : Mat.Rust, side > 0, string.Empty, rng, 2, false);
+                b.Push(new Vector3(0.5f, 2.6f, 0.15f), 4f);
+                KitModules.ContainerBlock(b, m, Vector3.Zero, 6.0f, Mat.OliveSteel, false, string.Empty, rng, 1, true);
+                b.Pop();
+                KitModules.LeanTo(b, new Vector3(-0.8f, 0, -1.22f), 3.0f, 1.6f, 2.5f, 2.1f, Mat.Rust);
+                KitModules.Barrels(b, new Vector3(-2.2f, 0, -2.6f), 3, rng);
                 b.Pop();
             }
+        }
 
-            // Courtyard: lamp posts, a burn barrel, clutter, cable runs to the plots.
-            foreach (Vector3 lp in new[] { new Vector3(-3.6f, 0, 3.4f), new Vector3(3.7f, 0, -4.6f), new Vector3(-3.8f, 0, -11.6f) })
-            {
-                b.Frustum(lp, 0.09f, 0.07f, 4.2f, 8, Mat.DarkSteel, 0.01f);
-                b.Strut(lp + new Vector3(0, 4.1f, 0), lp + new Vector3(0.9f, 4.2f, 0), 0.07f, Mat.DarkSteel);
-                Props.Lamp(b, m, lp + new Vector3(0.95f, 4.05f, 0), true, 2.2f);
-            }
+        /// <summary>Purposeful work areas along both sides of the central lane (kept clear for walking).</summary>
+        private static void Courtyard(MeshBuilder b, Model m, ArtRandom rng, uint seed)
+        {
+            Vector3 G(float x, float z) => new Vector3(x, Height(x, z, seed), z);
 
-            Vector3 barrel = new Vector3(2.2f, 0, 2.6f);
-            b.Frustum(barrel, 0.32f, 0.3f, 0.9f, 10, Mat.Rust, 0.04f);
+            // left: tool bench, crate store, gate-side pallets
+            KitModules.Workbench(b, m, G(-3.3f, 1.4f), 90f);
+            b.Frustum(G(-3.0f, 0.1f), 0.14f, 0.14f, 1.2f, 10, Mat.PaintRed, 0.03f);
+            b.Frustum(G(-2.75f, 0.25f), 0.14f, 0.14f, 1.2f, 10, Mat.OliveSteel, 0.03f);
+            KitModules.CrateStack(b, G(-3.4f, -3.8f), rng);
+            KitModules.TarpPile(b, G(-3.2f, -5.4f), 1.2f, rng);
+            KitModules.Pallet(b, G(-3.3f, -11.2f), 80f, 2);
+            KitModules.Barrels(b, G(-4.0f, -12.6f), 3, rng);
+
+            // right: burn barrel with benches, mobile genset feeding the lamps, parked pickup, water tank
+            Vector3 barrel = G(2.9f, 2.6f);
+            b.Frustum(barrel, 0.32f, 0.3f, 0.9f, 12, Mat.Rust, 0.04f);
             b.Box(barrel + new Vector3(0, 0.95f, 0), new Vector3(0.4f, 0.12f, 0.4f), Mat.Interior, 0.05f);
             m.Lights.Add(new LightSpec(barrel + new Vector3(0, 1.4f, 0), new Vector3(1f, 0.55f, 0.2f), 2.4f, 6f, LightRole.Ambient));
-
-            for (int i = 0; i < 24; i++)
+            foreach (float dz in new[] { -1.1f, 1.1f })
             {
-                float x = rng.Range(-11f, 11f);
-                float z = rng.Range(FenceZ + 1.2f, Core.FacadeZ - 2.6f);
-                var p = new Vector3(x, Height(x, z, seed), z);
-                if (NearPlot(p, slotCount, 3.6f) || Math.Abs(x) < 3.2f)
+                b.BoxOn(barrel.X + 0.4f, barrel.Y, barrel.Z + dz, 0.25f, 0.4f, 0.3f, Mat.Concrete, 0.04f);
+                b.BoxOn(barrel.X + 1.1f, barrel.Y, barrel.Z + dz, 0.25f, 0.4f, 0.3f, Mat.Concrete, 0.04f);
+                b.BoxOn(barrel.X + 0.75f, barrel.Y + 0.4f, barrel.Z + dz, 1.2f, 0.06f, 0.32f, Mat.Wood, 0.01f);
+            }
+
+            KitParts.Genset(b, G(3.4f, -3.2f), 90f);
+            KitModules.Pickup(b, G(3.35f, -8.3f), 90f, Mat.OliveSteel, false);
+            KitParts.TankH(b, G(3.3f, -11.6f) + new Vector3(0, 0.75f, 0), 0.45f, 1.8f, Mat.SandSteel);
+            KitModules.Barrels(b, G(2.6f, -12.9f), 2, rng);
+            KitModules.CrateStack(b, G(3.3f, 6.3f), rng);
+
+            // cable runs on the ground from the bunker to the plots
+            foreach (int side in new[] { -1, 1 })
+            {
+                for (int k = 0; k < 2; k++)
                 {
-                    continue;
+                    float x = side * (2.3f + (k * 0.12f));
+                    b.Strut(new Vector3(x, 0.05f, Core.FacadeZ - 2.6f), new Vector3(x + (side * 0.3f), 0.05f, FenceZ + 2.0f), 0.045f, Mat.Rubber);
                 }
-
-                b.Push(p, rng.Range(0f, 360f));
-                switch (i % 3)
-                {
-                    case 0:
-                        b.BoxOn(0, 0, 0, 0.8f, 0.6f, 0.8f, Mat.Wood, 0.05f);
-                        b.BoxOn(0.05f, 0.6f, 0, 0.6f, 0.45f, 0.6f, Mat.Wood, 0.05f);
-                        break;
-                    case 1:
-                        b.Frustum(Vector3.Zero, 0.29f, 0.29f, 0.88f, 10, rng.Next() < 0.5f ? Mat.PaintRed : Mat.OliveSteel, 0.04f);
-                        break;
-                    default:
-                        b.BoxOn(0, 0, 0, 1.1f, 0.35f, 0.7f, Mat.OliveSteel, 0.04f);
-                        break;
-                }
-
-                b.Pop();
             }
+        }
 
-            // Work clutter along the walls: pallets, sandbag piles, tarped stacks, a work light.
-            foreach (Vector3 c in new[] { new Vector3(-3.2f, 0, -5.6f), new Vector3(3.4f, 0, 4.6f), new Vector3(-5.4f, 0, 10.4f), new Vector3(5.6f, 0, 10.2f), new Vector3(-3.4f, 0, -12.6f), new Vector3(3.3f, 0, -12.2f) })
-            {
-                b.Push(c, rng.Range(-20f, 20f));
-                b.BoxOn(0, 0, 0, 1.2f, 0.14f, 1.0f, Mat.Wood, 0.02f);
-                b.BoxOn(0, 0.14f, 0, 1.1f, 0.7f, 0.9f, rng.Next() < 0.5f ? Mat.TarpBlue : Mat.Tarp, 0.12f);
-                b.BoxOn(1.1f, 0, 0.2f, 0.7f, 0.5f, 0.6f, Mat.Wood, 0.05f);
-                Shapes.SandbagWall(b, new Vector3(-0.8f, 0, 0.9f), new Vector3(0.6f, 0, 1.2f), 2);
-                b.Pop();
-            }
-
-            for (int i = 0; i < 5; i++)
-            {
-                float z = rng.Range(FenceZ + 1.5f, Core.FacadeZ - 3f);
-                float x = (rng.Next() < 0.5f ? -1 : 1) * rng.Range(0.5f, 1.4f);
-                Puddle(b, new Vector3(x, Height(x, z, seed) + 0.025f, z), rng.Range(0.3f, 0.7f), rng.Range(0.8f, 1.6f), rng);
-            }
-
+        /// <summary>
+        /// Utility poles at each plot's lane-side corner, chained along both sides, strung across the lane and up to
+        /// the bunker; lamps on the lane poles; one festoon of work bulbs over the yard.
+        /// </summary>
+        private static void Utilities(MeshBuilder b, Model m, int slotCount)
+        {
+            const float poleH = 6.4f;
+            var left = new List<Vector3>();
+            var right = new List<Vector3>();
             for (int s = 0; s < Math.Min(slotCount, Plots.Length); s++)
             {
                 Vector3 p = SlotPosition(s, slotCount);
-                Vector3 from = new Vector3(Math.Sign(p.X) * 1.4f, 0.06f, Core.FacadeZ - 2.6f);
-                b.Strut(from, new Vector3(p.X - (Math.Sign(p.X) * 3.3f), 0.04f, p.Z), 0.045f, Mat.Rubber);
+                var pole = new Vector3(p.X - (Math.Sign(p.X) * 3.75f), 0, p.Z + 2.9f);
+                if (pole.Z > Core.FacadeZ - 4f)
+                {
+                    pole.Z = Core.FacadeZ - 4.3f;
+                }
+                Pole(b, pole, poleH, s % 2 == 0 ? 6f : -6f);
+                (p.X < 0 ? left : right).Add(pole);
             }
 
-            // Hill: boulders at the foot of the slopes and pines climbing behind the bunker.
+            Vector3 top = new Vector3(0, poleH - 0.3f, 0);
+            foreach (List<Vector3> run in new[] { left, right })
+            {
+                run.Sort((a, c) => c.Z.CompareTo(a.Z));
+                for (int i = 0; i + 1 < run.Count; i++)
+                {
+                    KitParts.Cable(b, run[i] + top, run[i + 1] + top, 0.7f, 0.035f);
+                    KitParts.Cable(b, run[i] + top + new Vector3(0.4f, 0, 0), run[i + 1] + top + new Vector3(0.4f, 0, 0), 0.8f, 0.025f);
+                }
+
+                if (run.Count > 0)
+                {
+                    float sx = Math.Sign(run[0].X);
+                    KitParts.Cable(b, run[0] + top, new Vector3(sx * 4.4f, 6.4f, Core.FacadeZ - 0.4f), 0.5f, 0.04f);
+                }
+            }
+
+            for (int i = 0; i < Math.Min(left.Count, right.Count); i++)
+            {
+                KitParts.Cable(b, left[i] + top, right[i] + top, 1.1f, 0.03f);
+            }
+
+            // festoon of work bulbs across the yard (emissive only; the burn barrel and lamps light the yard)
+            if (left.Count > 1 && right.Count > 1)
+            {
+                Vector3 a = left[1] + new Vector3(0, 4.6f, 0);
+                Vector3 c = right[1] + new Vector3(0, 4.6f, 0);
+                KitParts.Cable(b, a, c, 1.4f, 0.015f);
+                for (int i = 1; i < 12; i++)
+                {
+                    float t = i / 12f;
+                    Vector3 bulb = Vector3.Lerp(a, c, t) - new Vector3(0, 1.4f * 4f * t * (1 - t), 0);
+                    b.Box(bulb - new Vector3(0, 0.08f, 0), new Vector3(0.08f, 0.1f, 0.08f), Mat.LampAmber, 0.02f);
+                }
+            }
+
+            // lamp posts on the lane
+            foreach (Vector3 lp in new[] { new Vector3(-2.6f, 0, 5.2f), new Vector3(2.5f, 0, -1.4f), new Vector3(-2.5f, 0, -8.4f) })
+            {
+                b.Frustum(lp, 0.09f, 0.07f, 4.4f, 8, Mat.DarkSteel, 0.01f);
+                float dir = lp.X < 0 ? 1f : -1f;
+                b.Strut(lp + new Vector3(0, 4.3f, 0), lp + new Vector3(dir * 0.9f, 4.4f, 0), 0.07f, Mat.DarkSteel);
+                Props.Lamp(b, m, lp + new Vector3(dir * 0.95f, 4.25f, 0), true, 2.2f);
+            }
+        }
+
+        /// <summary>Wooden utility pole: crossarm, insulators, a pole-top transformer can, leaning slightly.</summary>
+        private static void Pole(MeshBuilder b, Vector3 at, float h, float leanDeg)
+        {
+            b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(leanDeg * 0.3f)) * Matrix4x4.CreateTranslation(at));
+            b.Frustum(Vector3.Zero, 0.15f, 0.11f, h, 8, Mat.Wood, 0.02f);
+            b.Strut(new Vector3(-0.8f, h - 0.4f, 0), new Vector3(0.8f, h - 0.4f, 0), 0.1f, Mat.Wood);
+            for (int i = 0; i < 3; i++)
+            {
+                b.Frustum(new Vector3(-0.6f + (i * 0.6f), h - 0.35f, 0), 0.05f, 0.04f, 0.18f, 8, Mat.PaintWhite, 0.01f);
+            }
+
+            b.Frustum(new Vector3(0, h - 2.2f, 0.28f), 0.22f, 0.22f, 0.6f, 12, Mat.DarkSteel, 0.02f);
+            b.Strut(new Vector3(0, h - 1.4f, 0), new Vector3(0, 0.2f, 0.18f), 0.03f, Mat.Rubber);
+            b.Pop();
+        }
+
+        /// <summary>Boulders at the foot of the slopes and pines climbing the hill and the flanks.</summary>
+        private static void Hill(MeshBuilder b, ArtRandom rng, uint seed)
+        {
             for (int i = 0; i < 40; i++)
             {
                 float x = rng.Range(MinX + 2f, MaxX - 2f);
@@ -343,23 +452,28 @@ namespace Deadswitch.Art.World
                 float z = rng.Range(MinZ + 4f, Core.FacadeZ + 8f);
                 Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), rng.Range(4f, 8f), seed + 800 + (uint)i);
             }
+        }
 
-            // Leaning power poles along the road.
+        /// <summary>Leaning power poles with sagging lines along the road, an old truck in the ditch.</summary>
+        private static void Road(MeshBuilder b, ArtRandom rng, uint seed)
+        {
+            Vector3? prev = null;
             for (int i = 0; i < 4; i++)
             {
                 float z = FenceZ - 6f - (i * 7f);
                 var pole = new Vector3(-6.5f, Height(-6.5f, z, seed), z);
-                b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(rng.Range(-7f, 7f))) * Matrix4x4.CreateTranslation(pole));
-                b.Frustum(Vector3.Zero, 0.16f, 0.12f, 6f, 6, Mat.Wood, 0.02f);
-                b.Strut(new Vector3(-0.9f, 5.5f, 0), new Vector3(0.9f, 5.5f, 0), 0.1f, Mat.Wood);
-                b.Pop();
+                Pole(b, pole, 6.0f, rng.Range(-7f, 7f));
+                Vector3 top = pole + new Vector3(0, 5.65f, 0);
+                if (prev.HasValue)
+                {
+                    KitParts.Cable(b, prev.Value, top, 0.6f, 0.03f);
+                    KitParts.Cable(b, prev.Value + new Vector3(0.6f, 0, 0), top + new Vector3(0.6f, 0, 0), 0.7f, 0.025f);
+                }
+
+                prev = top;
             }
 
             Truck(b, new Vector3(8.5f, Height(8.5f, -24f, seed), -24f), 64f);
-
-            m.Static = b.Mesh;
-            m.Cones = b.Cones;
-            return m;
         }
 
         /// <summary>Lighter tire tracks: gate to the door and loops around the plots (0..1).</summary>
@@ -402,15 +516,19 @@ namespace Deadswitch.Art.World
             b.Pop();
         }
 
+        /// <summary>Concrete jersey barrier with faded red-white hazard paint and a lifting loop.</summary>
         private static void StripedBarrier(MeshBuilder b, Vector3 p, float yaw)
         {
             b.Push(p, yaw);
+            b.BoxOn(0, 0, 0, 2.0f, 0.3f, 0.62f, Mat.Concrete, 0.04f);
+            b.BoxOn(0, 0.3f, 0, 1.97f, 0.14f, 0.44f, Mat.Concrete, 0.04f);
+            b.BoxOn(0, 0.44f, 0, 1.96f, 0.4f, 0.24f, Mat.Concrete, 0.03f);
             for (int i = 0; i < 4; i++)
             {
-                b.BoxOn(-0.75f + (i * 0.5f), 0, 0, 0.5f, 0.82f, 0.45f, i % 2 == 0 ? Mat.PaintRed : Mat.PaintWhite, 0.06f);
+                b.Box(new Vector3(-0.72f + (i * 0.48f), 0.55f, -0.13f), new Vector3(0.24f, 0.3f, 0.02f), i % 2 == 0 ? Mat.PaintRed : Mat.PaintWhite, 0f);
             }
 
-            b.BoxOn(0, 0, 0, 2.0f, 0.22f, 0.7f, Mat.Concrete, 0.06f);
+            b.Strut(new Vector3(-0.15f, 0.8f, 0), new Vector3(0.15f, 0.8f, 0), 0.03f, Mat.Rust);
             b.Pop();
         }
 

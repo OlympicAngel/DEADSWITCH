@@ -572,8 +572,8 @@ namespace Deadswitch.Art.Models
             b.BoxOn(0, 0.9f, 0, 1.2f, 0.4f, 0.8f, Mat.OliveSteel, 0.04f);
             b.Pop();
             KitModules.LeanTo(b, new Vector3(-1.6f, 0, 3.15f), 2.4f, 1.5f, 1.9f, 1.4f, Mat.Tarp);
-            Hedgehog(b, new Vector3(-2.6f, 0, -2.6f), 20f);
-            Hedgehog(b, new Vector3(2.65f, 0, -2.5f), -35f);
+            KitModules.Hedgehog(b, new Vector3(-2.6f, 0, -2.6f), 20f);
+            KitModules.Hedgehog(b, new Vector3(2.65f, 0, -2.5f), -35f);
             Shapes.SandbagWall(b, new Vector3(-1.3f, 0, -2.75f), new Vector3(1.4f, 0, -2.85f), 2);
             KitModules.CrateStack(b, new Vector3(2.3f, 0, 2.3f), rng);
 
@@ -739,17 +739,6 @@ namespace Deadswitch.Art.Models
                 float h = rng.Range(0.35f, 0.7f);
                 b.Box(p - new Vector3(0, h * 0.5f, 0), new Vector3(rng.Range(0.3f, 0.5f), h, 0.015f), cloth[rng.Range(0, cloth.Length)], 0f);
             }
-        }
-
-        /// <summary>Czech hedgehog tank trap: three welded beams.</summary>
-        private static void Hedgehog(MeshBuilder b, Vector3 at, float yaw)
-        {
-            b.Push(at, yaw);
-            const float s = 0.65f;
-            KitParts.IBeam(b, new Vector3(-s, 0.05f, 0), new Vector3(s, 1.3f, 0), 0.12f, 0.1f, Mat.Rust);
-            KitParts.IBeam(b, new Vector3(0, 0.05f, -s), new Vector3(0, 1.3f, s), 0.12f, 0.1f, Mat.Rust);
-            KitParts.IBeam(b, new Vector3(s * 0.7f, 0.05f, s * 0.7f), new Vector3(-s * 0.7f, 1.3f, -s * 0.7f), 0.12f, 0.1f, Mat.Rust);
-            b.Pop();
         }
 
         private static void Capacitor(MeshBuilder b, Vector3 baseCenter, float height)

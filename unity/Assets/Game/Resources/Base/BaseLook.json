@@ -1,6 +1,6 @@
 {
   "_doc": "Single source for the base look: Unity (Runtime/Base/BaseLook.cs) and tools/basepreview both read this file.",
-  "exposure": 1.5,
+  "exposure": 1.8,
   "fogColor": [
     0.13,
     0.16,
@@ -17,13 +17,13 @@
     0.21,
     0.16
   ],
-  "ambient": 1.0,
+  "ambient": 1.15,
   "sunColor": [
     0.66,
     0.76,
     0.95
   ],
-  "sunIntensity": 1.7,
+  "sunIntensity": 2.2,
   "sunAzimuth": -38,
   "sunElevation": 36,
   "emissionScale": 1.0,
@@ -44,7 +44,7 @@
   "tiltBlur": 1.6,
   "tiltFocus": 0.5,
   "grain": 0.035,
-  "vignette": 0.45,
+  "vignette": 0.35,
   "chromatic": 0.012,
   "envIntensity": 0.9,
   "aoIntensity": 1.0,

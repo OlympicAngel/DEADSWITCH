@@ -415,5 +415,16 @@ namespace Deadswitch.Art.Models
 
             b.Strut(a + up + new Vector3(0, 0.25f, 0), c + up + new Vector3(0, 0.25f, 0), 0.02f, Mat.Rust);
         }
+
+        /// <summary>Czech hedgehog tank trap: three welded beams.</summary>
+        public static void Hedgehog(MeshBuilder b, Vector3 at, float yaw)
+        {
+            b.Push(at, yaw);
+            const float s = 0.65f;
+            KitParts.IBeam(b, new Vector3(-s, 0.05f, 0), new Vector3(s, 1.3f, 0), 0.12f, 0.1f, Mat.Rust);
+            KitParts.IBeam(b, new Vector3(0, 0.05f, -s), new Vector3(0, 1.3f, s), 0.12f, 0.1f, Mat.Rust);
+            KitParts.IBeam(b, new Vector3(s * 0.7f, 0.05f, s * 0.7f), new Vector3(-s * 0.7f, 1.3f, -s * 0.7f), 0.12f, 0.1f, Mat.Rust);
+            b.Pop();
+        }
     }
 }
