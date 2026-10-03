@@ -10,7 +10,7 @@
 Opt-in local notifications in the AI's voice, forecast by running a copy of the sim forward at logout.
 
 ## Steps
-- [ ] 1. Host: `LogoutProjection` + alert texts, test
+- [x] 1. Host: `LogoutProjection` + alert texts, test
 - [ ] 2. Unity: notifications facade + optional mobile backend, schedule on pause/quit, cancel on resume, OPS opt-in toggle
 - [ ] 3. Docs (SPEC-010, BACKLOG, HANDOFF)
 

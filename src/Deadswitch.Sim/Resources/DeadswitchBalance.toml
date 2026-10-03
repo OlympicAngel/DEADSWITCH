@@ -362,6 +362,12 @@ desync_tolerance_minutes = 5
 # Real seconds between autosaves while playing. [5..3600]
 autosave_seconds = 60
 
+# Game hours the logout projection runs ahead to schedule notifications (SPEC-010). [1..168]
+notify_project_hours = 24
+
+# Most local notifications scheduled per logout. [0..64]
+notify_max = 6
+
 # --------------------------------------------------------------------------------------------------
 # Generator: scavenged power plant. Output = energy per game hour.
 [facility_generator]
