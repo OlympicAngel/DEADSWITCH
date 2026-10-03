@@ -31,6 +31,9 @@
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:Label name="threat-quiet" text="Perimeter quiet. Posture and garrison stay as you set them." class="ds-body t-dim ops-threat__quiet is-hidden" />
+      <ui:VisualElement name="last-report" class="ds-btn ds-btn--ghost ops-lastreport">
+        <ui:Label name="last-report-label" text="LAST REPORT // RAID 2" class="ds-btn__label" />
+      </ui:VisualElement>
       <ui:VisualElement name="lockdown" class="ds-btn ds-btn--warn ops-lockdown">
         <ui:Label name="lockdown-label" text="EMERGENCY LOCKDOWN  //  OVR 1/3" class="ds-btn__label" />
       </ui:VisualElement>

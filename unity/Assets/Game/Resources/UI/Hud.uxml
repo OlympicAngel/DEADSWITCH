@@ -74,6 +74,10 @@
               <ui:Label name="next-time" text="12:30" class="hud-next__time" />
             </ui:VisualElement>
           </ui:VisualElement>
+          <ui:VisualElement name="report-chip" class="hud-report is-hidden">
+            <ui:VisualElement class="ds-pip hud-report__pip" />
+            <ui:Label name="report-chip-label" text="AFTER-ACTION // RAID 3" class="hud-report__label" />
+          </ui:VisualElement>
           <ui:VisualElement class="hud-override">
             <ui:Label text="OVR" class="hud-override__label" />
             <ui:VisualElement name="override-pips" class="row">

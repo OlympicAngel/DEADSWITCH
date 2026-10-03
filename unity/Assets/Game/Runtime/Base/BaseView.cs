@@ -17,7 +17,8 @@ namespace Deadswitch.Game.Base
     /// </summary>
     public sealed class BaseView : MonoBehaviour
     {
-        private const uint Seed = 17;
+        /// <summary>Art seed for the compound (also places report stills).</summary>
+        public const uint Seed = 17;
 
         private readonly List<SlotObject> _slots = new List<SlotObject>();
         private readonly List<Walker> _walkers = new List<Walker>();

@@ -1,6 +1,7 @@
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Host.Narrative;
+using Deadswitch.Host.Reports;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.State;
@@ -37,7 +38,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly Label _reason;
         private bool _visible;
 
-        public OpsScreen()
+        public OpsScreen(System.Action<int> openReport)
         {
             _host = GameHost.Instance;
             Root = new VisualElement();
@@ -66,6 +67,7 @@ namespace Deadswitch.Game.UI.Screens
 
             _setGo.RegisterCallback<ClickEvent>(_ => SetAndGo());
             _lockdown.RegisterCallback<ClickEvent>(_ => Run(Command.UseOverride(OverrideKind.Lockdown)));
+            Q("last-report").RegisterCallback<ClickEvent>(_ => openReport(BattleReport.LatestRaidId(_host.Sim.Log.Events)));
             BuildSockets();
 
             _host.Ticked += () =>
@@ -156,6 +158,10 @@ namespace Deadswitch.Game.UI.Screens
             bool lockReady = raid && s.OverrideCharges > 0 && s.Tick >= s.OverrideCooldownUntil;
             _lockdown.EnableInClassList("is-disabled", !lockReady);
             Kit.SetButtonText(_lockdown, "EMERGENCY LOCKDOWN  //  OVR " + s.OverrideCharges + "/" + c.Override.MaxCharges);
+
+            int last = BattleReport.LatestRaidId(_host.Sim.Log.Events);
+            Q("last-report").style.display = last > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            Kit.SetButtonText(Q("last-report"), "LAST REPORT // RAID " + last);
 
             // posture
             for (int i = 0; i < Postures.Length; i++)

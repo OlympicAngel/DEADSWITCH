@@ -22,6 +22,8 @@
 .ops-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); margin-top: var(--s-1); }
 .ops-ai-tag { align-self: flex-end; }
 .ops-lockdown { margin-top: var(--s-3); }
+.ops-lastreport { margin-top: var(--s-3); min-height: 88px; }
+.ops-lastreport > .ds-btn__label { font-size: var(--fs-xs); }
 .ops-lockdown > .ds-btn__label { font-size: var(--fs-xs); }
 
 /* Posture cards: 2 x 2 */

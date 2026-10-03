@@ -92,6 +92,21 @@
 .hud-next__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
 .hud-next__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); -unity-text-align: middle-right; }
 
+.hud-report {
+    flex-direction: row;
+    align-items: center;
+    min-height: 88px;
+    margin-top: var(--s-2);
+    padding: 0 var(--s-4);
+    border-width: 2px;
+    border-color: var(--c-phosphor-dim);
+    background-color: rgba(18, 28, 16, 0.88);
+}
+
+.hud-report.is-hidden { display: none; }
+.hud-report__pip { width: 12px; height: 12px; margin-right: var(--s-3); background-color: var(--c-phosphor); }
+.hud-report__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-phosphor); }
+
 .hud-override { flex-direction: row; align-items: center; margin-top: var(--s-3); }
 .hud-override__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-dim); margin-right: var(--s-1); }
 .hud-opip { width: 18px; height: 18px; margin-left: var(--s-3); border-width: var(--bw); border-color: var(--c-amber-dim); rotate: 45deg; }
