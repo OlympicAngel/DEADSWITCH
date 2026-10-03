@@ -1,0 +1,9 @@
+{
+  "name": "deadswitch-basepreview",
+  "private": true,
+  "description": "Headless three.js render of the procedural 3D Hub (SPEC-003) for visual review without Unity.",
+  "type": "module",
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}

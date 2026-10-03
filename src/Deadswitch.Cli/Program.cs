@@ -41,6 +41,8 @@ namespace Deadswitch.Cli
                         return Run(Options.Parse(rest));
                     case "config":
                         return ConfigCommand(rest);
+                    case "art":
+                        return ArtCommand(rest);
                     case "help":
                     case "--help":
                     case "-h":
@@ -70,6 +72,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -162,6 +165,33 @@ namespace Deadswitch.Cli
                 + " compute lost=" + sim.Log.Events.Where(e => e.Kind == EventKind.LossLine && e.B == (int)LossResource.Compute).Sum(e => e.C)
                 + " blackouts=" + sim.Log.Events.Count(e => e.Kind == EventKind.BlackoutStarted));
             Console.WriteLine("hash=" + Hex(StateHasher.Hash(s)));
+            return 0;
+        }
+
+        /// <summary>art export [--days N] [--seed N] [--out PATH]: a scripted base after N days, for tools/basepreview.</summary>
+        private static int ArtCommand(string[] args)
+        {
+            if (args.Length == 0 || args[0] != "export")
+            {
+                throw new UsageException("art needs a subcommand: export.");
+            }
+
+            string[] rest = args.Skip(1).ToArray();
+            double days = double.Parse(ValueAfter(rest, "--days") ?? "7", CultureInfo.InvariantCulture);
+            ulong seed = ParseULong(ValueAfter(rest, "--seed") ?? "42", "seed");
+            string outPath = ValueAfter(rest, "--out") ?? Path.Combine("artifacts", "basepreview", "scene.json");
+            SimConfig config = LoadConfig(null, out _);
+            var sim = new Simulation(seed, config);
+            Deadswitch.Host.Dev.ScriptedPlayer.Play(sim, (long)(days * SimConfig.TicksPerDay));
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
+            ArtExport.Write(sim, outPath, (uint)seed);
+            Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
+            for (int i = 0; i < sim.State.Slots.Count; i++)
+            {
+                FacilitySlot slot = sim.State.Slots[i];
+                Console.WriteLine("  slot " + i + ": " + (slot.IsEmpty ? "-" : slot.Kind + " L" + slot.Level));
+            }
+
             return 0;
         }
 

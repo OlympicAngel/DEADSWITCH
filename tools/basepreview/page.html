@@ -1,0 +1,124 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#1d2120;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// Mirrors the Unity look (Runtime/Rendering): PBR + vertex-color weathering, cold sun, warm lamps,
+// drone camera (narrow FOV, high three-quarter), tilt-shift, bloom, grain, vignette.
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { HorizontalTiltShiftShader } from 'three/addons/shaders/HorizontalTiltShiftShader.js';
+import { VerticalTiltShiftShader } from 'three/addons/shaders/VerticalTiltShiftShader.js';
+
+const P = new URLSearchParams(location.search);
+const W = +P.get('w') || 1080, H = +P.get('h') || 1920;
+const scene = await (await fetch('/scene.json')).json();
+const look = await (await fetch('/look.json')).json();
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = look.exposure;
+document.body.appendChild(renderer.domElement);
+
+const world = new THREE.Scene();
+world.background = new THREE.Color().setRGB(...look.fogColor, THREE.SRGBColorSpace);
+world.fog = new THREE.FogExp2(world.background.getHex(), look.fogDensity);
+
+const hemi = new THREE.HemisphereLight(new THREE.Color().setRGB(...look.skyColor, THREE.SRGBColorSpace), new THREE.Color().setRGB(...look.groundColor, THREE.SRGBColorSpace), look.ambient);
+world.add(hemi);
+const sun = new THREE.DirectionalLight(new THREE.Color().setRGB(...look.sunColor, THREE.SRGBColorSpace), look.sunIntensity);
+const az = THREE.MathUtils.degToRad(look.sunAzimuth), el = THREE.MathUtils.degToRad(look.sunElevation);
+sun.position.set(Math.cos(el) * Math.sin(az) * 60, Math.sin(el) * 60, Math.cos(el) * Math.cos(az) * 60);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+Object.assign(sun.shadow.camera, { left: -32, right: 32, top: 32, bottom: -32, near: 1, far: 160 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+world.add(sun);
+
+const mats = scene.palette.map((p, i) => (powered) => {
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 - p.smoothness, metalness: p.metallic, flatShading: false });
+  m.color.setRGB(...p.color, THREE.SRGBColorSpace);
+  if (p.emissionIntensity > 0 && (powered || !p.lamp)) { m.emissive.setRGB(...p.emission, THREE.SRGBColorSpace); m.emissiveIntensity = p.emissionIntensity * look.emissionScale; }
+  return m;
+});
+const matCache = new Map();
+const mat = (i, powered) => { const k = i + ':' + powered; if (!matCache.has(k)) matCache.set(k, mats[i](powered)); return matCache.get(k); };
+
+function geometry(md) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(md.positions, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(md.normals, 3));
+  // vertex colors are linear multipliers on the sRGB base color
+  g.setAttribute('color', new THREE.Float32BufferAttribute(md.colors, 3));
+  const idx = []; let start = 0;
+  for (const grp of md.groups) { idx.push(...grp.indices); g.addGroup(start, grp.indices.length, grp.mat); start += grp.indices.length; }
+  g.setIndex(idx);
+  return g;
+}
+function mesh(md, powered) {
+  const g = geometry(md);
+  const materials = scene.palette.map((_, i) => mat(i, powered));
+  const m = new THREE.Mesh(g, materials);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
+const t = +P.get('t') || 3.2;
+let lights = 0;
+for (const o of scene.objects) {
+  const root = new THREE.Group();
+  root.position.set(...o.position);
+  root.rotation.y = o.yaw * Math.PI / 180;
+  const md = scene.meshes[o.mesh];
+  if (md.positions.length) root.add(mesh(md, o.powered));
+  for (const p of o.parts) {
+    const pivot = new THREE.Group(); pivot.position.set(...p.pivot);
+    const pm = mesh(scene.meshes[p.mesh], o.powered);
+    pivot.add(pm);
+    if (o.powered) pivot.rotation.y = p.kind === 1 ? -(p.speed * t) * Math.PI / 180 : Math.sin(t * p.speed * Math.PI * 2) * p.range * Math.PI / 180;
+    root.add(pivot);
+  }
+  for (const l of o.lights) {
+    const on = l.role === 0 || (l.role === 1 && o.powered) || (l.role === 2 && o.unmanned);
+    if (!on || l.intensity <= 0) continue;
+    const pl = new THREE.PointLight(new THREE.Color().setRGB(...l.color, THREE.SRGBColorSpace), l.intensity * look.pointScale, l.range * look.rangeScale, 2);
+    pl.position.set(...l.pos); root.add(pl); lights++;
+    if (l.role === 2) { const s = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 2.4, 0.9) })); s.position.set(...l.pos); root.add(s); }
+  }
+  world.add(root);
+}
+
+const cam = new THREE.PerspectiveCamera(look.fov, W / H, 1, 400);
+const ce = THREE.MathUtils.degToRad(look.camElevation), ca = THREE.MathUtils.degToRad(look.camAzimuth);
+cam.position.set(Math.cos(ce) * Math.sin(ca) * look.camDistance, Math.sin(ce) * look.camDistance, Math.cos(ce) * Math.cos(ca) * look.camDistance);
+cam.lookAt(new THREE.Vector3(...look.camTarget));
+
+const composer = new EffectComposer(renderer);
+composer.setSize(W, H);
+composer.addPass(new RenderPass(world, cam));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), look.bloomStrength, look.bloomRadius, look.bloomThreshold));
+const hts = new ShaderPass(HorizontalTiltShiftShader); hts.uniforms.h.value = look.tiltBlur / W; hts.uniforms.r.value = look.tiltFocus;
+const vts = new ShaderPass(VerticalTiltShiftShader); vts.uniforms.v.value = look.tiltBlur / H; vts.uniforms.r.value = look.tiltFocus;
+composer.addPass(hts); composer.addPass(vts);
+composer.addPass(new OutputPass());
+composer.addPass(new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, grain: { value: look.grain }, vignette: { value: look.vignette }, ca: { value: look.chromatic } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float grain, vignette, ca; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+    void main(){ vec2 d = vUv - .5; float r2 = dot(d,d);
+      vec3 c = vec3(texture2D(tDiffuse, vUv + d * ca * r2).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d * ca * r2).b);
+      c += (h(vUv * 1000.) - .5) * grain; c *= 1. - vignette * smoothstep(.15, .75, r2 * 2.2);
+      gl_FragColor = vec4(c, 1.); }`,
+}));
+composer.render();
+window.__done = { lights };
+</script></body></html>

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deadswitch.Cli", "src\Deads
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deadswitch.Host", "src\Deadswitch.Host\Deadswitch.Host.csproj", "{DEABE8B0-1B89-4C59-B763-27E0CF0192C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deadswitch.Art", "src\Deadswitch.Art\Deadswitch.Art.csproj", "{28CE4051-C7A2-4721-8FDC-463FF361BF6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{DEABE8B0-1B89-4C59-B763-27E0CF0192C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEABE8B0-1B89-4C59-B763-27E0CF0192C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEABE8B0-1B89-4C59-B763-27E0CF0192C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28CE4051-C7A2-4721-8FDC-463FF361BF6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28CE4051-C7A2-4721-8FDC-463FF361BF6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28CE4051-C7A2-4721-8FDC-463FF361BF6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28CE4051-C7A2-4721-8FDC-463FF361BF6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

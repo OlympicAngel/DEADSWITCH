@@ -12,7 +12,7 @@ import sys
 import uuid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TREES = [os.path.join(ROOT, "src", "Deadswitch.Sim"), os.path.join(ROOT, "src", "Deadswitch.Host"),
+TREES = [os.path.join(ROOT, "src", "Deadswitch.Sim"), os.path.join(ROOT, "src", "Deadswitch.Host"), os.path.join(ROOT, "src", "Deadswitch.Art"),
          os.path.join(ROOT, "unity", "Assets")]
 SKIP_DIRS = {"bin", "obj", ".vs"}
 SKIP_SUFFIX = (".meta", ".csproj.user")

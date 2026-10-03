@@ -14,7 +14,7 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-007 | Unity foundation: compile-check project, code-only bootstrap, SimHost (real-time ticking), balance file import, save/load, offline catch-up, clock guard, settings | M2 | Done | 2026-10-03 |
 | F-008 | Visual system: design tokens (USS), fonts, CRT terminal overlay, motion helpers, headless UI preview tool | M2 | Done | 2026-10-03 |
 | F-009 | Terminal HUD + command bar: always-visible essentials, animated readouts, energy sparkline, Base / Map / AI / Ops navigation | M2 | Done | 2026-10-03 |
-| F-010 | 3D base diorama: procedural stylized-3D facilities (chunky bevelled forms, URP PBR materials), drone-feed camera (tilt-shift, subtle sensor fx), slot selection, build/upgrade sheet, power/crew states visible | M2 | Ready | ADR-0007, doc 11 |
+| F-010 | 3D base diorama: procedural stylized-3D facilities (chunky bevelled forms, URP PBR materials), drone-feed camera (tilt-shift, subtle sensor fx), slot selection, build/upgrade sheet, power/crew states visible | M2 | In progress | ADR-0007, doc 11 |
 | F-011 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation effects, glitch text by corruption, 50 lines, the first lie | M2 | Ready | ADVISOR_VOICE |
 | F-012 | Defense setup screen: posture, crew chips, AI Confidence readout, Set & Go | M3 | Ready | doc 10 s4 |
 | F-013 | Battle report: graphic-novel panels of rendered stills, loss ledger, AI annotation, Verify | M3 | Ready | ADR-0003, ADR-0007 |

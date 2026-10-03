@@ -40,3 +40,7 @@ local.settings.json
 # Agent local state
 .claude/settings.local.json
 .claude/worktrees/
+
+# Preview tooling
+tools/basepreview/node_modules/
+tools/basepreview/package-lock.json

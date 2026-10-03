@@ -1,0 +1,169 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Numerics;
+using System.Text;
+using Deadswitch.Art.Geometry;
+using Deadswitch.Art.Models;
+using Deadswitch.Art.World;
+using Deadswitch.Sim;
+using Deadswitch.Sim.State;
+
+namespace Deadswitch.Cli
+{
+    /// <summary>
+    /// Writes the 3D Hub for the headless three.js preview (tools/basepreview). Converts Unity's left-handed
+    /// space to three.js right-handed (z -> -z, triangle winding reversed).
+    /// </summary>
+    public static class ArtExport
+    {
+        private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
+        public static void Write(Simulation sim, string path, uint seed)
+        {
+            var meshes = new List<MeshData>();
+            var objects = new StringBuilder();
+            int count = 0;
+
+            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned)
+            {
+                int meshIndex = meshes.Count;
+                meshes.Add(model.Static);
+                var parts = new StringBuilder();
+                foreach (AnimPart p in model.Parts)
+                {
+                    meshes.Add(p.Mesh);
+                    parts.Append(parts.Length > 0 ? "," : string.Empty)
+                        .Append("{\"mesh\":").Append(meshes.Count - 1)
+                        .Append(",\"pivot\":").Append(V(p.Pivot))
+                        .Append(",\"kind\":").Append((int)p.Kind)
+                        .Append(",\"speed\":").Append(F(p.Speed))
+                        .Append(",\"range\":").Append(F(p.Range)).Append('}');
+                }
+
+                var lights = new StringBuilder();
+                foreach (LightSpec l in model.Lights)
+                {
+                    lights.Append(lights.Length > 0 ? "," : string.Empty)
+                        .Append("{\"pos\":").Append(V(l.Position))
+                        .Append(",\"color\":[").Append(F(l.Color.X)).Append(',').Append(F(l.Color.Y)).Append(',').Append(F(l.Color.Z)).Append(']')
+                        .Append(",\"intensity\":").Append(F(l.Intensity))
+                        .Append(",\"range\":").Append(F(l.Range))
+                        .Append(",\"role\":").Append((int)l.Role).Append('}');
+                }
+
+                objects.Append(count++ > 0 ? ",\n" : string.Empty)
+                    .Append("{\"name\":\"").Append(name).Append("\",\"mesh\":").Append(meshIndex)
+                    .Append(",\"position\":").Append(V(pos))
+                    .Append(",\"yaw\":").Append(F(-yaw))
+                    .Append(",\"powered\":").Append(powered ? "true" : "false")
+                    .Append(",\"unmanned\":").Append(unmanned ? "true" : "false")
+                    .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append("]}");
+            }
+
+            AddModel("terrain", new Model { Static = HubScene.Terrain(seed) }, Vector3.Zero, 0, true, false);
+            AddModel("surroundings", HubScene.Surroundings(seed, sim.State.Slots.Count), Vector3.Zero, 0, true, false);
+            AddModel("core", Core.Build(seed), new Vector3(0, HubScene.Height(0, 0, seed), 0), 0, true, false);
+            for (int i = 0; i < sim.State.Slots.Count; i++)
+            {
+                Vector3 pos = HubScene.SlotPosition(i, sim.State.Slots.Count);
+                SlotView v = SlotView.From(sim.State, i);
+                AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i) }, pos, 0, true, false);
+                Vector3 top = pos + new Vector3(0, Facilities.PadTop, 0);
+                if (v.Kind != FacilityKind.None)
+                {
+                    AddModel("slot" + i, Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31)), top, 0, v.Powered, v.Unmanned);
+                }
+
+                if (v.UnderConstruction)
+                {
+                    AddModel("scaffold" + i, new Model { Static = Facilities.Scaffold(2.2f, seed + (uint)i) }, top, 0, true, false);
+                }
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("{\"palette\":[");
+            for (int i = 0; i < Palette.Count; i++)
+            {
+                MaterialDef d = Palette.Get((Mat)i);
+                sb.Append(i > 0 ? "," : string.Empty)
+                    .Append("{\"name\":\"").Append(d.Name).Append("\",\"color\":").Append(V3(d.BaseColor))
+                    .Append(",\"metallic\":").Append(F(d.Metallic)).Append(",\"smoothness\":").Append(F(d.Smoothness))
+                    .Append(",\"emission\":").Append(V3(d.EmissionColor)).Append(",\"emissionIntensity\":").Append(F(d.EmissionIntensity))
+                    .Append(",\"lamp\":").Append(d.IsLamp ? "true" : "false").Append('}');
+            }
+
+            sb.Append("],\n\"objects\":[\n").Append(objects).Append("],\n\"meshes\":[\n");
+            for (int i = 0; i < meshes.Count; i++)
+            {
+                sb.Append(i > 0 ? ",\n" : string.Empty);
+                Mesh(sb, meshes[i]);
+            }
+
+            sb.Append("]}\n");
+            File.WriteAllText(path, sb.ToString());
+        }
+
+        private static void Mesh(StringBuilder sb, MeshData m)
+        {
+            sb.Append("{\"positions\":[");
+            for (int i = 0; i < m.Positions.Count; i++)
+            {
+                Vector3 p = m.Positions[i];
+                sb.Append(i > 0 ? "," : string.Empty).Append(F(p.X)).Append(',').Append(F(p.Y)).Append(',').Append(F(-p.Z));
+            }
+
+            sb.Append("],\"normals\":[");
+            for (int i = 0; i < m.Normals.Count; i++)
+            {
+                Vector3 n = m.Normals[i];
+                sb.Append(i > 0 ? "," : string.Empty).Append(F(n.X)).Append(',').Append(F(n.Y)).Append(',').Append(F(-n.Z));
+            }
+
+            sb.Append("],\"colors\":[");
+            for (int i = 0; i < m.Colors.Count; i++)
+            {
+                Vector4 c = m.Colors[i];
+                sb.Append(i > 0 ? "," : string.Empty).Append(F(c.X)).Append(',').Append(F(c.Y)).Append(',').Append(F(c.Z));
+            }
+
+            sb.Append("],\"groups\":[");
+            bool first = true;
+            for (int mat = 0; mat < m.Indices.Length; mat++)
+            {
+                List<int> idx = m.Indices[mat];
+                if (idx.Count == 0)
+                {
+                    continue;
+                }
+
+                sb.Append(first ? string.Empty : ",").Append("{\"mat\":").Append(mat).Append(",\"indices\":[");
+                first = false;
+                for (int t = 0; t < idx.Count; t += 3)
+                {
+                    sb.Append(t > 0 ? "," : string.Empty).Append(idx[t]).Append(',').Append(idx[t + 2]).Append(',').Append(idx[t + 1]);
+                }
+
+                sb.Append("]}");
+            }
+
+            sb.Append("]}");
+        }
+
+        private static string F(float v)
+        {
+            return Math.Round(v, 4).ToString("0.####", Inv);
+        }
+
+        private static string V(Vector3 v)
+        {
+            return "[" + F(v.X) + "," + F(v.Y) + "," + F(-v.Z) + "]";
+        }
+
+        private static string V3(Vector3 v)
+        {
+            return "[" + F(v.X) + "," + F(v.Y) + "," + F(v.Z) + "]";
+        }
+    }
+}
