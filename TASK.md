@@ -11,7 +11,7 @@ A graphic-novel report after each raid: four rendered panels, the AI's (possibly
 
 ## Steps
 - [x] 1. Sim: `[report]` config, report edit lie, `VerifyReport` command + `ReportVerified` event, tests
-- [ ] 2. Host: `BattleReport` view from the log (summary with edits, ledger, verify findings, captions); advisor verify lines
+- [x] 2. Host: `BattleReport` view from the log (summary with edits, ledger, verify findings, captions); advisor verify lines
 - [ ] 3. Art: gate camera shots + raider silhouettes (`HubScene.ReportShots`)
 - [ ] 4. Preview: report mode in `tools/basepreview` (four stills, ink/halftone grade, composed page); iterate the look
 - [ ] 5. Unity: report stills (RenderTexture + graphic-novel shader), Report screen (UXML), HUD chip, OPS link

@@ -32,6 +32,7 @@ namespace Deadswitch.Host.Narrative
             "mercy", "lie_deflect", "low_energy", "shed", "restored", "blackout", "blackout_end", "build_started",
             "build_done", "build_cancelled", "demolished", "band_glitchy", "band_unstable", "band_critical", "band_down",
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
+            "verify_edit", "verify_gate", "verify_clean",
         };
 
         private const int MaxQueue = 4;
@@ -259,6 +260,9 @@ namespace Deadswitch.Host.Narrative
                         Enqueue(new Pending(levels[e.A], Priority.Normal));
                     }
 
+                    break;
+                case EventKind.ReportVerified:
+                    Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));
                     break;
                 case EventKind.AiActed:
                     if (e.A == (int)AiActionKind.Build)

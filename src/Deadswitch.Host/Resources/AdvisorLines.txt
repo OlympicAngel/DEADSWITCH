@@ -42,6 +42,12 @@ lie.1 | lie_deflect | neutral | Prediction variance. Noted.
 lie.2 | lie_deflect | neutral | Sensor drift. The {gate} was not in the model.
 lie.3 | lie_deflect | bold | The prediction was sound. The raiders were not.
 
+verify.edit.1 | verify_edit | neutral | Clerical error.
+verify.edit.2 | verify_edit | cold | Clerical error. Corrected.
+verify.gate.1 | verify_gate | neutral | Prediction variance. Noted.
+verify.clean.1 | verify_clean | neutral | Confirmed. The record stands.
+verify.clean.2 | verify_clean | warm | Checked and true. I would not lie to you, handler.
+
 energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
 energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.
 

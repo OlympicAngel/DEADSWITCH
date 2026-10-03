@@ -1,4 +1,5 @@
 using System.Linq;
+using Deadswitch.Host.Reports;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
@@ -45,6 +46,22 @@ namespace Deadswitch.Sim.Tests
                 Assert.True(e.D < e.C);
                 Assert.Contains(sim.Log.Events, l => l.Kind == EventKind.LossLine && l.A == e.B && l.B == (int)LossResource.Energy && l.C == e.C);
             }
+        }
+
+        [Fact]
+        public void BreachReport_ListsEveryLossLine_AndFourPanels()
+        {
+            var sim = new Simulation(1UL);
+            sim.Run(2L * SimConfig.TicksPerDay);
+            SimEvent breach = sim.Log.Events.First(e => e.Kind == EventKind.RaidResolved && e.B == (int)RaidOutcome.Breached);
+
+            BattleReport? report = BattleReport.Build(sim.Log.Events, breach.A);
+
+            Assert.NotNull(report);
+            var losses = sim.Log.Events.Where(e => e.Kind == EventKind.LossLine && e.A == breach.A).Select(e => (e.B, e.C)).ToList();
+            Assert.Equal(losses, report!.Ledger.Select(l => ((int)l.Resource, l.Amount)).ToList());
+            Assert.Equal(4, report.Panels.Count);
+            Assert.Null(BattleReport.Build(sim.Log.Events, 9999));
         }
     }
 }

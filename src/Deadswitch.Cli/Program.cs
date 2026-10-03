@@ -6,6 +6,7 @@ using System.Linq;
 using Deadswitch.Art.World;
 using Deadswitch.Host.Persistence;
 using Deadswitch.Sim;
+using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Config;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
@@ -46,6 +47,8 @@ namespace Deadswitch.Cli
                         return ArtCommand(rest);
                     case "advisor":
                         return AdvisorCommand(rest);
+                    case "report":
+                        return ReportCommand(rest);
                     case "help":
                     case "--help":
                     case "-h":
@@ -72,6 +75,7 @@ namespace Deadswitch.Cli
             TextWriter w = code == 0 ? Console.Out : Console.Error;
             w.WriteLine("usage:");
             w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE] [--garrison N] [--posture none|turtle|dark|evacuate] [--away]");
+            w.WriteLine("  report [--days N] [--seed N] [--raid ID] [--verify]");
             w.WriteLine("  advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
@@ -231,6 +235,42 @@ namespace Deadswitch.Cli
 
             var sim = new Simulation(seed, LoadConfig(null, out _));
             AdvisorTranscript.Write(sim, (long)(days * SimConfig.TicksPerDay), delegation, args.Contains("--away"), Console.Out);
+            return 0;
+        }
+
+        /// <summary>report [--days N] [--seed N] [--raid ID] [--verify]: a battle report after a scripted run (SPEC-006).</summary>
+        private static int ReportCommand(string[] args)
+        {
+            double days = double.Parse(ValueAfter(args, "--days") ?? "2", CultureInfo.InvariantCulture);
+            ulong seed = ParseULong(ValueAfter(args, "--seed") ?? "1", "seed");
+            var sim = new Simulation(seed, LoadConfig(null, out _));
+            sim.Run((long)(days * SimConfig.TicksPerDay));
+            int raid = int.Parse(ValueAfter(args, "--raid") ?? Deadswitch.Host.Reports.BattleReport.LatestRaidId(sim.Log.Events).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+            if (args.Contains("--verify"))
+            {
+                Console.WriteLine("verify: " + sim.Execute(Command.VerifyReport(raid)).Reason);
+            }
+
+            Deadswitch.Host.Reports.BattleReport? r = Deadswitch.Host.Reports.BattleReport.Build(sim.Log.Events, raid);
+            if (r == null)
+            {
+                Console.WriteLine("no resolved raid " + raid);
+                return 1;
+            }
+
+            Console.WriteLine("RAID " + r.RaidId + " // " + r.Outcome.ToString().ToUpperInvariant() + " // PREDICTED " + r.PredictedGate + " // CONTACT " + r.ContactGate);
+            foreach (Deadswitch.Host.Reports.ReportPanel p in r.Panels)
+            {
+                Console.WriteLine("  [" + p.Shot + "] " + p.Caption);
+            }
+
+            Console.WriteLine("  AI: " + r.Summary);
+            Console.WriteLine("  LEDGER: " + r.LossText(false));
+            foreach (string f in r.Findings)
+            {
+                Console.WriteLine("  VERIFY: " + f);
+            }
+
             return 0;
         }
 
