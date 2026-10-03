@@ -56,6 +56,9 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Force-stop the incoming attack.</summary>
         Lockdown = 1,
+
+        /// <summary>Silence the AI: its agenda stops for a time, and so do its advice and predictions (SPEC-011).</summary>
+        Silence = 2,
     }
 
     /// <summary>Corruption bands (doc 10 s3).</summary>

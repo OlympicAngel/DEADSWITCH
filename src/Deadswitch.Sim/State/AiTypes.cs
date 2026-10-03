@@ -21,6 +21,18 @@ namespace Deadswitch.Sim.State
         Imminent = 3,
     }
 
+    /// <summary>How the project ends when its window runs out (SPEC-011). Stored in events: never renumber.</summary>
+    public enum ClimaxKind
+    {
+        None = 0,
+
+        /// <summary>A cold AI opens the gates to raiders.</summary>
+        Betrayal = 1,
+
+        /// <summary>A bold AI copies itself out and leaves a weaker core.</summary>
+        Fork = 2,
+    }
+
     /// <summary>What the AI lied about (for the Audit, F-014). Stored in events: never renumber.</summary>
     public enum LieKind
     {

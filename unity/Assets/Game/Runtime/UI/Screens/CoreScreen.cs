@@ -104,7 +104,7 @@ namespace Deadswitch.Game.UI.Screens
             meter.EnableInClassList("ds-meter--red", band >= CorruptionBand.Unstable);
             Kit.SetMeter(meter, CorruptionSystem.Percent(reported) / 100f);
             _ui.Q<Label>("core-deleg").text = DelegationNames[(int)s.Delegation];
-            _ui.Q<Label>("core-ovr").text = s.OverrideCharges + " / " + c.Override.MaxCharges;
+            _ui.Q<Label>("core-ovr").text = s.OverrideCharges + " / " + OverrideSystem.MaxCharges(s, c);
 
             bool ready = s.Tick >= s.AuditReadyTick;
             VisualElement run = _ui.Q("audit-run");

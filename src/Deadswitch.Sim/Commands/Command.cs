@@ -57,6 +57,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Advance the Hub a tier through the three gates.</summary>
         TierUp = 16,
+
+        /// <summary>No args. Purge the core (SPEC-011).</summary>
+        PurgeCore = 17,
+
+        /// <summary>No args. Cancel the AI's project after an Audit in the final window (SPEC-011).</summary>
+        CancelProject = 18,
     }
 
     /// <summary>
@@ -154,6 +160,16 @@ namespace Deadswitch.Sim.Commands
         public static Command TierUp()
         {
             return new Command(CommandKind.TierUp);
+        }
+
+        public static Command PurgeCore()
+        {
+            return new Command(CommandKind.PurgeCore);
+        }
+
+        public static Command CancelProject()
+        {
+            return new Command(CommandKind.CancelProject);
         }
 
         public static Command SetPresence(bool away)

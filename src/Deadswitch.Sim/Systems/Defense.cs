@@ -31,12 +31,12 @@ namespace Deadswitch.Sim.Systems
         }
 
         /// <summary>Defense rating the Hub would have with another posture and garrison (setup previews, advice).</summary>
-        public static int Rating(GameState s, SimConfig c, Posture posture, int garrison)
+        public static int Rating(GameState s, SimConfig c, Posture posture, int garrison, bool turrets = true)
         {
             int total = garrison * c.Defense.DefensePerDefender;
             foreach (FacilitySlot slot in s.Slots)
             {
-                if (slot.Kind == FacilityKind.Turret && Economy.IsRunning(slot))
+                if (turrets && slot.Kind == FacilityKind.Turret && Economy.IsRunning(slot))
                 {
                     total += Economy.EffectiveOutput(s, c, slot);
                 }

@@ -82,6 +82,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No higher tier in this build.</summary>
         MaxTier = 26,
+
+        /// <summary>The AI is silenced: it will not run anything for you.</summary>
+        Silenced = 27,
+
+        /// <summary>Cancel the project needs an Audit inside the final window first.</summary>
+        NeedsAudit = 28,
     }
 
     public readonly struct CommandResult

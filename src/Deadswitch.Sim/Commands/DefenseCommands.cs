@@ -10,7 +10,8 @@ namespace Deadswitch.Sim.Commands
         public static CommandResult UseOverride(SimContext ctx, Command cmd)
         {
             GameState s = ctx.State;
-            if (cmd.A != (int)OverrideKind.Lockdown || cmd.B != 0 || cmd.C != 0)
+            bool silence = cmd.A == (int)OverrideKind.Silence;
+            if ((cmd.A != (int)OverrideKind.Lockdown && !silence) || cmd.B != 0 || cmd.C != 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
@@ -25,12 +26,12 @@ namespace Deadswitch.Sim.Commands
                 return CommandResult.Reject(RejectReason.OnCooldown);
             }
 
-            if (s.RaidId == 0)
+            if (silence ? ClimaxSystem.Silenced(s) : s.RaidId == 0)
             {
-                return CommandResult.Reject(RejectReason.NoTarget);
+                return silence ? CommandResult.Reject(RejectReason.NoChange) : CommandResult.Reject(RejectReason.NoTarget);
             }
 
-            if (s.OverrideCharges >= ctx.Config.Override.MaxCharges)
+            if (s.OverrideCharges >= OverrideSystem.MaxCharges(s, ctx.Config))
             {
                 s.OverrideNextChargeTick = s.Tick + ctx.Config.Override.RegenMinutes;
             }
@@ -40,7 +41,15 @@ namespace Deadswitch.Sim.Commands
             int corruption = ctx.Config.Override.CorruptionMilliPerUse;
             ctx.Emit(EventKind.OverrideUsed, cmd.A, s.OverrideCharges, corruption);
             CorruptionSystem.Add(ctx, corruption);
-            RaidSystem.Lockdown(ctx);
+            if (silence)
+            {
+                ClimaxSystem.Silence(ctx);
+            }
+            else
+            {
+                RaidSystem.Lockdown(ctx);
+            }
+
             return CommandResult.Ok;
         }
 
@@ -140,6 +149,11 @@ namespace Deadswitch.Sim.Commands
             }
 
             s.Compute -= c.Project.AuditComputeCost;
+            if (s.ClimaxAtTick > 0)
+            {
+                s.ClimaxAudited = true;
+            }
+
             s.AuditReadyTick = s.Tick + ((long)c.Project.AuditCooldownHours * SimConfig.TicksPerHour);
             int unverified = 0;
             foreach (RaidRecord r in s.RaidRecords)

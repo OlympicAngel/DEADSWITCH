@@ -9,7 +9,7 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
-            if (s.OverrideCharges >= c.Override.MaxCharges)
+            if (s.OverrideCharges >= MaxCharges(s, c))
             {
                 s.OverrideNextChargeTick = s.Tick + c.Override.RegenMinutes;
                 return;
@@ -20,6 +20,12 @@ namespace Deadswitch.Sim.Systems
                 s.OverrideCharges++;
                 s.OverrideNextChargeTick = s.Tick + c.Override.RegenMinutes;
             }
+        }
+
+        /// <summary>Charge cap after a fork took one away (never below one).</summary>
+        public static int MaxCharges(GameState s, SimConfig c)
+        {
+            return System.Math.Max(1, c.Override.MaxCharges - s.OverrideMaxPenalty);
         }
 
         public static bool Ready(GameState s)

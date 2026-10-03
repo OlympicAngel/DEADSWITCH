@@ -15,6 +15,10 @@ namespace Deadswitch.Sim.Systems
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
             ProjectConfig p = c.Project;
+            if (ClimaxSystem.Silenced(s))
+            {
+                return;
+            }
 
             int skim = 0;
             if (s.BoldnessMilli >= p.SkimFromBoldnessPct * 1000)
@@ -31,6 +35,7 @@ namespace Deadswitch.Sim.Systems
             if (after != before)
             {
                 ctx.Emit(EventKind.ProjectStage, (int)after, (int)before, s.ProjectMilli);
+                ClimaxSystem.OnStage(ctx, after);
             }
         }
 

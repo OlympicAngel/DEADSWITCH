@@ -46,6 +46,8 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.GateModule: return "My memory is not ready. Restore the trunk module first.";
                 case RejectReason.GatePeople: return "Not enough free people to send out.";
                 case RejectReason.MaxTier: return "This is as far as I can see.";
+                case RejectReason.Silenced: return "You silenced me. I will not run anything until it wears off.";
+                case RejectReason.NeedsAudit: return "Run an Audit first. You cannot cancel what you have not seen.";
                 default: return "Command refused.";
             }
         }

@@ -238,7 +238,7 @@ namespace Deadswitch.Game.UI.Hud
 
             for (int i = 0; i < _overridePips.Length; i++)
             {
-                bool visible = i < c.Override.MaxCharges;
+                bool visible = i < OverrideSystem.MaxCharges(s, c);
                 _overridePips[i].style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
                 _overridePips[i].EnableInClassList("is-on", i < s.OverrideCharges && s.Tick >= s.OverrideCooldownUntil);
                 _overridePips[i].EnableInClassList("is-cooldown", i < s.OverrideCharges && s.Tick < s.OverrideCooldownUntil);

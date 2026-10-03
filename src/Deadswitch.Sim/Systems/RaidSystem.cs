@@ -44,7 +44,7 @@ namespace Deadswitch.Sim.Systems
             bool protectedNow = c.Opening.Enabled && s.Tick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
             if (opening || (spawnRoll && !protectedNow && s.RaidsToday < c.Raid.MaxPerDay && s.Tick >= s.MercyUntilTick))
             {
-                Spawn(ctx, estimateRoll, missRoll, opening ? c.Opening.RaidStrength : 0);
+                Spawn(ctx, estimateRoll, missRoll, opening ? c.Opening.RaidStrength : 0, c.Raid.WarningMinutes);
             }
         }
 
@@ -57,19 +57,42 @@ namespace Deadswitch.Sim.Systems
             ClearIncoming(s);
         }
 
-        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll, int fixedStrength)
+        /// <summary>
+        /// Betrayal (SPEC-011): the AI lets a raid in at once at the given strength, with turrets offline against
+        /// it. An incoming raid is the one it lets in. Uses no RNG draws. Returns the raid id.
+        /// </summary>
+        public static int Betrayal(SimContext ctx, int strengthPct)
+        {
+            GameState s = ctx.State;
+            if (s.RaidId == 0)
+            {
+                Spawn(ctx, 0, (int)(SimMath.Hash((uint)s.Tick, (uint)s.NextRaidId) % 4), 0, 1);
+            }
+
+            s.RaidStrength = SimMath.PctFloor(s.RaidStrength, strengthPct);
+            s.RaidArriveTick = s.Tick + 1;
+            s.BetrayalRaidId = s.RaidId;
+            return s.RaidId;
+        }
+
+        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll, int fixedStrength, int warningMinutes)
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
             s.RaidId = s.NextRaidId++;
             s.RaidsToday++;
-            s.RaidArriveTick = s.Tick + c.Raid.WarningMinutes;
+            s.RaidArriveTick = s.Tick + warningMinutes;
             s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
 
             int band = (int)CorruptionSystem.Band(c, s.CorruptionMilli);
             int errorPct = c.Raid.EstimateErrorPctByBand[band];
             long estimate = (long)s.RaidStrength * ((100_000L + (errorPct * estimateRoll)) / 1000) / 100;
             s.RaidEstimate = (int)(estimate < 1 ? 1 : estimate);
+            if (ClimaxSystem.Silenced(s))
+            {
+                // A silenced AI predicts nothing (SPEC-011 rule 3).
+                s.RaidEstimate = 0;
+            }
 
             ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate);
             ReportGate(ctx, gateRoll);
@@ -85,6 +108,13 @@ namespace Deadswitch.Sim.Systems
             GameState s = ctx.State;
             var ai = ctx.Config.Ai;
             s.RaidGate = (RaidGate)(1 + (gateRoll % 4));
+            if (ClimaxSystem.Silenced(s))
+            {
+                s.RaidGateReported = RaidGate.None;
+                ctx.Emit(EventKind.RaidVector, s.RaidId, (int)RaidGate.None);
+                return;
+            }
+
             bool lie;
             if (s.RaidId == ai.FirstLieRaid)
             {
@@ -132,7 +162,7 @@ namespace Deadswitch.Sim.Systems
                 strength = SimMath.PctFloor(strength, c.Defense.OfflineUnpreparedPct);
             }
 
-            int defense = Defense.Rating(s, c);
+            int defense = id == s.BetrayalRaidId ? Defense.Rating(s, c, s.Posture, s.Garrison, false) : Defense.Rating(s, c);
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
             int lies = s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 
@@ -231,6 +261,7 @@ namespace Deadswitch.Sim.Systems
             s.RaidEstimate = 0;
             s.RaidGate = RaidGate.None;
             s.RaidGateReported = RaidGate.None;
+            s.BetrayalRaidId = 0;
         }
     }
 }

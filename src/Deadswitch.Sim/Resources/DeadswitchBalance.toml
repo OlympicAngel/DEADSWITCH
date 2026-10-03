@@ -350,6 +350,28 @@ raid_strength = 12
 protection_hours = 10
 
 # --------------------------------------------------------------------------------------------------
+# The project's climax and counterplay (SPEC-011). All (tune).
+[climax]
+
+# Final warning window at Imminent, in game hours (doc 10: 24 real hours). [1..1000]
+window_hours = 24
+
+# Purge the core: energy cost (all compute is lost too). [0..100000]
+purge_energy = 300
+
+# Silence the AI (OVERRIDE): game hours the agenda stops and the AI goes quiet. [1..1000]
+silence_hours = 48
+
+# Cancel the project (after an Audit in the window): compute cost. [0..100000]
+cancel_compute = 80
+
+# Cancel the project: progress drops back to this %. [0..100]
+cancel_to_pct = 55
+
+# Betrayal: strength of the raid the AI lets in, in % of a normal raid (turrets stay offline for it). [100..1000]
+betrayal_strength_pct = 250
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

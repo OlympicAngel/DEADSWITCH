@@ -162,7 +162,7 @@ namespace Deadswitch.Game.UI.Screens
 
             bool lockReady = raid && s.OverrideCharges > 0 && s.Tick >= s.OverrideCooldownUntil;
             _lockdown.EnableInClassList("is-disabled", !lockReady);
-            Kit.SetButtonText(_lockdown, "EMERGENCY LOCKDOWN  //  OVR " + s.OverrideCharges + "/" + c.Override.MaxCharges);
+            Kit.SetButtonText(_lockdown, "EMERGENCY LOCKDOWN  //  OVR " + s.OverrideCharges + "/" + OverrideSystem.MaxCharges(s, c));
 
             int last = BattleReport.LatestRaidId(_host.Sim.Log.Events);
             Q("last-report").style.display = last > 0 ? DisplayStyle.Flex : DisplayStyle.None;

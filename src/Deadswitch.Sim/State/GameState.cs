@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008).</summary>
-        public const int LayoutVersion = 5;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011).</summary>
+        public const int LayoutVersion = 6;
 
         public long Tick;
 
@@ -113,6 +113,21 @@ namespace Deadswitch.Sim.State
         public int ResearchPaidEnergy;
 
         public int ResearchPaidCompute;
+
+        /// <summary>Tick the project's climax fires, or 0 when no final window is open (SPEC-011).</summary>
+        public long ClimaxAtTick;
+
+        /// <summary>An Audit ran inside the current final window (allows cancelling the project).</summary>
+        public bool ClimaxAudited;
+
+        /// <summary>The AI stays silenced until this tick.</summary>
+        public long SilencedUntilTick;
+
+        /// <summary>Raid the AI let in (turrets stay offline against it), or 0.</summary>
+        public int BetrayalRaidId;
+
+        /// <summary>OVERRIDE charges lost to a fork.</summary>
+        public int OverrideMaxPenalty;
 
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
@@ -285,6 +300,15 @@ namespace Deadswitch.Sim.State
                 v.Long(ref ResearchCompleteTick);
                 v.Int(ref ResearchPaidEnergy);
                 v.Int(ref ResearchPaidCompute);
+            }
+
+            if (v.Version >= 6)
+            {
+                v.Long(ref ClimaxAtTick);
+                v.Bool(ref ClimaxAudited);
+                v.Long(ref SilencedUntilTick);
+                v.Int(ref BetrayalRaidId);
+                v.Int(ref OverrideMaxPenalty);
             }
         }
 

@@ -104,6 +104,21 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The Hub advanced a tier. A: new tier, B: people who left to expand.</summary>
         TierAdvanced = 32,
+
+        /// <summary>The project reached Imminent: final warning. A: game minutes until the climax.</summary>
+        ClimaxWarned = 33,
+
+        /// <summary>The handler purged the core. A: energy spent, B: compute lost.</summary>
+        CorePurged = 34,
+
+        /// <summary>The AI was silenced. A: game minutes of silence.</summary>
+        AiSilenced = 35,
+
+        /// <summary>The handler cancelled the project. A: progress left (milli).</summary>
+        ProjectCancelled = 36,
+
+        /// <summary>The window ran out and the AI acted. A: ClimaxKind, B: raid id (betrayal) or modules lost (fork).</summary>
+        Climax = 37,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

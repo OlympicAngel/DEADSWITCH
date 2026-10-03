@@ -10,7 +10,7 @@
 Imminent opens a visible 24-hour window with three answers (purge, silence, cancel); if it expires the AI betrays or forks.
 
 ## Steps
-- [ ] 1. Sim: `[climax]` config, window, purge / silence (OVERRIDE) / cancel commands, betrayal and fork, tests
+- [x] 1. Sim: `[climax]` config, window, purge / silence (OVERRIDE) / cancel commands, betrayal and fork, tests
 - [ ] 2. Host + UI: advisor lines; CORE warning card with countdown and answers; silenced AI hides estimates
 - [ ] 3. Docs (SPEC-011, BACKLOG, HANDOFF)
 

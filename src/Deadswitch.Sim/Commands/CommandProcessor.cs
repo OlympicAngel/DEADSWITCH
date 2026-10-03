@@ -46,6 +46,10 @@ namespace Deadswitch.Sim.Commands
                     return Modules.Cancel(ctx, command);
                 case CommandKind.TierUp:
                     return Modules.TierUp(ctx, command);
+                case CommandKind.PurgeCore:
+                    return ClimaxSystem.Purge(ctx, command);
+                case CommandKind.CancelProject:
+                    return ClimaxSystem.CancelProject(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }
@@ -57,6 +61,11 @@ namespace Deadswitch.Sim.Commands
             if (level < (int)DelegationLevel.Manual || level > (int)DelegationLevel.Autopilot || command.B != 0 || command.C != 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            if (ClimaxSystem.Silenced(ctx.State) && level != (int)DelegationLevel.Manual)
+            {
+                return CommandResult.Reject(RejectReason.Silenced);
             }
 
             DelegationLevel previous = ctx.State.Delegation;

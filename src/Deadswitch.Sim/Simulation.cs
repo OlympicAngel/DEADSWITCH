@@ -89,6 +89,7 @@ namespace Deadswitch.Sim
                 ProjectSystem.Hourly(ctx);
             }
 
+            ClimaxSystem.Tick(ctx);
             RaidSystem.Tick(ctx);
             AiSystem.Tick(ctx);
         }
