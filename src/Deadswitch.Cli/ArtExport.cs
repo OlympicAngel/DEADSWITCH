@@ -62,24 +62,32 @@ namespace Deadswitch.Cli
                     .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append("]}");
             }
 
+            int slots = sim.State.Slots.Count;
             AddModel("terrain", new Model { Static = HubScene.Terrain(seed) }, Vector3.Zero, 0, true, false);
-            AddModel("surroundings", HubScene.Surroundings(seed, sim.State.Slots.Count), Vector3.Zero, 0, true, false);
-            AddModel("core", Core.Build(seed), new Vector3(0, HubScene.Height(0, 0, seed), 0), 0, true, false);
-            for (int i = 0; i < sim.State.Slots.Count; i++)
+            AddModel("surroundings", HubScene.Surroundings(seed, slots), Vector3.Zero, 0, true, false);
+            AddModel("core", Core.Build(seed), Vector3.Zero, 0, true, false);
+            for (int i = 0; i < slots; i++)
             {
-                Vector3 pos = HubScene.SlotPosition(i, sim.State.Slots.Count);
+                Vector3 pos = HubScene.SlotPosition(i, slots);
+                float yaw = HubScene.SlotYaw(i, slots);
                 SlotView v = SlotView.From(sim.State, i);
-                AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i) }, pos, 0, true, false);
-                Vector3 top = pos + new Vector3(0, Facilities.PadTop, 0);
+                AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i, v.Kind == FacilityKind.None && !v.UnderConstruction) }, pos, yaw, true, false);
                 if (v.Kind != FacilityKind.None)
                 {
-                    AddModel("slot" + i, Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31)), top, 0, v.Powered, v.Unmanned);
+                    AddModel("slot" + i, Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31)), pos, yaw, v.Powered, v.Unmanned);
                 }
 
                 if (v.UnderConstruction)
                 {
-                    AddModel("scaffold" + i, new Model { Static = Facilities.Scaffold(2.2f, seed + (uint)i) }, top, 0, true, false);
+                    AddModel("scaffold" + i, new Model { Static = Facilities.Scaffold(2.8f, seed + (uint)i) }, pos, yaw, true, false);
                 }
+            }
+
+            Vector3[] walk = HubScene.WalkPoints(slots);
+            int people = Math.Min(walk.Length, Math.Max(2, sim.State.People / 3));
+            for (int i = 0; i < people; i++)
+            {
+                AddModel("person" + i, new Model { Static = Props.Person(seed + 900 + (uint)i) }, walk[(i * 5) % walk.Length], (i * 73) % 360, true, false);
             }
 
             var sb = new StringBuilder();

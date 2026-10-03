@@ -35,6 +35,7 @@ namespace Deadswitch.Game.Base
         public float grain = 0.035f;
         public float vignette = 0.45f;
         public float chromatic = 0.012f;
+        public float envIntensity = 0.5f;
 
         private static BaseLook _cached;
 

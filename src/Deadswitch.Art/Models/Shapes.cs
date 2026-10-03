@@ -102,7 +102,7 @@ namespace Deadswitch.Art.Models
         public static void Lamp(MeshBuilder b, Model m, Vector3 p, Mat lamp, Vector3 color, float intensity, float range, LightRole role, float size = 0.12f)
         {
             b.Box(p, new Vector3(size, size, size), lamp, size * 0.25f);
-            m.Lights.Add(new LightSpec(p, color, intensity, range, role));
+            m.Lights.Add(new LightSpec(b.TransformPoint(p), color, intensity, range, role));
         }
 
         /// <summary>Hazard striping as alternating thin plates on a vertical face at z (facing -Z).</summary>

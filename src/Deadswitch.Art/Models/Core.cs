@@ -4,62 +4,139 @@ using Deadswitch.Art.Geometry;
 
 namespace Deadswitch.Art.Models
 {
-    /// <summary>The AI core bunker at the Hub's center: the thing everything protects.</summary>
+    /// <summary>
+    /// The ruined pre-war bunker the compound is built against. Its blast door is the way down to the AI core:
+    /// green phosphor light spills out into the courtyard. World space, facade at z = <see cref="FacadeZ"/>.
+    /// </summary>
     public static class Core
     {
+        public const float FacadeZ = 9.5f;
+
+        /// <summary>Where the core's light and the "CORE" label sit (in front of the door).</summary>
+        public static readonly Vector3 DoorPoint = new Vector3(0, 0, FacadeZ - 0.6f);
+
         public static Model Build(uint seed)
         {
             var m = new Model();
-            var b = new MeshBuilder(seed);
+            var b = new MeshBuilder(seed) { AoHeight = 4.5f, AoFloor = 0.45f, FaceJitter = 0.1f };
+            var rng = new ArtRandom(seed + 3);
+            const float z = FacadeZ;
 
-            b.Frustum(new Vector3(0, -0.2f, 0), 3.3f, 3.0f, 0.5f, 6, Mat.ConcreteDark, 0.1f);
-            b.Frustum(new Vector3(0, 0.3f, 0), 2.9f, 2.6f, 1.5f, 6, Mat.Concrete, 0.16f);
-            b.Frustum(new Vector3(0, 1.8f, 0), 2.2f, 1.25f, 0.9f, 6, Mat.ConcreteDark, 0.12f);
-            b.Frustum(new Vector3(0, 2.7f, 0), 1.0f, 0.85f, 0.35f, 6, Mat.DarkSteel, 0.05f);
+            // main mass, sunk into the hill
+            b.BoxOn(0, -0.5f, z + 6f, 30f, 9f, 12f, Mat.ConcreteDark, 0.3f);
+            b.BoxOn(0, -0.2f, z + 0.35f, 30.5f, 1.0f, 0.9f, Mat.Concrete, 0.12f);
 
-            // blast door facing the camera (-Z), with hazard frame
-            b.BoxOn(0, 0.3f, -2.55f, 1.6f, 1.3f, 0.3f, Mat.DarkSteel, 0.06f);
-            b.BoxOn(0, 0.3f, -2.72f, 1.1f, 1.05f, 0.08f, Mat.Rust, 0.03f);
-            Shapes.Hazard(b, -0.8f, 0.8f, 1.6f, 1.72f, -2.72f, 10);
-            Shapes.Lamp(b, m, new Vector3(-0.95f, 1.45f, -2.75f), Mat.LampAmber, Model.Amber, 1.2f, 4f, LightRole.Ambient, 0.12f);
-            Shapes.Lamp(b, m, new Vector3(0.95f, 1.45f, -2.75f), Mat.LampAmber, Model.Amber, 1.2f, 4f, LightRole.Ambient, 0.12f);
-
-            // the AI's eye: a phosphor lens on the dome, looking at the handler
-            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-62f)) * Matrix4x4.CreateTranslation(new Vector3(0, 2.25f, -1.5f)));
-            b.Frustum(Vector3.Zero, 0.55f, 0.5f, 0.12f, 12, Mat.DarkSteel, 0.02f, true);
-            b.Frustum(new Vector3(0, 0.12f, 0), 0.36f, 0.3f, 0.05f, 12, Mat.Screen, 0.01f, true);
-            b.Pop();
-            m.Lights.Add(new LightSpec(new Vector3(0, 2.6f, -2.1f), Model.Phosphor, 2.2f, 6f, LightRole.Ambient));
-
-            // phosphor status lamps around the crown
-            for (int i = 0; i < 6; i++)
+            // facade bays (pilasters) and horizontal bands
+            for (int i = -3; i <= 3; i++)
             {
-                float a = MeshBuilder.Deg(30f + (i * 60f));
-                var p = new Vector3((float)Math.Cos(a) * 1.95f, 2.0f, (float)Math.Sin(a) * 1.95f);
-                b.Box(p, new Vector3(0.14f, 0.1f, 0.14f), Mat.LampPhosphor, 0.02f);
+                if (i == 0)
+                {
+                    continue;
+                }
+
+                b.BoxOn(i * 4.3f, 0, z - 0.25f, 0.9f, 7.6f, 0.6f, Mat.Concrete, 0.12f);
             }
 
-            // antenna mast with cross arms and a red tip
-            b.Strut(new Vector3(0, 3.0f, 0.3f), new Vector3(0, 6.4f, 0.3f), 0.12f, Mat.DarkSteel);
-            for (int i = 0; i < 3; i++)
+            b.BoxOn(0, 6.6f, z - 0.2f, 30f, 0.7f, 0.5f, Mat.Concrete, 0.1f);
+            for (int i = 0; i < 22; i++)
             {
-                float y = 3.9f + (i * 0.85f);
-                float w = 0.9f - (i * 0.2f);
-                b.Strut(new Vector3(-w, y, 0.3f), new Vector3(w, y, 0.3f), 0.05f, Mat.DarkSteel);
-                b.Strut(new Vector3(0, y, 0.3f - w), new Vector3(0, y, 0.3f + w), 0.05f, Mat.DarkSteel);
+                float gx = rng.Range(-14.5f, 14.5f);
+                if (Math.Abs(gx) < 4f)
+                {
+                    continue;
+                }
+
+                float gh = rng.Range(1.2f, 4.5f);
+                b.Box(new Vector3(gx, 6.4f - (gh * 0.5f), z - 0.02f), new Vector3(rng.Range(0.3f, 1.4f), gh, 0.03f), rng.Next() < 0.6f ? Mat.ConcreteDark : Mat.Rust, 0f);
             }
 
-            Shapes.Lamp(b, m, new Vector3(0, 6.5f, 0.3f), Mat.LampRed, Model.Red, 1.5f, 4f, LightRole.Ambient, 0.15f);
+            // door portal: thick frame, green-lit interior, half-open blast door slid aside
+            b.BoxOn(0, 0, z - 0.9f, 7.4f, 6.2f, 1.6f, Mat.Concrete, 0.2f);
+            b.BoxOn(0, 0.2f, z - 1.75f, 4.6f, 4.4f, 0.2f, Mat.Screen, 0.02f);
+            b.BoxOn(0, 4.6f, z - 1.8f, 5.0f, 0.5f, 0.3f, Mat.DarkSteel, 0.05f);
+            b.BoxOn(-2.45f, 0, z - 1.8f, 0.3f, 4.6f, 0.3f, Mat.DarkSteel, 0.05f);
+            b.BoxOn(2.45f, 0, z - 1.8f, 0.3f, 4.6f, 0.3f, Mat.DarkSteel, 0.05f);
+            b.BoxOn(-1.25f, 0.05f, z - 2.15f, 2.6f, 4.3f, 0.45f, Mat.DarkSteel, 0.1f);
+            Shapes.Hazard(b, -2.5f, 2.5f, 4.65f, 5.0f, z - 1.98f, 14);
+            for (int i = 0; i < 4; i++)
+            {
+                b.Box(new Vector3(-1.25f, 0.7f + (i * 1.0f), z - 2.4f), new Vector3(2.3f, 0.12f, 0.05f), Mat.Rust, 0.01f);
+            }
 
-            // vents, pipes and a dish on the shoulder
-            b.BoxOn(1.6f, 1.8f, 0.6f, 0.7f, 0.35f, 0.5f, Mat.DarkSteel, 0.05f);
-            b.BoxOn(-1.5f, 1.8f, 0.9f, 0.5f, 0.5f, 0.5f, Mat.DarkSteel, 0.05f);
-            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(30f)) * Matrix4x4.CreateRotationY(MeshBuilder.Deg(30f)) * Matrix4x4.CreateTranslation(new Vector3(-1.5f, 2.35f, 0.9f)));
-            b.Frustum(Vector3.Zero, 0.1f, 0.55f, 0.2f, 12, Mat.SandSteel, 0.02f, true, Mat.Concrete);
+            m.Lights.Add(new LightSpec(new Vector3(0.9f, 1.8f, z - 3.2f), Model.Phosphor, 3.2f, 11f, LightRole.Ambient));
+            m.Lights.Add(new LightSpec(new Vector3(0.9f, 2.4f, z - 1.4f), Model.Phosphor, 2.0f, 5f, LightRole.Ambient));
+
+            // the AI's eye above the door
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)) * Matrix4x4.CreateTranslation(new Vector3(0, 5.6f, z - 1.75f)));
+            b.Frustum(Vector3.Zero, 0.55f, 0.5f, 0.2f, 12, Mat.DarkSteel, 0.03f);
+            b.Frustum(new Vector3(0, 0.2f, 0), 0.32f, 0.28f, 0.06f, 12, Mat.LampPhosphor, 0.01f);
             b.Pop();
 
-            Shapes.SandbagWall(b, new Vector3(-2.2f, 0.3f, -3.4f), new Vector3(-1.1f, 0.3f, -3.6f), 2);
-            Shapes.SandbagWall(b, new Vector3(1.1f, 0.3f, -3.6f), new Vector3(2.2f, 0.3f, -3.4f), 2);
+            // wall lamps by the door
+            foreach (int sx in new[] { -1, 1 })
+            {
+                b.Strut(new Vector3(sx * 3.1f, 3.6f, z - 1.8f), new Vector3(sx * 3.1f, 3.6f, z - 2.4f), 0.08f, Mat.DarkSteel);
+                Shapes.Lamp(b, m, new Vector3(sx * 3.1f, 3.5f, z - 2.45f), Mat.LampAmber, Model.Amber, 2.6f, 7f, LightRole.Ambient, 0.2f);
+            }
+
+            // stencil designation, faded
+            Props.Stencil(b, "S-17", new Vector3(-12.6f, 3.4f, z - 0.03f), 0.34f, Mat.PaintWhite);
+            Shapes.Hazard(b, 8.8f, 12.6f, 0.3f, 0.8f, z - 0.03f, 10);
+
+            // collapsed roof slab overhang with broken edge and rebar
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(3.5f)) * Matrix4x4.CreateTranslation(new Vector3(0, 8.3f, z + 1.0f)));
+            b.Box(new Vector3(-3f, 0, 0), new Vector3(22f, 1.1f, 5.0f), Mat.Concrete, 0.2f);
+            for (int i = 0; i < 9; i++)
+            {
+                float x = -13.5f + (i * 2.4f) + rng.Range(-0.4f, 0.4f);
+                b.Box(new Vector3(x, rng.Range(-0.2f, 0.1f), -2.6f - rng.Range(0f, 0.6f)), new Vector3(rng.Range(1.0f, 2.2f), rng.Range(0.7f, 1.1f), rng.Range(0.6f, 1.4f)), Mat.Concrete, 0.12f);
+                b.Strut(new Vector3(x, 0, -2.4f), new Vector3(x + rng.Range(-0.3f, 0.3f), rng.Range(-0.6f, 0.4f), -3.6f - rng.Range(0f, 0.8f)), 0.05f, Mat.Rust);
+            }
+
+            b.Pop();
+            b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(-14f)) * Matrix4x4.CreateTranslation(new Vector3(11.5f, 7.0f, z + 1.6f)));
+            b.Box(Vector3.Zero, new Vector3(7f, 0.9f, 4.6f), Mat.Concrete, 0.18f);
+            b.Pop();
+            for (int i = 0; i < 9; i++)
+            {
+                Props.Boulder(b, new Vector3(rng.Range(7f, 14f), rng.Range(0.3f, 1.2f), z - rng.Range(0.6f, 2.2f)), new Vector3(rng.Range(0.6f, 1.3f), rng.Range(0.4f, 0.8f), rng.Range(0.5f, 1.0f)), seed + (uint)i, Mat.Concrete);
+            }
+
+            // pipes and cables along the facade
+            b.CylinderX(new Vector3(-8f, 5.8f, z - 0.7f), 0.18f, 12f, 10, Mat.Rust, 0.03f);
+            b.CylinderX(new Vector3(-8f, 5.35f, z - 0.65f), 0.1f, 12f, 8, Mat.DarkSteel, 0.02f);
+            b.Strut(new Vector3(-2.1f, 5.35f, z - 0.65f), new Vector3(-2.6f, 0.2f, z - 1.2f), 0.09f, Mat.Rubber);
+
+            // scaffold tower with a blue tarp, left of the door
+            float sx0 = -7.6f;
+            foreach (float x in new[] { sx0 - 1.2f, sx0 + 1.2f })
+            {
+                foreach (float dz in new[] { -2.2f, -0.6f })
+                {
+                    b.Strut(new Vector3(x, 0, z + dz), new Vector3(x, 6.2f, z + dz), 0.09f, Mat.Rust);
+                }
+            }
+
+            for (float y = 1.6f; y < 6.2f; y += 1.5f)
+            {
+                b.BoxOn(sx0, y, z - 1.4f, 2.6f, 0.07f, 1.7f, Mat.Wood, 0.01f);
+                b.Strut(new Vector3(sx0 - 1.2f, y + 0.9f, z - 2.2f), new Vector3(sx0 + 1.2f, y + 0.9f, z - 2.2f), 0.04f, Mat.Paint);
+            }
+
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(8f)) * Matrix4x4.CreateTranslation(new Vector3(sx0 + 0.3f, 4.6f, z - 2.35f)));
+            b.Box(Vector3.Zero, new Vector3(2.4f, 2.4f, 0.05f), Mat.TarpBlue, 0.01f);
+            b.Pop();
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-18f)) * Matrix4x4.CreateTranslation(new Vector3(3.6f, 6.1f, z - 0.9f)));
+            b.Box(Vector3.Zero, new Vector3(3.2f, 0.05f, 1.6f), Mat.TarpBlue, 0.01f);
+            b.Pop();
+
+            // sandbag walls flanking the door
+            Shapes.SandbagWall(b, new Vector3(-4.6f, 0, z - 2.6f), new Vector3(-3.2f, 0, z - 3.4f), 3);
+            Shapes.SandbagWall(b, new Vector3(3.2f, 0, z - 3.4f), new Vector3(4.6f, 0, z - 2.6f), 3);
+
+            // floodlight on the roof edge
+            b.Strut(new Vector3(5.5f, 7.2f, z + 0.3f), new Vector3(5.5f, 9.6f, z + 0.3f), 0.1f, Mat.DarkSteel);
+            Shapes.Lamp(b, m, new Vector3(5.5f, 9.7f, z - 0.05f), Mat.LampAmber, Model.Amber, 2.0f, 10f, LightRole.Ambient, 0.3f);
 
             m.Static = b.Mesh;
             return m;

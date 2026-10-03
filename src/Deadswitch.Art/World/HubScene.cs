@@ -44,82 +44,99 @@ namespace Deadswitch.Art.World
     }
 
     /// <summary>
-    /// Hub layout and the static world (SPEC-003 rule 3): terrain, the core, pads, perimeter, props.
-    /// Unity and the preview place facility models (see <see cref="Facilities"/>) at <see cref="SlotPosition"/>.
+    /// The compound (SPEC-003 rule 3): a muddy courtyard against a ruined bunker set into a wooded hill, facility
+    /// plots on both sides, a fence and gate toward the camera. Unity and the preview place facility models at
+    /// <see cref="SlotPosition"/> rotated by <see cref="SlotYaw"/>. World space is Unity's (camera on -Z).
     /// </summary>
     public static class HubScene
     {
-        public const float SlotRadius = 8.6f;
-        public const float FlatRadius = 15f;
-        public const float WorldRadius = 42f;
+        public const float FenceZ = -12.8f;
+        public const float HalfWidth = 13.5f;
+        public const float MinX = -36f;
+        public const float MaxX = 36f;
+        public const float MinZ = -38f;
+        public const float MaxZ = 40f;
 
-        /// <summary>Pad center for a slot: a ring around the core, slot 0 front-left of the camera.</summary>
+        private static readonly Vector3[] Plots =
+        {
+            new Vector3(-8.4f, 0, 4.6f),
+            new Vector3(8.4f, 0, 4.6f),
+            new Vector3(-8.8f, 0, -3.2f),
+            new Vector3(8.8f, 0, -3.2f),
+            new Vector3(-6.2f, 0, -9.4f),
+            new Vector3(6.2f, 0, -9.4f),
+        };
+
+        /// <summary>Plot center for a slot. Beyond the six designed plots, extra slots continue along the sides.</summary>
         public static Vector3 SlotPosition(int slot, int slotCount)
         {
-            float deg = 210f - (slot * 360f / slotCount);
-            float a = MeshBuilder.Deg(deg);
-            var p = new Vector3((float)Math.Cos(a) * SlotRadius, 0, (float)Math.Sin(a) * SlotRadius);
-            p.Y = Height(p.X, p.Z, 0);
-            return p;
+            if (slot < Plots.Length)
+            {
+                return Plots[slot];
+            }
+
+            int k = slot - Plots.Length;
+            return new Vector3((k % 2 == 0 ? -1 : 1) * 4.2f, 0, 3.2f - ((k / 2) * 6f));
         }
 
-        /// <summary>Terrain height (meters): flat inside the perimeter, rolling ruined ground outside.</summary>
+        /// <summary>Yaw (degrees) that turns a facility's front (-Z) toward the camera side of the courtyard.</summary>
+        public static float SlotYaw(int slot, int slotCount)
+        {
+            Vector3 p = SlotPosition(slot, slotCount);
+            Vector3 f = new Vector3(0, 0, -26f) - p;
+            return (float)(Math.Atan2(-f.X, -f.Z) * 180.0 / Math.PI);
+        }
+
+        /// <summary>Points people walk between (courtyard paths, door, gate, plots).</summary>
+        public static Vector3[] WalkPoints(int slotCount)
+        {
+            var pts = new List<Vector3>
+            {
+                new Vector3(0, 0, 6.6f), new Vector3(-1.6f, 0, 3.2f), new Vector3(1.8f, 0, 1.0f), new Vector3(-0.6f, 0, -2.5f),
+                new Vector3(0.8f, 0, -6.8f), new Vector3(0, 0, -11.4f), new Vector3(-3.6f, 0, 0.6f), new Vector3(3.8f, 0, 3.6f),
+            };
+            for (int i = 0; i < Math.Min(slotCount, Plots.Length); i++)
+            {
+                Vector3 p = SlotPosition(i, slotCount);
+                pts.Add(p + (Vector3.Normalize(new Vector3(-p.X, 0, -p.Z * 0.2f)) * 3.0f));
+            }
+
+            return pts.ToArray();
+        }
+
+        /// <summary>Terrain height: flat courtyard, hill rising behind the bunker, banks on the sides, road out front.</summary>
         public static float Height(float x, float z, uint seed)
         {
-            float r = (float)Math.Sqrt((x * x) + (z * z));
-            float n = (Noise.Fbm(x * 0.07f, z * 0.07f, seed + 5, 4) - 0.5f) * 3.2f;
-            float t = Smooth(FlatRadius - 2f, FlatRadius + 8f, r);
-            float ditch = -0.35f * (float)Math.Exp(-Math.Pow((r - (FlatRadius + 1.5f)) / 1.2f, 2));
-            float flat = (Noise.Fbm(x * 0.3f, z * 0.3f, seed + 9, 2) - 0.5f) * 0.12f;
-            return (flat * (1 - t)) + (n * t) + ditch;
+            float n = (Noise.Fbm(x * 0.08f, z * 0.08f, seed + 5, 4) - 0.5f) * 2.6f;
+            float back = Smooth(Core.FacadeZ + 2f, 30f, z);
+            float sides = Smooth(HalfWidth + 0.5f, 28f, Math.Abs(x));
+            float front = Smooth(FenceZ - 1f, -34f, z);
+            float road = (float)Math.Exp(-Math.Pow(x / 3.2f, 2)) * front;
+            float rough = Math.Max(back, Math.Max(sides, front * 0.6f));
+            float h = (back * 15f) + (sides * 6.5f) - (front * 1.4f) + (n * rough) - (road * 0.5f);
+            float yard = (Noise.Fbm(x * 0.35f, z * 0.35f, seed + 9, 2) - 0.5f) * 0.1f;
+            return h + (yard * (1 - rough));
         }
 
         public static MeshData Terrain(uint seed)
         {
-            var b = new MeshBuilder(seed) { AoFloor = 1f, FaceJitter = 0.035f };
-            const int n = 70;
-            float step = (WorldRadius * 2f) / n;
-            var crater = new List<Vector3>();
-            var rng = new ArtRandom(seed + 77);
-            for (int i = 0; i < 7; i++)
+            var b = new MeshBuilder(seed);
+            const float step = 1.0f;
+            int nx = (int)((MaxX - MinX) / step);
+            int nz = (int)((MaxZ - MinZ) / step);
+            for (int j = 0; j < nz; j++)
             {
-                float a = rng.Range(0f, 6.28f);
-                float rr = rng.Range(FlatRadius + 6f, WorldRadius - 6f);
-                crater.Add(new Vector3((float)Math.Cos(a) * rr, rng.Range(1.6f, 3.4f), (float)Math.Sin(a) * rr));
-            }
-
-            float H(float x, float z)
-            {
-                float h = Height(x, z, seed);
-                foreach (Vector3 c in crater)
+                for (int i = 0; i < nx; i++)
                 {
-                    float d = (float)Math.Sqrt(((x - c.X) * (x - c.X)) + ((z - c.Z) * (z - c.Z))) / c.Y;
-                    h += (d < 1f ? -0.9f * (1 - (d * d)) : 0f) + (0.35f * (float)Math.Exp(-Math.Pow((d - 1.05f) / 0.18f, 2)));
-                }
-
-                return h;
-            }
-
-            for (int j = 0; j < n; j++)
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    float x0 = -WorldRadius + (i * step);
-                    float z0 = -WorldRadius + (j * step);
+                    float x0 = MinX + (i * step);
+                    float z0 = MinZ + (j * step);
                     float x1 = x0 + step;
                     float z1 = z0 + step;
-                    float cx = (x0 + x1) * 0.5f;
-                    float cz = (z0 + z1) * 0.5f;
-                    if (((cx * cx) + (cz * cz)) > WorldRadius * WorldRadius)
-                    {
-                        continue;
-                    }
-
-                    var p00 = new Vector3(x0, H(x0, z0), z0);
-                    var p10 = new Vector3(x1, H(x1, z0), z0);
-                    var p11 = new Vector3(x1, H(x1, z1), z1);
-                    var p01 = new Vector3(x0, H(x0, z1), z1);
-                    Vector3 below = new Vector3(cx, -50f, cz);
+                    var p00 = new Vector3(x0, Height(x0, z0, seed), z0);
+                    var p10 = new Vector3(x1, Height(x1, z0, seed), z0);
+                    var p11 = new Vector3(x1, Height(x1, z1, seed), z1);
+                    var p01 = new Vector3(x0, Height(x0, z1, seed), z1);
+                    var below = new Vector3((x0 + x1) * 0.5f, -80f, (z0 + z1) * 0.5f);
                     b.FaceTinted(below, Mat.Ground, new[] { p00, p10, p11 }, new[] { Tone(p00), Tone(p10), Tone(p11) });
                     b.FaceTinted(below, Mat.Ground, new[] { p00, p11, p01 }, new[] { Tone(p00), Tone(p11), Tone(p01) });
                 }
@@ -127,226 +144,279 @@ namespace Deadswitch.Art.World
 
             float Tone(Vector3 p)
             {
-                float r = (float)Math.Sqrt((p.X * p.X) + (p.Z * p.Z));
-                float mud = Noise.Fbm(p.X * 0.11f, p.Z * 0.11f, seed + 31, 4);
-                float grit = Noise.Value(p.X * 1.3f, p.Z * 1.3f, seed + 3);
-                float inside = 1f - Smooth(FlatRadius - 1f, FlatRadius + 1f, r);
-                float wet = Smooth(0.55f, 0.75f, Noise.Fbm(p.X * 0.05f, p.Z * 0.05f, seed + 41, 3));
-                float tone = 0.7f + ((mud - 0.5f) * 0.9f) + ((grit - 0.5f) * 0.14f);
-                tone += Road(p.X, p.Z) * 0.32f;
-                tone += inside * 0.12f;
-                tone -= wet * 0.22f;
-                tone -= Math.Max(0f, -p.Y) * 0.35f;
-                return Math.Max(0.25f, tone);
+                float mud = Noise.Fbm(p.X * 0.13f, p.Z * 0.13f, seed + 31, 4);
+                float grit = Noise.Value(p.X * 1.4f, p.Z * 1.4f, seed + 3);
+                float slope = Math.Min(1f, Math.Abs(Height(p.X + 0.5f, p.Z, seed) - Height(p.X - 0.5f, p.Z, seed)) + Math.Abs(Height(p.X, p.Z + 0.5f, seed) - Height(p.X, p.Z - 0.5f, seed)));
+                float yard = Math.Abs(p.X) < HalfWidth && p.Z < Core.FacadeZ && p.Z > FenceZ ? 1f : 0f;
+                float wet = Smooth(0.52f, 0.7f, Noise.Fbm(p.X * 0.09f, p.Z * 0.09f, seed + 41, 3));
+                float tone = 0.8f + ((mud - 0.5f) * 1.1f) + ((grit - 0.5f) * 0.22f) - (wet * 0.22f);
+                tone += slope * 0.25f;
+                tone -= yard * 0.12f;
+                tone += Track(p.X, p.Z) * 0.18f;
+                return Math.Max(0.3f, tone);
             }
 
             return b.Mesh;
         }
 
-        /// <summary>Perimeter barriers, fences, lamps, wrecks and debris. Static for the whole run.</summary>
+        /// <summary>Fence, gate, walls, lamps, clutter, puddles, rocks, trees. Static for the whole run.</summary>
         public static Model Surroundings(uint seed, int slotCount)
         {
             var m = new Model();
             var b = new MeshBuilder(seed);
             var rng = new ArtRandom(seed + 13);
 
-            // Perimeter: concrete jersey barriers with a gate toward the camera, sandbag sections, fence and lamps.
-            const float pr = FlatRadius - 0.8f;
-            int segments = 44;
-            for (int i = 0; i < segments; i++)
+            // Puddles: dark, glossy, catching the lamps.
+            for (int i = 0; i < 16; i++)
             {
-                float deg = i * 360f / segments;
-                if (deg > 255f && deg < 285f)
+                float x = rng.Range(-10f, 10f);
+                float z = rng.Range(FenceZ + 1f, Core.FacadeZ - 3f);
+                if (NearPlot(new Vector3(x, 0, z), slotCount, 2.8f))
                 {
                     continue;
                 }
 
-                float a = MeshBuilder.Deg(deg);
-                var p = new Vector3((float)Math.Cos(a) * pr, 0, (float)Math.Sin(a) * pr);
-                p.Y = Height(p.X, p.Z, seed);
-                b.Push(Matrix4x4.CreateRotationY(-a + MeshBuilder.Deg(90)) * Matrix4x4.CreateTranslation(p));
-                if (i % 7 == 3)
-                {
-                    Shapes.SandbagWall(b, new Vector3(-0.9f, 0, 0), new Vector3(0.9f, 0, 0), 3);
-                }
-                else
-                {
-                    b.BoxOn(0, 0, 0, 1.85f, 0.85f, 0.5f, i % 5 == 0 ? Mat.ConcreteDark : Mat.Concrete, 0.12f);
-                    b.BoxOn(0, 0, 0, 1.7f, 0.25f, 0.75f, Mat.Concrete, 0.08f);
-                }
-
-                b.Pop();
-
-                if (i % 4 == 0)
-                {
-                    var post = new Vector3((float)Math.Cos(a) * (pr + 1.0f), p.Y, (float)Math.Sin(a) * (pr + 1.0f));
-                    b.Strut(post, post + new Vector3(0, 2.0f, 0), 0.08f, Mat.Rust);
-                }
+                Puddle(b, new Vector3(x, Height(x, z, seed) + 0.02f, z), rng.Range(0.6f, 1.8f), rng.Range(0.4f, 1.1f), rng);
             }
 
             for (int i = 0; i < 6; i++)
             {
-                float deg = i * 60f;
-                float a = MeshBuilder.Deg(deg);
-                var p = new Vector3((float)Math.Cos(a) * (pr - 1.6f), 0, (float)Math.Sin(a) * (pr - 1.6f));
-                b.Strut(p, p + new Vector3(0, 3.4f, 0), 0.12f, Mat.DarkSteel);
-                b.Strut(p + new Vector3(0, 3.3f, 0), p + new Vector3(-(float)Math.Cos(a) * 0.6f, 3.4f, -(float)Math.Sin(a) * 0.6f), 0.07f, Mat.DarkSteel);
-                Shapes.Lamp(b, m, p + new Vector3(-(float)Math.Cos(a) * 0.65f, 3.3f, -(float)Math.Sin(a) * 0.65f), Mat.LampAmber, Model.Amber, 3.2f, 9f, LightRole.Ambient, 0.22f);
+                float z = FenceZ - 3f - (i * 3.3f);
+                Puddle(b, new Vector3(rng.Range(-1.6f, 1.6f), Height(0, z, seed) + 0.02f, z), rng.Range(0.8f, 1.6f), rng.Range(0.4f, 0.8f), rng);
             }
 
-            // Ground cables from the core to every pad.
-            for (int s = 0; s < slotCount; s++)
+            // Front fence with a gate (one leaf swung open), lamps on the gate posts.
+            for (float x = -HalfWidth; x <= HalfWidth + 0.01f; x += 1.7f)
             {
-                Vector3 pad = SlotPosition(s, slotCount);
-                Vector3 dir = Vector3.Normalize(new Vector3(pad.X, 0, pad.Z));
-                b.Strut(dir * 3.2f + new Vector3(0, 0.05f, 0), pad - (dir * 2.5f) + new Vector3(0, 0.05f, 0), 0.09f, Mat.Rubber);
-            }
-
-            // Clutter inside the walls: crates, barrels, tires (kept off pads and roads).
-            for (int i = 0; i < 26; i++)
-            {
-                float a = rng.Range(0f, 6.283f);
-                float r = rng.Range(4.2f, pr - 1.8f);
-                var p = new Vector3((float)Math.Cos(a) * r, 0, (float)Math.Sin(a) * r);
-                if (NearPad(p, slotCount, 3.3f) || Road(p.X, p.Z) > 0.4f)
+                if (Math.Abs(x) < 2.4f)
                 {
                     continue;
                 }
 
-                p.Y = Height(p.X, p.Z, seed);
-                float yaw = rng.Range(0f, 360f);
-                b.Push(p, yaw);
-                switch (i % 4)
+                b.Strut(new Vector3(x, 0, FenceZ), new Vector3(x, 2.1f, FenceZ), 0.1f, Mat.DarkSteel);
+            }
+
+            foreach (int side in new[] { -1, 1 })
+            {
+                float xa = side * 2.6f;
+                float xb = side * HalfWidth;
+                for (float y = 0.3f; y < 2.1f; y += 0.6f)
+                {
+                    b.Strut(new Vector3(xa, y, FenceZ), new Vector3(xb, y, FenceZ), 0.03f, Mat.DarkSteel);
+                }
+
+                for (float x = Math.Min(xa, xb); x < Math.Max(xa, xb); x += 0.35f)
+                {
+                    b.Strut(new Vector3(x, 0.15f, FenceZ), new Vector3(x + 0.35f, 2.0f, FenceZ), 0.015f, Mat.DarkSteel);
+                }
+
+                Shapes.SandbagWall(b, new Vector3(side * 8.2f, 0, FenceZ + 0.6f), new Vector3(side * 12.8f, 0, FenceZ + 0.6f), 2);
+                b.BoxOn(side * 2.5f, 0, FenceZ, 0.45f, 3.2f, 0.45f, Mat.Concrete, 0.08f);
+                b.Strut(new Vector3(side * 2.5f, 3.2f, FenceZ), new Vector3(side * 2.5f, 3.2f, FenceZ - 0.6f), 0.07f, Mat.DarkSteel);
+                Shapes.Lamp(b, m, new Vector3(side * 2.5f, 3.1f, FenceZ - 0.65f), Mat.LampAmber, Model.Amber, 1.4f, 7f, LightRole.Ambient, 0.18f);
+            }
+
+            GateLeaf(b, new Vector3(-2.3f, 0, FenceZ), 0f);
+            GateLeaf(b, new Vector3(2.3f, 0, FenceZ), 115f);
+
+            // Striped barriers and tires outside the gate.
+            for (int i = 0; i < 4; i++)
+            {
+                float x = (i < 2 ? -1 : 1) * (4.5f + ((i % 2) * 2.2f));
+                float z = FenceZ - 2.4f - (i % 2);
+                StripedBarrier(b, new Vector3(x, Height(x, z, seed), z), rng.Range(-12f, 12f));
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                Vector3 p = new Vector3(8.5f + i, Height(8.5f, FenceZ - 3.5f, seed), FenceZ - 3.5f + (i * 0.8f));
+                b.Frustum(p, 0.42f, 0.42f, 0.26f, 10, Mat.Rubber, 0.09f);
+                b.Frustum(p + new Vector3(0, 0.26f, 0), 0.42f, 0.42f, 0.26f, 10, Mat.Rubber, 0.09f);
+            }
+
+            // Side walls: sandbags and stacked spare containers in the back corners.
+            foreach (int side in new[] { -1, 1 })
+            {
+                Shapes.SandbagWall(b, new Vector3(side * HalfWidth, 0, FenceZ + 1f), new Vector3(side * HalfWidth, 0, -6.5f), 3);
+                b.Push(new Vector3(side * 12.6f, 0, 7.6f), side * 90f);
+                Props.Container(b, m, Vector3.Zero, 4.4f, 2.4f, 2.3f, side < 0 ? Mat.TarpBlue : Mat.Rust, false, seed + 40);
+                Props.Container(b, m, new Vector3(0.3f, 2.4f, 0.1f), 4.4f, 2.4f, 2.3f, Mat.OliveSteel, false, seed + 41);
+                b.Pop();
+            }
+
+            // Courtyard: lamp posts, a burn barrel, clutter, cable runs to the plots.
+            foreach (Vector3 lp in new[] { new Vector3(-3.6f, 0, 4.2f), new Vector3(3.8f, 0, -1.8f), new Vector3(-4.0f, 0, -6.0f) })
+            {
+                b.Strut(lp, lp + new Vector3(0, 3.6f, 0), 0.11f, Mat.DarkSteel);
+                b.Strut(lp + new Vector3(0, 3.5f, 0), lp + new Vector3(0.7f, 3.6f, 0), 0.07f, Mat.DarkSteel);
+                Shapes.Lamp(b, m, lp + new Vector3(0.75f, 3.45f, 0), Mat.LampAmber, Model.Amber, 2.4f, 8f, LightRole.Ambient, 0.2f);
+            }
+
+            Vector3 barrel = new Vector3(1.6f, 0, -4.2f);
+            b.Frustum(barrel, 0.32f, 0.3f, 0.9f, 10, Mat.Rust, 0.04f);
+            b.Box(barrel + new Vector3(0, 0.95f, 0), new Vector3(0.4f, 0.12f, 0.4f), Mat.Interior, 0.05f);
+            m.Lights.Add(new LightSpec(barrel + new Vector3(0, 1.4f, 0), new Vector3(1f, 0.55f, 0.2f), 2.4f, 6f, LightRole.Ambient));
+
+            for (int i = 0; i < 24; i++)
+            {
+                float x = rng.Range(-12f, 12f);
+                float z = rng.Range(FenceZ + 1.2f, Core.FacadeZ - 2.6f);
+                var p = new Vector3(x, Height(x, z, seed), z);
+                if (NearPlot(p, slotCount, 3.0f) || Math.Abs(x) < 2.2f)
+                {
+                    continue;
+                }
+
+                b.Push(p, rng.Range(0f, 360f));
+                switch (i % 3)
                 {
                     case 0:
                         b.BoxOn(0, 0, 0, 0.8f, 0.6f, 0.8f, Mat.Wood, 0.05f);
-                        b.BoxOn(0.1f, 0.6f, 0.05f, 0.6f, 0.45f, 0.6f, Mat.Wood, 0.05f);
+                        b.BoxOn(0.05f, 0.6f, 0, 0.6f, 0.45f, 0.6f, Mat.Wood, 0.05f);
                         break;
                     case 1:
-                        b.Frustum(Vector3.Zero, 0.3f, 0.3f, 0.9f, 10, i % 3 == 0 ? Mat.Rust : Mat.OliveSteel, 0.04f);
-                        b.Frustum(new Vector3(0.65f, 0, 0.1f), 0.3f, 0.3f, 0.9f, 10, Mat.Rust, 0.04f);
-                        break;
-                    case 2:
-                        for (int k = 0; k < 3; k++)
-                        {
-                            b.Frustum(new Vector3(0, k * 0.24f, 0), 0.38f, 0.38f, 0.22f, 10, Mat.Rubber, 0.08f);
-                        }
-
+                        b.Frustum(Vector3.Zero, 0.29f, 0.29f, 0.88f, 10, rng.Next() < 0.5f ? Mat.PaintRed : Mat.OliveSteel, 0.04f);
                         break;
                     default:
-                        Shapes.SandbagWall(b, new Vector3(-0.8f, 0, 0), new Vector3(0.8f, 0, 0), 2);
+                        b.BoxOn(0, 0, 0, 1.1f, 0.35f, 0.7f, Mat.OliveSteel, 0.04f);
                         break;
                 }
 
                 b.Pop();
             }
 
-            // Outside: rubble, dead trees, a wrecked truck.
-            for (int i = 0; i < 70; i++)
+            // Work clutter along the walls: pallets, sandbag piles, tarped stacks, a work light.
+            foreach (Vector3 c in new[] { new Vector3(-12f, 0, 1.5f), new Vector3(12.2f, 0, 1.0f), new Vector3(-11.5f, 0, -7f), new Vector3(11.8f, 0, -7.5f), new Vector3(-4.5f, 0, 7.4f), new Vector3(4.8f, 0, 7.2f) })
             {
-                float a = rng.Range(0f, 6.283f);
-                float r = rng.Range(FlatRadius + 1.5f, WorldRadius - 3f);
-                var p = new Vector3((float)Math.Cos(a) * r, 0, (float)Math.Sin(a) * r);
-                p.Y = Height(p.X, p.Z, seed) - 0.1f;
-                b.Push(p, rng.Range(0f, 360f));
-                if (i % 5 == 0)
-                {
-                    float h = rng.Range(2.5f, 4.5f);
-                    b.Frustum(Vector3.Zero, 0.16f, 0.09f, h, 6, Mat.Wood, 0.02f);
-                    b.Strut(new Vector3(0, h * 0.6f, 0), new Vector3(0.9f, h * 0.85f, 0.2f), 0.07f, Mat.Wood);
-                    b.Strut(new Vector3(0, h * 0.75f, 0), new Vector3(-0.6f, h * 1.05f, -0.3f), 0.06f, Mat.Wood);
-                }
-                else
-                {
-                    int pieces = rng.Range(2, 5);
-                    for (int k = 0; k < pieces; k++)
-                    {
-                        b.Push(new Vector3(rng.Range(-0.8f, 0.8f), 0, rng.Range(-0.8f, 0.8f)), rng.Range(0f, 90f));
-                        b.BoxOn(0, -0.1f, 0, rng.Range(0.4f, 1.3f), rng.Range(0.2f, 0.6f), rng.Range(0.4f, 1.0f), k % 2 == 0 ? Mat.Concrete : Mat.ConcreteDark, 0.06f);
-                        b.Pop();
-                    }
-                }
-
+                b.Push(c, rng.Range(-20f, 20f));
+                b.BoxOn(0, 0, 0, 1.2f, 0.14f, 1.0f, Mat.Wood, 0.02f);
+                b.BoxOn(0, 0.14f, 0, 1.1f, 0.7f, 0.9f, rng.Next() < 0.5f ? Mat.TarpBlue : Mat.Tarp, 0.12f);
+                b.BoxOn(1.1f, 0, 0.2f, 0.7f, 0.5f, 0.6f, Mat.Wood, 0.05f);
+                Shapes.SandbagWall(b, new Vector3(-0.8f, 0, 0.9f), new Vector3(0.6f, 0, 1.2f), 2);
                 b.Pop();
             }
 
-            Ruin(b, new Vector3(-17f, Height(-17f, 27f, seed), 27f), 18f, 5.5f, rng);
-            Ruin(b, new Vector3(16f, Height(16f, 30f, seed), 30f), -12f, 7.5f, rng);
-            Ruin(b, new Vector3(30f, Height(30f, 15f, seed), 15f), -60f, 4.2f, rng);
-            Ruin(b, new Vector3(-31f, Height(-31f, 12f, seed), 12f), 75f, 4.8f, rng);
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 5; i++)
             {
-                float a = MeshBuilder.Deg(20f + (i * 38f));
-                var pole = new Vector3((float)Math.Cos(a) * 24f, 0, (float)Math.Sin(a) * 24f);
-                pole.Y = Height(pole.X, pole.Z, seed);
-                float lean = rng.Range(-8f, 8f);
-                b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(lean)) * Matrix4x4.CreateTranslation(pole));
-                b.Frustum(Vector3.Zero, 0.15f, 0.11f, 5.5f, 6, Mat.Wood, 0.02f);
-                b.Strut(new Vector3(-0.8f, 5.0f, 0), new Vector3(0.8f, 5.0f, 0), 0.1f, Mat.Wood);
+                float z = rng.Range(FenceZ + 1.5f, Core.FacadeZ - 3f);
+                float x = (rng.Next() < 0.5f ? -1 : 1) * rng.Range(0.5f, 1.4f);
+                Puddle(b, new Vector3(x, Height(x, z, seed) + 0.025f, z), rng.Range(0.3f, 0.7f), rng.Range(0.8f, 1.6f), rng);
+            }
+
+            for (int s = 0; s < Math.Min(slotCount, Plots.Length); s++)
+            {
+                Vector3 p = SlotPosition(s, slotCount);
+                Vector3 from = new Vector3(Math.Sign(p.X) * 1.6f, 0.06f, Core.FacadeZ - 2.4f);
+                b.Strut(from, new Vector3(p.X - (Math.Sign(p.X) * 2.4f), 0.04f, p.Z), 0.045f, Mat.Rubber);
+            }
+
+            // Hill: boulders at the foot of the slopes and pines climbing behind the bunker.
+            for (int i = 0; i < 40; i++)
+            {
+                float x = rng.Range(MinX + 2f, MaxX - 2f);
+                float z = rng.Range(MinZ + 2f, MaxZ - 2f);
+                bool inYard = Math.Abs(x) < HalfWidth + 1f && z > FenceZ - 5f && z < Core.FacadeZ + 12f;
+                if (inYard)
+                {
+                    continue;
+                }
+
+                var p = new Vector3(x, Height(x, z, seed), z);
+                Props.Boulder(b, p, new Vector3(rng.Range(0.6f, 2.0f), rng.Range(0.5f, 1.4f), rng.Range(0.6f, 1.8f)), seed + 300 + (uint)i);
+            }
+
+            for (int i = 0; i < 120; i++)
+            {
+                float x = rng.Range(MinX + 1f, MaxX - 1f);
+                float z = rng.Range(Core.FacadeZ + 6f, MaxZ - 1f);
+                if (Math.Abs(x) < 12f && z < Core.FacadeZ + 12f)
+                {
+                    continue;
+                }
+
+                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), rng.Range(4.5f, 9f), seed + 500 + (uint)i);
+            }
+
+            for (int i = 0; i < 46; i++)
+            {
+                float x = (rng.Next() < 0.5f ? -1 : 1) * rng.Range(HalfWidth + 4f, MaxX - 1f);
+                float z = rng.Range(MinZ + 4f, Core.FacadeZ + 8f);
+                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), rng.Range(4f, 8f), seed + 800 + (uint)i);
+            }
+
+            // Leaning power poles along the road.
+            for (int i = 0; i < 4; i++)
+            {
+                float z = FenceZ - 6f - (i * 7f);
+                var pole = new Vector3(-5.5f, Height(-5.5f, z, seed), z);
+                b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(rng.Range(-7f, 7f))) * Matrix4x4.CreateTranslation(pole));
+                b.Frustum(Vector3.Zero, 0.16f, 0.12f, 6f, 6, Mat.Wood, 0.02f);
+                b.Strut(new Vector3(-0.9f, 5.5f, 0), new Vector3(0.9f, 5.5f, 0), 0.1f, Mat.Wood);
                 b.Pop();
             }
 
-            Truck(b, new Vector3(-21f, Height(-21f, -9f, seed), -9f), 32f);
-            Truck(b, new Vector3(23f, Height(23f, 6f, seed), 6f), -140f);
+            Truck(b, new Vector3(7.5f, Height(7.5f, -21f, seed), -21f), 64f);
 
             m.Static = b.Mesh;
             return m;
         }
 
-        /// <summary>Distance-based road mask (0..1) from the gate to the core and around the pad ring.</summary>
-        public static float Road(float x, float z)
+        /// <summary>Lighter tire tracks: gate to the door and loops around the plots (0..1).</summary>
+        public static float Track(float x, float z)
         {
-            float r = (float)Math.Sqrt((x * x) + (z * z));
-            float ring = (float)Math.Exp(-Math.Pow((r - SlotRadius) / 1.1f, 2)) * 0.6f;
-            float gate = z < 0f ? (float)Math.Exp(-Math.Pow(x / 1.3f, 2)) * Smooth(2.5f, 4f, -z) : 0f;
-            return Math.Min(1f, ring + gate);
+            float main = (float)Math.Exp(-Math.Pow((Math.Abs(x) - 0.9f) / 0.45f, 2)) * (z < Core.FacadeZ - 2f ? 1f : 0f);
+            float loop = (float)Math.Exp(-Math.Pow((new Vector2(x * 0.75f, z * 1.1f).Length() - 6.2f) / 0.6f, 2)) * 0.6f;
+            return Math.Min(1f, main + loop);
         }
 
-        /// <summary>A ruined building shell: broken concrete walls with window holes and rebar.</summary>
-        private static void Ruin(MeshBuilder b, Vector3 p, float yaw, float height, ArtRandom rng)
+        private static void Puddle(MeshBuilder b, Vector3 c, float rx, float rz, ArtRandom rng)
+        {
+            const int n = 10;
+            var pts = new Vector3[n];
+            float rot = rng.Range(0f, 6.28f);
+            for (int i = 0; i < n; i++)
+            {
+                float a = rot + (i * 6.2832f / n);
+                float k = rng.Range(0.75f, 1.15f);
+                pts[i] = c + new Vector3((float)Math.Cos(a) * rx * k, 0, (float)Math.Sin(a) * rz * k);
+            }
+
+            b.Face(c - new Vector3(0, 1f, 0), Mat.Water, 1f, pts);
+        }
+
+        private static void GateLeaf(MeshBuilder b, Vector3 hinge, float openDeg)
+        {
+            float dir = hinge.X < 0 ? 1f : -1f;
+            b.Push(Matrix4x4.CreateRotationY(MeshBuilder.Deg(openDeg * -dir)) * Matrix4x4.CreateTranslation(hinge));
+            b.Strut(new Vector3(0, 0.1f, 0), new Vector3(0, 2.3f, 0), 0.09f, Mat.DarkSteel);
+            b.Strut(new Vector3(dir * 2.2f, 0.1f, 0), new Vector3(dir * 2.2f, 2.3f, 0), 0.09f, Mat.DarkSteel);
+            b.Strut(new Vector3(0, 2.25f, 0), new Vector3(dir * 2.2f, 2.25f, 0), 0.08f, Mat.DarkSteel);
+            b.Strut(new Vector3(0, 0.15f, 0), new Vector3(dir * 2.2f, 0.15f, 0), 0.08f, Mat.DarkSteel);
+            b.Strut(new Vector3(0, 0.15f, 0), new Vector3(dir * 2.2f, 2.25f, 0), 0.06f, Mat.DarkSteel);
+            for (float x = 0.3f; x < 2.2f; x += 0.3f)
+            {
+                b.Strut(new Vector3(dir * x, 0.15f, 0), new Vector3(dir * x, 2.25f, 0), 0.03f, Mat.Rust);
+            }
+
+            b.Pop();
+        }
+
+        private static void StripedBarrier(MeshBuilder b, Vector3 p, float yaw)
         {
             b.Push(p, yaw);
-            float w = rng.Range(7f, 10f);
-            float d = rng.Range(5f, 7f);
-            for (int side = 0; side < 3; side++)
+            for (int i = 0; i < 4; i++)
             {
-                float len = side == 1 ? w : d;
-                b.Push(side == 0 ? Matrix4x4.CreateRotationY(MeshBuilder.Deg(90)) * Matrix4x4.CreateTranslation(new Vector3(-w / 2f, 0, 0))
-                    : side == 1 ? Matrix4x4.CreateTranslation(new Vector3(0, 0, d / 2f))
-                    : Matrix4x4.CreateRotationY(MeshBuilder.Deg(90)) * Matrix4x4.CreateTranslation(new Vector3(w / 2f, 0, 0)));
-                int cols = (int)(len / 1.6f);
-                for (int c = 0; c < cols; c++)
-                {
-                    float x = -len / 2f + ((c + 0.5f) * len / cols);
-                    float hTop = height * rng.Range(0.35f, 1f) * (side == 1 ? 1f : 0.8f);
-                    float colW = len / cols;
-                    b.BoxOn(x, -0.2f, 0, colW * 0.98f, 1.1f, 0.4f, Mat.Concrete, 0.04f);
-                    if (hTop > 2.2f)
-                    {
-                        b.BoxOn(x - (colW * 0.32f), 0.9f, 0, colW * 0.34f, hTop - 0.9f, 0.4f, Mat.Concrete, 0.04f);
-                        b.BoxOn(x + (colW * 0.32f), 0.9f, 0, colW * 0.34f, (hTop * rng.Range(0.6f, 1f)) - 0.9f, 0.4f, Mat.ConcreteDark, 0.04f);
-                        b.BoxOn(x, 2.3f, 0, colW * 0.98f, 0.4f, 0.4f, Mat.Concrete, 0.04f);
-                        b.Strut(new Vector3(x, hTop, 0), new Vector3(x + 0.2f, hTop + 0.8f, 0.1f), 0.04f, Mat.Rust);
-                    }
-                }
-
-                b.Pop();
+                b.BoxOn(-0.75f + (i * 0.5f), 0, 0, 0.5f, 0.82f, 0.45f, i % 2 == 0 ? Mat.PaintRed : Mat.PaintWhite, 0.06f);
             }
 
-            for (int i = 0; i < 6; i++)
-            {
-                b.Push(new Vector3(rng.Range(-w / 2f, w / 2f), 0, rng.Range(-d / 2f, d / 2f)), rng.Range(0f, 90f));
-                b.BoxOn(0, -0.15f, 0, rng.Range(0.8f, 2.2f), rng.Range(0.3f, 0.8f), rng.Range(0.6f, 1.6f), Mat.Concrete, 0.08f);
-                b.Pop();
-            }
-
+            b.BoxOn(0, 0, 0, 2.0f, 0.22f, 0.7f, Mat.Concrete, 0.06f);
             b.Pop();
         }
 
         private static void Truck(MeshBuilder b, Vector3 p, float yaw)
         {
             b.Push(p, yaw);
-            b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(8f)));
+            b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(6f)));
             b.BoxOn(0, 0.3f, 0, 4.2f, 0.25f, 1.7f, Mat.Rust, 0.05f);
             b.BoxOn(1.5f, 0.55f, 0, 1.2f, 1.1f, 1.6f, Mat.Rust, 0.12f);
             b.BoxOn(-0.7f, 0.55f, 0, 2.6f, 0.9f, 1.7f, Mat.OliveSteel, 0.06f);
@@ -363,17 +433,18 @@ namespace Deadswitch.Art.World
             b.Pop();
         }
 
-        private static bool NearPad(Vector3 p, int slotCount, float radius)
+        private static bool NearPlot(Vector3 p, int slotCount, float radius)
         {
             for (int s = 0; s < slotCount; s++)
             {
-                if (Vector3.Distance(new Vector3(p.X, 0, p.Z), SlotPosition(s, slotCount) * new Vector3(1, 0, 1)) < radius)
+                Vector3 c = SlotPosition(s, slotCount);
+                if (Math.Abs(p.X - c.X) < radius && Math.Abs(p.Z - c.Z) < radius)
                 {
                     return true;
                 }
             }
 
-            return new Vector2(p.X, p.Z).Length() < 4.2f;
+            return Math.Abs(p.X) < 5.5f && p.Z > Core.FacadeZ - 4.5f;
         }
 
         private static float Smooth(float e0, float e1, float x)

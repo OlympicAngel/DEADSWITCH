@@ -21,5 +21,14 @@ namespace Deadswitch.Art.Geometry
         LampRed = 15,
         Screen = 16,
         Glass = 17,
+        TarpBlue = 18,
+        PaintRed = 19,
+        PaintWhite = 20,
+        PaintGreen = 21,
+        Foliage = 22,
+        Water = 23,
+        Skin = 24,
+        Interior = 25,
+        Rock = 26,
     }
 }

@@ -47,6 +47,12 @@ namespace Deadswitch.Art.Geometry
             Push(Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationY(Deg(yawDegrees)) * Matrix4x4.CreateTranslation(translate));
         }
 
+        /// <summary>Applies the current transform to a local point (for lights and pivots placed inside a Push).</summary>
+        public Vector3 TransformPoint(Vector3 local)
+        {
+            return Vector3.Transform(local, _m);
+        }
+
         public void Pop()
         {
             _m = _stack.Pop();

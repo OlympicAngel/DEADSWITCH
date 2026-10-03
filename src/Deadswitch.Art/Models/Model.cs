@@ -13,6 +13,9 @@ namespace Deadswitch.Art.Models
 
         /// <summary>Back-and-forth sweep around local Y (turret heads, dishes).</summary>
         SweepY = 2,
+
+        /// <summary>Continuous spin around local Z (wind turbine rotors facing -Z).</summary>
+        SpinZ = 3,
     }
 
     /// <summary>A moving part: its own mesh around a pivot, animated only while the facility is powered.</summary>

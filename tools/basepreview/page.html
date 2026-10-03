@@ -32,6 +32,16 @@ const world = new THREE.Scene();
 world.background = new THREE.Color().setRGB(...look.fogColor, THREE.SRGBColorSpace);
 world.fog = new THREE.FogExp2(world.background.getHex(), look.fogDensity);
 
+// Environment for reflections (wet mud, metal): a dim sky gradient baked to PMREM.
+{
+  const envScene = new THREE.Scene();
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(10, 16, 8), new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { top: { value: new THREE.Color().setRGB(...look.skyColor, THREE.SRGBColorSpace) }, bottom: { value: new THREE.Color().setRGB(...look.groundColor, THREE.SRGBColorSpace) } },
+    vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+    fragmentShader: 'uniform vec3 top, bottom; varying vec3 vP; void main(){ float h = normalize(vP).y; gl_FragColor = vec4(mix(bottom, top, smoothstep(-0.2, 0.6, h)) * 0.6, 1.); }' }));
+  envScene.add(sky);
+  world.environment = new THREE.PMREMGenerator(renderer).fromScene(envScene).texture;
+  world.environmentIntensity = look.envIntensity ?? 0.5;
+}
 const hemi = new THREE.HemisphereLight(new THREE.Color().setRGB(...look.skyColor, THREE.SRGBColorSpace), new THREE.Color().setRGB(...look.groundColor, THREE.SRGBColorSpace), look.ambient);
 world.add(hemi);
 const sun = new THREE.DirectionalLight(new THREE.Color().setRGB(...look.sunColor, THREE.SRGBColorSpace), look.sunIntensity);
@@ -83,7 +93,7 @@ for (const o of scene.objects) {
     const pivot = new THREE.Group(); pivot.position.set(...p.pivot);
     const pm = mesh(scene.meshes[p.mesh], o.powered);
     pivot.add(pm);
-    if (o.powered) pivot.rotation.y = p.kind === 1 ? -(p.speed * t) * Math.PI / 180 : Math.sin(t * p.speed * Math.PI * 2) * p.range * Math.PI / 180;
+    if (o.powered) { if (p.kind === 3) pivot.rotation.z = (p.speed * t) * Math.PI / 180; else pivot.rotation.y = p.kind === 1 ? -(p.speed * t) * Math.PI / 180 : Math.sin(t * p.speed * Math.PI * 2) * p.range * Math.PI / 180; }
     root.add(pivot);
   }
   for (const l of o.lights) {
