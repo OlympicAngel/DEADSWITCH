@@ -26,6 +26,8 @@ namespace Deadswitch.Game.Base
         private BaseLook _look;
         private Transform _world;
         private Vector3[] _walkPoints;
+        private GameObject _surroundings;
+        private int _tier;
         private float _time;
 
         public static BaseView Instance { get; private set; }
@@ -87,12 +89,29 @@ namespace Deadswitch.Game.Base
             _world.SetParent(transform, false);
             SetupLighting();
 
-            int slots = _host.Sim.State.Slots.Count;
             Spawn("Terrain", new Model { Static = HubScene.Terrain(Seed) }, Vector3.zero, 0f, _world, true);
-            Spawn("Surroundings", HubScene.Surroundings(Seed, slots), Vector3.zero, 0f, _world, true);
             Spawn("Bunker", Deadswitch.Art.Models.Core.Build(Seed), Vector3.zero, 0f, _world, true);
+            Layout();
+            _host.Ticked += Sync;
+            Sync();
+        }
 
-            for (int i = 0; i < slots; i++)
+        /// <summary>
+        /// Builds the surroundings for the current tier and one object per slot. Runs again when a tier-up adds
+        /// plots (SPEC-013): the surroundings are replaced, existing slot objects are kept.
+        /// </summary>
+        private void Layout()
+        {
+            GameState s = _host.Sim.State;
+            int slots = s.Slots.Count;
+            if (_surroundings != null)
+            {
+                Destroy(_surroundings);
+            }
+
+            _tier = s.Tier;
+            _surroundings = Spawn("Surroundings", HubScene.Surroundings(Seed, slots, s.Tier), Vector3.zero, 0f, _world, true);
+            for (int i = _slots.Count; i < slots; i++)
             {
                 var root = new GameObject("Slot " + i).transform;
                 root.SetParent(_world, false);
@@ -102,8 +121,6 @@ namespace Deadswitch.Game.Base
             }
 
             _walkPoints = System.Array.ConvertAll(HubScene.WalkPoints(slots), ArtBridge.V);
-            _host.Ticked += Sync;
-            Sync();
         }
 
         private void OnDestroy()
@@ -145,6 +162,17 @@ namespace Deadswitch.Game.Base
         private void Sync()
         {
             GameState s = _host.Sim.State;
+            if (s.Slots.Count != _slots.Count || s.Tier != _tier)
+            {
+                bool grew = s.Tier > _tier;
+                Layout();
+                if (grew && DroneCamera.Instance != null)
+                {
+                    // show the payoff: glide over the new district (SPEC-013)
+                    DroneCamera.Instance.Focus(new Vector3(0, 0, HubScene.DistrictZ + 10f));
+                }
+            }
+
             for (int i = 0; i < _slots.Count && i < s.Slots.Count; i++)
             {
                 SlotView v = SlotView.From(s, i);

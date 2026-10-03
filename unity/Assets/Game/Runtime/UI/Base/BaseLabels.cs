@@ -18,24 +18,14 @@ namespace Deadswitch.Game.UI.Base
         private readonly VisualElement _layer;
         private readonly List<Tag> _tags = new List<Tag>();
         private readonly Tag _core;
+        private readonly System.Action<int> _onSlot;
         private int _selected = -1;
 
         public BaseLabels(VisualElement layer, System.Action<int> onSlot, System.Action onCore)
         {
             _layer = layer;
-            int slots = GameHost.Instance.Sim.State.Slots.Count;
-            for (int i = 0; i < slots; i++)
-            {
-                int slot = i;
-                Tag t = NewTag();
-                t.Root.RegisterCallback<ClickEvent>(e =>
-                {
-                    e.StopPropagation();
-                    onSlot(slot);
-                });
-                _tags.Add(t);
-            }
-
+            _onSlot = onSlot;
+            AddTags(GameHost.Instance.Sim.State.Slots.Count);
             _core = NewTag();
             _core.Root.AddToClassList("lbl--core");
             _core.Root.RegisterCallback<ClickEvent>(e =>
@@ -43,6 +33,22 @@ namespace Deadswitch.Game.UI.Base
                 e.StopPropagation();
                 onCore();
             });
+        }
+
+        /// <summary>Adds tags for plots the Hub gained (tier-up, SPEC-013).</summary>
+        private void AddTags(int slots)
+        {
+            for (int i = _tags.Count; i < slots; i++)
+            {
+                int slot = i;
+                Tag t = NewTag();
+                t.Root.RegisterCallback<ClickEvent>(e =>
+                {
+                    e.StopPropagation();
+                    _onSlot(slot);
+                });
+                _tags.Add(t);
+            }
         }
 
         public void Select(int slot)
@@ -69,6 +75,7 @@ namespace Deadswitch.Game.UI.Base
         {
             GameHost host = GameHost.Instance;
             GameState s = host.Sim.State;
+            AddTags(s.Slots.Count);
             for (int i = 0; i < _tags.Count && i < s.Slots.Count; i++)
             {
                 FacilitySlot slot = s.Slots[i];

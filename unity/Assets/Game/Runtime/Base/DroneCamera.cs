@@ -16,6 +16,7 @@ namespace Deadswitch.Game.Base
         private const float TapSlop = 18f;
         private const float PanLimitX = 8f;
         private const float PanLimitZ = 7f;
+        private const float DistrictPanZ = 15f;
 
         private readonly Dictionary<int, Vector2> _pointers = new Dictionary<int, Vector2>();
         private BaseLook _look;
@@ -32,6 +33,9 @@ namespace Deadswitch.Game.Base
 
         public static DroneCamera Instance { get; private set; }
 
+        /// <summary>How far south the drone may pan: the district outside the gate opens at Tier 2 (SPEC-013).</summary>
+        private static float SouthLimit => GameHost.Instance != null && GameHost.Instance.Sim.State.Tier >= 2 ? DistrictPanZ : PanLimitZ;
+
         public Camera Camera => _cam;
 
         /// <summary>Raised when a facility plot is tapped (slot id).</summary>
@@ -46,7 +50,7 @@ namespace Deadswitch.Game.Base
         /// <summary>Eases the view toward a world point (for example the selected slot).</summary>
         public void Focus(Vector3 world)
         {
-            _panTarget = new Vector3(Mathf.Clamp(world.x * 0.5f, -PanLimitX, PanLimitX), 0, Mathf.Clamp((world.z - _look.Target.z) * 0.5f, -PanLimitZ, PanLimitZ));
+            _panTarget = new Vector3(Mathf.Clamp(world.x * 0.5f, -PanLimitX, PanLimitX), 0, Mathf.Clamp((world.z - _look.Target.z) * 0.5f, -SouthLimit, PanLimitZ));
         }
 
         private void Awake()
@@ -142,7 +146,7 @@ namespace Deadswitch.Game.Base
                 float scale = 0.035f * _zoom;
                 _panTarget += new Vector3(-delta.x * scale, 0, delta.y * scale);
                 _panTarget.x = Mathf.Clamp(_panTarget.x, -PanLimitX, PanLimitX);
-                _panTarget.z = Mathf.Clamp(_panTarget.z, -PanLimitZ, PanLimitZ);
+                _panTarget.z = Mathf.Clamp(_panTarget.z, -SouthLimit, PanLimitZ);
             }
         }
 

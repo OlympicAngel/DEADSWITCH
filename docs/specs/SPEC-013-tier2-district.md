@@ -1,6 +1,6 @@
 # SPEC-013: Tier 2 District
 
-- Status: In progress (F-023)
+- Status: Done (F-023); Editor play check pending
 - Pillar: Base & economy (growth), Defense & offline (threat scaling)
 - Touches: tier-up (plots), raids (strength, daily cap), hub scene (district, terrain), base view and camera, art export
 - Source rules: doc 06 s2-3 (tiers, visual evolution), doc 10 s1.3 (pop caps), doc 10 s4 (4 attacks per 24h in Tier 2)
@@ -19,9 +19,9 @@ Tier 3+ layout (v1.x), Remnant Military faction behavior (F-019), sieges and pur
 5. The base view rebuilds the surroundings and adds plot objects when the slot count changes; the drone camera can pan south over the district from Tier 2.
 
 ## Acceptance criteria
-- [ ] Tier-up adds plots; raids scale by tier; Tier 1 unchanged (existing tests green)
-- [ ] District visible in the headless preview at Tier 1 (staked lots) and Tier 2 (walled, plots built)
-- [ ] Unity: new plots appear and are selectable after tier-up without a restart
+- [x] Tier-up adds plots; raids scale by tier; Tier 1 unchanged (existing tests green)
+- [x] District visible in the headless preview at Tier 1 (staked lots) and Tier 2 (walled, plots built)
+- [x] Unity: new plots appear and are selectable after tier-up without a restart
 
 ## Tests
 `ModuleTests`: tier-up appends plots to slots and priority; raid strength and cap scale with tier.
