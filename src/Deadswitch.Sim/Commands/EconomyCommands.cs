@@ -101,6 +101,7 @@ namespace Deadswitch.Sim.Commands
             int compute = SimMath.PctFloor(job.PaidCompute, ctx.Config.Build.CancelRefundPct);
             Refund(ctx, energy, compute);
             s.Jobs.Remove(job);
+            s.PlanHoldUntilTick = s.Tick + SimConfig.TicksPerHour;
             ctx.Emit(EventKind.BuildCancelled, cmd.A, energy, compute);
             return CommandResult.Ok;
         }

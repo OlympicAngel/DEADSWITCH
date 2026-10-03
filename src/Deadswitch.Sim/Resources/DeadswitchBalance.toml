@@ -194,6 +194,37 @@ casualty_pct = 50
 offline_unprepared_pct = 150
 
 # --------------------------------------------------------------------------------------------------
+# The AI's hidden dials, delegation and lies (SPEC-004). Dials are milli-units: 100000 = 100%. All (tune).
+[ai]
+
+# Boldness gained per game hour while the AI runs routines (Delegated). [0..100000]
+boldness_per_hour_delegated = 300
+
+# Boldness gained per game hour on offline autopilot. [0..100000]
+boldness_per_hour_autopilot = 700
+
+# Boldness lost per game hour while the handler runs everything (Manual). [0..100000]
+boldness_decay_per_hour_manual = 100
+
+# How often the delegated AI looks at the build queue (game minutes). [1..10000]
+plan_every_minutes = 60
+
+# Delegated AI builds power first while net energy per hour is below this. [0..100000]
+plan_energy_margin = 150
+
+# Autopilot turtles with the full garrison when its estimate exceeds defense x this %. [1..10000]
+autopilot_turtle_pct = 100
+
+# Autopilot evacuates when its estimate exceeds defense x this %. [1..10000]
+autopilot_evacuate_pct = 200
+
+# The first raid warning of a run reports the wrong gate (doc 10 s7.4). [true|false]
+first_lie = true
+
+# Chance per later raid warning that the reported gate is a lie, at 100% Boldness (scales linearly). [0..1000]
+lie_chance_permille_at_full_boldness = 300
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

@@ -10,6 +10,9 @@ namespace Deadswitch.Sim.State
         /// <summary>True when values are being loaded (the visitor writes into the refs).</summary>
         bool IsReading { get; }
 
+        /// <summary>State layout version being visited (<see cref="GameState.LayoutVersion"/> unless reading an older save).</summary>
+        int Version { get; }
+
         void Int(ref int value);
 
         void Long(ref long value);

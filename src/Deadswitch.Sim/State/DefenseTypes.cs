@@ -25,6 +25,21 @@ namespace Deadswitch.Sim.State
         Lockdown = 4,
     }
 
+    /// <summary>Where a raid hits the Hub (SPEC-004 rule 5). Stored in saves and events: never renumber.</summary>
+    public enum RaidGate
+    {
+        None = 0,
+
+        /// <summary>The ridge above the bunker.</summary>
+        North = 1,
+
+        /// <summary>The main gate on the road.</summary>
+        South = 2,
+
+        East = 3,
+        West = 4,
+    }
+
     /// <summary>Loss ledger line types. Stored in events: never renumber.</summary>
     public enum LossResource
     {

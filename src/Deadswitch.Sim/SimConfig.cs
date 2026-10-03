@@ -24,6 +24,7 @@ namespace Deadswitch.Sim
         public CrewConfig Crew = new CrewConfig();
         public OverrideConfig Override = new OverrideConfig();
         public DefenseConfig Defense = new DefenseConfig();
+        public AiConfig Ai = new AiConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -114,6 +115,7 @@ namespace Deadswitch.Sim
             Crew.Visit(visitor);
             Override.Visit(visitor);
             Defense.Visit(visitor);
+            Ai.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

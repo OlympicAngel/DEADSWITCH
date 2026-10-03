@@ -55,7 +55,7 @@ namespace Deadswitch.Sim.Persistence
     /// </summary>
     public static class SaveGame
     {
-        public const ushort FormatVersion = 1;
+        public const ushort FormatVersion = GameState.LayoutVersion;
 
         private const int HeaderBytes = 4 + 2 + 2 + 8 + 8 + 8 + 8;
         private const int ChecksumBytes = 8;
@@ -120,8 +120,8 @@ namespace Deadswitch.Sim.Persistence
             SaveInfo info = ReadHeader(r);
 
             var state = new GameState(info.Seed, config);
-            state.Visit(new StateReader(r));
-            if (state.Tick != info.Tick || StateHasher.Hash(state) != info.StateHash)
+            state.Visit(new StateReader(r, info.FormatVersion));
+            if (state.Tick != info.Tick || StateHasher.Hash(state, info.FormatVersion) != info.StateHash)
             {
                 throw new SaveLoadException(SaveLoadError.Corrupted, "State does not match its recorded hash.");
             }
@@ -212,6 +212,8 @@ namespace Deadswitch.Sim.Persistence
 
             public bool IsReading => false;
 
+            public int Version => GameState.LayoutVersion;
+
             public void Int(ref int value)
             {
                 _w.I32(value);
@@ -243,12 +245,15 @@ namespace Deadswitch.Sim.Persistence
         {
             private readonly ByteReader _r;
 
-            public StateReader(ByteReader r)
+            public StateReader(ByteReader r, int version)
             {
                 _r = r;
+                Version = version;
             }
 
             public bool IsReading => true;
+
+            public int Version { get; }
 
             public void Int(ref int value)
             {

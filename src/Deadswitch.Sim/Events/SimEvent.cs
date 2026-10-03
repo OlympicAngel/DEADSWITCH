@@ -68,6 +68,18 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Handler presence changed. A: 1 = away, 0 = here.</summary>
         PresenceSet = 20,
+
+        /// <summary>The AI's report of the raid's approach (may be a lie). A: raid id, B: reported RaidGate.</summary>
+        RaidVector = 21,
+
+        /// <summary>Contact: where the raid really hit (the cross-check for lies). A: raid id, B: true RaidGate.</summary>
+        RaidContact = 22,
+
+        /// <summary>The AI acted on its own under delegation. A: AiActionKind, B-D: see AiActionKind.</summary>
+        AiActed = 23,
+
+        /// <summary>Hidden record of a lie, for the Audit (F-014); never shown directly. A: LieKind, B-D: see LieKind.</summary>
+        AdvisorLied = 24,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

@@ -9,6 +9,9 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004).</summary>
+        public const int LayoutVersion = 2;
+
         public long Tick;
 
         public int Energy;
@@ -63,6 +66,24 @@ namespace Deadswitch.Sim.State
         public int RaidEstimate;
 
         public long MercyUntilTick;
+
+        /// <summary>Hidden dial (doc 10 s1.4), 0..100_000. Raised by ruthless choices.</summary>
+        public int ColdnessMilli;
+
+        /// <summary>Hidden dial (doc 10 s1.4), 0..100_000. Raised by reliance on delegation.</summary>
+        public int BoldnessMilli;
+
+        /// <summary>Gate the incoming raid really uses.</summary>
+        public RaidGate RaidGate;
+
+        /// <summary>Gate the AI reported for the incoming raid.</summary>
+        public RaidGate RaidGateReported;
+
+        /// <summary>Lies told this run (the first lie is special, doc 10 s7.4).</summary>
+        public int LiesTold;
+
+        /// <summary>The delegated planner waits until this tick (set when the handler cancels a job).</summary>
+        public long PlanHoldUntilTick;
 
         /// <summary>Hub slots; the index is the slot id.</summary>
         public List<FacilitySlot> Slots = new List<FacilitySlot>();
@@ -157,6 +178,19 @@ namespace Deadswitch.Sim.State
             v.Int(ref RaidStrength);
             v.Int(ref RaidEstimate);
             v.Long(ref MercyUntilTick);
+            if (v.Version >= 2)
+            {
+                v.Int(ref ColdnessMilli);
+                v.Int(ref BoldnessMilli);
+                int gate = (int)RaidGate;
+                v.Int(ref gate);
+                RaidGate = (RaidGate)gate;
+                int reported = (int)RaidGateReported;
+                v.Int(ref reported);
+                RaidGateReported = (RaidGate)reported;
+                v.Int(ref LiesTold);
+                v.Long(ref PlanHoldUntilTick);
+            }
 
             int slotCount = v.Count(Slots.Count);
             Resize(Slots, slotCount);

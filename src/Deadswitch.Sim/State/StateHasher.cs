@@ -8,7 +8,13 @@ namespace Deadswitch.Sim.State
     {
         public static ulong Hash(GameState s)
         {
-            var v = new Visitor();
+            return Hash(s, GameState.LayoutVersion);
+        }
+
+        /// <summary>Hash over the field layout of an older version (verifies saves written by older builds).</summary>
+        public static ulong Hash(GameState s, int version)
+        {
+            var v = new Visitor(version);
             s.Visit(v);
             return v.Value;
         }
@@ -18,9 +24,16 @@ namespace Deadswitch.Sim.State
             private const ulong Prime = 1099511628211UL;
             private ulong _h = 14695981039346656037UL;
 
+            public Visitor(int version)
+            {
+                Version = version;
+            }
+
             public ulong Value => _h;
 
             public bool IsReading => false;
+
+            public int Version { get; }
 
             public void Int(ref int value)
             {

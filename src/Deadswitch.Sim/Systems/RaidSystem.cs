@@ -5,7 +5,8 @@ namespace Deadswitch.Sim.Systems
 {
     /// <summary>
     /// Raid lifecycle (SPEC-001): spawn -> warning with the AI's estimate -> resolution against defense,
-    /// loot and casualties scaled by the breach, loss ledger, mercy window. Exactly four RNG draws per tick.
+    /// loot and casualties scaled by the breach, loss ledger, mercy window; gates and the AI's gate report
+    /// (SPEC-004). Exactly four RNG draws per tick.
     /// </summary>
     public static class RaidSystem
     {
@@ -40,7 +41,7 @@ namespace Deadswitch.Sim.Systems
 
             if (spawnRoll && s.RaidsToday < c.Raid.MaxPerDay && s.Tick >= s.MercyUntilTick)
             {
-                Spawn(ctx, estimateRoll);
+                Spawn(ctx, estimateRoll, missRoll);
             }
         }
 
@@ -52,7 +53,7 @@ namespace Deadswitch.Sim.Systems
             ClearIncoming(s);
         }
 
-        private static void Spawn(SimContext ctx, int estimateRoll)
+        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll)
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
@@ -67,6 +68,52 @@ namespace Deadswitch.Sim.Systems
             s.RaidEstimate = (int)(estimate < 1 ? 1 : estimate);
 
             ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate);
+            ReportGate(ctx, gateRoll);
+            AiSystem.OnRaidWarning(ctx);
+        }
+
+        /// <summary>
+        /// SPEC-004 rules 5-6: the raid's true gate comes from the spawn tick's otherwise unused miss draw; the AI
+        /// reports it, except for the first warning of a run and for Boldness-scaled lies decided by a hash.
+        /// </summary>
+        private static void ReportGate(SimContext ctx, int gateRoll)
+        {
+            GameState s = ctx.State;
+            var ai = ctx.Config.Ai;
+            s.RaidGate = (RaidGate)(1 + (gateRoll % 4));
+            bool lie;
+            if (s.RaidId == 1 && ai.FirstLie)
+            {
+                lie = true;
+            }
+            else
+            {
+                long chance = (long)ai.LieChancePermilleAtFullBoldness * s.BoldnessMilli / 100_000;
+                lie = SimMath.Hash((uint)s.RaidId, (uint)s.Tick) % 1000 < chance;
+            }
+
+            s.RaidGateReported = lie ? Opposite(s.RaidGate) : s.RaidGate;
+            ctx.Emit(EventKind.RaidVector, s.RaidId, (int)s.RaidGateReported);
+            if (lie)
+            {
+                s.LiesTold++;
+                ctx.Emit(EventKind.AdvisorLied, (int)LieKind.RaidGate, s.RaidId, (int)s.RaidGate, (int)s.RaidGateReported);
+            }
+        }
+
+        private static RaidGate Opposite(RaidGate g)
+        {
+            switch (g)
+            {
+                case RaidGate.North:
+                    return RaidGate.South;
+                case RaidGate.South:
+                    return RaidGate.North;
+                case RaidGate.East:
+                    return RaidGate.West;
+                default:
+                    return RaidGate.East;
+            }
         }
 
         private static void Resolve(SimContext ctx, int variance, int missRoll)
@@ -82,6 +129,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             int defense = Defense.Rating(s, c);
+            ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
 
             if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct)
             {
@@ -153,6 +201,8 @@ namespace Deadswitch.Sim.Systems
             s.RaidArriveTick = 0;
             s.RaidStrength = 0;
             s.RaidEstimate = 0;
+            s.RaidGate = RaidGate.None;
+            s.RaidGateReported = RaidGate.None;
         }
     }
 }
