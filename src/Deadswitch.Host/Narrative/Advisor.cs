@@ -33,7 +33,7 @@ namespace Deadswitch.Host.Narrative
             "build_done", "build_cancelled", "demolished", "band_glitchy", "band_unstable", "band_critical", "band_down",
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
-            "research_started", "research_done", "research_memory", "tier_up",
+            "research_started", "research_done", "research_memory", "tier_up", "guide_done",
         };
 
         private const int MaxQueue = 4;
@@ -77,6 +77,13 @@ namespace Deadswitch.Host.Narrative
             {
                 _queue.Add(new Pending("boot", Priority.Urgent) { FixedId = line.Id });
             }
+        }
+
+        /// <summary>A line for something the host noticed (e.g. a guide objective completed).</summary>
+        public void Notify(string trigger, string key = "", string value = "")
+        {
+            var p = new Pending(trigger, Priority.Normal);
+            Enqueue(key.Length > 0 ? p.With(key, value) : p);
         }
 
         /// <summary>Reads one live event.</summary>
