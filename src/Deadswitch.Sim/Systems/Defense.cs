@@ -21,7 +21,8 @@ namespace Deadswitch.Sim.Systems
         public static int BaseRaidStrength(GameState s, SimConfig c)
         {
             long scaled = FixedMath.PowPermille(PowerRating(s), c.Raid.PowerExponentPermille) * c.Raid.PowerCoeffPermille / 1000;
-            return (int)(c.Raid.BaseStrength + scaled);
+            int pct = c.Tier.RaidStrengthPct[System.Math.Min(s.Tier, c.Tier.RaidStrengthPct.Length) - 1];
+            return SimMath.PctFloor((int)(c.Raid.BaseStrength + scaled), pct);
         }
 
         /// <summary>Current defense rating: powered turrets + garrison, with the posture modifier.</summary>

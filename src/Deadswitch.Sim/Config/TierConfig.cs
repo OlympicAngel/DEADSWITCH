@@ -8,6 +8,9 @@ namespace Deadswitch.Sim.Config
         public int[] NetEnergyToAdvance = { 100, 300, 600 };
         public int[] PeopleCostBase = { 4, 10, 20 };
         public int PeopleCostPerLevels = 4;
+        public int[] SlotsAdded = { 4, 4, 4 };
+        public int[] RaidStrengthPct = { 100, 135, 175, 225 };
+        public int[] ExtraRaidsPerDay = { 0, 1, 1, 2 };
 
         public void Visit(IConfigVisitor v)
         {
@@ -17,6 +20,9 @@ namespace Deadswitch.Sim.Config
             v.IntList("net_energy_to_advance", ref NetEnergyToAdvance, -100_000, 100_000, 3, 3, "Build gate: net energy per hour needed to leave tier 1 / 2 / 3.");
             v.IntList("people_cost_base", ref PeopleCostBase, 0, 1_000, 3, 3, "Human cost: people who leave to expand, before the size term.");
             v.Int("people_cost_per_levels", ref PeopleCostPerLevels, 1, 1_000, "Human cost: one more person per this many total facility levels.");
+            v.IntList("slots_added", ref SlotsAdded, 0, 32, 3, 3, "Empty plots added when leaving tier 1 / 2 / 3 (SPEC-013: the district outside the gate).");
+            v.IntList("raid_strength_pct", ref RaidStrengthPct, 1, 10_000, 4, 4, "Raid strength scale at tier 1 / 2 / 3 / 4 (percent).");
+            v.IntList("extra_raids_per_day", ref ExtraRaidsPerDay, 0, 100, 4, 4, "Added to raid.max_per_day at tier 1 / 2 / 3 / 4 (doc 10 s4: 3 in Tier 1, 4 in Tier 2).");
             v.EndSection();
         }
     }

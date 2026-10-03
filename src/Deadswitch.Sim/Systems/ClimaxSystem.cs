@@ -38,7 +38,7 @@ namespace Deadswitch.Sim.Systems
 
             // Betrayal is an attack: it waits for the daily cap and the mercy window like any other (doc 10 s4).
             bool betrayal = s.ColdnessMilli >= s.BoldnessMilli;
-            if (betrayal && s.RaidId == 0 && (s.Tick < s.MercyUntilTick || s.RaidsToday >= ctx.Config.Raid.MaxPerDay))
+            if (betrayal && s.RaidId == 0 && (s.Tick < s.MercyUntilTick || s.RaidsToday >= RaidSystem.MaxPerDay(s, ctx.Config)))
             {
                 return;
             }

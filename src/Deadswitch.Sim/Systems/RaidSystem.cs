@@ -42,7 +42,7 @@ namespace Deadswitch.Sim.Systems
             // SPEC-009: the opening raid comes on cue; nothing else before the protection window ends.
             bool opening = c.Opening.Enabled && c.Raid.MaxPerDay > 0 && s.NextRaidId == 1 && s.Tick == c.Opening.RaidAtMinute;
             bool protectedNow = c.Opening.Enabled && s.Tick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
-            if (opening || (spawnRoll && !protectedNow && s.RaidsToday < c.Raid.MaxPerDay && s.Tick >= s.MercyUntilTick))
+            if (opening || (spawnRoll && !protectedNow && s.RaidsToday < MaxPerDay(s, c) && s.Tick >= s.MercyUntilTick))
             {
                 Spawn(ctx, estimateRoll, missRoll, opening ? c.Opening.RaidStrength : 0, c.Raid.WarningMinutes);
             }
@@ -55,6 +55,13 @@ namespace Deadswitch.Sim.Systems
             ctx.Emit(EventKind.RaidResolved, s.RaidId, (int)RaidOutcome.Lockdown, s.RaidStrength, 0);
             Record(ctx, s.RaidId, 0);
             ClearIncoming(s);
+        }
+
+        /// <summary>Attack cap per 24h at the current tier (doc 10 s4). Zero disables raids at every tier.</summary>
+        public static int MaxPerDay(GameState s, SimConfig c)
+        {
+            int[] extra = c.Tier.ExtraRaidsPerDay;
+            return c.Raid.MaxPerDay <= 0 ? 0 : c.Raid.MaxPerDay + extra[System.Math.Min(s.Tier, extra.Length) - 1];
         }
 
         /// <summary>

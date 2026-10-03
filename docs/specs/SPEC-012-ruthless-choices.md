@@ -20,9 +20,9 @@ Individual named survivors, morale events beyond the rogue operator, faction rec
 6. Coldness rises only through these choices (doc 03 s1); every choice emits an event and the AI answers in its voice.
 
 ## Acceptance criteria
-- [ ] Each choice applies its costs and effects; refusals explained; never below `min_people`
-- [ ] Loyalty bands cut output; recovery holds; rogue operator only while Mutinous
-- [ ] WORKFORCE sheet from the HUD people cell: population, crew, garrison, loyalty status, the three choices with their costs
+- [x] Each choice applies its costs and effects; refusals explained; never below `min_people`
+- [x] Loyalty bands cut output; recovery holds; rogue operator only while Mutinous
+- [x] WORKFORCE sheet from the HUD people cell: population, crew, garrison, loyalty status, the three choices with their costs
 
 ## Tests
 `PeopleChoiceTests`: surge (deaths, output, cooldown, Coldness, loyalty); cleanse (corruption, people); crackdown gated by loyalty; min-people floor.

@@ -54,12 +54,22 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(RejectReason.GatePeople, sim.Execute(Command.TierUp()).Reason);
             sim.State.People = 20;
             int cost = Modules.Gates(sim.State, sim.Config).PeopleCost;
+            int slots = sim.State.Slots.Count;
 
             Assert.True(sim.Execute(Command.TierUp()).Accepted);
             Assert.Equal(2, sim.State.Tier);
             Assert.Equal(20 - cost, sim.State.People);
             Assert.Equal(capBefore + sim.Config.Tier.PopBonus[1], Economy.PopulationCap(sim.State, sim.Config));
             Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.TierAdvanced && e.A == 2);
+
+            // SPEC-013: the district plots, and raids that hit harder and more often
+            Assert.Equal(slots + sim.Config.Tier.SlotsAdded[0], sim.State.Slots.Count);
+            Assert.Equal(sim.State.Slots.Count, sim.State.PowerPriority.Count);
+            Assert.True(sim.State.Slots[slots].IsEmpty);
+            Assert.Equal(sim.Config.Raid.MaxPerDay + sim.Config.Tier.ExtraRaidsPerDay[1], RaidSystem.MaxPerDay(sim.State, sim.Config));
+            int tier2 = Defense.BaseRaidStrength(sim.State, sim.Config);
+            sim.State.Tier = 1;
+            Assert.Equal(SimMath.PctFloor(Defense.BaseRaidStrength(sim.State, sim.Config), sim.Config.Tier.RaidStrengthPct[1]), tier2);
         }
     }
 }

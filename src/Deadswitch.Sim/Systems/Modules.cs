@@ -243,6 +243,12 @@ namespace Deadswitch.Sim.Systems
             }
 
             s.People -= g.PeopleCost;
+            for (int i = 0; i < ctx.Config.Tier.SlotsAdded[s.Tier - 1]; i++)
+            {
+                s.PowerPriority.Add(s.Slots.Count);
+                s.Slots.Add(new FacilitySlot());
+            }
+
             s.Tier++;
             ctx.Emit(EventKind.TierAdvanced, s.Tier, g.PeopleCost);
             return CommandResult.Ok;

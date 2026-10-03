@@ -211,6 +211,17 @@ namespace Deadswitch.Sim
                 problems.Add("people_choices.surge_cooldown_hours must be at least surge_hours (no chained surges).");
             }
 
+            int slots = Hub.Slots;
+            foreach (int added in Tier.SlotsAdded)
+            {
+                slots += added;
+            }
+
+            if (slots > 64)
+            {
+                problems.Add("hub.slots plus every tier.slots_added must not exceed 64.");
+            }
+
             if (Climax.CancelToPct >= Project.ImminentFrom)
             {
                 problems.Add("climax.cancel_to_pct must be below project.imminent_from.");
