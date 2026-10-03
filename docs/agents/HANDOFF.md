@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-009)
+- Done: `Hud.uxml`/`Hud.uss` (status strip: hub + clock, OVERRIDE pips, energy panel with meter + sparkline, compute, people/crew, core corruption gauge + band, next-timer chip, threat chip, advisor line, raid banner with DEFEND; command bar with procedural icons), `HudController` (live binding, animated counters, real-time countdowns), `AdvisorTicker` (typewriter + glitch), `ScreenRouter` (eased cross-fade), `LockedScreen` (Map, offline until M1), `Fmt` display helpers, `Icons` (procedural, mirrored in the preview). Previews: `docs/media/ui-hud.png`.
+- Half-done / known issues: Base/Core/Ops screens register in F-010/F-011/F-012; until then those tabs do nothing.
+- Next: F-010 3D base diorama.
+- Decisions made (link ADR/spec): status strip kept under ~25% of screen height so the 3D base dominates.
+
+---
+
 ### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-008)
 - Done: design tokens (`Resources/UI/Tokens.uss`), component kit (`Components.uss`: corner-bracket panels, buttons, segmented meters, chips with shape pips, banner, tab bar, bottom sheet, key/value rows), fonts (Chakra Petch, IBM Plex Mono via `resource()`), `UiRoot` (runtime UIDocument + PanelSettings 1080x1920 portrait, layers, safe area), `Kit` behaviors, `Mesh2D` (feathered lines/arcs), `Sparkline`, `ArcGauge`, `Motion`/`Ease`/`AnimatedNumber`, `GlitchText`, `CrtOverlay` (scanlines, vignette, roll bar, corruption slices). `tools/uipreview` renders UXML/USS to PNG (`docs/media/ui-kit.png`).
 - Half-done / known issues: not yet seen in the Unity Editor; USS features used (text-shadow, rotate, scale, translate transitions, var()) need Unity 6. Git LFS pushes are blocked from cloud sessions: fonts/screenshots stored as plain binaries.

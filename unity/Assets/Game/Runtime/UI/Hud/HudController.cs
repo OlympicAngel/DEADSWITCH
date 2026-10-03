@@ -1,0 +1,284 @@
+using System.Linq;
+using Deadswitch.Game.Core;
+using Deadswitch.Game.Presentation;
+using Deadswitch.Game.UI.Screens;
+using Deadswitch.Sim;
+using Deadswitch.Sim.Events;
+using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace Deadswitch.Game.UI.Hud
+{
+    /// <summary>
+    /// Binds the terminal HUD (Hud.uxml) to the sim: always-visible essentials (doc 08 s4), the raid banner
+    /// (doc 10 s4: amber + diamond + countdown), OVERRIDE charges, the advisor line and the command bar.
+    /// Reads state only; actions go through <see cref="GameHost.Execute"/>.
+    /// </summary>
+    public sealed class HudController : MonoBehaviour
+    {
+        private GameHost _host;
+        private UiRoot _ui;
+        private VisualElement _hud;
+
+        private AnimatedNumber _energy;
+        private AnimatedNumber _compute;
+        private AnimatedNumber _people;
+        private AnimatedNumber _core;
+        private Label _energyCap;
+        private Label _energyNet;
+        private Label _computeCap;
+        private Label _computeRate;
+        private Label _peopleCap;
+        private Label _peopleCrew;
+        private Label _coreBand;
+        private Label _coreValue;
+        private Label _clock;
+        private Label _nextLabel;
+        private Label _nextTime;
+        private Label _threat;
+        private Label _raidTime;
+        private Label _raidEstimate;
+        private VisualElement _nextPip;
+        private VisualElement _energyMeter;
+        private VisualElement _raid;
+        private VisualElement _coreGaugeEl;
+        private VisualElement[] _overridePips;
+        private Sparkline _spark;
+        private ArcGauge _gauge;
+        private CorruptionBand _band = (CorruptionBand)(-1);
+
+        public static HudController Instance { get; private set; }
+
+        public AdvisorTicker Advisor { get; private set; }
+
+        public ScreenRouter Router { get; private set; }
+
+        private void Awake()
+        {
+            Instance = this;
+        }
+
+        private void Start()
+        {
+            _host = GameHost.Instance;
+            _ui = UiRoot.Instance;
+
+            TemplateContainer tree = UiRoot.Load("Hud");
+            _hud = tree;
+            _ui.Hud.Add(tree);
+            Icons.Attach(tree);
+
+            _energy = new AnimatedNumber(Q<Label>("energy-value"), Fmt.Num);
+            _compute = new AnimatedNumber(Q<Label>("compute-value"), Fmt.Num);
+            _people = new AnimatedNumber(Q<Label>("people-value"), Fmt.Num);
+            _core = new AnimatedNumber(Q<Label>("core-value"), Fmt.Num);
+            _energyCap = Q<Label>("energy-cap");
+            _energyNet = Q<Label>("energy-net");
+            _computeCap = Q<Label>("compute-cap");
+            _computeRate = Q<Label>("compute-rate");
+            _peopleCap = Q<Label>("people-cap");
+            _peopleCrew = Q<Label>("people-crew");
+            _coreBand = Q<Label>("core-band");
+            _coreValue = Q<Label>("core-value");
+            _clock = Q<Label>("clock");
+            _nextLabel = Q<Label>("next-label");
+            _nextTime = Q<Label>("next-time");
+            _nextPip = Q<VisualElement>("next-pip");
+            _threat = Q<Label>("threat-level");
+            _raid = Q<VisualElement>("raid-banner");
+            _raidTime = Q<Label>("raid-time");
+            _raidEstimate = Q<Label>("raid-estimate");
+            _energyMeter = Q<VisualElement>("energy-meter");
+            _coreGaugeEl = Q<VisualElement>("core-gauge");
+            _spark = new Sparkline(Q<VisualElement>("energy-spark"), 90);
+            _gauge = new ArcGauge(_coreGaugeEl);
+            _overridePips = Q<VisualElement>("override-pips").Children().ToArray();
+
+            Advisor = new AdvisorTicker(Q<Label>("advisor-text"));
+
+            Router = new ScreenRouter(Q<VisualElement>("screen"));
+            Router.Register(new LockedScreen("map", "SECTOR MAP", "Long-range sensors are dark. I can see the perimeter. Nothing past it.", "RESTORE MODULE M1"));
+            Router.BindTab("base", Q<VisualElement>("tab-base"));
+            Router.BindTab("map", Q<VisualElement>("tab-map"));
+            Router.BindTab("core", Q<VisualElement>("tab-core"));
+            Router.BindTab("ops", Q<VisualElement>("tab-ops"));
+            Q<VisualElement>("raid-defend").RegisterCallback<ClickEvent>(_ => Router.Show("ops"));
+
+            _host.Ticked += Refresh;
+            _host.EventRaised += OnSimEvent;
+            _ui.Frame += OnFrame;
+            Refresh();
+            _energy.Set(_host.Sim.State.Energy, true);
+            _compute.Set(_host.Sim.State.Compute, true);
+            _people.Set(_host.Sim.State.People, true);
+            _core.Set(CorruptionSystem.Percent(_host.Sim.State.CorruptionMilli), true);
+            Advisor.Say("Core online. Power is the problem. Power is always the problem.");
+        }
+
+        private void OnDestroy()
+        {
+            if (_host != null)
+            {
+                _host.Ticked -= Refresh;
+                _host.EventRaised -= OnSimEvent;
+            }
+
+            if (_ui != null)
+            {
+                _ui.Frame -= OnFrame;
+            }
+        }
+
+        private T Q<T>(string name)
+            where T : VisualElement
+        {
+            return _hud.Q<T>(name);
+        }
+
+        private void OnSimEvent(SimEvent e)
+        {
+            if (e.Kind == EventKind.RaidWarning)
+            {
+                Feedback.Alert();
+                Motion.To(_raid, 0.42f, Ease.OutBack, t => _raid.style.scale = new Scale(new Vector3(0.9f + (0.1f * t), 0.9f + (0.1f * t), 1f)));
+            }
+        }
+
+        private void Refresh()
+        {
+            Simulation sim = _host.Sim;
+            GameState s = sim.State;
+            SimConfig c = sim.Config;
+            EconomyFlows f = Economy.Flows(s, c);
+
+            _energy.Set(s.Energy);
+            _energyCap.text = "/" + Fmt.Num(f.EnergyCap);
+            int net = f.NetEnergyPerHour;
+            _energyNet.text = s.Blackout ? "BLACKOUT" : Fmt.Signed(net) + "/H";
+            SetTone(_energyNet, s.Blackout ? "t-red" : (net >= 0 ? "t-phosphor" : "t-amber"));
+            Kit.SetMeter(_energyMeter, f.EnergyCap > 0 ? (float)s.Energy / f.EnergyCap : 0f);
+            _energyMeter.EnableInClassList("ds-meter--amber", net < 0 && !s.Blackout);
+            _energyMeter.EnableInClassList("ds-meter--red", s.Blackout);
+            _spark.Push(s.Energy);
+
+            _compute.Set(s.Compute);
+            _computeCap.text = "/" + Fmt.Num(c.Compute.Cap);
+            _computeRate.text = Fmt.Signed(f.ComputePerHour) + "/H";
+
+            _people.Set(s.People);
+            _peopleCap.text = "/" + Fmt.Num(f.PopulationCap);
+            _peopleCrew.text = (s.AutomationLoad > 0 ? "AI-RUN " + s.AutomationLoad : "CREW " + f.CrewAssigned + "/" + f.CrewNeeded);
+            SetTone(_peopleCrew, s.AutomationLoad > 0 ? "t-amber" : "t-dim");
+
+            int pct = CorruptionSystem.Percent(s.CorruptionMilli);
+            _core.Set(pct);
+            _gauge.Set(pct / 100f);
+            CorruptionBand band = CorruptionSystem.Band(c, s.CorruptionMilli);
+            if (band != _band)
+            {
+                _band = band;
+                _coreBand.text = Fmt.BandName(band);
+                string tone = band == CorruptionBand.Stable ? "t-phosphor" : (band == CorruptionBand.Glitchy ? "t-amber" : "t-red");
+                SetTone(_coreBand, tone);
+                SetTone(_coreValue, tone);
+                _coreGaugeEl.EnableInClassList("ds-gauge--amber", band == CorruptionBand.Glitchy);
+                _coreGaugeEl.EnableInClassList("ds-gauge--red", band >= CorruptionBand.Unstable);
+                float weight = GlitchText.BandWeight((int)band) * _host.Settings.Effects;
+                Advisor.SetGlitch(weight);
+                _ui.SetGlitch(weight);
+            }
+
+            _clock.text = Fmt.Clock(s.Tick);
+
+            for (int i = 0; i < _overridePips.Length; i++)
+            {
+                bool visible = i < c.Override.MaxCharges;
+                _overridePips[i].style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+                _overridePips[i].EnableInClassList("is-on", i < s.OverrideCharges && s.Tick >= s.OverrideCooldownUntil);
+                _overridePips[i].EnableInClassList("is-cooldown", i < s.OverrideCharges && s.Tick < s.OverrideCooldownUntil);
+            }
+
+            bool raid = s.RaidId != 0;
+            _raid.EnableInClassList("is-hidden", !raid);
+            if (raid)
+            {
+                _raidEstimate.text = "EST. " + Fmt.Num(s.RaidEstimate) + "  //  DEF " + Fmt.Num(Defense.Rating(s, c)) + "  //  " + Fmt.PostureName(s.Posture);
+            }
+
+            bool mercy = s.Tick < s.MercyUntilTick;
+            _threat.text = raid ? "RAID" : (mercy ? "SHIELDED" : "LOW");
+            SetTone(_threat, raid ? "t-amber" : "t-phosphor");
+
+            UpdateTimers();
+        }
+
+        private void OnFrame(float dt)
+        {
+            if (_host == null || !_host.IsReady)
+            {
+                return;
+            }
+
+            _energy.Tick(dt);
+            _compute.Tick(dt);
+            _people.Tick(dt);
+            _core.Tick(dt);
+            _gauge.Tick(dt);
+            Advisor.Tick(dt);
+            UpdateTimers();
+        }
+
+        /// <summary>Real seconds until a future tick completes, at the current time scale.</summary>
+        private double SecondsUntil(long tick)
+        {
+            long ticks = tick - _host.Sim.State.Tick;
+            if (ticks <= 0)
+            {
+                return 0;
+            }
+
+            return _host.SecondsToNextTick + ((ticks - 1) * 60.0 / _host.Settings.DevTimeScale);
+        }
+
+        private void UpdateTimers()
+        {
+            GameState s = _host.Sim.State;
+            if (s.RaidId != 0)
+            {
+                _raidTime.text = Fmt.Countdown(SecondsUntil(s.RaidArriveTick));
+            }
+
+            BuildJob next = null;
+            foreach (BuildJob job in s.Jobs)
+            {
+                if (next == null || job.CompleteTick < next.CompleteTick)
+                {
+                    next = job;
+                }
+            }
+
+            if (next != null)
+            {
+                _nextLabel.text = Fmt.FacilityName(next.Kind) + " L" + next.TargetLevel;
+                _nextTime.text = Fmt.Countdown(SecondsUntil(next.CompleteTick));
+                _nextPip.EnableInClassList("ds-pip--off", false);
+            }
+            else
+            {
+                _nextLabel.text = "BUILD QUEUE IDLE";
+                _nextTime.text = string.Empty;
+                _nextPip.EnableInClassList("ds-pip--off", true);
+            }
+        }
+
+        private static void SetTone(VisualElement el, string tone)
+        {
+            el.EnableInClassList("t-phosphor", tone == "t-phosphor");
+            el.EnableInClassList("t-amber", tone == "t-amber");
+            el.EnableInClassList("t-red", tone == "t-red");
+            el.EnableInClassList("t-dim", tone == "t-dim");
+        }
+    }
+}

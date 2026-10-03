@@ -23,6 +23,7 @@ namespace Deadswitch.Game.Core
             Object.DontDestroyOnLoad(Root);
             Root.AddComponent<GameHost>();
             Root.AddComponent<UI.UiRoot>();
+            Root.AddComponent<UI.Hud.HudController>();
         }
     }
 }

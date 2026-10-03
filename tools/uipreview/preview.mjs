@@ -44,7 +44,7 @@ function parseXml(src) {
   return root;
 }
 
-const TYPE = { VisualElement: 'ui-ve', Label: 'ui-label', Button: 'ui-button', ScrollView: 'ui-scroll', Image: 'ui-image', TextElement: 'ui-label' };
+const TYPE = { VisualElement: 'ui-ve', Label: 'ui-label unity-label', Button: 'ui-button', ScrollView: 'ui-scroll', Image: 'ui-image', TextElement: 'ui-label' };
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const unesc = s => s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#10;/g, '\n');
 const styleSheets = [];
@@ -83,7 +83,7 @@ function ussToCss(src, inline = false) {
   if (inline) return src.split(';').filter(d => d.includes(':')).map(d => { const i = d.indexOf(':'); return declToCss(d.slice(0, i), d.slice(i + 1)); }).filter(Boolean).join(';');
   src = src.replace(/\/\*[\s\S]*?\*\//g, '');
   return src.replace(/([^{}]+)\{([^{}]*)\}/g, (_, sel, body) => {
-    sel = sel.replace(/(^|[\s>,+~])(VisualElement|Label|Button|ScrollView|Image)\b/g, (m, pre, t) => pre + '.' + TYPE[t]);
+    sel = sel.replace(/(^|[\s>,+~])(VisualElement|Label|Button|ScrollView|Image)\b/g, (m, pre, t) => pre + '.' + TYPE[t].split(' ')[0]);
     const decls = body.split(';').filter(d => d.includes(':')).map(d => { const i = d.indexOf(':'); return declToCss(d.slice(0, i), d.slice(i + 1)); }).filter(Boolean);
     return `${sel.trim()}{${decls.join(';')}}\n`;
   });
@@ -107,7 +107,7 @@ html,body{margin:0;width:${width}px;height:${height}px;overflow:hidden;${bgCss}}
 .ui-scroll{overflow:hidden}
 #preview-root{position:absolute;inset:0}
 ${css}
-</style></head><body><div id="preview-root" class="ui-ve">${body}</div>
+</style></head><body><div id="preview-root" class="ui-ve ds-root">${body}</div>
 <div id="crt" style="position:absolute;inset:0;pointer-events:none;
   background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.10) 0 2px, transparent 2px 6px),
   radial-gradient(ellipse at center, transparent 45%, rgba(4,6,5,0.55) 100%);"></div>
@@ -125,6 +125,20 @@ for (const el of document.querySelectorAll('.ds-sparkline')) {
   for (let i = 0; i <= 48; i++) { y = Math.min(0.92, Math.max(0.12, y + Math.sin(i * 0.7) * 0.06 + (i % 7 === 0 ? -0.18 : 0.02))); pts.push([i / 48 * w, (1 - y) * h]); }
   const poly = pts.map(p => p.join(',')).join(' ');
   el.innerHTML = '<svg width="'+w+'" height="'+h+'"><polygon points="0,'+h+' '+poly+' '+w+','+h+'" fill="'+v('--c-phosphor-glow')+'" opacity="0.35"/><polyline points="'+poly+'" fill="none" stroke="'+v('--c-phosphor')+'" stroke-width="3"/></svg>';
+}
+// Icons.cs mirror
+const poly = (n, r) => Array.from({ length: n + 1 }, (_, i) => [0.5 + Math.cos(Math.PI * 2 * i / n) * r, 0.5 + Math.sin(Math.PI * 2 * i / n) * r]);
+const P = (...a) => a.reduce((acc, v, i) => (i % 2 ? acc[acc.length - 1].push(v) : acc.push([v]), acc), []);
+const GLYPHS = {
+  base: [P(0.1,0.9,0.1,0.45,0.5,0.15,0.9,0.45,0.9,0.9,0.1,0.9), P(0.4,0.9,0.4,0.62,0.6,0.62,0.6,0.9)],
+  map: [poly(6, 0.42), P(0.44,0.44,0.56,0.44,0.56,0.56,0.44,0.56,0.44,0.44)],
+  core: [poly(32, 0.4), P(0.5,0.3,0.7,0.5,0.5,0.7,0.3,0.5,0.5,0.3)],
+  ops: [poly(28, 0.3), P(0.5,0.02,0.5,0.25), P(0.5,0.75,0.5,0.98), P(0.02,0.5,0.25,0.5), P(0.75,0.5,0.98,0.5)],
+};
+for (const el of document.querySelectorAll('.ds-icon')) {
+  const g = [...el.classList].find(c => c.startsWith('ds-icon--'))?.slice(9); if (!GLYPHS[g]) continue;
+  const s = Math.min(el.clientWidth, el.clientHeight), col = getComputedStyle(el).getPropertyValue('--icon-color').trim();
+  el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="3" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
 }
 for (const el of document.querySelectorAll('.ds-gauge')) {
   const w = el.clientWidth, r = w / 2 - 8, c = w / 2, f = 0.23, a0 = Math.PI * 0.75, a1 = a0 + Math.PI * 1.5 * f, aEnd = a0 + Math.PI * 1.5;

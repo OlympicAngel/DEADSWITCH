@@ -1,0 +1,174 @@
+/* Terminal HUD (F-009). Kit classes + tokens only. */
+
+.hud { flex-grow: 1; }
+
+.hud-status {
+    padding: var(--s-6) var(--s-8) 0 var(--s-8);
+    background-color: rgba(10, 13, 11, 0.55);
+    border-bottom-width: 1px;
+    border-color: var(--c-line);
+    padding-bottom: var(--s-4);
+}
+
+.hud-topline { flex-direction: row; align-items: center; margin-bottom: var(--s-5); }
+
+.hud-sigil {
+    width: 44px;
+    height: 44px;
+    margin-right: var(--s-4);
+    border-width: var(--bw);
+    border-color: var(--c-phosphor);
+    rotate: 45deg;
+    scale: 0.72 0.72;
+}
+
+.hud-hubname { letter-spacing: 5px; }
+
+.hud-clock {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-md);
+    color: var(--c-text);
+    letter-spacing: 2px;
+}
+
+.hud-override { align-items: flex-end; }
+.hud-override__label { margin-bottom: var(--s-2); }
+
+.hud-opip {
+    width: 22px;
+    height: 22px;
+    margin-left: var(--s-3);
+    border-width: var(--bw);
+    border-color: var(--c-amber-dim);
+    rotate: 45deg;
+}
+
+.hud-opip.is-on { background-color: var(--c-amber); border-color: var(--c-amber); }
+.hud-opip.is-cooldown { border-color: var(--c-text-faint); background-color: rgba(232, 180, 92, 0.25); }
+
+.hud-panels { flex-direction: row; align-items: stretch; }
+
+.hud-energy { flex-grow: 1.35; flex-basis: 0; margin-right: var(--s-3); padding: var(--s-4); }
+
+.hud-col { flex-grow: 1; flex-basis: 0; margin-right: var(--s-3); }
+
+.hud-mini { flex-grow: 1; padding: var(--s-3) var(--s-4); }
+.hud-mini + .hud-mini { margin-top: var(--s-3); }
+
+.hud-core { width: 200px; align-items: center; padding: var(--s-3) var(--s-2); }
+
+.hud-valuerow { margin-top: var(--s-1); }
+
+.hud-big { font-size: var(--fs-xl); }
+.hud-mid { font-size: var(--fs-lg); }
+
+.hud-delta {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-micro);
+    letter-spacing: 1px;
+}
+
+.hud-spark { height: 52px; margin-top: var(--s-2); }
+
+.hud-gauge {
+    width: 150px;
+    height: 150px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: var(--s-1) 0;
+}
+
+.hud-gauge__value {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-lg);
+}
+
+.hud-gauge__unit {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    margin-top: var(--s-2);
+}
+
+.hud-band {
+    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
+    font-size: var(--fs-micro);
+    letter-spacing: 4px;
+}
+
+.hud-strip { flex-direction: row; margin-top: var(--s-4); }
+
+.hud-next { flex-grow: 1; min-height: 64px; margin-right: var(--s-3); }
+
+.hud-next__time {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+}
+
+.hud-threat { min-height: 64px; }
+
+.hud-threat__level {
+    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
+    font-size: var(--fs-xs);
+    letter-spacing: 3px;
+    margin-left: var(--s-4);
+}
+
+.hud-advisor {
+    flex-direction: row;
+    align-items: flex-start;
+    margin-top: var(--s-4);
+    min-height: 48px;
+}
+
+.hud-advisor__caret {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-sm);
+    color: var(--c-phosphor);
+    margin-right: var(--s-3);
+}
+
+.hud-advisor__text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+    font-size: var(--fs-sm);
+    color: var(--c-phosphor);
+    text-shadow: 0 0 8px var(--c-phosphor-glow);
+}
+
+.hud-raid { margin-top: var(--s-4); padding-right: var(--s-3); }
+.hud-raid.is-hidden { display: none; }
+.hud-raid__pip { width: 20px; height: 20px; margin-right: var(--s-4); }
+.hud-raid__title { margin-right: var(--s-4); }
+
+.hud-raid__sub {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-micro);
+    color: var(--c-text-dim);
+    margin-top: var(--s-1);
+}
+
+.hud-raid__time {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-md);
+}
+
+.hud-raid__btn { min-height: 96px; padding: 0 var(--s-5); }
+
+.hud-screen { flex-grow: 1; }
+
+.hud-tabbar { padding-bottom: var(--s-4); }
+
+/* Procedural icons are drawn by Icons.cs; this sets the stroke color. */
+.ds-icon { --icon-color: var(--c-text-dim); }
+.ds-tab.is-active > .ds-icon { --icon-color: var(--c-phosphor); }
+
+/* Locked destination (systems offline in this run) */
+.screen-locked { justify-content: center; padding: 0 var(--s-8); }
+.screen-locked__panel { padding: var(--s-8) var(--s-6); background-color: var(--c-panel-solid); }
+.screen-locked__state { margin-top: var(--s-2); margin-bottom: var(--s-5); letter-spacing: 6px; }
+.screen-locked__line { margin-bottom: var(--s-6); }
+.screen-locked__req { align-self: flex-start; min-height: 56px; }

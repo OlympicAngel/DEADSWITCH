@@ -57,8 +57,8 @@
 .t-dim { color: var(--c-text-dim); }
 .t-faint { color: var(--c-text-faint); }
 
-/* Unity labels carry theme padding; the kit owns spacing. */
-.ds-root Label {
+/* Unity labels carry theme padding; the kit owns spacing (same specificity as the theme rule, loaded later). */
+.unity-label {
     padding: 0;
     margin: 0;
 }

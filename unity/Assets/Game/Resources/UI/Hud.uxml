@@ -1,0 +1,113 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Hud.uss" />
+  <ui:VisualElement name="hud" class="hud">
+
+    <!-- Status strip: always-visible essentials (doc 08 s4) -->
+    <ui:VisualElement name="status" class="hud-status">
+      <ui:VisualElement class="hud-topline">
+        <ui:VisualElement class="row grow">
+          <ui:VisualElement class="hud-sigil" />
+          <ui:VisualElement>
+            <ui:Label name="hub-name" text="HUB // BUNKER T1" class="ds-label hud-hubname" />
+            <ui:Label name="clock" text="DAY 03  14:22" class="hud-clock" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="hud-override">
+          <ui:Label text="OVERRIDE" class="ds-label hud-override__label" />
+          <ui:VisualElement name="override-pips" class="row">
+            <ui:VisualElement class="hud-opip is-on" />
+            <ui:VisualElement class="hud-opip" />
+            <ui:VisualElement class="hud-opip" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+      <ui:VisualElement class="hud-panels">
+        <ui:VisualElement name="energy-panel" class="ds-panel hud-energy">
+          <ui:VisualElement class="row">
+            <ui:Label text="ENERGY" class="ds-label grow" />
+            <ui:Label name="energy-net" text="+60/H" class="hud-delta t-phosphor" />
+          </ui:VisualElement>
+          <ui:VisualElement class="row--baseline hud-valuerow">
+            <ui:Label name="energy-value" text="262" class="ds-value hud-big t-phosphor" />
+            <ui:Label name="energy-cap" text="/500" class="ds-unit" />
+          </ui:VisualElement>
+          <ui:VisualElement name="energy-meter" class="ds-meter" />
+          <ui:VisualElement name="energy-spark" class="ds-sparkline hud-spark" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="hud-col">
+          <ui:VisualElement name="compute-panel" class="ds-panel hud-mini">
+            <ui:VisualElement class="row">
+              <ui:Label text="COMPUTE" class="ds-label grow" />
+              <ui:Label name="compute-rate" text="+60/H" class="hud-delta t-dim" />
+            </ui:VisualElement>
+            <ui:VisualElement class="row--baseline hud-valuerow">
+              <ui:Label name="compute-value" text="100" class="ds-value hud-mid" />
+              <ui:Label name="compute-cap" text="/100" class="ds-unit" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement name="people-panel" class="ds-panel hud-mini">
+            <ui:VisualElement class="row">
+              <ui:Label text="PEOPLE" class="ds-label grow" />
+              <ui:Label name="people-crew" text="CREW 3/3" class="hud-delta t-dim" />
+            </ui:VisualElement>
+            <ui:VisualElement class="row--baseline hud-valuerow">
+              <ui:Label name="people-value" text="20" class="ds-value hud-mid" />
+              <ui:Label name="people-cap" text="/20" class="ds-unit" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="core-panel" class="ds-panel hud-core">
+          <ui:Label text="CORE" class="ds-label" />
+          <ui:VisualElement name="core-gauge" class="ds-gauge hud-gauge">
+            <ui:Label name="core-value" text="23" class="hud-gauge__value t-phosphor" />
+            <ui:Label text="%" class="hud-gauge__unit" />
+          </ui:VisualElement>
+          <ui:Label name="core-band" text="STABLE" class="hud-band t-phosphor" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+      <ui:VisualElement class="hud-strip">
+        <ui:VisualElement name="next-timer" class="ds-chip hud-next">
+          <ui:VisualElement name="next-pip" class="ds-pip" />
+          <ui:Label name="next-label" text="BATTERY BANK L1" class="ds-chip__label grow" />
+          <ui:Label name="next-time" text="12:30" class="hud-next__time" />
+        </ui:VisualElement>
+        <ui:VisualElement name="threat" class="ds-chip hud-threat">
+          <ui:Label text="THREAT" class="ds-chip__label" />
+          <ui:Label name="threat-level" text="LOW" class="hud-threat__level t-phosphor" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+      <ui:VisualElement name="advisor" class="hud-advisor">
+        <ui:Label text="&gt;" class="hud-advisor__caret" />
+        <ui:Label name="advisor-text" text="Power is the problem. Power is always the problem." class="hud-advisor__text" />
+      </ui:VisualElement>
+
+      <ui:VisualElement name="raid-banner" class="ds-banner hud-raid">
+        <ui:VisualElement class="ds-pip ds-pip--amber ds-pip--diamond hud-raid__pip" />
+        <ui:VisualElement class="grow">
+          <ui:VisualElement class="row">
+            <ui:Label text="RAID" class="ds-title t-amber hud-raid__title" />
+            <ui:Label name="raid-time" text="17:42" class="hud-raid__time t-amber" />
+          </ui:VisualElement>
+          <ui:Label name="raid-estimate" text="EST. 34  //  DEF 12" class="hud-raid__sub" />
+        </ui:VisualElement>
+        <ui:VisualElement name="raid-defend" class="ds-btn ds-btn--warn hud-raid__btn"><ui:Label text="DEFEND" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- Screen area: the 3D base shows through; screens mount here -->
+    <ui:VisualElement name="screen" class="hud-screen" />
+
+    <!-- Command bar -->
+    <ui:VisualElement name="tabbar" class="ds-tabbar hud-tabbar">
+      <ui:VisualElement name="tab-base" class="ds-tab is-active"><ui:VisualElement class="ds-tab__icon ds-icon ds-icon--base" /><ui:Label text="BASE" class="ds-tab__label" /></ui:VisualElement>
+      <ui:VisualElement name="tab-map" class="ds-tab"><ui:VisualElement class="ds-tab__icon ds-icon ds-icon--map" /><ui:Label text="MAP" class="ds-tab__label" /></ui:VisualElement>
+      <ui:VisualElement name="tab-core" class="ds-tab"><ui:VisualElement class="ds-tab__icon ds-icon ds-icon--core" /><ui:Label text="CORE" class="ds-tab__label" /></ui:VisualElement>
+      <ui:VisualElement name="tab-ops" class="ds-tab"><ui:VisualElement class="ds-tab__icon ds-icon ds-icon--ops" /><ui:Label text="OPS" class="ds-tab__label" /></ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>
