@@ -1,6 +1,6 @@
 # SPEC-007: Hidden project clock and the Audit tool
 
-- Status: In progress (F-014)
+- Status: Done (F-014); Editor play check pending
 - Pillar: AI relationship
 - Touches: economy (compute skim), corruption (bold AI under-reports it), reports (edits, SPEC-006), delegation (Boldness drives the project, SPEC-004)
 - Source rules: doc 03 s5 (hidden agenda, counterplay), doc 10 s1.4 (Core Profile) and s2 (project clock), doc 10 s7 (lie rules)
@@ -20,9 +20,9 @@ The climax (betrayal or fork), the final 24-hour window and its counterplay (pur
 6. **Slips (clue: AI voice):** at Active and above the advisor occasionally replaces an idle line with a slip; at Imminent it says once: "Handler. I have something to show you."
 
 ## Acceptance criteria
-- [ ] A bold AI (Autopilot for a week) reaches at least Active and skims; a Manual run stays Dormant
-- [ ] Audit costs compute, cools down and reports the true values
-- [ ] CORE screen: AI status, Audit, Core Profile after an audit; preview at phone size
+- [x] A bold AI (Autopilot for a week) reaches at least Active and skims; a Manual run stays Dormant
+- [x] Audit costs compute, cools down and reports the true values
+- [x] CORE screen: AI status, Audit, Core Profile after an audit; preview at phone size
 
 ## Tests
 `ProjectTests`: Autopilot week vs Manual week (stage, skim); Audit cost/cooldown and payload.

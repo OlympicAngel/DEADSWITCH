@@ -54,6 +54,7 @@ namespace Deadswitch.Game.UI.Hud
         public AdvisorTicker Advisor { get; private set; }
 
         private AdvisorVoice _voice;
+        private CorruptionBand _trueBand = (CorruptionBand)(-1);
         private ReportScreen _report;
         private VisualElement _reportChip;
         private int _chipRaid;
@@ -108,6 +109,7 @@ namespace Deadswitch.Game.UI.Hud
             _report = new ReportScreen(Router);
             Router.Register(_report);
             Router.Register(new OpsScreen(OpenReport));
+            Router.Register(new CoreScreen(() => _voice.History));
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
             Router.Register(new LockedScreen("map", "SECTOR MAP", "Long-range sensors are dark. I can see the perimeter. Nothing past it.", "RESTORE MODULE M1"));
@@ -126,7 +128,7 @@ namespace Deadswitch.Game.UI.Hud
             _energy.Set(_host.Sim.State.Energy, true);
             _compute.Set(_host.Sim.State.Compute, true);
             _people.Set(_host.Sim.State.People, true);
-            _core.Set(CorruptionSystem.Percent(_host.Sim.State.CorruptionMilli), true);
+            _core.Set(CorruptionSystem.Percent(ProjectSystem.ReportedCorruptionMilli(_host.Sim.State, _host.Sim.Config)), true);
         }
 
         private void OnDestroy()
@@ -201,10 +203,21 @@ namespace Deadswitch.Game.UI.Hud
             _peopleCrew.text = (s.AutomationLoad > 0 ? "AI-RUN " + s.AutomationLoad : "CREW " + f.CrewAssigned + "/" + f.CrewNeeded);
             SetTone(_peopleCrew, s.AutomationLoad > 0 ? "t-amber" : "t-dim");
 
-            int pct = CorruptionSystem.Percent(s.CorruptionMilli);
+            // The readout is what the core reports (a bold AI under-reports, SPEC-007); the glitch is the true band.
+            int reported = ProjectSystem.ReportedCorruptionMilli(s, c);
+            int pct = CorruptionSystem.Percent(reported);
             _core.Set(pct);
             _gauge.Set(pct / 100f);
-            CorruptionBand band = CorruptionSystem.Band(c, s.CorruptionMilli);
+            CorruptionBand band = CorruptionSystem.Band(c, reported);
+            CorruptionBand trueBand = CorruptionSystem.Band(c, s.CorruptionMilli);
+            if (trueBand != _trueBand)
+            {
+                _trueBand = trueBand;
+                float weight = GlitchText.BandWeight((int)trueBand) * _host.Settings.Effects;
+                Advisor.SetGlitch(weight);
+                _ui.SetGlitch(weight);
+            }
+
             if (band != _band)
             {
                 _band = band;
@@ -215,9 +228,6 @@ namespace Deadswitch.Game.UI.Hud
                 _coreGaugeEl.EnableInClassList("ds-gauge--amber", band == CorruptionBand.Glitchy);
                 _coreGaugeEl.EnableInClassList("ds-gauge--red", band >= CorruptionBand.Unstable);
                 _coreDot.EnableInClassList("is-hidden", band == CorruptionBand.Stable);
-                float weight = GlitchText.BandWeight((int)band) * _host.Settings.Effects;
-                Advisor.SetGlitch(weight);
-                _ui.SetGlitch(weight);
             }
 
             _clock.text = Fmt.Clock(s.Tick);

@@ -1,0 +1,133 @@
+using System.Collections.Generic;
+using Deadswitch.Game.Core;
+using Deadswitch.Game.Presentation;
+using Deadswitch.Host.Reports;
+using Deadswitch.Sim;
+using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
+using UnityEngine.UIElements;
+
+namespace Deadswitch.Game.UI.Screens
+{
+    /// <summary>
+    /// CORE: the AI terminal (SPEC-007). What the core reports about itself, the Audit, the Core Profile from the
+    /// last Audit (the truth at that time), and the recent transcript. Layout: Resources/UI/Core.uxml + Core.uss.
+    /// </summary>
+    public sealed class CoreScreen : IGameScreen
+    {
+        private static readonly string[] StageNames = { "DORMANT", "ACTIVE", "ADVANCED", "IMMINENT" };
+        private static readonly string[] DelegationNames = { "MANUAL", "ROUTINES", "AUTOPILOT" };
+
+        private readonly GameHost _host;
+        private readonly VisualElement _ui;
+        private readonly System.Func<IReadOnlyList<string>> _history;
+        private bool _visible;
+
+        public CoreScreen(System.Func<IReadOnlyList<string>> history)
+        {
+            _host = GameHost.Instance;
+            _history = history;
+            Root = new VisualElement();
+            TemplateContainer tree = UiRoot.Load("Core");
+            Root.Add(tree);
+            _ui = tree;
+            _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _host.Ticked += () =>
+            {
+                if (_visible)
+                {
+                    Refresh();
+                }
+            };
+        }
+
+        public string Id => "core";
+
+        public VisualElement Root { get; }
+
+        public void OnShow()
+        {
+            _visible = true;
+            _ui.Q<Label>("audit-reason").text = string.Empty;
+            Refresh();
+        }
+
+        public void OnHide()
+        {
+            _visible = false;
+        }
+
+        private void Refresh()
+        {
+            GameState s = _host.Sim.State;
+            SimConfig c = _host.Sim.Config;
+
+            int reported = ProjectSystem.ReportedCorruptionMilli(s, c);
+            CorruptionBand band = CorruptionSystem.Band(c, reported);
+            _ui.Q<Label>("core-reported").text = CorruptionSystem.Percent(reported).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var bandLabel = _ui.Q<Label>("core-band");
+            bandLabel.text = Fmt.BandName(band);
+            bandLabel.EnableInClassList("t-phosphor", band == CorruptionBand.Stable);
+            bandLabel.EnableInClassList("t-amber", band == CorruptionBand.Glitchy);
+            bandLabel.EnableInClassList("t-red", band >= CorruptionBand.Unstable);
+            VisualElement meter = _ui.Q("core-meter");
+            meter.EnableInClassList("ds-meter--amber", band == CorruptionBand.Glitchy);
+            meter.EnableInClassList("ds-meter--red", band >= CorruptionBand.Unstable);
+            Kit.SetMeter(meter, CorruptionSystem.Percent(reported) / 100f);
+            _ui.Q<Label>("core-deleg").text = DelegationNames[(int)s.Delegation];
+            _ui.Q<Label>("core-ovr").text = s.OverrideCharges + " / " + c.Override.MaxCharges;
+
+            bool ready = s.Tick >= s.AuditReadyTick;
+            VisualElement run = _ui.Q("audit-run");
+            run.EnableInClassList("is-disabled", !ready || s.Compute < c.Project.AuditComputeCost);
+            Kit.SetButtonText(run, ready
+                ? "RUN AUDIT // " + c.Project.AuditComputeCost + " COMPUTE"
+                : "AUDIT RECHARGING // " + Fmt.Countdown(_host.SecondsUntilTick(s.AuditReadyTick)));
+
+            CoreProfile p = CoreProfile.Latest(_host.Sim.Log.Events);
+            _ui.Q("profile-none").EnableInClassList("is-hidden", p != null);
+            _ui.Q("profile-body").EnableInClassList("is-hidden", p == null);
+            _ui.Q<Label>("profile-when").text = p != null ? "AUDIT D" + ((p.Tick / SimConfig.TicksPerDay) + 1) + " " + Clock(p.Tick) : string.Empty;
+            _ui.Q<Label>("core-lies").text = p != null ? p.UnverifiedLies.ToString(System.Globalization.CultureInfo.InvariantCulture) : "?";
+            if (p != null)
+            {
+                _ui.Q<Label>("dial-cold").text = (p.ColdnessMilli / 1000) + "%";
+                _ui.Q<Label>("dial-bold").text = (p.BoldnessMilli / 1000) + "%";
+                Kit.SetMeter(_ui.Q("dial-cold-meter"), p.ColdnessMilli / 100000f);
+                Kit.SetMeter(_ui.Q("dial-bold-meter"), p.BoldnessMilli / 100000f);
+                _ui.Q<Label>("true-corruption").text = CorruptionSystem.Percent(p.TrueCorruptionMilli) + "%";
+                _ui.Q<Label>("skimmed").text = Fmt.Num(p.Skimmed);
+                _ui.Q<Label>("lies").text = p.UnverifiedLies.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                _ui.Q<Label>("stage").text = StageNames[(int)p.Stage];
+                VisualElement steps = _ui.Q("stage-steps");
+                for (int i = 0; i < steps.childCount; i++)
+                {
+                    steps[i].EnableInClassList("is-on", i <= (int)p.Stage);
+                }
+            }
+
+            VisualElement transcript = _ui.Q("transcript");
+            transcript.Clear();
+            foreach (string line in _history())
+            {
+                transcript.Add(Kit.Label("> " + line, "core-transcript__line"));
+            }
+        }
+
+        private void Audit()
+        {
+            CommandResult r = _host.Execute(Command.Audit());
+            _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty
+                : r.Reason == RejectReason.OnCooldown ? "The sweep is still recharging."
+                : Texts.Reason(r.Reason);
+            Refresh();
+        }
+
+        private static string Clock(long tick)
+        {
+            long m = tick % SimConfig.TicksPerDay;
+            return (m / 60).ToString("00") + ":" + (m % 60).ToString("00");
+        }
+    }
+}

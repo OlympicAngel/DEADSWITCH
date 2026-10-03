@@ -19,6 +19,9 @@ namespace Deadswitch.Game.UI.Hud
         private readonly GameHost _host;
         private readonly AdvisorTicker _ticker;
         private readonly Advisor _advisor;
+        private const int HistoryLength = 6;
+
+        private readonly System.Collections.Generic.List<string> _history = new System.Collections.Generic.List<string>();
         private float _stateClock;
 
         public AdvisorVoice(GameHost host, AdvisorTicker ticker)
@@ -52,6 +55,9 @@ namespace Deadswitch.Game.UI.Hud
             host.CaughtUp += OnCaughtUp;
         }
 
+        /// <summary>The most recent lines, oldest first (CORE transcript).</summary>
+        public System.Collections.Generic.IReadOnlyList<string> History => _history;
+
         public void Dispose()
         {
             _host.EventRaised -= OnEvent;
@@ -71,6 +77,11 @@ namespace Deadswitch.Game.UI.Hud
             if (line != null)
             {
                 _ticker.Say(line);
+                _history.Add(line);
+                if (_history.Count > HistoryLength)
+                {
+                    _history.RemoveAt(0);
+                }
             }
         }
 

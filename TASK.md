@@ -1,6 +1,6 @@
 # TASK: F-014 Hidden project clock + Audit
 
-- Status: In progress
+- Status: Done
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
 - Pillar / milestone: AI relationship / M2
 - Spec: docs/specs/SPEC-007-project-and-audit.md
@@ -12,8 +12,8 @@ A hidden project the AI grows from Boldness and skimmed compute, clues for the h
 ## Steps
 - [x] 1. Sim: `[project]` config, clock + skim + stage events, reported corruption, `Audit` command, tests
 - [x] 2. Host: advisor slips, imminent and audit lines; Core Profile view
-- [ ] 3. UI: CORE screen (AI status, Audit, Core Profile, recent transcript); HUD shows reported corruption; preview
-- [ ] 4. Docs (SPEC-007, BACKLOG, HANDOFF, roadmap)
+- [x] 3. UI: CORE screen (AI status, Audit, Core Profile, recent transcript); HUD shows reported corruption; preview
+- [x] 4. Docs (SPEC-007, BACKLOG, HANDOFF, roadmap)
 
 ## Notes
 - Pacing (seed 5, full autopilot): Active by day 4, Imminent around day 10 (`advisor --delegation autopilot`).
