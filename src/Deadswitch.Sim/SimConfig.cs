@@ -29,6 +29,7 @@ namespace Deadswitch.Sim
         public ProjectConfig Project = new ProjectConfig();
         public ModuleConfig Modules = new ModuleConfig();
         public TierConfig Tier = new TierConfig();
+        public OpeningConfig Opening = new OpeningConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -124,6 +125,7 @@ namespace Deadswitch.Sim
             Project.Visit(visitor);
             Modules.Visit(visitor);
             Tier.Visit(visitor);
+            Opening.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

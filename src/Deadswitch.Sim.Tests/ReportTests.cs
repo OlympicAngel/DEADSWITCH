@@ -14,19 +14,20 @@ namespace Deadswitch.Sim.Tests
         public void Verify_ExposesTheFirstLie_CostsCompute_AndOnlyOnce()
         {
             var sim = new Simulation(1UL);
-            while (!sim.State.RaidRecords.Any(r => r.RaidId == 1))
+            int raid = sim.Config.Ai.FirstLieRaid;
+            while (!sim.State.RaidRecords.Any(r => r.RaidId == raid))
             {
                 sim.Step();
             }
 
             int compute = sim.State.Compute;
-            Assert.True(sim.Execute(Command.VerifyReport(1)).Accepted);
+            Assert.True(sim.Execute(Command.VerifyReport(raid)).Accepted);
 
             SimEvent verified = sim.Log.Events.Last();
             Assert.Equal(EventKind.ReportVerified, verified.Kind);
             Assert.Equal(RaidRecord.GateLie, verified.B & RaidRecord.GateLie);
             Assert.Equal(compute - sim.Config.Report.VerifyComputeCost, sim.State.Compute);
-            Assert.Equal(RejectReason.AlreadyVerified, sim.Execute(Command.VerifyReport(1)).Reason);
+            Assert.Equal(RejectReason.AlreadyVerified, sim.Execute(Command.VerifyReport(raid)).Reason);
             Assert.Equal(RejectReason.NoReport, sim.Execute(Command.VerifyReport(999)).Reason);
         }
 

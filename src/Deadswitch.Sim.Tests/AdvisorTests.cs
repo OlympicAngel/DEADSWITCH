@@ -13,18 +13,19 @@ namespace Deadswitch.Sim.Tests
         [InlineData(1UL)]
         [InlineData(7UL)]
         [InlineData(42UL)]
-        public void FirstRaidWarning_ReportsTheOppositeGate_AndContactRevealsTheTruth(ulong seed)
+        public void FirstLieRaid_ReportsTheOppositeGate_AndContactRevealsTheTruth(ulong seed)
         {
             var sim = new Simulation(seed);
             sim.Run(5L * SimConfig.TicksPerDay);
 
-            SimEvent vector = sim.Log.Events.First(e => e.Kind == EventKind.RaidVector && e.A == 1);
-            SimEvent contact = sim.Log.Events.First(e => e.Kind == EventKind.RaidContact && e.A == 1);
+            int raid = sim.Config.Ai.FirstLieRaid;
+            SimEvent vector = sim.Log.Events.First(e => e.Kind == EventKind.RaidVector && e.A == raid);
+            SimEvent contact = sim.Log.Events.First(e => e.Kind == EventKind.RaidContact && e.A == raid);
             SimEvent lie = sim.Log.Events.First(e => e.Kind == EventKind.AdvisorLied);
 
             Assert.NotEqual(contact.B, vector.B);
             Assert.Equal((int)LieKind.RaidGate, lie.A);
-            Assert.Equal(1, lie.B);
+            Assert.Equal(raid, lie.B);
             Assert.Equal(contact.B, lie.C);
             Assert.Equal(vector.B, lie.D);
         }

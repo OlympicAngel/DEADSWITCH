@@ -218,8 +218,8 @@ autopilot_turtle_pct = 100
 # Autopilot evacuates when its estimate exceeds defense x this %. [1..10000]
 autopilot_evacuate_pct = 200
 
-# The first raid warning of a run reports the wrong gate (doc 10 s7.4). [true|false]
-first_lie = true
+# Raid number whose warning reports the wrong gate: the first lie (doc 10 s7.4). 0 disables it. [0..1000]
+first_lie_raid = 2
 
 # Chance per later raid warning that the reported gate is a lie, at 100% Boldness (scales linearly). [0..1000]
 lie_chance_permille_at_full_boldness = 300
@@ -332,6 +332,22 @@ people_cost_base = [4, 10, 20]
 
 # Human cost: one more person per this many total facility levels. [1..1000]
 people_cost_per_levels = 4
+
+# --------------------------------------------------------------------------------------------------
+# Opening of a run (SPEC-009): a scripted, beatable first raid and an early protection window. All (tune).
+[opening]
+
+# Play the opening raid and protection window in new runs. [true|false]
+enabled = true
+
+# Game minute the opening raid's warning appears. [1..100000]
+raid_at_minute = 6
+
+# Fixed strength of the opening raid (a Turtle garrison beats it). [1..100000]
+raid_strength = 12
+
+# No other raids before this game hour. [0..1000]
+protection_hours = 10
 
 # --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.

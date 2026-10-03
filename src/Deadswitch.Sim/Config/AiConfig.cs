@@ -10,7 +10,7 @@ namespace Deadswitch.Sim.Config
         public int PlanEnergyMargin = 150;
         public int AutopilotTurtlePct = 100;
         public int AutopilotEvacuatePct = 200;
-        public bool FirstLie = true;
+        public int FirstLieRaid = 2;
         public int LieChancePermilleAtFullBoldness = 300;
 
         public void Visit(IConfigVisitor v)
@@ -23,7 +23,7 @@ namespace Deadswitch.Sim.Config
             v.Int("plan_energy_margin", ref PlanEnergyMargin, 0, 100_000, "Delegated AI builds power first while net energy per hour is below this.");
             v.Int("autopilot_turtle_pct", ref AutopilotTurtlePct, 1, 10_000, "Autopilot turtles with the full garrison when its estimate exceeds defense x this %.");
             v.Int("autopilot_evacuate_pct", ref AutopilotEvacuatePct, 1, 10_000, "Autopilot evacuates when its estimate exceeds defense x this %.");
-            v.Bool("first_lie", ref FirstLie, "The first raid warning of a run reports the wrong gate (doc 10 s7.4).");
+            v.Int("first_lie_raid", ref FirstLieRaid, 0, 1_000, "Raid number whose warning reports the wrong gate: the first lie (doc 10 s7.4). 0 disables it.");
             v.Int("lie_chance_permille_at_full_boldness", ref LieChancePermilleAtFullBoldness, 0, 1000, "Chance per later raid warning that the reported gate is a lie, at 100% Boldness (scales linearly).");
             v.EndSection();
         }

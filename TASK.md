@@ -10,7 +10,7 @@
 Prologue, boot sequence, a beatable opening raid, early protection, the first real hit with the first lie, and a short objective guide.
 
 ## Steps
-- [ ] 1. Sim: `[opening]` config (opening raid, protection), `ai.first_lie_raid`, tests
+- [x] 1. Sim: `[opening]` config (opening raid, protection), `ai.first_lie_raid`, tests
 - [ ] 2. Host: opening guide (objectives from state), prologue cards
 - [ ] 3. Unity: prologue overlay, boot reveal of the HUD, guide chip with control highlight; previews
 - [ ] 4. Docs (SPEC-009, SPEC-004 first-lie note, BACKLOG, HANDOFF)

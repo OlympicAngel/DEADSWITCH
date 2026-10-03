@@ -39,9 +39,12 @@ namespace Deadswitch.Sim.Systems
                 return;
             }
 
-            if (spawnRoll && s.RaidsToday < c.Raid.MaxPerDay && s.Tick >= s.MercyUntilTick)
+            // SPEC-009: the opening raid comes on cue; nothing else before the protection window ends.
+            bool opening = c.Opening.Enabled && c.Raid.MaxPerDay > 0 && s.NextRaidId == 1 && s.Tick == c.Opening.RaidAtMinute;
+            bool protectedNow = c.Opening.Enabled && s.Tick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
+            if (opening || (spawnRoll && !protectedNow && s.RaidsToday < c.Raid.MaxPerDay && s.Tick >= s.MercyUntilTick))
             {
-                Spawn(ctx, estimateRoll, missRoll);
+                Spawn(ctx, estimateRoll, missRoll, opening ? c.Opening.RaidStrength : 0);
             }
         }
 
@@ -54,14 +57,14 @@ namespace Deadswitch.Sim.Systems
             ClearIncoming(s);
         }
 
-        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll)
+        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll, int fixedStrength)
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
             s.RaidId = s.NextRaidId++;
             s.RaidsToday++;
             s.RaidArriveTick = s.Tick + c.Raid.WarningMinutes;
-            s.RaidStrength = Defense.BaseRaidStrength(s, c);
+            s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
 
             int band = (int)CorruptionSystem.Band(c, s.CorruptionMilli);
             int errorPct = c.Raid.EstimateErrorPctByBand[band];
@@ -83,7 +86,7 @@ namespace Deadswitch.Sim.Systems
             var ai = ctx.Config.Ai;
             s.RaidGate = (RaidGate)(1 + (gateRoll % 4));
             bool lie;
-            if (s.RaidId == 1 && ai.FirstLie)
+            if (s.RaidId == ai.FirstLieRaid)
             {
                 lie = true;
             }
