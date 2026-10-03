@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
@@ -36,7 +37,10 @@ namespace Deadswitch.Sim.Systems
     /// <summary>The AI module tree (SPEC-008): catalog, research, gates for tier-up.</summary>
     public static class Modules
     {
-        public static readonly ModuleDef[] Catalog =
+        /// <summary>The tree, in config cost-list order.</summary>
+        public static IReadOnlyList<ModuleDef> Catalog => CatalogArray;
+
+        private static readonly ModuleDef[] CatalogArray =
         {
             new ModuleDef(0, ModuleNode.M1, ModuleField.Trunk, 1, ModuleNode.None, ModuleNode.None),
             new ModuleDef(1, ModuleNode.M2, ModuleField.Trunk, 2, ModuleNode.M1, ModuleNode.None),

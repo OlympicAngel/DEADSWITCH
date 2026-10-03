@@ -31,10 +31,19 @@ namespace Deadswitch.Sim.Systems
         public static void Tick(SimContext ctx)
         {
             GameState s = ctx.State;
-            if (s.ClimaxAtTick > 0 && s.Tick >= s.ClimaxAtTick && !Silenced(s))
+            if (s.ClimaxAtTick == 0 || s.Tick < s.ClimaxAtTick || Silenced(s))
             {
-                Fire(ctx);
+                return;
             }
+
+            // Betrayal is an attack: it waits for the daily cap and the mercy window like any other (doc 10 s4).
+            bool betrayal = s.ColdnessMilli >= s.BoldnessMilli;
+            if (betrayal && s.RaidId == 0 && (s.Tick < s.MercyUntilTick || s.RaidsToday >= ctx.Config.Raid.MaxPerDay))
+            {
+                return;
+            }
+
+            Fire(ctx);
         }
 
         /// <summary>OVERRIDE "Silence the AI" (rule 3): agenda, advice and the climax timer pause.</summary>
@@ -76,16 +85,8 @@ namespace Deadswitch.Sim.Systems
             int compute = s.Compute;
             s.Energy -= energy;
             s.Compute = 0;
-            s.CorruptionMilli = 0;
-            s.Modules &= TrunkMask;
-            if (s.ResearchNode > (int)ModuleNode.M3)
-            {
-                s.ResearchNode = 0;
-                s.ResearchStartTick = 0;
-                s.ResearchCompleteTick = 0;
-                s.ResearchPaidEnergy = 0;
-                s.ResearchPaidCompute = 0;
-            }
+            CorruptionSystem.Add(ctx, -s.CorruptionMilli);
+            ForgetLogistics(s);
 
             Reset(ctx);
             ctx.Emit(EventKind.CorePurged, energy, compute);
@@ -148,7 +149,7 @@ namespace Deadswitch.Sim.Systems
                     }
                 }
 
-                s.Modules &= TrunkMask;
+                ForgetLogistics(s);
                 s.Compute = 0;
                 s.OverrideMaxPenalty = System.Math.Min(s.OverrideMaxPenalty + 1, ctx.Config.Override.MaxCharges - 1);
                 s.OverrideCharges = System.Math.Min(s.OverrideCharges, OverrideSystem.MaxCharges(s, ctx.Config));
@@ -156,6 +157,20 @@ namespace Deadswitch.Sim.Systems
             }
 
             Reset(ctx);
+        }
+
+        /// <summary>Drops the field modules (the trunk stays) and any field research in progress.</summary>
+        private static void ForgetLogistics(GameState s)
+        {
+            s.Modules &= TrunkMask;
+            if (s.ResearchNode > (int)ModuleNode.M3)
+            {
+                s.ResearchNode = 0;
+                s.ResearchStartTick = 0;
+                s.ResearchCompleteTick = 0;
+                s.ResearchPaidEnergy = 0;
+                s.ResearchPaidCompute = 0;
+            }
         }
 
         private static void Reset(SimContext ctx)

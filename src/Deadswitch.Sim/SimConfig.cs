@@ -199,6 +199,11 @@ namespace Deadswitch.Sim
                 problems.Add("project stages must increase: active_from < advanced_from < imminent_from.");
             }
 
+            if (Climax.CancelToPct >= Project.ImminentFrom)
+            {
+                problems.Add("climax.cancel_to_pct must be below project.imminent_from.");
+            }
+
             return problems;
         }
     }

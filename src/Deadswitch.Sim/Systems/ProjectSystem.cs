@@ -35,8 +35,10 @@ namespace Deadswitch.Sim.Systems
             if (after != before)
             {
                 ctx.Emit(EventKind.ProjectStage, (int)after, (int)before, s.ProjectMilli);
-                ClimaxSystem.OnStage(ctx, after);
             }
+
+            // Every hour at Imminent without a window opens one (also after loading an older save or a shallow cancel).
+            ClimaxSystem.OnStage(ctx, after);
         }
 
         public static ProjectStage Stage(SimConfig c, int milli)

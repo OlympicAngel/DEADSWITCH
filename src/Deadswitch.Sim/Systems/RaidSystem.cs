@@ -70,6 +70,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             s.RaidStrength = SimMath.PctFloor(s.RaidStrength, strengthPct);
+            s.RaidEstimate = SimMath.PctFloor(s.RaidEstimate, strengthPct);
             s.RaidArriveTick = s.Tick + 1;
             s.BetrayalRaidId = s.RaidId;
             return s.RaidId;
@@ -123,7 +124,7 @@ namespace Deadswitch.Sim.Systems
             else
             {
                 long chance = (long)ai.LieChancePermilleAtFullBoldness * s.BoldnessMilli / 100_000;
-                lie = SimMath.Hash((uint)s.RaidId ^ (uint)s.Rng.Inc, (uint)s.Tick) % 1000 < chance;
+                lie = SimMath.Hash((uint)s.RaidId ^ (uint)(s.Rng.State >> 32), (uint)s.Tick) % 1000 < chance;
             }
 
             s.RaidGateReported = lie ? Opposite(s.RaidGate) : s.RaidGate;
@@ -164,7 +165,7 @@ namespace Deadswitch.Sim.Systems
 
             int defense = id == s.BetrayalRaidId ? Defense.Rating(s, c, s.Posture, s.Garrison, false) : Defense.Rating(s, c);
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
-            int lies = s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
+            int lies = s.RaidGateReported != RaidGate.None && s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 
             if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct)
             {
@@ -220,7 +221,7 @@ namespace Deadswitch.Sim.Systems
 
             // SPEC-006 rule 4: a corrupted AI may understate the breach in its summary (the ledger stays true).
             if (energy > 0 && CorruptionSystem.Band(c, s.CorruptionMilli) >= CorruptionBand.Unstable
-                && SimMath.Hash((uint)id ^ (uint)s.Rng.Inc, (uint)s.Tick + 7u) % 100 < (uint)c.Report.EditChancePct)
+                && SimMath.Hash((uint)id ^ (uint)(s.Rng.State >> 32), (uint)s.Tick + 7u) % 100 < (uint)c.Report.EditChancePct)
             {
                 s.LiesTold++;
                 ctx.Emit(EventKind.AdvisorLied, (int)LieKind.ReportEdit, id, energy, SimMath.PctFloor(energy, c.Report.EditShownPct));

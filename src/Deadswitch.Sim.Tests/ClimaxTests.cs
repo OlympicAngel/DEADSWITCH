@@ -1,6 +1,7 @@
 using System.Linq;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Events;
+using Deadswitch.Sim.Persistence;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
 using Xunit;
@@ -58,6 +59,33 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(0, sim.State.ClimaxAtTick);
             Assert.Equal(0, sim.State.Compute);
             Assert.Equal(0, sim.State.ProjectMilli);
+        }
+
+        [Fact]
+        public void Betrayal_WaitsForTheMercyWindow()
+        {
+            Simulation sim = AtImminent(boldness: 0, coldness: 90_000);
+            sim.State.MercyUntilTick = sim.State.ClimaxAtTick + 120;
+            sim.Run(sim.State.ClimaxAtTick - sim.State.Tick + 60);
+            Assert.DoesNotContain(sim.Log.Events, e => e.Kind == EventKind.Climax);
+
+            sim.Run(120);
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.Climax && e.A == (int)ClimaxKind.Betrayal);
+        }
+
+        [Fact]
+        public void SaveLoad_MidWindow_ContinuesIdentically()
+        {
+            Simulation live = AtImminent(boldness: 90_000, coldness: 0);
+            live.Execute(Command.UseOverride(OverrideKind.Silence));
+            Simulation loaded = SaveGame.Load(SaveGame.Write(live), live.Config).Simulation;
+
+            long rest = live.State.ClimaxAtTick - live.State.Tick + 30;
+            live.Run(rest);
+            loaded.Run(rest);
+
+            Assert.Equal(StateHasher.Hash(live.State), StateHasher.Hash(loaded.State));
+            Assert.Equal(live.Log.Events, loaded.Log.Events);
         }
 
         private static Simulation AtImminent(int boldness, int coldness)
