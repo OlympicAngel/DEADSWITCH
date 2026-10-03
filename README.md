@@ -6,10 +6,12 @@ Mobile, offline-first (online-ready), post-apocalyptic strategy. Hard, rough, in
 
 ## Quick start (Windows)
 ```powershell
-pwsh tools\setup-env.ps1      # toolchains and caches on D:, prints install steps
-pwsh tools\check.ps1          # restore, format, build (warnings as errors), test
-dotnet run --project src\Deadswitch.Cli -- 42 24    # headless sim: seed 42, 24 hours
+powershell -ExecutionPolicy Bypass -File tools\setup-env.ps1  # toolchains, caches, and temp files on D:
+powershell -ExecutionPolicy Bypass -File tools\check.ps1      # restore, format, build (warnings as errors), test
+& "$env:DOTNET_ROOT\dotnet.exe" run --project src\Deadswitch.Cli -- 42 24  # headless sim: seed 42, 24 hours
 ```
+
+The check script prefers the SDK in `DOTNET_ROOT`. For direct .NET CLI commands, use that SDK explicitly so a machine-wide .NET installation earlier on `PATH` does not select a different SDK.
 Unity: see [`unity/README.md`](unity/README.md).
 
 ## Where things are

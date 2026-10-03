@@ -1,18 +1,17 @@
 # Unity project
 
-The Unity project is created here (not yet generated). It is the presentation and platform layer only. Game rules live in `src/Deadswitch.Sim` (ADR-0002).
+This is the presentation and platform layer. Game rules live in `src/Deadswitch.Sim` (ADR-0002), included as a local Unity package in `Packages/manifest.json`.
+See [`../docs/design/11_visual_theme_and_motion.md`](../docs/design/11_visual_theme_and_motion.md) for the visual and motion guide; its exact palette remains provisional.
 
-## Create it
-1. Install Unity Hub with its install location on D: (`tools/setup-env.ps1` prints how).
-2. Install **Unity 6 LTS (6000.x)** with Android and iOS modules.
-3. In Unity Hub: New project > 2D (URP) > location `<repo>\unity` > name `Deadswitch`. (If Hub insists on a subfolder, move the contents up so `unity\Assets` exists.)
-4. Record the exact editor version in `unity/ProjectSettings/ProjectVersion.txt` (commit it) and note it in an ADR if it differs from 6000.x.
-5. Add the sim as a local package. Edit `unity/Packages/manifest.json`:
-   ```json
-   "com.deadswitch.sim": "file:../../src/Deadswitch.Sim"
-   ```
-6. Commit generated `.meta` files. Never ignore them.
-7. `git lfs install` once so binary art/audio goes to LFS (`.gitattributes` is preconfigured).
+## Project setup
+
+- Unity **6000.3.25f1 (Unity 6.3 LTS)** was used to generate this project from the Universal Render Pipeline blank template. The Unity 6.3 template catalog did not offer a dedicated 2D URP starter; URP supports the planned 2D workflow.
+- Android Build Support, Android SDK/NDK tools, OpenJDK, and iOS Build Support were installed with the Editor. Android builds can be developed on Windows; producing and signing an iOS build still requires macOS and Xcode.
+- On the setup workstation, the Editor and Unity Hub are installed under `D:\dev\unity`. The existing Hub session opened this project and the Editor resolved its Unity Personal entitlement; a separate Unity CLI sign-in is not required. If licensing prompts return, resolve them in Hub/Editor. Keep the Editor, project, and caches on D:; Unity keeps small per-user Hub/licensing metadata in its normal profile location.
+- Open this `unity` folder from Unity Hub. Keep the exact editor version in `ProjectSettings/ProjectVersion.txt` committed.
+- The simulation package is linked via `"com.deadswitch.sim": "file:../../src/Deadswitch.Sim"`. Keep the path relative so the project works from a checkout at a different location.
+- `git lfs install` is already configured on the setup workstation; `.gitattributes` is preconfigured for binary art/audio.
+- Commit generated `.meta` files. Never ignore them.
 
 ## Layout to use inside Assets/
 ```

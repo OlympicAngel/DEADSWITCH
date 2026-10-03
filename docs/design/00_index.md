@@ -18,6 +18,7 @@
 | 08 | `08_tech_and_roadmap.md` | Offline architecture, online plan, monetization, UI, notifications, roadmap |
 | 09 | `09_decisions_and_open_questions.md` | Locked decisions, cuts/merges, conflicts, open questions |
 | 10 | `10_resolved_decisions.md` | **Closes every open question from 09. Wins over earlier docs.** Balance placeholders, rules, tech decisions |
+| 11 | `11_visual_theme_and_motion.md` | Visual language, prototype palette, motion, effects, accessibility review |
 
 ## One-paragraph pitch
 

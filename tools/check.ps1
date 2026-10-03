@@ -4,6 +4,13 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
 
+$dotnetRoot = $env:DOTNET_ROOT
+$dotnetExe = if ($dotnetRoot) { Join-Path $dotnetRoot "dotnet.exe" } else { $null }
+if (-not $dotnetExe -or -not (Test-Path $dotnetExe)) {
+    $dotnetCommand = Get-Command dotnet -ErrorAction Stop
+    $dotnetExe = $dotnetCommand.Source
+}
+
 function Invoke-Step {
     param([string]$Label, [scriptblock]$Cmd)
     Write-Host ("==> " + $Label) -ForegroundColor Cyan
@@ -11,8 +18,8 @@ function Invoke-Step {
     if ($LASTEXITCODE -ne 0) { throw ("Step failed: " + $Label) }
 }
 
-Invoke-Step "restore" { dotnet restore DEADSWITCH.sln }
-Invoke-Step "format (verify)" { dotnet format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore }
-Invoke-Step "build" { dotnet build DEADSWITCH.sln -c Release --no-restore -warnaserror }
-Invoke-Step "test" { dotnet test DEADSWITCH.sln -c Release --no-build }
+Invoke-Step "restore" { & $dotnetExe restore DEADSWITCH.sln }
+Invoke-Step "format (verify)" { & $dotnetExe format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore }
+Invoke-Step "build" { & $dotnetExe build DEADSWITCH.sln -c Release --no-restore -warnaserror }
+Invoke-Step "test" { & $dotnetExe test DEADSWITCH.sln -c Release --no-build }
 Write-Host "All checks passed." -ForegroundColor Green

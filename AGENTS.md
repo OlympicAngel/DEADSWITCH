@@ -8,7 +8,7 @@ DEADSWITCH: a mobile, offline-first (online-ready) post-apocalyptic strategy gam
 ## Source of truth (in priority order)
 1. `docs/design/10_resolved_decisions.md` — wins over everything below it.
 2. `docs/adr/` — accepted architecture decisions.
-3. `docs/design/00..09` — the full design.
+3. `docs/design/00..11` — the full design.
 4. `docs/specs/SPEC-*.md` — the feature you are working on.
 If two sources conflict, stop and flag it in your reply. Do not silently pick one.
 
@@ -24,10 +24,10 @@ If two sources conflict, stop and flag it in your reply. Do not silently pick on
 
 ## Commands
 ```
-dotnet build DEADSWITCH.sln -warnaserror
-dotnet test  DEADSWITCH.sln
-dotnet run --project src/Deadswitch.Cli -- 42 24     # seed, hours
-pwsh tools/check.ps1                                  # full gate: format + build + test
+& "$env:DOTNET_ROOT\dotnet.exe" build DEADSWITCH.sln -warnaserror
+& "$env:DOTNET_ROOT\dotnet.exe" test DEADSWITCH.sln
+& "$env:DOTNET_ROOT\dotnet.exe" run --project src/Deadswitch.Cli -- 42 24  # seed, hours
+powershell -ExecutionPolicy Bypass -File tools\check.ps1  # full gate: format + build + test
 ```
 
 ## Hard rules (the sim core)
@@ -46,6 +46,12 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 3. **Small PRs.** One concern per branch. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
 4. **Decisions get ADRs.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
 5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log, and `docs/agents/HANDOFF.md`.
+
+## Design Quality
+- For game ideas and player-facing changes, identify the player value, the satisfying action/result, the feedback that makes it legible, and the next meaningful choice. Aim for earned "one more turn" momentum, not pressure to keep checking in.
+- Keep challenge understandable, fair, and recoverable. Preserve accessibility and resolved decisions; do not use deceptive urgency, shame, punitive absence, coercive notifications, or pay-to-win pressure.
+- Improve clearly beneficial, low-risk details within scope. Ask before material or subjective changes to scope, balance, difficulty, rewards, loss, timers, monetization, notifications, accessibility, or intended player emotion.
+- Use [the engagement playbook](docs/agents/engagement.md) for substantial design and feature work. Keep reusable guidance in the canonical `docs/agents/` playbooks and their thin agent-skill pointers; update the closest playbook rather than creating duplicates.
 
 ## Definition of done
 - `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).

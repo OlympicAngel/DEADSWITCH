@@ -65,6 +65,8 @@ Gritty, tense, and cold, with dark humor from the AI. The world is hostile but n
 - **Military terminal / CRT HUD** — green and amber glow, scanlines, glitches. This is the AI's interface.
 - **Dark 2D illustrated style** — heavy contrast, grain, and comic-like panels for battle reports.
 
+See [11_visual_theme_and_motion.md](./11_visual_theme_and_motion.md) for the visual system and prototype guidance. Its exact palette and motion suggestions are not locked decisions.
+
 Visual rules:
 
 - The CRT HUD glitches more as corruption rises.

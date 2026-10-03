@@ -26,6 +26,8 @@ $vars = @{
     "DOTNET_CLI_TELEMETRY_OPTOUT" = "1"
     "DOTNET_NOLOGO"               = "1"
     "TEMP_DEV"                    = (Join-Path $DevRoot "tmp")
+    "TEMP"                        = (Join-Path $DevRoot "tmp")
+    "TMP"                         = (Join-Path $DevRoot "tmp")
 }
 foreach ($k in $vars.Keys) {
     [Environment]::SetEnvironmentVariable($k, $vars[$k], "User")
@@ -50,4 +52,5 @@ Write-Host "  2. Git for Windows: run the installer and choose $DevRoot\git as t
 Write-Host "  3. PowerShell 7 (pwsh): optional but the scripts work in Windows PowerShell 5.1 too."
 Write-Host "  4. Unity Hub: after installing, Settings > Installs > Install location = $DevRoot\unity\editors"
 Write-Host "     Install Unity 6 LTS (6000.x) with Android and iOS build support modules."
-Write-Host "  5. Restart the terminal, then run: pwsh tools\check.ps1"
+Write-Host "  5. Restart the terminal, then run: powershell -ExecutionPolicy Bypass -File tools\check.ps1"
+Write-Host "     Direct .NET commands should use: & `"$dotnetDir\dotnet.exe`" <arguments>"
