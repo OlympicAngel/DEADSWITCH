@@ -1,0 +1,93 @@
+/* OPS: defense setup (SPEC-005). Tokens only. */
+
+.ops {
+    flex-grow: 1;
+    padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6);
+    background-color: var(--c-scrim);
+}
+
+.ops-head { flex-direction: row; align-items: flex-end; margin-bottom: var(--s-3); }
+.ops-head__sub { margin-left: var(--s-4); padding-bottom: var(--s-1); }
+
+.ops-section { margin-top: var(--s-4); margin-bottom: var(--s-2); }
+
+/* Threat card */
+.ops-threat { padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.ops-threat__pip { width: 16px; height: 16px; margin-right: var(--s-3); }
+.ops-threat__kind { font-size: var(--fs-xs); }
+.ops-threat__time { font-size: var(--fs-xl); }
+.ops-threat__intel { margin-top: var(--s-1); }
+.ops-threat__quiet { margin-top: var(--s-2); }
+.ops-kv { margin-right: var(--s-8); }
+.ops-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); margin-top: var(--s-1); }
+.ops-ai-tag { align-self: flex-end; }
+.ops-lockdown { margin-top: var(--s-3); }
+.ops-lockdown > .ds-btn__label { font-size: var(--fs-xs); }
+
+/* Posture cards: 2 x 2 */
+.ops-postures { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+.ops-posture {
+    width: 49%;
+    flex-direction: row;
+    align-items: center;
+    min-height: var(--touch);
+    padding: var(--s-3) var(--s-3);
+    margin-bottom: var(--s-3);
+    border-width: var(--bw);
+    border-color: var(--c-line-mid);
+    background-color: var(--c-panel-sunken);
+    transition-property: background-color, border-color, scale;
+    transition-duration: 0.12s;
+}
+.ops-posture:active { scale: 0.98 0.98; }
+.ops-posture.is-selected { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.1); }
+.ops-posture__icon { width: 64px; height: 64px; margin-right: var(--s-3); --icon-color: var(--c-text-dim); }
+.ops-posture.is-selected .ops-posture__icon { --icon-color: var(--c-phosphor); }
+.ops-posture__body { flex-grow: 1; flex-shrink: 1; }
+.ops-posture__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-text); }
+.ops-posture.is-selected .ops-posture__name { color: var(--c-phosphor); }
+.ops-posture__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
+
+/* Garrison sockets */
+.ops-sockets { flex-direction: row; justify-content: space-between; }
+.ops-socket {
+    width: 18.5%;
+    height: var(--touch);
+    align-items: center;
+    justify-content: center;
+    border-width: var(--bw);
+    border-color: var(--c-line-mid);
+    background-color: var(--c-panel-sunken);
+}
+.ops-socket.is-filled { border-color: var(--c-phosphor-dim); background-color: rgba(168, 213, 138, 0.12); }
+.ops-socket__icon { width: 56px; height: 56px; --icon-color: var(--c-text-faint); }
+.ops-socket.is-filled .ops-socket__icon { --icon-color: var(--c-phosphor); }
+
+/* Readout + Set & Go */
+.ops-read { margin-top: var(--s-4); }
+.ops-read__band { margin-left: var(--s-4); padding-bottom: var(--s-2); }
+.ops-read__vs { align-items: flex-end; }
+.ops-read__line { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); }
+.ops-go { margin-top: var(--s-4); }
+.ops-go__rec { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 2px; color: var(--c-text); margin-top: var(--s-1); }
+.ops-go__btn { min-width: 340px; }
+
+/* Delegation segmented control */
+.ops-seg { flex-direction: row; border-width: var(--bw); border-color: var(--c-line-mid); }
+.ops-seg__item {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-height: var(--touch);
+    align-items: center;
+    justify-content: center;
+    border-right-width: 1px;
+    border-color: var(--c-line-mid);
+}
+.ops-seg__item:last-child { border-right-width: 0; }
+.ops-seg__item.is-selected { background-color: rgba(168, 213, 138, 0.14); }
+.ops-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
+.ops-seg__item.is-selected > .ops-seg__label { color: var(--c-phosphor); }
+.ops-seg__desc { margin-top: var(--s-2); }
+.ops-reason { margin-top: var(--s-2); color: var(--c-amber); }
+
+.is-hidden { display: none; }

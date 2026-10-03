@@ -70,6 +70,7 @@ namespace Deadswitch.Game.UI.Base
         {
             _visible = false;
             Select(-1);
+            UiRoot.Instance.World.style.display = DisplayStyle.None;
         }
 
         private void Select(int slot)

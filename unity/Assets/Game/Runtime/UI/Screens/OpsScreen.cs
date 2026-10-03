@@ -1,0 +1,258 @@
+using Deadswitch.Game.Core;
+using Deadswitch.Game.Presentation;
+using Deadswitch.Host.Narrative;
+using Deadswitch.Sim;
+using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
+using UnityEngine.UIElements;
+
+namespace Deadswitch.Game.UI.Screens
+{
+    /// <summary>
+    /// OPS: defense setup (SPEC-005). Threat card, posture cards, garrison sockets, the AI's Confidence and
+    /// recommendation (Set &amp; Go), lockdown and the delegation ladder. Every control is a sim command; refusals
+    /// are explained under the controls. Layout and styles: Resources/UI/Ops.uxml + Ops.uss.
+    /// </summary>
+    public sealed class OpsScreen : IGameScreen
+    {
+        private static readonly Posture[] Postures = { Posture.None, Posture.Turtle, Posture.Dark, Posture.Evacuate };
+        private static readonly string[] PostureIds = { "posture-none", "posture-turtle", "posture-dark", "posture-evacuate" };
+        private static readonly string[] DelegationIds = { "deleg-manual", "deleg-routines", "deleg-autopilot" };
+
+        private static readonly string[] DelegationLines =
+        {
+            "I only advise. You run everything.",
+            "I run the build queue and routine upkeep. You keep the final word.",
+            "I also set the defense when a raid comes while you are away. I may get it wrong.",
+        };
+
+        private readonly GameHost _host;
+        private readonly VisualElement _ui;
+        private readonly VisualElement _threat;
+        private readonly VisualElement _sockets;
+        private readonly VisualElement _meter;
+        private readonly VisualElement _setGo;
+        private readonly VisualElement _lockdown;
+        private readonly Label _reason;
+        private bool _visible;
+
+        public OpsScreen()
+        {
+            _host = GameHost.Instance;
+            Root = new VisualElement();
+            TemplateContainer tree = UiRoot.Load("Ops");
+            Root.Add(tree);
+            Icons.Attach(tree);
+            _ui = tree;
+            _threat = Q("threat");
+            _sockets = Q("sockets");
+            _meter = Q("confidence-meter");
+            _setGo = Q("set-go");
+            _lockdown = Q("lockdown");
+            _reason = Q<Label>("ops-reason");
+
+            for (int i = 0; i < Postures.Length; i++)
+            {
+                Posture p = Postures[i];
+                Q(PostureIds[i]).RegisterCallback<ClickEvent>(_ => Run(Command.SetPosture(p)));
+            }
+
+            for (int i = 0; i < DelegationIds.Length; i++)
+            {
+                var level = (DelegationLevel)i;
+                Q(DelegationIds[i]).RegisterCallback<ClickEvent>(_ => Run(Command.SetDelegation(level)));
+            }
+
+            _setGo.RegisterCallback<ClickEvent>(_ => SetAndGo());
+            _lockdown.RegisterCallback<ClickEvent>(_ => Run(Command.UseOverride(OverrideKind.Lockdown)));
+            BuildSockets();
+
+            _host.Ticked += () =>
+            {
+                if (_visible)
+                {
+                    Refresh();
+                }
+            };
+            UiRoot.Instance.Frame += _ =>
+            {
+                if (_visible && _host.Sim.State.RaidId != 0)
+                {
+                    Q<Label>("threat-time").text = Fmt.Countdown(_host.SecondsUntilTick(_host.Sim.State.RaidArriveTick));
+                }
+            };
+        }
+
+        public string Id => "ops";
+
+        public VisualElement Root { get; }
+
+        public void OnShow()
+        {
+            _visible = true;
+            _reason.text = string.Empty;
+            Refresh();
+        }
+
+        public void OnHide()
+        {
+            _visible = false;
+        }
+
+        private VisualElement Q(string name)
+        {
+            return _ui.Q(name);
+        }
+
+        private T Q<T>(string name)
+            where T : VisualElement
+        {
+            return _ui.Q<T>(name);
+        }
+
+        private void BuildSockets()
+        {
+            _sockets.Clear();
+            int slots = _host.Sim.Config.Defense.GarrisonSlots;
+            for (int i = 0; i < slots; i++)
+            {
+                int index = i;
+                var socket = new VisualElement();
+                socket.AddToClassList("ops-socket");
+                socket.style.width = Length.Percent((100f / slots) - 1.5f);
+                socket.Add(Icons.Create("people", "ops-socket__icon"));
+                socket.RegisterCallback<ClickEvent>(_ =>
+                {
+                    int garrison = _host.Sim.State.Garrison;
+                    Run(Command.SetGarrison(garrison == index + 1 ? index : index + 1));
+                });
+                _sockets.Add(socket);
+            }
+        }
+
+        private void Refresh()
+        {
+            GameState s = _host.Sim.State;
+            SimConfig c = _host.Sim.Config;
+            bool raid = s.RaidId != 0;
+
+            // threat
+            _threat.EnableInClassList("ds-panel--amber", raid);
+            Q("threat-pip").EnableInClassList("ds-pip--amber", raid);
+            Q("threat-pip").EnableInClassList("ds-pip--off", !raid);
+            Q<Label>("threat-kind").text = raid ? "RAID INCOMING" : "NO CONTACT";
+            Q<Label>("threat-kind").EnableInClassList("t-amber", raid);
+            Q<Label>("threat-time").EnableInClassList("is-hidden", !raid);
+            Q("threat-intel").EnableInClassList("is-hidden", !raid);
+            Q("threat-quiet").EnableInClassList("is-hidden", raid);
+            if (raid)
+            {
+                Q<Label>("threat-gate").text = Names.Gate(s.RaidGateReported);
+                Q<Label>("threat-est").text = Fmt.Num(s.RaidEstimate);
+                Q<Label>("threat-time").text = Fmt.Countdown(_host.SecondsUntilTick(s.RaidArriveTick));
+            }
+
+            bool lockReady = raid && s.OverrideCharges > 0 && s.Tick >= s.OverrideCooldownUntil;
+            _lockdown.EnableInClassList("is-disabled", !lockReady);
+            Kit.SetButtonText(_lockdown, "EMERGENCY LOCKDOWN  //  OVR " + s.OverrideCharges + "/" + c.Override.MaxCharges);
+
+            // posture
+            for (int i = 0; i < Postures.Length; i++)
+            {
+                Q(PostureIds[i]).EnableInClassList("is-selected", s.Posture == Postures[i]);
+            }
+
+            Q<Label>("posture-turtle-fx").text = "+" + c.Defense.TurtleDefensePct + "% DEFENSE";
+            Q<Label>("posture-dark-fx").text = c.Defense.DarkMissPct + "% MISS // -" + Fmt.Num(c.Defense.DarkUpkeepPerHour) + "/H ENERGY";
+            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + c.Defense.EvacuateLootPct + "%";
+
+            // garrison
+            if (_sockets.childCount != c.Defense.GarrisonSlots)
+            {
+                BuildSockets();
+            }
+
+            for (int i = 0; i < _sockets.childCount; i++)
+            {
+                _sockets[i].EnableInClassList("is-filled", i < s.Garrison);
+            }
+
+            Q<Label>("garrison-note").text = "+" + c.Defense.DefensePerDefender + " DEF EACH // " + (s.People - s.Garrison) + " ON CREW DUTY";
+
+            // the AI's read and recommendation
+            int defense = Defense.Rating(s, c);
+            Q<Label>("read-def").text = "DEF " + Fmt.Num(defense);
+            Q<Label>("read-est").text = raid ? "EST " + Fmt.Num(s.RaidEstimate) : "EST --";
+            var band = Q<Label>("confidence-band");
+            if (raid)
+            {
+                int conf = AiSystem.ConfidencePct(defense, s.RaidEstimate);
+                Q<Label>("confidence").text = conf.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                string tone = conf < 35 ? "red" : (conf < 70 ? "amber" : "phosphor");
+                band.text = conf < 35 ? "LOW" : (conf < 70 ? "FAIR" : "HIGH");
+                SetTone(band, _meter, tone);
+                Kit.SetMeter(_meter, conf / 100f);
+            }
+            else
+            {
+                Q<Label>("confidence").text = "--";
+                band.text = "NO CONTACT";
+                SetTone(band, _meter, "dim");
+                Kit.SetMeter(_meter, 0f);
+            }
+
+            AiSystem.Recommend(s, c, out Posture rec, out int recGarrison);
+            Q<Label>("recommend").text = !raid ? "NOTHING TO DEFEND AGAINST"
+                : rec == Posture.None ? "HOLD // NO CHANGE"
+                : rec == Posture.Turtle ? "TURTLE // " + recGarrison + " DEFENDERS"
+                : Fmt.PostureName(rec);
+            _setGo.EnableInClassList("is-disabled", !raid);
+
+            // delegation
+            for (int i = 0; i < DelegationIds.Length; i++)
+            {
+                Q(DelegationIds[i]).EnableInClassList("is-selected", (int)s.Delegation == i);
+            }
+
+            Q<Label>("deleg-desc").text = DelegationLines[(int)s.Delegation];
+        }
+
+        private void SetAndGo()
+        {
+            GameState s = _host.Sim.State;
+            if (s.RaidId == 0)
+            {
+                return;
+            }
+
+            AiSystem.Recommend(s, _host.Sim.Config, out Posture posture, out int garrison);
+            if (posture == Posture.None)
+            {
+                _reason.text = "Current setup holds. I would change nothing.";
+                return;
+            }
+
+            Run(Command.SetGarrison(garrison));
+            Run(Command.SetPosture(posture));
+        }
+
+        private void Run(Command command)
+        {
+            CommandResult r = _host.Execute(command);
+            _reason.text = r.Accepted || r.Reason == RejectReason.NoChange ? string.Empty : Texts.Reason(r.Reason);
+            Refresh();
+        }
+
+        private static void SetTone(Label band, VisualElement meter, string tone)
+        {
+            foreach (string t in new[] { "red", "amber", "phosphor" })
+            {
+                band.EnableInClassList("t-" + t, t == tone);
+                meter.EnableInClassList("ds-meter--" + t, t == tone && t != "phosphor");
+            }
+
+            band.EnableInClassList("t-dim", tone == "dim");
+        }
+    }
+}

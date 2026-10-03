@@ -60,6 +60,13 @@ namespace Deadswitch.Game.Core
         public float TickProgress => Mathf.Clamp01(_tickAccumulator / SecondsPerTick);
 
         /// <summary>Real seconds until the next tick at the current time scale.</summary>
+        /// <summary>Real seconds until a future tick completes, at the current time scale.</summary>
+        public double SecondsUntilTick(long tick)
+        {
+            long ticks = tick - Sim.State.Tick;
+            return ticks <= 0 ? 0 : SecondsToNextTick + ((ticks - 1) * 60.0 / Settings.DevTimeScale);
+        }
+
         public float SecondsToNextTick => Mathf.Max(0f, (SecondsPerTick - _tickAccumulator) / Settings.DevTimeScale);
 
         public event Action<SimEvent> EventRaised;

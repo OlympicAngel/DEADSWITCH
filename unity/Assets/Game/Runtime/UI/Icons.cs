@@ -65,6 +65,27 @@ namespace Deadswitch.Game.UI
                 P(0.02f, 0.5f, 0.25f, 0.5f),
                 P(0.75f, 0.5f, 0.98f, 0.5f),
             },
+            ["shield"] = new[]
+            {
+                P(0.5f, 0.08f, 0.86f, 0.2f, 0.82f, 0.55f, 0.5f, 0.92f, 0.18f, 0.55f, 0.14f, 0.2f, 0.5f, 0.08f),
+                P(0.5f, 0.24f, 0.5f, 0.74f),
+            },
+            ["dark"] = new[]
+            {
+                P(0.08f, 0.5f, 0.3f, 0.3f, 0.5f, 0.24f, 0.7f, 0.3f, 0.92f, 0.5f, 0.7f, 0.7f, 0.5f, 0.76f, 0.3f, 0.7f, 0.08f, 0.5f),
+                P(0.16f, 0.86f, 0.84f, 0.14f),
+            },
+            ["evacuate"] = new[]
+            {
+                P(0.55f, 0.15f, 0.15f, 0.15f, 0.15f, 0.85f, 0.55f, 0.85f),
+                P(0.4f, 0.5f, 0.92f, 0.5f),
+                P(0.75f, 0.32f, 0.92f, 0.5f, 0.75f, 0.68f),
+            },
+            ["hold"] = new[]
+            {
+                Polygon(24, 0.36f, 0f),
+                P(0.3f, 0.5f, 0.7f, 0.5f),
+            },
         };
 
         /// <summary>Attaches drawing to every <c>.ds-icon</c> under <paramref name="root"/>.</summary>

@@ -11,8 +11,8 @@ The OPS screen: read the threat, pick a posture, post defenders, see the AI's Co
 
 ## Steps
 - [x] 1. Sim: `AiSystem.Recommend` + `ConfidencePct`, autopilot uses them
-- [ ] 2. UI: `Ops.uxml` + `Ops.uss` (threat card, posture cards, garrison sockets, readout, Set & Go, lockdown, delegation); preview
-- [ ] 3. Unity: `OpsScreen` controller (bind, refresh on tick, commands, reasons); register in the HUD router
+- [x] 2. UI: `Ops.uxml` + `Ops.uss` (threat card, posture cards, garrison sockets, readout, Set & Go, lockdown, delegation); preview
+- [x] 3. Unity: `OpsScreen` controller (bind, refresh on tick, commands, reasons); register in the HUD router
 - [ ] 4. Docs (SPEC-005, BACKLOG, HANDOFF)
 
 ## Notes
