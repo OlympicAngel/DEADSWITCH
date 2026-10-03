@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-002)
+- Done: sectioned `SimConfig` (`src/Deadswitch.Sim/Config/`), strict balance file reader/writer with line-numbered issues, config hash, `ConfigEntries` diff, shipped `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`, CLI `run/config dump/check/diff`, feel guards on defaults + shipped file, ADR-0007, `tools/gen_meta.py` (+ gate check). 37 tests green.
+- Half-done / known issues: Bool/IntList readers have no shipped keys yet (add tests with the first one). Unity does not load the file yet (F-008: ScriptedImporter for `.toml` + Resources load).
+- Next: F-003 commands and typed event log.
+- Decisions made (link ADR/spec): ADR-0007. Save format moves to ADR-0008.
+
+---
+
 ### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-001)
 - Done: work loop for "continue" (`docs/agents/continue.md`, `TASK.md`, `docs/roadmap/BACKLOG.md`), production quality bar (`docs/agents/quality-bar.md`), skill pointers for Claude and Codex, `tools/check.sh`, cloud SessionStart hook that installs the .NET SDK, CI format step now blocking. Gate green on Linux.
 - Half-done / known issues: none.

@@ -1,0 +1,87 @@
+# DEADSWITCH balance file
+#
+# Every tunable number in the simulation. 1 tick = 1 game minute. Integers only.
+# Units are in the key names: _per_tick, _per_hour, _ticks, _pct (0-100), _permille (0-1000), _bp (0-10000).
+# Each value shows its valid range in [min..max]. Edits are checked strictly by the tests and
+# `dotnet run --project src/Deadswitch.Cli -- config check`. See docs/agents/balance-tuning.md.
+
+# --------------------------------------------------------------------------------------------------
+# Energy: continuous flow with upkeep (doc 02 s3, doc 10 s3).
+[energy]
+
+# Energy at the start of a run. [0..1000000]
+start = 200
+
+# Storage cap. [1..1000000]
+cap = 500
+
+# Base generation per tick (1 tick = 1 game minute). [0..10000]
+gen_per_tick = 8
+
+# Base upkeep per tick before facilities. [0..10000]
+upkeep_per_tick = 4
+
+# --------------------------------------------------------------------------------------------------
+# Fuel: consumable for vehicles, raids, outposts and operations (doc 10 s3, s5).
+[fuel]
+
+# Fuel at the start of a run. [0..1000000]
+start = 100
+
+# Storage cap. [1..1000000]
+cap = 300
+
+# --------------------------------------------------------------------------------------------------
+# Compute: the AI's processing power. Server racks turn energy into compute (doc 02 s4).
+[compute]
+
+# Compute at the start of a run. [0..1000000]
+start = 50
+
+# Storage cap. [1..1000000]
+cap = 100
+
+# Compute produced per tick while racks are powered. [0..10000]
+per_tick = 1
+
+# Energy the racks burn per tick to produce compute. [0..10000]
+rack_energy_cost_per_tick = 3
+
+# --------------------------------------------------------------------------------------------------
+# People: scarce, slow-growing, can be lost (doc 02 s5, doc 10 s1.3).
+[people]
+
+# Population at the start of a run. [0..100000]
+start = 12
+
+# Tier 1 base population cap. [1..100000]
+cap = 20
+
+# Each hour, regain this percent of the gap to the cap (rounded up). Paused during blackouts. [0..100]
+regrowth_pct_of_gap_per_hour = 5
+
+# --------------------------------------------------------------------------------------------------
+# Corruption: instability of the AI core (doc 03 s3, doc 10 s3).
+[corruption]
+
+# Maximum corruption. [1..1000]
+cap = 100
+
+# Idle recovery per hour. [0..1000]
+decay_per_hour = 1
+
+# --------------------------------------------------------------------------------------------------
+# Raids: fast, frequent, loot-focused attacks (doc 04 s3, doc 10 s4).
+[raid]
+
+# A raid triggers each tick with chance 1 / this value. [1..1000000]
+mean_interval_ticks = 360
+
+# Share of current energy a raid takes. [0..100]
+loot_pct_of_energy = 20
+
+# Maximum energy a single raid can take (never a full wipe). [0..1000000]
+loot_cap = 60
+
+# Offline attack cap per 24h (doc 10 s4: 3 in Tier 1). [0..100]
+max_per_day = 3

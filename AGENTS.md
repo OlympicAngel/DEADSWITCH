@@ -26,7 +26,8 @@ If two sources conflict, stop and flag it in your reply. Do not silently pick on
 ```
 & "$env:DOTNET_ROOT\dotnet.exe" build DEADSWITCH.sln -warnaserror
 & "$env:DOTNET_ROOT\dotnet.exe" test DEADSWITCH.sln
-& "$env:DOTNET_ROOT\dotnet.exe" run --project src/Deadswitch.Cli -- 42 24  # seed, hours
+& "$env:DOTNET_ROOT\dotnet.exe" run --project src/Deadswitch.Cli -- run --seed 42 --hours 24  # headless sim
+& "$env:DOTNET_ROOT\dotnet.exe" run --project src/Deadswitch.Cli -- config check            # validate the balance file
 powershell -ExecutionPolicy Bypass -File tools\check.ps1  # full gate: format + build + test (Windows)
 tools/check.sh                                            # same gate on Linux/macOS/cloud sessions
 ```
@@ -81,7 +82,7 @@ Claude and Codex both work in this repo. To avoid collisions:
 - Do not commit secrets, keystores, or `Library/` / `Temp/` from Unity.
 - Do not add dependencies to `Deadswitch.Sim` (it must stay dependency-free).
 - Do not install tooling on `C:`. All dev tooling lives under `D:\dev` (see `tools/setup-env.ps1`).
-- Do not invent balance numbers silently. Put them in `SimConfig` with a comment and log them in the corrections log if they change doc 10.
+- Do not invent balance numbers silently. Declare them in a `SimConfig` section and the shipped balance file (`src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`, ADR-0007) and log them in the corrections log if they change doc 10.
 
 ## Style
 - C# 9 (Unity-compatible), block-scoped namespaces, braces always, `_camelCase` private fields.

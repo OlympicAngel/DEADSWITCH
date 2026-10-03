@@ -26,6 +26,7 @@ Unity: see [`unity/README.md`](unity/README.md).
 | AI advisor writing | [`docs/narrative/ADVISOR_VOICE.md`](docs/narrative/ADVISOR_VOICE.md) |
 | Agent instructions | [`AGENTS.md`](AGENTS.md) (Codex and humans), [`CLAUDE.md`](CLAUDE.md) (Claude Code) |
 | Session handoff log | [`docs/agents/HANDOFF.md`](docs/agents/HANDOFF.md) |
+| Balance numbers | [`src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`](src/Deadswitch.Sim/Resources/DeadswitchBalance.toml) (ADR-0007) |
 | Active feature / queue | [`TASK.md`](TASK.md), [`docs/roadmap/BACKLOG.md`](docs/roadmap/BACKLOG.md) |
 
 ## Design pillars (ranked)

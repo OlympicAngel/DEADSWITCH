@@ -62,10 +62,12 @@ namespace Deadswitch.Sim.Tests
             }
         }
 
-        [Fact]
-        public void RaidsPerDay_NeverExceedOfflineCap()
+        [Theory]
+        [InlineData(TestConfigs.Defaults)]
+        [InlineData(TestConfigs.Shipped)]
+        public void RaidsPerDay_NeverExceedOfflineCap(string config)
         {
-            var sim = new Simulation(123UL);
+            var sim = new Simulation(123UL, TestConfigs.Get(config));
             sim.Run(30L * SimConfig.TicksPerDay);
 
             var perDay = sim.Log.Events
@@ -78,20 +80,24 @@ namespace Deadswitch.Sim.Tests
             }
         }
 
-        [Fact]
-        public void Tier1Defaults_DoNotBlackOutOverAWeek()
+        [Theory]
+        [InlineData(TestConfigs.Defaults)]
+        [InlineData(TestConfigs.Shipped)]
+        public void Tier1_DoesNotBlackOutOverAWeek(string config)
         {
             // Guards the economy numbers: generation must outpace upkeep + rack cost.
-            var sim = new Simulation(77UL);
+            var sim = new Simulation(77UL, TestConfigs.Get(config));
             sim.Run(7L * SimConfig.TicksPerDay);
 
             Assert.DoesNotContain(sim.Log.Events, e => e.Kind == EventKind.BlackoutStarted);
         }
 
-        [Fact]
-        public void RaidLoot_IsCapped()
+        [Theory]
+        [InlineData(TestConfigs.Defaults)]
+        [InlineData(TestConfigs.Shipped)]
+        public void RaidLoot_IsCapped(string config)
         {
-            var sim = new Simulation(321UL);
+            var sim = new Simulation(321UL, TestConfigs.Get(config));
             sim.Run(30L * SimConfig.TicksPerDay);
 
             foreach (SimEvent e in sim.Log.Events.Where(x => x.Kind == EventKind.RaidStarted))

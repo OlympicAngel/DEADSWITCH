@@ -1,12 +1,15 @@
 # Playbook: Balance tuning
 
 1. Every number is a placeholder `(tune)` until a prototype run says otherwise.
-2. Numbers live in `SimConfig` (one place). Name the unit: `PerTick`, `PerHour`, `Percent`, `Cap`.
+2. Numbers live in **one place**: declared in a `SimConfig` section (`src/Deadswitch.Sim/Config/*Config.cs`) with a range and description, valued in the shipped balance file `src/Deadswitch.Sim/Resources/DeadswitchBalance.toml` (ADR-0007). Name the unit: `PerTick`, `PerHour`, `Ticks`, `Pct` (0-100), `Permille`, `Bp`, `Cap`.
+   - **Tweak a value:** edit the shipped file, then `dotnet run --project src/Deadswitch.Cli -- config check` and the tests.
+   - **Add a tunable:** add the field + one `v.Int(...)` line in its section's `Visit`, use it in the sim, then regenerate the file with `config dump --out src/Deadswitch.Sim/Resources/DeadswitchBalance.toml` (keeps your edited values) and run `python3 tools/gen_meta.py` if you added files.
+   - **See what diverges from doc 10:** `config diff`.
 3. Before changing a number: write the intended feel in one sentence ("a Tier 1 player sees a raid every 4-8h, never more than 3 a day").
 4. Change it, then run the headless harness over many seeds:
-   `dotnet run --project src/Deadswitch.Cli -- <seed> <hours>`
+   `dotnet run --project src/Deadswitch.Cli -- run --seed <seed> --hours <hours> [--config <file>]`
 5. Check the **net rates** by hand. Example of a bug caught this way: +6 gen - 4 upkeep - 3 rack = -1/min.
-6. Add or update a guard test for the intended feel (blackout, cap, cadence).
+6. Add or update a guard test for the intended feel (blackout, cap, cadence). Guards run on both the code defaults and the shipped file (`TestConfigs`).
 7. If the value differs from `docs/design/10_resolved_decisions.md`, add a row to its **Corrections log**.
 8. Never tune by weakening a test.
 
