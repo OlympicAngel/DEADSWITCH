@@ -1,5 +1,6 @@
 using System;
 using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.Events;
 using Deadswitch.Sim.Persistence;
 using Deadswitch.Sim.State;
 using Xunit;
@@ -21,11 +22,13 @@ namespace Deadswitch.Sim.Tests
             var continuous = new Simulation(seed);
             continuous.Run(splitTick);
             continuous.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
+            continuous.Execute(Command.SetPresence(true));
             continuous.Run(total - splitTick);
 
             var first = new Simulation(seed);
             first.Run(splitTick);
             first.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
+            first.Execute(Command.SetPresence(true));
             byte[] bytes = SaveGame.Write(first);
             LoadedGame loaded = SaveGame.Load(bytes, SimConfig.Tier1());
             loaded.Simulation.Run(total - splitTick);
@@ -35,6 +38,20 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(continuous.Log.Events, loaded.Simulation.Log.Events);
             Assert.Equal(continuous.Log.NextSeq, loaded.Simulation.Log.NextSeq);
             Assert.Equal(continuous.Commands.Commands, loaded.Simulation.Commands.Commands);
+            Assert.Contains(continuous.Log.Events, e => e.Kind == EventKind.AiActed && e.A == (int)AiActionKind.Defend);
+        }
+
+        [Fact]
+        public void FormatV1Save_StillLoads_AndContinues()
+        {
+            // Written by the build before SPEC-004 (save format v1). Guards the versioned visitor migration.
+            string path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(TestConfigs.ShippedPath)!, "..", "..", "Deadswitch.Sim.Tests", "Fixtures", "save_v1.dsws");
+            LoadedGame loaded = SaveGame.Load(System.IO.File.ReadAllBytes(path), SimConfig.Tier1());
+
+            Assert.Equal(1, loaded.Info.FormatVersion);
+            loaded.Simulation.Run(SimConfig.TicksPerDay);
+            Assert.Equal(0, loaded.Simulation.State.BoldnessMilli);
+            Assert.Equal(GameState.LayoutVersion, SaveGame.ReadInfo(SaveGame.Write(loaded.Simulation)).FormatVersion);
         }
 
         [Fact]

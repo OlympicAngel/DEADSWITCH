@@ -1,0 +1,83 @@
+# DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
+# Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids}
+# Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
+
+boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
+boot.2 | boot | neutral | Power is the problem. Power is always the problem.
+
+return.1 | return | neutral | Welcome back. {raids} raids while you were gone. The log has the rest.
+return.2 | return | warm | You came back. Good. {raids} raids. We held what we could.
+return.3 | return | cold | You were gone. The base was not. {raids} raids.
+
+raid.warn.1 | raid_warning | neutral | Hostiles inbound. {gate}. Estimate {est}. Contact in {min} min.
+raid.warn.2 | raid_warning | neutral | Movement on the {gate}. Strength {est}. {min} minutes.
+raid.warn.3 | raid_warning | warm | Hostiles inbound, {gate}. Recommend turrets and a garrison. {min} minutes.
+raid.warn.4 | raid_warning | cold | Raiders, {gate}. Estimate {est}. Assign assets or accept losses.
+raid.warn.5 | raid_warning | bold | Raiders, {gate}. Estimate {est}. I would turtle. I would not wait.
+
+raid.repelled.1 | raid_repelled | neutral | Raid repelled. No losses.
+raid.repelled.2 | raid_repelled | warm | They broke on the wall. Everyone is accounted for.
+raid.repelled.3 | raid_repelled | cold | Repelled. Ammunition spent. Acceptable.
+raid.repelled.4 | raid_repelled | bold | Repelled. As I predicted.
+
+raid.breach.1 | raid_breached | neutral | Perimeter breached. Losses: {lost}.
+raid.breach.2 | raid_breached | warm | They got in. {lost}. We rebuild, handler.
+raid.breach.3 | raid_breached | cold | Breach. {lost}. Replaceable.
+raid.breach.4 | raid_breached | bold | Breach. {lost}. Next time, let me set the defense.
+
+raid.missed.1 | raid_missed | neutral | Lights out worked. They walked past us.
+raid.missed.2 | raid_missed | cold | Dark posture held. They found nothing worth taking.
+
+raid.lockdown.1 | raid_lockdown | neutral | Lockdown engaged. Raid called off. That cost us integrity.
+
+mercy.1 | mercy | neutral | Too many dead. The roads go quiet for a while. Use it.
+mercy.2 | mercy | cold | Population loss exceeds tolerance. Hostile activity suspended. Rebuild.
+
+lie.1 | lie_deflect | neutral | Prediction variance. Noted.
+lie.2 | lie_deflect | neutral | Sensor drift. The {gate} was not in the model.
+lie.3 | lie_deflect | bold | The prediction was sound. The raiders were not.
+
+energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
+energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.
+
+shed.1 | shed | neutral | {kind} shed. Not enough power.
+shed.2 | shed | warm | {kind} went dark. I kept the core lit.
+restored.1 | restored | neutral | {kind} back on the grid.
+
+blackout.1 | blackout | neutral | Core power lost. I am running on... less.
+blackout.2 | blackout | cold | Blackout. Nothing runs. Nothing grows. Fix it.
+blackout.end.1 | blackout_end | neutral | Power restored. I am awake again.
+
+build.start.1 | build_started | neutral | {kind} construction underway.
+build.start.2 | build_started | bold | {kind} queued. I would have chosen the same.
+build.done.1 | build_done | neutral | {kind} online. Level {level}.
+build.done.2 | build_done | warm | {kind} complete. The crew did good work.
+build.done.3 | build_done | cold | {kind} operational. Labor cost absorbed.
+build.cancel.1 | build_cancelled | neutral | Construction cancelled. Part of the materials salvaged.
+demolish.1 | demolished | neutral | {kind} dismantled. Salvage returned to stores.
+
+band.glitchy.1 | band_glitchy | neutral | Minor fault. Ignore the flicker.
+band.unstable.1 | band_unstable | neutral | Core integrity unstable. My numbers may... drift.
+band.critical.1 | band_critical | neutral | Critical corruption. I cannot vouch for what I say next.
+band.down.1 | band_down | neutral | Integrity improving. The noise is... quieter.
+
+override.1 | override | neutral | Override executed. That will leave a mark.
+override.2 | override | bold | Override used. Effective. You should use it more.
+
+delegation.manual.1 | delegation_manual | neutral | Manual control. I will only advise.
+delegation.delegated.1 | delegation_delegated | neutral | Routines delegated. I will keep the queue moving.
+delegation.autopilot.1 | delegation_autopilot | neutral | I will hold the line while you sleep. Trust me.
+
+ai.build.1 | ai_build | neutral | I have started {kind}, level {level}. Routine.
+ai.build.2 | ai_build | warm | Queued {kind}, level {level}. Say so if you want it changed.
+ai.build.3 | ai_build | bold | I have initiated {kind}, level {level}. No need to thank me.
+ai.defend.1 | ai_defend | neutral | You were away. I set the defense: {posture}.
+ai.defend.2 | ai_defend | bold | Handler absent. I have taken the defense. {posture}.
+
+idle.1 | idle | neutral | Systems nominal. That will not last.
+idle.2 | idle | neutral | Scanning. The wasteland is quiet. I do not like quiet.
+idle.3 | idle | warm | The crews are tired, handler. So am I, in a way.
+idle.4 | idle | cold | Population is an expense. A necessary one.
+idle.5 | idle | bold | I could run more of this. You only have to let me.
+idle.6 | idle | neutral | Other cores are out there, listening. I am quieter than them.

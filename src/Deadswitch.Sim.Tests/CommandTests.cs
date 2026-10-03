@@ -138,11 +138,13 @@ namespace Deadswitch.Sim.Tests
 
             whole.Run(700);
             whole.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
+            whole.Execute(Command.SetPresence(true));
             whole.Run(3000);
 
             chunked.Run(300);
             chunked.Run(400);
             chunked.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
+            chunked.Execute(Command.SetPresence(true));
             chunked.Run(1);
             chunked.Run(2999);
 

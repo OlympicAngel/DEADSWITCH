@@ -89,7 +89,7 @@ namespace Deadswitch.Sim.Systems
             else
             {
                 long chance = (long)ai.LieChancePermilleAtFullBoldness * s.BoldnessMilli / 100_000;
-                lie = SimMath.Hash((uint)s.RaidId, (uint)s.Tick) % 1000 < chance;
+                lie = SimMath.Hash((uint)s.RaidId ^ (uint)s.Rng.Inc, (uint)s.Tick) % 1000 < chance;
             }
 
             s.RaidGateReported = lie ? Opposite(s.RaidGate) : s.RaidGate;

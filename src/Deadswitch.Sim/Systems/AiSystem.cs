@@ -59,7 +59,7 @@ namespace Deadswitch.Sim.Systems
             }
             else if (estimate > (long)defense * c.Ai.AutopilotTurtlePct)
             {
-                int garrison = System.Math.Min(c.Defense.GarrisonSlots, s.People);
+                int garrison = SimMath.Clamp(s.People, 0, c.Defense.GarrisonSlots);
                 DefenseCommands.SetGarrison(ctx, Command.SetGarrison(garrison));
                 DefenseCommands.SetPosture(ctx, Command.SetPosture(Posture.Turtle));
             }

@@ -7,6 +7,9 @@
     <AssemblyName>Deadswitch.Host</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\AdvisorLines.txt" LogicalName="Deadswitch.Host.AdvisorLines.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Deadswitch.Sim\Deadswitch.Sim.csproj" />
   </ItemGroup>
 </Project>

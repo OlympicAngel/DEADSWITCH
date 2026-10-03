@@ -191,6 +191,12 @@ namespace Deadswitch.Sim.State
                 v.Int(ref LiesTold);
                 v.Long(ref PlanHoldUntilTick);
             }
+            else if (v.IsReading && RaidId != 0)
+            {
+                // v1 save with a raid incoming: give it a gate (no RNG draw) and report it truthfully.
+                RaidGate = (RaidGate)(1 + (int)(Systems.SimMath.Hash((uint)RaidId, (uint)RaidArriveTick) % 4));
+                RaidGateReported = RaidGate;
+            }
 
             int slotCount = v.Count(Slots.Count);
             Resize(Slots, slotCount);
