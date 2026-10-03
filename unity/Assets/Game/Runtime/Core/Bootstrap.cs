@@ -18,9 +18,11 @@ namespace Deadswitch.Game.Core
                 return;
             }
 
+            Screen.orientation = ScreenOrientation.Portrait;
             Root = new GameObject("DEADSWITCH");
             Object.DontDestroyOnLoad(Root);
             Root.AddComponent<GameHost>();
+            Root.AddComponent<UI.UiRoot>();
         }
     }
 }

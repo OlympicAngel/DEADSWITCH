@@ -292,5 +292,8 @@
 .ds-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); }
 
 /* ---------- Custom drawn ---------- */
-.ds-sparkline { height: 64px; }
-.ds-gauge { width: 132px; height: 132px; }
+.ds-sparkline { height: 64px; --line-color: var(--c-phosphor); --fill-color: rgba(168, 213, 138, 0.22); }
+.ds-gauge { width: 132px; height: 132px; --track-color: var(--c-line-mid); --fill-color: var(--c-phosphor); }
+.ds-gauge--amber { --fill-color: var(--c-amber); }
+.ds-gauge--red { --fill-color: var(--c-red); }
+.ds-gauge--magenta { --fill-color: var(--c-magenta); }

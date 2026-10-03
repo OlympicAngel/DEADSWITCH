@@ -21,5 +21,9 @@ Source: `docs/design/11_visual_theme_and_motion.md` (palette is provisional, str
 ## Verification (you cannot ship what you have not seen)
 - Sim: `tools/check.sh` / `tools/check.ps1` gate (format, build with warnings as errors, tests).
 - Unity code: the **Unity compile check** (`tools/UnityCompileCheck`) builds `unity/Assets/Game/**` against Unity reference assemblies so API mistakes fail before the Editor is opened.
-- Visuals: the **UI preview** tool renders UI layouts and procedural visuals to PNG so they can be inspected headlessly. Look at every screenshot you produce; fix misalignment, contrast, overflow, and clutter before committing. Attach key screenshots in the PR / HANDOFF.
+- Visuals: the **UI preview** tool (`node tools/uipreview/preview.mjs unity/Assets/Game/Resources/UI/<Screen>.uxml`, output in `artifacts/uipreview/`) renders UXML + USS to PNG headlessly, mirroring the kit behaviors in `Runtime/UI/Kit.cs`. When you add a kit behavior in C#, mirror it in the preview script. Look at every screenshot you produce; fix misalignment, contrast, overflow, and clutter before committing. Attach key screenshots in the PR / HANDOFF.
 - When the Unity Editor is available (owner's machine), open the project and confirm the play-mode result; log anything the headless checks missed back into this playbook.
+
+## Assets and storage
+- Git LFS uploads are refused from cloud agent sessions. Keep binary assets small and listed in the non-LFS overrides at the end of `.gitattributes` (fonts, `docs/media` screenshots), or generate them procedurally (preferred for meshes, textures and UI art).
+- UI is authored as UXML + USS under `unity/Assets/Game/Resources/UI/` using only `Tokens.uss` variables and `Components.uss` classes; no custom UXML element types (API differs between Unity versions).

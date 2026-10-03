@@ -108,6 +108,9 @@ html,body{margin:0;width:${width}px;height:${height}px;overflow:hidden;${bgCss}}
 #preview-root{position:absolute;inset:0}
 ${css}
 </style></head><body><div id="preview-root" class="ui-ve">${body}</div>
+<div id="crt" style="position:absolute;inset:0;pointer-events:none;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.10) 0 2px, transparent 2px 6px),
+  radial-gradient(ellipse at center, transparent 45%, rgba(4,6,5,0.55) 100%);"></div>
 <script>
 // Mirrors of the C# element behaviors (Runtime/UI/Behaviors.cs).
 for (const p of document.querySelectorAll('.ds-panel')) for (const c of ['tl','tr','bl','br']) { const d = document.createElement('div'); d.className = 'ui-ve ds-corner ds-corner--' + c; p.appendChild(d); }

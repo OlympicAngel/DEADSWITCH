@@ -13,6 +13,14 @@ Append-only. Newest entry on top. Every agent session (Claude or Codex) adds an 
 
 ---
 
+### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-008)
+- Done: design tokens (`Resources/UI/Tokens.uss`), component kit (`Components.uss`: corner-bracket panels, buttons, segmented meters, chips with shape pips, banner, tab bar, bottom sheet, key/value rows), fonts (Chakra Petch, IBM Plex Mono via `resource()`), `UiRoot` (runtime UIDocument + PanelSettings 1080x1920 portrait, layers, safe area), `Kit` behaviors, `Mesh2D` (feathered lines/arcs), `Sparkline`, `ArcGauge`, `Motion`/`Ease`/`AnimatedNumber`, `GlitchText`, `CrtOverlay` (scanlines, vignette, roll bar, corruption slices). `tools/uipreview` renders UXML/USS to PNG (`docs/media/ui-kit.png`).
+- Half-done / known issues: not yet seen in the Unity Editor; USS features used (text-shadow, rotate, scale, translate transitions, var()) need Unity 6. Git LFS pushes are blocked from cloud sessions: fonts/screenshots stored as plain binaries.
+- Next: F-009 terminal HUD + command bar.
+- Decisions made (link ADR/spec): fonts Chakra Petch (display/labels) + IBM Plex Mono (values/body), OFL.
+
+---
+
 ### 2026-10-03 - Claude - claude/magical-ritchie-bx4xbb (F-007)
 - Done: `tools/UnityCompileCheck` (Unity reference assemblies, in gates + CI), `Deadswitch.Game` / `.Editor` asmdefs, `.toml` ScriptedImporter, code-only `Bootstrap`, `GameHost` (balance load, save/load, offline catch-up via `Deadswitch.Host.Timing.OfflineClock`, real-time ticking, autosave, presence on pause/resume, command path + event dispatch), `GameSettings`. `[host]` section in the balance file.
 - Half-done / known issues: **not yet run in the Unity Editor** (no Editor in the cloud session). First thing on the owner's machine: open `unity/`, press Play in SampleScene, check the Console for `[DEADSWITCH]` messages. Editor scripts are not compile-checked.
