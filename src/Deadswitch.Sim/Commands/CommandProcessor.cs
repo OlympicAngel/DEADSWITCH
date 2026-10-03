@@ -50,6 +50,12 @@ namespace Deadswitch.Sim.Commands
                     return ClimaxSystem.Purge(ctx, command);
                 case CommandKind.CancelProject:
                     return ClimaxSystem.CancelProject(ctx, command);
+                case CommandKind.ForcedLabor:
+                    return PeopleChoices.ForcedLabor(ctx, command);
+                case CommandKind.NeuralCleanse:
+                    return PeopleChoices.NeuralCleanse(ctx, command);
+                case CommandKind.Crackdown:
+                    return PeopleChoices.Crackdown(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

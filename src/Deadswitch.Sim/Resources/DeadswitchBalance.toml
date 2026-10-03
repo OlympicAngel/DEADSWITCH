@@ -372,6 +372,73 @@ cancel_to_pct = 55
 betrayal_strength_pct = 250
 
 # --------------------------------------------------------------------------------------------------
+# Ruthless choices and loyalty (SPEC-012). Loyalty and Coldness are milli-units: 100000 = 100%. All (tune).
+[people_choices]
+
+# Loyalty under this % is Strained. [1..100]
+strained_below = 60
+
+# Loyalty under this % is Mutinous. [0..100]
+mutinous_below = 30
+
+# Loyalty regained per game hour while no surge runs. [0..100000]
+recover_per_hour = 400
+
+# Generator and Server Rack output lost while Strained (points). [0..100]
+strained_output_pts = 10
+
+# Generator and Server Rack output lost while Mutinous (points). [0..100]
+mutinous_output_pts = 25
+
+# No choice or event takes the population below this. [1..1000]
+min_people = 4
+
+# Forced labor surge: people who die at once. [0..100]
+surge_deaths = 2
+
+# Forced labor surge: game hours of boosted output. [1..1000]
+surge_hours = 6
+
+# Forced labor surge: Generator and Server Rack output bonus (points). [0..1000]
+surge_output_pts = 40
+
+# Forced labor surge: loyalty lost. [0..100000]
+surge_loyalty = 20000
+
+# Forced labor surge: Coldness gained. [0..100000]
+surge_coldness = 15000
+
+# Forced labor surge: game hours before the next one. [0..1000]
+surge_cooldown_hours = 24
+
+# Neural cleansing: most people used at once. [1..100]
+cleanse_max = 5
+
+# Neural cleansing: corruption removed per person (milli). [0..100000]
+cleanse_per_person = 8000
+
+# Neural cleansing: loyalty lost per person. [0..100000]
+cleanse_loyalty = 5000
+
+# Neural cleansing: Coldness gained per person. [0..100000]
+cleanse_coldness = 6000
+
+# Crackdown: people removed. [0..100]
+crackdown_people = 2
+
+# Crackdown: loyalty restored (fear). [0..100000]
+crackdown_loyalty = 25000
+
+# Crackdown: Coldness gained. [0..100000]
+crackdown_coldness = 20000
+
+# Daily chance an operator goes rogue while Mutinous. [0..100]
+rogue_chance_pct = 35
+
+# Energy a rogue operator takes. [0..100000]
+rogue_energy = 80
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

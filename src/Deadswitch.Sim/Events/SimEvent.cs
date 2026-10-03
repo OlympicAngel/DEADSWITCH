@@ -119,6 +119,21 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The window ran out and the AI acted. A: ClimaxKind, B: raid id (betrayal) or modules lost (fork).</summary>
         Climax = 37,
+
+        /// <summary>Forced labor surge ordered. A: people who died, B: hours of boosted output.</summary>
+        ForcedLabor = 38,
+
+        /// <summary>Neural cleansing. A: people used up, B: corruption removed (milli).</summary>
+        NeuralCleanse = 39,
+
+        /// <summary>Crackdown. A: people removed, B: loyalty after (milli).</summary>
+        Crackdown = 40,
+
+        /// <summary>An operator went rogue. A: energy taken.</summary>
+        RogueOperator = 41,
+
+        /// <summary>Loyalty status changed. A: new LoyaltyStatus, B: previous.</summary>
+        LoyaltyChanged = 42,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

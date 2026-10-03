@@ -31,6 +31,7 @@ namespace Deadswitch.Sim
         public TierConfig Tier = new TierConfig();
         public OpeningConfig Opening = new OpeningConfig();
         public ClimaxConfig Climax = new ClimaxConfig();
+        public PeopleChoiceConfig PeopleChoices = new PeopleChoiceConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -128,6 +129,7 @@ namespace Deadswitch.Sim
             Tier.Visit(visitor);
             Opening.Visit(visitor);
             Climax.Visit(visitor);
+            PeopleChoices.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);
@@ -197,6 +199,16 @@ namespace Deadswitch.Sim
             if (!(Project.ActiveFrom < Project.AdvancedFrom && Project.AdvancedFrom < Project.ImminentFrom))
             {
                 problems.Add("project stages must increase: active_from < advanced_from < imminent_from.");
+            }
+
+            if (PeopleChoices.MutinousBelow >= PeopleChoices.StrainedBelow)
+            {
+                problems.Add("people_choices.mutinous_below must be below strained_below.");
+            }
+
+            if (PeopleChoices.SurgeCooldownHours < PeopleChoices.SurgeHours)
+            {
+                problems.Add("people_choices.surge_cooldown_hours must be at least surge_hours (no chained surges).");
             }
 
             if (Climax.CancelToPct >= Project.ImminentFrom)

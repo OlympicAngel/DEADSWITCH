@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011).</summary>
-        public const int LayoutVersion = 6;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012).</summary>
+        public const int LayoutVersion = 7;
 
         public long Tick;
 
@@ -128,6 +128,15 @@ namespace Deadswitch.Sim.State
 
         /// <summary>OVERRIDE charges lost to a fork.</summary>
         public int OverrideMaxPenalty;
+
+        /// <summary>People's loyalty, 0..100_000 (SPEC-012). Shown only as a status.</summary>
+        public int LoyaltyMilli = 100_000;
+
+        /// <summary>A forced labor surge boosts output until this tick.</summary>
+        public long SurgeUntilTick;
+
+        /// <summary>The next surge can be ordered from this tick.</summary>
+        public long SurgeReadyTick;
 
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
@@ -309,6 +318,13 @@ namespace Deadswitch.Sim.State
                 v.Long(ref SilencedUntilTick);
                 v.Int(ref BetrayalRaidId);
                 v.Int(ref OverrideMaxPenalty);
+            }
+
+            if (v.Version >= 7)
+            {
+                v.Int(ref LoyaltyMilli);
+                v.Long(ref SurgeUntilTick);
+                v.Long(ref SurgeReadyTick);
             }
         }
 

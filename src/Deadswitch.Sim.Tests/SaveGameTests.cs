@@ -24,6 +24,7 @@ namespace Deadswitch.Sim.Tests
             continuous.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
             continuous.Execute(Command.SetPresence(true));
             continuous.Execute(Command.StartResearch(ModuleNode.LG1));
+            continuous.Execute(Command.ForcedLabor());
             continuous.Run(total - splitTick);
 
             var first = new Simulation(seed);
@@ -31,6 +32,7 @@ namespace Deadswitch.Sim.Tests
             first.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
             first.Execute(Command.SetPresence(true));
             first.Execute(Command.StartResearch(ModuleNode.LG1));
+            first.Execute(Command.ForcedLabor());
             byte[] bytes = SaveGame.Write(first);
             LoadedGame loaded = SaveGame.Load(bytes, SimConfig.Tier1());
             loaded.Simulation.Run(total - splitTick);

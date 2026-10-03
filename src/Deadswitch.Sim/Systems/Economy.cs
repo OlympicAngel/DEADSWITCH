@@ -64,7 +64,7 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
-            return SimMath.PctFloor(f.Output[slot.Level - 1], OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind));
+            return SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind)));
         }
 
         /// <summary>Module output bonus for a facility kind, in percentage points.</summary>
@@ -73,11 +73,11 @@ namespace Deadswitch.Sim.Systems
             switch (kind)
             {
                 case FacilityKind.ServerRack:
-                    return Modules.Has(s, ModuleNode.LG2A) ? c.Modules.OverclockPct : 0;
+                    return (Modules.Has(s, ModuleNode.LG2A) ? c.Modules.OverclockPct : 0) + PeopleChoices.OutputPts(s, c);
                 case FacilityKind.BatteryBank:
                     return Modules.Has(s, ModuleNode.LG2B) ? c.Modules.DeepCellsPct : 0;
                 case FacilityKind.Generator:
-                    return Modules.Has(s, ModuleNode.LG5B) ? c.Modules.FuelCellsPct : 0;
+                    return (Modules.Has(s, ModuleNode.LG5B) ? c.Modules.FuelCellsPct : 0) + PeopleChoices.OutputPts(s, c);
                 default:
                     return 0;
             }

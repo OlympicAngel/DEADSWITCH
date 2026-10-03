@@ -63,6 +63,15 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Cancel the AI's project after an Audit in the final window (SPEC-011).</summary>
         CancelProject = 18,
+
+        /// <summary>No args. Forced labor surge (SPEC-012).</summary>
+        ForcedLabor = 19,
+
+        /// <summary>A: people (1..cleanse_max). Neural cleansing.</summary>
+        NeuralCleanse = 20,
+
+        /// <summary>No args. Crackdown (only while loyalty is Strained or worse).</summary>
+        Crackdown = 21,
     }
 
     /// <summary>
@@ -170,6 +179,21 @@ namespace Deadswitch.Sim.Commands
         public static Command CancelProject()
         {
             return new Command(CommandKind.CancelProject);
+        }
+
+        public static Command ForcedLabor()
+        {
+            return new Command(CommandKind.ForcedLabor);
+        }
+
+        public static Command NeuralCleanse(int people)
+        {
+            return new Command(CommandKind.NeuralCleanse, people);
+        }
+
+        public static Command Crackdown()
+        {
+            return new Command(CommandKind.Crackdown);
         }
 
         public static Command SetPresence(bool away)

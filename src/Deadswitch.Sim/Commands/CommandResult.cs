@@ -88,6 +88,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Cancel the project needs an Audit inside the final window first.</summary>
         NeedsAudit = 28,
+
+        /// <summary>Loyalty is Steady: a crackdown has no reason.</summary>
+        LoyaltyHolds = 29,
     }
 
     public readonly struct CommandResult

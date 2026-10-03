@@ -10,7 +10,7 @@
 Forced labor, neural cleansing and crackdown: real shortcuts that cost lives and loyalty and make the AI colder.
 
 ## Steps
-- [ ] 1. Sim: `[people_choices]` config, loyalty, three commands, output effects, rogue operator, state v7, tests
+- [x] 1. Sim: `[people_choices]` config, loyalty, three commands, output effects, rogue operator, state v7, tests
 - [ ] 2. UI: WORKFORCE sheet from the HUD people cell; advisor lines; preview
 - [ ] 3. Docs (SPEC-012, BACKLOG, HANDOFF)
 
