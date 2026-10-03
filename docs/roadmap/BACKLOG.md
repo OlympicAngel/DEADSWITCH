@@ -6,22 +6,22 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | ID | Feature | Milestone | Status | Notes |
 |----|---------|-----------|--------|-------|
 | F-001 | Agent work loop: `continue` skill, `TASK.md`, backlog, quality bar, Linux gate, cloud session hook | M0 | Done | 2026-10-03 |
-| F-002 | Balance config: every tunable in `SimConfig` sections, human-editable balance file, validation, config hash, CLI dump/override | M0 | Done | 2026-10-03, ADR-0008 |
-| F-003 | Commands and typed event log: player input as tick-stamped commands, replay = seed + config + commands, event schema version | M0 | Done | 2026-10-03, ADR-0003 amendment |
-| F-004 | Save/snapshot format: versioned binary snapshot, restore equals continuous run, corruption-safe writes | M0 | Done | 2026-10-03, ADR-0009 |
-| F-005 | Economy core: facilities (generator, server rack, life support grid, battery bank), build/upgrade queue with timers, scaling upkeep, priority blackouts, crew | M1 | In progress | SPEC-002 |
-| F-006 | Pressure loop: corruption bands + effect hooks, OVERRIDE charges/cooldown, defense posture + garrison slots, raid damage model (±15% variance), offline penalty, mercy window, loss ledger, attack cap | M1 | Ready | SPEC-001 |
-| F-007 | Balance scenario runner: scripted player profiles, 100 seeds x 30 days, loss ledger summary, soft-lock detection | M1 | Ready | M1 exit criterion |
-| F-008 | Unity foundation: compile-check project, code-only bootstrap, SimHost (real-time ticking), save/load, offline catch-up, clock-cheat guard, settings (effects, motion, colorblind) | M2 | Ready | ADR-0004 |
-| F-009 | Visual system: design tokens (USS), fonts, CRT layer (scanlines, glow, vignette, corruption flicker), motion helpers, headless UI preview tool | M2 | Ready | doc 11 |
-| F-010 | Terminal HUD + command bar: always-visible essentials, animated readouts, energy sparkline, Base / Map / AI / Ops navigation | M2 | Ready | doc 08 s4 |
-| F-011 | Living base schematic: procedural vector diorama of the Hub, facility states, activity, scars, build interaction | M2 | Ready | doc 11 |
-| F-012 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation levels, glitch text by corruption, 50 lines, the first lie | M2 | Ready | ADVISOR_VOICE |
-| F-013 | Defense setup screen: posture, crew chips, AI Confidence readout, Set & Go | M3 | Ready | doc 10 s4 |
-| F-014 | Battle report: panels, loss ledger, AI annotation, Verify (compute cost) | M3 | Ready | ADR-0003 |
-| F-015 | Hidden project clock + Audit tool (Core Profile readout) | M2 | Ready | doc 10 s2 |
-| F-016 | Module tree: trunk M1-M3 + first field (8 nodes), research timers | M2 | Ready | doc 10 s6 |
-| F-017 | Boot sequence + opening flow (early protection, first hit) | M4 | Ready | doc 01 s7 |
-| F-018 | Logout projection + local notifications (opt-in, AI voice) | M3 | Ready | ADR-0004 |
-| F-019 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
-| F-020 | Factions + per-faction heat, world map | M5 | Later | |
+| F-002 | Balance config: sectioned `SimConfig`, human-editable balance file, validation, config hash, CLI dump/check/diff | M0 | Done | 2026-10-03, ADR-0008 |
+| F-003 | Commands and typed event log, replay | M0 | Done | 2026-10-03, ADR-0003 amendment |
+| F-004 | Save/snapshot format + crash-safe save store (`Deadswitch.Host`) | M0 | Done | 2026-10-03, ADR-0009 |
+| F-005 | Economy core: facilities, build/upgrade queue, power priority + shedding, crew, population cap | M1 | Done | 2026-10-03, SPEC-002 |
+| F-006 | Pressure loop: corruption (milli-units, bands, automation load), OVERRIDE charges/cooldown, turrets + defense posture + garrison, raid strength vs defense (±15%), offline penalty, mercy window, loss ledger | M1 | Ready | SPEC-001 |
+| F-007 | Unity foundation: compile-check project, code-only bootstrap, SimHost (real-time ticking), balance file import, save/load, offline catch-up, clock guard, settings | M2 | Ready | ADR-0004 |
+| F-008 | Visual system: design tokens (USS), fonts, CRT terminal overlay, motion helpers, headless UI preview tool | M2 | Ready | doc 11 |
+| F-009 | Terminal HUD + command bar: always-visible essentials, animated readouts, energy sparkline, Base / Map / AI / Ops navigation | M2 | Ready | doc 08 s4 |
+| F-010 | 3D base diorama: procedural stylized-3D facilities (chunky bevelled forms, URP PBR materials), drone-feed camera (tilt-shift, subtle sensor fx), slot selection, build/upgrade sheet, power/crew states visible | M2 | Ready | ADR-0007, doc 11 |
+| F-011 | AI advisor: line system with triggers, Coldness/Boldness dials, delegation effects, glitch text by corruption, 50 lines, the first lie | M2 | Ready | ADVISOR_VOICE |
+| F-012 | Defense setup screen: posture, crew chips, AI Confidence readout, Set & Go | M3 | Ready | doc 10 s4 |
+| F-013 | Battle report: graphic-novel panels of rendered stills, loss ledger, AI annotation, Verify | M3 | Ready | ADR-0003, ADR-0007 |
+| F-014 | Hidden project clock + Audit tool (Core Profile readout) | M2 | Ready | doc 10 s2 |
+| F-015 | Module tree: trunk M1-M3 + first field (8 nodes), research timers, Tier 2 gate | M2 | Ready | doc 10 s6 |
+| F-016 | Boot sequence + opening flow (early protection, first hit) | M4 | Ready | doc 01 s7 |
+| F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | Ready | ADR-0004 |
+| F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
+| F-019 | Factions + per-faction heat, world map | M5 | Later | |
+| F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Later | fold into CLI |

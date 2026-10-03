@@ -8,6 +8,7 @@ using Deadswitch.Sim;
 using Deadswitch.Sim.Config;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 
 namespace Deadswitch.Cli
 {
@@ -128,6 +129,17 @@ namespace Deadswitch.Cli
             Console.WriteLine("seed=" + sim.Seed + " hours=" + o.Hours + " tick=" + s.Tick);
             Console.WriteLine("energy=" + s.Energy + " fuel=" + s.Fuel + " compute=" + s.Compute
                 + " people=" + s.People + " corruption=" + s.Corruption);
+            EconomyFlows f = Economy.Flows(s, sim.Config);
+            Console.WriteLine("energy/h: +" + f.GenerationPerHour + " -" + f.CoreUpkeepPerHour + " core -" + f.FacilityUpkeepPerHour
+                + " facilities = " + f.NetEnergyPerHour + "  compute/h=" + f.ComputePerHour + "  caps: energy " + f.EnergyCap
+                + " people " + f.PopulationCap + "  crew " + f.CrewAssigned + "/" + f.CrewNeeded + "  unmanned=" + f.AutomationLoad);
+            for (int i = 0; i < s.Slots.Count; i++)
+            {
+                FacilitySlot slot = s.Slots[i];
+                Console.WriteLine("  slot " + i + ": " + (slot.IsEmpty ? "-" : slot.Kind + " L" + slot.Level
+                    + (slot.Enabled ? string.Empty : " OFF") + (slot.Powered ? string.Empty : " SHED") + (slot.Staffed ? string.Empty : " UNMANNED")));
+            }
+
             Console.WriteLine("raids=" + sim.Log.Events.Count(e => e.Kind == EventKind.RaidStarted)
                 + " blackouts=" + sim.Log.Events.Count(e => e.Kind == EventKind.BlackoutStarted));
             Console.WriteLine("hash=" + Hex(StateHasher.Hash(s)));

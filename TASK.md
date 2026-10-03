@@ -1,6 +1,6 @@
 # TASK: F-005 Economy core
 
-- Status: In progress
+- Status: Done
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
 - Pillar / milestone: Base & economy / M1
 - Spec: docs/specs/SPEC-002-economy-core.md
@@ -14,8 +14,8 @@ Facilities in Hub slots, a build/upgrade queue with timers, power priority with 
 - [x] 2. State: facility slots, build jobs, power priority (visitor; save format stays v1); starting layout; `EconomyQueries` (flows for UI)
 - [x] 3. Construction system + commands Build/Upgrade/CancelJob/Demolish; tests
 - [x] 4. Crew + power systems (priority, shedding hysteresis, blackout, manual power, SetPriority); production; population cap; tests
-- [ ] 5. Determinism/save/replay/chunking with economy; sensible-builder 7-day guard; shipped balance file regenerated
-- [ ] 6. CLI shows economy; docs (SPEC status, balance numbers), HANDOFF/BACKLOG
+- [x] 5. Determinism/save/replay/chunking with economy; sensible-builder 7-day guard; shipped balance file regenerated
+- [x] 6. CLI shows economy; docs (SPEC status, balance numbers), HANDOFF/BACKLOG
 
 ## Notes
 - Save format stays v1: no saves have shipped yet. From the first public build on, layout changes need a version bump + migration.

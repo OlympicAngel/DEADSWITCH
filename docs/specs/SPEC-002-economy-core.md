@@ -1,6 +1,6 @@
 # SPEC-002: Economy core (facilities, construction, power priority, crew)
 
-- Status: In progress
+- Status: Done (F-005)
 - Pillar: Base & economy
 - Touches: people (crew, population cap), AI corruption (unmanned facilities = automation load, consumed in M2), defense (raids loot the energy stock; turrets join the same power/crew rules in F-006), living base view (slots are the diorama layout)
 - Source rules: doc 02 s1-8, doc 10 s1.3 and s3, doc 03 s3 (automation load), doc 06 s2 (tier gates), quality bar
@@ -25,14 +25,14 @@ Military facilities and turrets (F-006), outposts, fuel income (operations), tie
 9. **Events:** BuildStarted, BuildCompleted, BuildCancelled, FacilityDemolished, FacilityShed, FacilityRestored, FacilityPowerSet, BlackoutStarted, BlackoutEnded, PriorityChanged.
 
 ## Acceptance criteria
-- [ ] Doc 10 starting rates reproduced exactly by the starting layout (guard test)
-- [ ] Per-hour delivery sums exactly to the rate over every game hour; chunking holds
-- [ ] Build/upgrade/cancel/demolish costs, refunds, timers and validation
-- [ ] Priority shedding follows the handler's order; hysteresis prevents flicker; blackout when the core cannot be powered
-- [ ] Unmanned facilities produce reduced output and count as automation load
-- [ ] Population cap includes Life Support only while powered; regrowth respects it
-- [ ] Save/load/replay equality with construction in flight
-- [ ] A scripted "sensible builder" over 7 days never blacks out and grows (guard)
+- [x] Doc 10 starting rates reproduced exactly by the starting layout (guard test)
+- [x] Per-hour delivery sums exactly to the rate over every game hour; chunking holds
+- [x] Build/upgrade/cancel/demolish costs, refunds, timers and validation
+- [x] Priority shedding follows the handler's order; hysteresis prevents flicker; blackout when the core cannot be powered
+- [x] Unmanned facilities produce reduced output and count as automation load
+- [x] Population cap includes Life Support only while powered; regrowth respects it
+- [x] Save/load/replay equality with construction in flight
+- [x] A scripted "sensible builder" over 7 days never blacks out and grows (guard)
 
 ## Tests
 `EconomyTests` (rates, starting layout), `ConstructionTests`, `PowerPriorityTests`, `CrewTests`, plus determinism/chunking/save/replay with economy commands.
