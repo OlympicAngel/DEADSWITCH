@@ -205,6 +205,46 @@ namespace Deadswitch.Art.Models
             return b.Mesh;
         }
 
+        /// <summary>
+        /// A raider for report panels: a hooded, gas-masked silhouette in dark rags with a rifle, leaning forward,
+        /// facing -Z. Dark materials so the graphic-novel grade reads it as ink; one dim lens for menace, no gore.
+        /// </summary>
+        public static MeshData Raider(uint seed)
+        {
+            var b = new MeshBuilder(seed) { AoHeight = 0.5f, AoFloor = 0.7f, FaceJitter = 0.03f };
+            var rng = new ArtRandom(seed);
+            Mat coat = rng.Next() < 0.5f ? Mat.Rubber : Mat.DarkSteel;
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-8f)));
+            foreach (int s in new[] { -1, 1 })
+            {
+                float stride = s * rng.Range(0.08f, 0.16f);
+                b.Capsule(new Vector3(s * 0.11f, 0.12f, stride), new Vector3(s * 0.1f, 0.86f, 0f), 0.075f, Mat.Rubber, 8);
+                b.BoxOn(s * 0.11f, 0, stride - 0.03f, 0.14f, 0.13f, 0.28f, Mat.Rubber, 0.04f);
+            }
+
+            b.Frustum(new Vector3(0, 0.62f, 0), 0.26f, 0.2f, 0.82f, 10, coat, 0.04f);
+            b.Capsule(new Vector3(0, 1.0f, 0), new Vector3(0, 1.38f, 0.02f), 0.2f, coat, 12);
+            b.BoxOn(0, 0.98f, 0.18f, 0.32f, 0.46f, 0.18f, Mat.Tarp, 0.05f);
+            b.Sphere(new Vector3(0, 1.62f, 0.01f), new Vector3(0.13f, 0.14f, 0.13f), 5, 10, Mat.Rubber);
+            b.Sphere(new Vector3(0, 1.66f, 0.03f), new Vector3(0.16f, 0.15f, 0.16f), 4, 10, coat, 0f, 0.6f);
+            b.Box(new Vector3(0, 1.56f, -0.13f), new Vector3(0.1f, 0.1f, 0.08f), Mat.DarkSteel, 0.03f);
+            foreach (int s in new[] { -1, 1 })
+            {
+                b.Box(new Vector3(s * 0.05f, 1.64f, -0.12f), new Vector3(0.05f, 0.035f, 0.02f), Mat.LampRed, 0f);
+            }
+
+            // rifle held across the body, pointing ahead
+            b.Strut(new Vector3(0.18f, 1.12f, 0.12f), new Vector3(-0.08f, 1.24f, -0.62f), 0.045f, Mat.DarkSteel);
+            b.Box(new Vector3(0.12f, 1.12f, 0.05f), new Vector3(0.06f, 0.14f, 0.2f), Mat.DarkSteel, 0.02f);
+            foreach (int s in new[] { -1, 1 })
+            {
+                b.Capsule(new Vector3(s * 0.24f, 1.4f, 0f), new Vector3(s * 0.08f, 1.18f, -0.3f), 0.06f, coat, 8);
+            }
+
+            b.Pop();
+            return b.Mesh;
+        }
+
         /// <summary>Block letters (5x7 pixel font) painted on a wall facing -Z; origin at the text's bottom-left.</summary>
         public static void Stencil(MeshBuilder b, string text, Vector3 origin, float pixel, Mat mat)
         {

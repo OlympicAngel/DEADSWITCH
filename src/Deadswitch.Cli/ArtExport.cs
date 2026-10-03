@@ -7,6 +7,8 @@ using System.Text;
 using Deadswitch.Art.Geometry;
 using Deadswitch.Art.Models;
 using Deadswitch.Art.World;
+using Deadswitch.Host.Narrative;
+using Deadswitch.Host.Reports;
 using Deadswitch.Sim;
 using Deadswitch.Sim.State;
 
@@ -20,7 +22,7 @@ namespace Deadswitch.Cli
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null)
+        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null)
         {
             var meshes = new List<MeshData>();
             var objects = new StringBuilder();
@@ -98,6 +100,31 @@ namespace Deadswitch.Cli
                 AddModel("person" + i, new Model { Static = Props.Person(seed + 900 + (uint)i) }, walk[(i * 5) % walk.Length], (i * 73) % 360, true, false);
             }
 
+            var reportJson = new StringBuilder();
+            if (report != null)
+            {
+                RaidGate gate = report.ContactGate != RaidGate.None ? report.ContactGate : report.PredictedGate;
+                reportJson.Append(",\n\"report\":{\"title\":").Append(Str("AFTER-ACTION // RAID " + report.RaidId + " // " + report.Outcome.ToString().ToUpperInvariant()))
+                    .Append(",\"vector\":").Append(Str("PREDICTED " + Names.Gate(report.PredictedGate) + "  //  CONTACT " + Names.Gate(report.ContactGate)))
+                    .Append(",\"mismatch\":").Append(report.PredictionMismatch ? "true" : "false")
+                    .Append(",\"summary\":").Append(Str(report.Summary))
+                    .Append(",\"ledger\":").Append(Str(report.LossText(false)))
+                    .Append(",\"shots\":[");
+                for (int shot = 0; shot < ReportScene.Shots; shot++)
+                {
+                    ShotSpec spec = ReportScene.Shot(gate, shot, report.Outcome, seed);
+                    reportJson.Append(shot > 0 ? "," : string.Empty).Append("{\"pos\":").Append(V(spec.Position)).Append(",\"target\":").Append(V(spec.Target))
+                        .Append(",\"fov\":").Append(F(spec.Fov)).Append(",\"caption\":").Append(Str(report.Panels[shot].Caption)).Append('}');
+                    int n = 0;
+                    foreach (RaiderSpec r in ReportScene.Raiders(gate, shot, report.Outcome, seed))
+                    {
+                        AddModel("raider" + shot + "_" + n++, new Model { Static = Props.Raider(r.Seed) }, r.Position, r.Yaw, true, false);
+                    }
+                }
+
+                reportJson.Append("]}");
+            }
+
             var sb = new StringBuilder();
             sb.Append("{\"palette\":[");
             for (int i = 0; i < Palette.Count; i++)
@@ -121,7 +148,7 @@ namespace Deadswitch.Cli
                 Mesh(sb, meshes[i]);
             }
 
-            sb.Append("]}\n");
+            sb.Append(']').Append(reportJson).Append("}\n");
             File.WriteAllText(path, sb.ToString());
         }
 
@@ -179,6 +206,11 @@ namespace Deadswitch.Cli
         private static string V(Vector3 v)
         {
             return "[" + F(v.X) + "," + F(v.Y) + "," + F(-v.Z) + "]";
+        }
+
+        private static string Str(string text)
+        {
+            return "\"" + text.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
         }
 
         private static string V3(Vector3 v)

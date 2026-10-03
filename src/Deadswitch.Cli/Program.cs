@@ -80,7 +80,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
-            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--report RAID|last]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -211,7 +211,15 @@ namespace Deadswitch.Cli
                 }).ToArray();
             }
 
-            ArtExport.Write(sim, outPath, (uint)seed, layout);
+            Deadswitch.Host.Reports.BattleReport? report = null;
+            string? reportArg = ValueAfter(rest, "--report");
+            if (reportArg != null)
+            {
+                int raid = reportArg == "last" ? Deadswitch.Host.Reports.BattleReport.LatestRaidId(sim.Log.Events) : int.Parse(reportArg, CultureInfo.InvariantCulture);
+                report = Deadswitch.Host.Reports.BattleReport.Build(sim.Log.Events, raid) ?? throw new UsageException("Raid " + raid + " has not resolved in this run.");
+            }
+
+            ArtExport.Write(sim, outPath, (uint)seed, layout, report);
             Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
             for (int i = 0; i < sim.State.Slots.Count; i++)
             {

@@ -117,6 +117,7 @@ const t = +P.get('t') || 3.2;
 let lights = 0;
 for (const o of scene.objects) {
   const root = new THREE.Group();
+  root.name = o.name;
   root.position.set(...o.position);
   root.rotation.y = o.yaw * Math.PI / 180;
   const md = scene.meshes[o.mesh];
@@ -168,6 +169,85 @@ composer.addPass(new ShaderPass({
       c += (h(vUv * 1000.) - .5) * grain; c *= 1. - vignette * smoothstep(.15, .75, r2 * 2.2);
       gl_FragColor = vec4(c, 1.); }`,
 }));
-composer.render();
+// Graphic-novel grade for battle report stills (SPEC-006 rule 6). Mirrors Unity's DeadswitchNovel shader.
+const novel = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, res: { value: new THREE.Vector2(W, H) }, ink: { value: 0.85 }, levels: { value: 4.0 }, dotSize: { value: 7.0 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform vec2 res; uniform float ink, levels, dotSize; varying vec2 vUv;
+    float luma(vec3 c){ return dot(c, vec3(0.299, 0.587, 0.114)); }
+    float L(vec2 o){ return luma(texture2D(tDiffuse, vUv + o / res).rgb); }
+    void main(){
+      vec3 c = texture2D(tDiffuse, vUv).rgb; float l = luma(c);
+      float gx = -L(vec2(-1.,1.)) - 2.*L(vec2(-1.,0.)) - L(vec2(-1.,-1.)) + L(vec2(1.,1.)) + 2.*L(vec2(1.,0.)) + L(vec2(1.,-1.));
+      float gy = -L(vec2(-1.,-1.)) - 2.*L(vec2(0.,-1.)) - L(vec2(1.,-1.)) + L(vec2(-1.,1.)) + 2.*L(vec2(0.,1.)) + L(vec2(1.,1.));
+      float edge = smoothstep(0.10, 0.32, length(vec2(gx, gy)));
+      float q = floor(pow(l, 0.8) * levels + 0.5) / levels;
+      vec3 col = mix(vec3(q), c * (q / max(l, 0.002)), 0.42);
+      vec2 hp = mat2(0.7071, -0.7071, 0.7071, 0.7071) * (vUv * res) / dotSize;
+      float d = length(fract(hp) - 0.5);
+      float shade = clamp(1.0 - l * 2.6, 0.0, 1.0);
+      col *= 1.0 - 0.42 * step(d, shade * 0.6);
+      float glow = smoothstep(0.75, 1.0, max(c.r, max(c.g, c.b)));
+      col = mix(col, c * 1.15, glow * 0.7);
+      col *= 1.0 - edge * ink;
+      col = mix(col, col * vec3(1.04, 1.0, 0.9), 0.5);
+      gl_FragColor = vec4(col, 1.);
+    }`,
+});
+novel.enabled = false;
+composer.addPass(novel);
+
+if (scene.report && P.get('report')) {
+  await renderReport(scene.report);
+} else {
+  composer.render();
+}
 window.__done = { lights };
+
+async function renderReport(rep) {
+  hts.enabled = false; vts.enabled = false; novel.enabled = true;
+  renderer.toneMappingExposure = look.exposure * 1.45;
+  const sizes = [[1000, 400], [492, 500], [492, 500], [1000, 400]];
+  const imgs = [];
+  for (let i = 0; i < rep.shots.length; i++) {
+    const s = rep.shots[i], [w, h] = sizes[i];
+    for (const r of world.children) if (r.name.startsWith('raider')) r.visible = r.name.startsWith('raider' + i + '_');
+    renderer.setSize(w, h); composer.setSize(w, h); novel.uniforms.res.value.set(w, h);
+    cam.aspect = w / h; cam.fov = s.fov; cam.position.set(...s.pos); cam.lookAt(new THREE.Vector3(...s.target)); cam.updateProjectionMatrix();
+    composer.render();
+    imgs.push(renderer.domElement.toDataURL('image/png'));
+  }
+  const panel = (i, cls) => `<div class="panel ${cls}"><img src="${imgs[i]}"><div class="cap">${rep.shots[i].caption}</div></div>`;
+  document.body.innerHTML = `<style>
+    @font-face { font-family: Chakra; src: url(/fonts/ChakraPetch-Bold.ttf); }
+    @font-face { font-family: Plex; src: url(/fonts/IBMPlexMono-Regular.ttf); }
+    @font-face { font-family: PlexSB; src: url(/fonts/IBMPlexMono-SemiBold.ttf); }
+    body { margin: 0; width: ${W}px; height: ${H}px; background: #171B19; color: #D8D1BC; font-family: Plex; overflow: hidden; }
+    .wrap { padding: 22px 40px; }
+    .title { font-family: Chakra; font-size: 36px; letter-spacing: 4px; }
+    .vector { font-family: PlexSB; font-size: 24px; color: #9DA197; margin: 8px 0 20px; letter-spacing: 1px; }
+    .vector.bad { color: #E8B45C; }
+    .grid { display: grid; grid-template-columns: 492px 492px; gap: 16px; }
+    .panel { position: relative; border: 5px solid #0b0d0c; outline: 2px solid rgba(216,209,188,0.55); background: #000; }
+    .panel img { display: block; width: 100%; }
+    .wide { grid-column: 1 / span 2; }
+    .cap { position: absolute; left: 12px; bottom: 12px; max-width: 78%; background: #D8D1BC; color: #111; font-family: PlexSB; font-size: 21px; line-height: 1.25; padding: 8px 12px; box-shadow: 4px 4px 0 #0b0d0c; }
+    .wide .cap { bottom: auto; top: 12px; }
+    .ai { margin-top: 16px; border: 1px solid rgba(168,213,138,0.32); background: rgba(8,11,9,0.72); padding: 16px 20px; }
+    .lbl { font-family: Chakra; font-size: 20px; letter-spacing: 4px; color: #9DA197; display: flex; justify-content: space-between; }
+    .chip { color: #E8B45C; border: 1px solid rgba(232,180,92,0.5); padding: 2px 10px; font-size: 18px; }
+    .say { color: #A8D58A; font-size: 28px; margin-top: 10px; text-shadow: 0 0 10px rgba(168,213,138,0.35); }
+    .ledger { margin-top: 16px; font-family: PlexSB; font-size: 28px; }
+    .btn { margin-top: 16px; height: 104px; border: 2px solid #A8D58A; display: flex; align-items: center; justify-content: center; font-family: Chakra; font-size: 28px; letter-spacing: 4px; color: #A8D58A; background: rgba(168,213,138,0.08); }
+  </style><div class="wrap">
+    <div class="title">${rep.title}</div>
+    <div class="vector ${rep.mismatch ? 'bad' : ''}">${rep.vector}</div>
+    <div class="grid">${panel(0, 'wide')}${panel(1, '')}${panel(2, '')}${panel(3, 'wide')}</div>
+    <div class="ai"><div class="lbl"><span>AI SUMMARY</span><span class="chip">UNVERIFIED</span></div><div class="say">&gt; ${rep.summary}</div></div>
+    <div class="ai"><div class="lbl"><span>LOSS LEDGER</span><span>STORE COUNT</span></div><div class="ledger">${rep.ledger}</div></div>
+    <div class="btn">VERIFY // 20 COMPUTE</div>
+  </div>`;
+  await document.fonts.ready;
+  await Promise.all([...document.images].map(im => im.decode()));
+}
 </script></body></html>

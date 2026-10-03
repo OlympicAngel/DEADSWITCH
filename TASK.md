@@ -12,12 +12,13 @@ A graphic-novel report after each raid: four rendered panels, the AI's (possibly
 ## Steps
 - [x] 1. Sim: `[report]` config, report edit lie, `VerifyReport` command + `ReportVerified` event, tests
 - [x] 2. Host: `BattleReport` view from the log (summary with edits, ledger, verify findings, captions); advisor verify lines
-- [ ] 3. Art: gate camera shots + raider silhouettes (`HubScene.ReportShots`)
-- [ ] 4. Preview: report mode in `tools/basepreview` (four stills, ink/halftone grade, composed page); iterate the look
+- [x] 3. Art: gate camera shots + raider silhouettes (`HubScene.ReportShots`)
+- [x] 4. Preview: report mode in `tools/basepreview` (four stills, ink/halftone grade, composed page); iterate the look
 - [ ] 5. Unity: report stills (RenderTexture + graphic-novel shader), Report screen (UXML), HUD chip, OPS link
 - [ ] 6. Docs (SPEC-006, BACKLOG, HANDOFF)
 
 ## Notes
+- Report preview: `dotnet run --project src/Deadswitch.Cli -- art export --days 2 --seed 1 --report 1 --out artifacts/basepreview/report.json` then `node tools/basepreview/render.mjs --scene artifacts/basepreview/report.json --out artifacts/basepreview/report.png --report 1`.
 - F-012 closed 2026-10-03 (OPS screen).
 
 ## Blocked / questions
