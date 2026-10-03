@@ -109,6 +109,11 @@ namespace Deadswitch.Game.UI
         {
             Motion.Reduced = s.ReducedMotion;
             Feedback.Enabled = s.Haptics;
+            foreach (int pct in GameSettings.TextScales)
+            {
+                Root.EnableInClassList("ds-scale-" + pct, pct == s.TextScalePct && pct != 100);
+            }
+
             _crt.Configure(s.Effects, 0f);
         }
 

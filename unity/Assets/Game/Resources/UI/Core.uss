@@ -16,6 +16,8 @@
 .core-climax__btn { margin-top: var(--s-2); min-height: 88px; }
 .core-climax__btn > .ds-btn__label { font-size: var(--fs-micro); }
 .core-silenced { margin-bottom: var(--s-3); }
+.core-settings { min-height: 72px; padding: 0 var(--s-4); justify-content: center; border-width: 1px; border-color: var(--c-line-mid); margin-bottom: -8px; }
+.core-settings__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-dim); }
 .core-section { margin-top: var(--s-4); margin-bottom: var(--s-2); }
 
 .core-status__value { margin-top: var(--s-2); }

@@ -1,0 +1,55 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Settings.uss" />
+  <!-- SETTINGS (F-024): comfort and accessibility. Nothing here hides information or slows input. -->
+  <ui:VisualElement name="settings" class="set">
+    <ui:VisualElement class="row set-head">
+      <ui:Label text="SETTINGS" class="ds-title grow" />
+      <ui:VisualElement name="set-close" class="set-close"><ui:Label text="X" class="set-close__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:Label text="EFFECTS" class="ds-label set-section" />
+    <ui:VisualElement name="seg-effects" class="set-seg">
+      <ui:VisualElement class="set-seg__item"><ui:Label text="0%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="25%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="50%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="75%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Label text="Glitches, scanlines and noise. Never on values, warnings or controls." class="ds-body t-dim set-note" />
+
+    <ui:Label text="TEXT SIZE" class="ds-label set-section" />
+    <ui:VisualElement name="seg-text" class="set-seg">
+      <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="115%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="130%" class="set-seg__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Label text="Scales type and touch targets together." class="ds-body t-dim set-note" />
+
+    <ui:VisualElement class="set-row">
+      <ui:VisualElement class="grow"><ui:Label text="REDUCED MOTION" class="ds-label" /><ui:Label text="No typing, staggering, pulsing or camera drift." class="ds-body t-dim set-note" /></ui:VisualElement>
+      <ui:VisualElement name="tog-motion" class="set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement class="set-row">
+      <ui:VisualElement class="grow"><ui:Label text="HAPTICS" class="ds-label" /><ui:Label text="Short pulses for raid warnings and confirmations." class="ds-body t-dim set-note" /></ui:VisualElement>
+      <ui:VisualElement name="tog-haptics" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement class="set-row">
+      <ui:VisualElement class="grow"><ui:Label text="ALERTS WHILE AWAY" class="ds-label" /><ui:Label text="Raids, finished work and power loss, forecast when you leave." class="ds-body t-dim set-note" /></ui:VisualElement>
+      <ui:VisualElement name="tog-alerts" class="set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="guide-reset" class="ds-btn ds-btn--ghost set-btn"><ui:Label text="SHOW OBJECTIVES AGAIN" class="ds-btn__label" /></ui:VisualElement>
+
+    <ui:VisualElement name="dev" class="set-dev">
+      <ui:Label text="DEVELOPMENT // TIME SCALE" class="ds-label set-section" />
+      <ui:VisualElement name="seg-time" class="set-seg">
+        <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="1X" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement class="set-seg__item"><ui:Label text="10X" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement class="set-seg__item"><ui:Label text="60X" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement class="set-seg__item"><ui:Label text="600X" class="set-seg__label" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:Label name="about" text="DEADSWITCH // FRAGMENT S-17. Type: Chakra Petch, IBM Plex Mono (SIL Open Font License 1.1)." class="ds-body t-faint set-about" />
+  </ui:VisualElement>
+</ui:UXML>

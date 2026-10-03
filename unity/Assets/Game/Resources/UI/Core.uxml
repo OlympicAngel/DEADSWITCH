@@ -4,7 +4,8 @@
   <ui:VisualElement name="core" class="core">
     <ui:VisualElement class="core-head">
       <ui:Label text="CORE" class="ds-title" />
-      <ui:Label text="FRAGMENT S-17 // AI TERMINAL" class="ds-label core-head__sub" />
+      <ui:Label text="FRAGMENT S-17 // AI TERMINAL" class="ds-label core-head__sub grow" />
+      <ui:VisualElement name="open-settings" class="core-settings"><ui:Label text="SETTINGS" class="core-settings__label" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:VisualElement class="core-seg">

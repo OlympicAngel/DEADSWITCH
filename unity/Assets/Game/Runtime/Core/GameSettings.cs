@@ -12,6 +12,10 @@ namespace Deadswitch.Game.Core
         private const string KeyReducedMotion = "ds.reduced_motion";
         private const string KeyHaptics = "ds.haptics";
         private const string KeyTimeScale = "ds.dev_time_scale";
+        private const string KeyTextScale = "ds.text_scale_pct";
+
+        /// <summary>Allowed text sizes (doc 10 assists: scalable text and touch targets).</summary>
+        public static readonly int[] TextScales = { 100, 115, 130 };
 
         /// <summary>0..100. Scales glitch, scanline, noise and shake effects. 0 removes them entirely.</summary>
         public int EffectIntensityPct { get; private set; } = 100;
@@ -19,6 +23,9 @@ namespace Deadswitch.Game.Core
         public bool ReducedMotion { get; private set; }
 
         public bool Haptics { get; private set; } = true;
+
+        /// <summary>100, 115 or 130: scales type and touch targets.</summary>
+        public int TextScalePct { get; private set; } = 100;
 
         /// <summary>Development only: game minutes per real minute. 1 in release builds.</summary>
         public float DevTimeScale { get; private set; } = 1f;
@@ -32,6 +39,7 @@ namespace Deadswitch.Game.Core
                 EffectIntensityPct = Mathf.Clamp(PlayerPrefs.GetInt(KeyEffects, 100), 0, 100),
                 ReducedMotion = PlayerPrefs.GetInt(KeyReducedMotion, 0) == 1,
                 Haptics = PlayerPrefs.GetInt(KeyHaptics, 1) == 1,
+                TextScalePct = System.Array.IndexOf(TextScales, PlayerPrefs.GetInt(KeyTextScale, 100)) >= 0 ? PlayerPrefs.GetInt(KeyTextScale, 100) : 100,
                 DevTimeScale = Debug.isDebugBuild ? Mathf.Clamp(PlayerPrefs.GetFloat(KeyTimeScale, 1f), 1f, 600f) : 1f,
             };
             return s;
@@ -58,6 +66,13 @@ namespace Deadswitch.Game.Core
         {
             Haptics = on;
             PlayerPrefs.SetInt(KeyHaptics, on ? 1 : 0);
+            Save();
+        }
+
+        public void SetTextScale(int pct)
+        {
+            TextScalePct = System.Array.IndexOf(TextScales, pct) >= 0 ? pct : 100;
+            PlayerPrefs.SetInt(KeyTextScale, TextScalePct);
             Save();
         }
 

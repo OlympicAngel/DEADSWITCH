@@ -1,21 +1,17 @@
-# TASK: F-022 Project climax and counterplay
+# TASK: F-024 Settings and accessibility screen
 
 - Status: Done
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: AI relationship / M3
-- Spec: docs/specs/SPEC-011-project-climax.md
-- Sources: doc 03 s5-6, doc 10 s2
+- Spec: n/a (UI over GameSettings; doc 10 assists, quality bar)
 
 ## Goal
-Imminent opens a visible 24-hour window with three answers (purge, silence, cancel); if it expires the AI betrays or forks.
+Effect intensity, text size (type and touch targets), reduced motion, haptics, alerts, guide reset, debug time scale; reachable from CORE.
 
 ## Steps
-- [x] 1. Sim: `[climax]` config, window, purge / silence (OVERRIDE) / cancel commands, betrayal and fork, tests
-- [x] 2. Host + UI: advisor lines; CORE warning card with countdown and answers; silenced AI hides estimates
-- [x] 3. Docs (SPEC-011, BACKLOG, HANDOFF)
+- [x] 1. Text scale setting + token overrides; Settings screen (UXML + controller); CORE entry; preview
 
 ## Notes
-- F-017 closed 2026-10-03 (notifications).
+- F-022 closed 2026-10-03 (climax). Determinism review follow-ups landed in 013a7e1.
 
 ## Blocked / questions
 - none

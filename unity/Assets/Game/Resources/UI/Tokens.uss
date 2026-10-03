@@ -70,3 +70,26 @@
     color: var(--c-text);
     font-size: var(--fs-sm);
 }
+
+/* Text size assist (doc 10): type and touch targets scale together. */
+.ds-root.ds-scale-115 {
+    --fs-micro: 23px;
+    --fs-xs: 28px;
+    --fs-sm: 32px;
+    --fs-md: 39px;
+    --fs-lg: 50px;
+    --fs-xl: 68px;
+    --fs-hero: 100px;
+    --touch: 128px;
+}
+
+.ds-root.ds-scale-130 {
+    --fs-micro: 26px;
+    --fs-xs: 31px;
+    --fs-sm: 36px;
+    --fs-md: 44px;
+    --fs-lg: 57px;
+    --fs-xl: 78px;
+    --fs-hero: 114px;
+    --touch: 144px;
+}

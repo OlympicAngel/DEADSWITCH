@@ -60,6 +60,12 @@ namespace Deadswitch.Game.Core
         public float TickProgress => Mathf.Clamp01(_tickAccumulator / SecondsPerTick);
 
         /// <summary>Real seconds until the next tick at the current time scale.</summary>
+        /// <summary>Asks listeners to refresh without a tick (e.g. a presentation setting changed).</summary>
+        public void NotifyTicked()
+        {
+            Ticked?.Invoke();
+        }
+
         /// <summary>Real seconds until a future tick completes, at the current time scale.</summary>
         public double SecondsUntilTick(long tick)
         {

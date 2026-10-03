@@ -26,7 +26,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _visible;
         private bool _showModules;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -35,6 +35,7 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _ui.Q("open-settings").RegisterCallback<ClickEvent>(_ => openSettings());
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
