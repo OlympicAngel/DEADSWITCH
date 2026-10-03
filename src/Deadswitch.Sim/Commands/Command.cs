@@ -45,6 +45,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>A: raid id. Verify that raid's report (SPEC-006).</summary>
         VerifyReport = 12,
+
+        /// <summary>No args. Run the Audit (SPEC-007).</summary>
+        Audit = 13,
     }
 
     /// <summary>
@@ -122,6 +125,11 @@ namespace Deadswitch.Sim.Commands
         public static Command VerifyReport(int raidId)
         {
             return new Command(CommandKind.VerifyReport, raidId);
+        }
+
+        public static Command Audit()
+        {
+            return new Command(CommandKind.Audit);
         }
 
         public static Command SetPresence(bool away)

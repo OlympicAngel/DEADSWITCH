@@ -85,6 +85,7 @@ namespace Deadswitch.Sim
                 CorruptionSystem.Hourly(ctx);
                 PeopleSystem.Hourly(ctx);
                 AiSystem.Hourly(ctx);
+                ProjectSystem.Hourly(ctx);
             }
 
             RaidSystem.Tick(ctx);

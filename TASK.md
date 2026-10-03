@@ -10,7 +10,7 @@
 A hidden project the AI grows from Boldness and skimmed compute, clues for the handler, and a paid Audit that shows the Core Profile.
 
 ## Steps
-- [ ] 1. Sim: `[project]` config, clock + skim + stage events, reported corruption, `Audit` command, tests
+- [x] 1. Sim: `[project]` config, clock + skim + stage events, reported corruption, `Audit` command, tests
 - [ ] 2. Host: advisor slips, imminent and audit lines; Core Profile view
 - [ ] 3. UI: CORE screen (AI status, Audit, Core Profile, recent transcript); HUD shows reported corruption; preview
 - [ ] 4. Docs (SPEC-007, BACKLOG, HANDOFF, roadmap)

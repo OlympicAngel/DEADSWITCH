@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006).</summary>
-        public const int LayoutVersion = 3;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007).</summary>
+        public const int LayoutVersion = 4;
 
         public long Tick;
 
@@ -87,6 +87,15 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Hub slots; the index is the slot id.</summary>
         public List<FacilitySlot> Slots = new List<FacilitySlot>();
+
+        /// <summary>The AI's hidden project, 0..100_000 (SPEC-007).</summary>
+        public int ProjectMilli;
+
+        /// <summary>Compute the AI skimmed since the last Audit.</summary>
+        public int SkimmedSinceAudit;
+
+        /// <summary>The Audit is available again from this tick.</summary>
+        public long AuditReadyTick;
 
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
@@ -241,6 +250,13 @@ namespace Deadswitch.Sim.State
                 {
                     record.Visit(v);
                 }
+            }
+
+            if (v.Version >= 4)
+            {
+                v.Int(ref ProjectMilli);
+                v.Int(ref SkimmedSinceAudit);
+                v.Long(ref AuditReadyTick);
             }
         }
 

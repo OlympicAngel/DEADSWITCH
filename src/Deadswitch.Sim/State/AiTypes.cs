@@ -12,6 +12,15 @@ namespace Deadswitch.Sim.State
         Defend = 2,
     }
 
+    /// <summary>The hidden project's stage (doc 10 s2). Stored in events: never renumber.</summary>
+    public enum ProjectStage
+    {
+        Dormant = 0,
+        Active = 1,
+        Advanced = 2,
+        Imminent = 3,
+    }
+
     /// <summary>What the AI lied about (for the Audit, F-014). Stored in events: never renumber.</summary>
     public enum LieKind
     {

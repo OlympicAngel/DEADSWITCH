@@ -241,6 +241,40 @@ verify_compute_cost = 20
 keep_raids = 10
 
 # --------------------------------------------------------------------------------------------------
+# The AI's hidden project clock, its clues, and the Audit (SPEC-007). Progress is milli-units: 100000 = 100%. All (tune).
+[project]
+
+# Project stage Active from this % (Dormant below). [1..100]
+active_from = 25
+
+# Project stage Advanced from this %. [1..100]
+advanced_from = 55
+
+# Project stage Imminent from this %. [1..100]
+imminent_from = 85
+
+# Project progress per game hour at 100% Boldness (scales linearly). [0..100000]
+growth_per_hour_at_full_boldness = 600
+
+# Project progress per compute point the AI skims. [0..100000]
+milli_per_skimmed_compute = 25
+
+# The AI skims compute while Boldness is at least this %. [0..100]
+skim_from_boldness_pct = 30
+
+# Share of each hour's compute output the AI skims. [0..100]
+skim_pct = 15
+
+# A bold AI (Boldness >= 50%) shows corruption this % lower than it is. [0..100]
+underreport_pct = 30
+
+# Compute spent per Audit. [0..100000]
+audit_compute_cost = 60
+
+# Game hours between Audits. [0..1000]
+audit_cooldown_hours = 12
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

@@ -119,6 +119,43 @@ namespace Deadswitch.Sim.Commands
             return CommandResult.Ok;
         }
 
+        /// <summary>Audit (SPEC-007 rule 5): the Core Profile and the hidden drains, for compute, with a cooldown.</summary>
+        public static CommandResult Audit(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            SimConfig c = ctx.Config;
+            if (cmd.A != 0 || cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            if (s.Tick < s.AuditReadyTick)
+            {
+                return CommandResult.Reject(RejectReason.OnCooldown);
+            }
+
+            if (s.Compute < c.Project.AuditComputeCost)
+            {
+                return CommandResult.Reject(RejectReason.NotEnoughCompute);
+            }
+
+            s.Compute -= c.Project.AuditComputeCost;
+            s.AuditReadyTick = s.Tick + ((long)c.Project.AuditCooldownHours * SimConfig.TicksPerHour);
+            int unverified = 0;
+            foreach (RaidRecord r in s.RaidRecords)
+            {
+                if (!r.Verified && r.LieFlags != 0)
+                {
+                    unverified++;
+                }
+            }
+
+            ctx.Emit(EventKind.AuditRun, (int)ProjectSystem.Stage(c, s.ProjectMilli), s.ColdnessMilli, s.BoldnessMilli, s.CorruptionMilli);
+            ctx.Emit(EventKind.AuditDrain, s.SkimmedSinceAudit, unverified, c.Project.AuditComputeCost);
+            s.SkimmedSinceAudit = 0;
+            return CommandResult.Ok;
+        }
+
         public static CommandResult SetPresence(SimContext ctx, Command cmd)
         {
             GameState s = ctx.State;

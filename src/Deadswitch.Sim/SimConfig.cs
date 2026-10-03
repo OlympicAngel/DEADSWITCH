@@ -26,6 +26,7 @@ namespace Deadswitch.Sim
         public DefenseConfig Defense = new DefenseConfig();
         public AiConfig Ai = new AiConfig();
         public ReportConfig Report = new ReportConfig();
+        public ProjectConfig Project = new ProjectConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -118,6 +119,7 @@ namespace Deadswitch.Sim
             Defense.Visit(visitor);
             Ai.Visit(visitor);
             Report.Visit(visitor);
+            Project.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);
@@ -182,6 +184,11 @@ namespace Deadswitch.Sim
             if (Override.StartCharges > Override.MaxCharges)
             {
                 problems.Add("override.start_charges must not exceed override.max_charges.");
+            }
+
+            if (!(Project.ActiveFrom < Project.AdvancedFrom && Project.AdvancedFrom < Project.ImminentFrom))
+            {
+                problems.Add("project stages must increase: active_from < advanced_from < imminent_from.");
             }
 
             return problems;

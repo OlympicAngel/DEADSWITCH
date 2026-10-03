@@ -83,6 +83,15 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The handler verified a report against the sensor log. A: raid id, B: findings (RaidRecord bits), C: compute spent.</summary>
         ReportVerified = 25,
+
+        /// <summary>Hidden: the AI's project changed stage. A: new ProjectStage, B: previous, C: progress (milli).</summary>
+        ProjectStage = 26,
+
+        /// <summary>Audit results (Core Profile). A: ProjectStage, B: Coldness (milli), C: Boldness (milli), D: true corruption (milli).</summary>
+        AuditRun = 27,
+
+        /// <summary>Audit findings. A: compute skimmed since the last audit, B: unverified lies on record, C: compute spent.</summary>
+        AuditDrain = 28,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
