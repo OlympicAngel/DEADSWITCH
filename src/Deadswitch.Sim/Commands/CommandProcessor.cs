@@ -35,6 +35,8 @@ namespace Deadswitch.Sim.Commands
                     return DefenseCommands.SetGarrison(ctx, command);
                 case CommandKind.SetPresence:
                     return DefenseCommands.SetPresence(ctx, command);
+                case CommandKind.VerifyReport:
+                    return DefenseCommands.VerifyReport(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

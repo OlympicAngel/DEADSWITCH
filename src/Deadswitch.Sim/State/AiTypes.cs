@@ -19,5 +19,8 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Reported the wrong raid gate. Event B: raid id, C: true RaidGate, D: reported RaidGate.</summary>
         RaidGate = 1,
+
+        /// <summary>Understated a breach in the report summary. Event B: raid id, C: true energy loss, D: shown.</summary>
+        ReportEdit = 2,
     }
 }

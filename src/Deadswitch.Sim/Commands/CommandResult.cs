@@ -52,6 +52,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Not enough free people (crew or garrison).</summary>
         NotEnoughPeople = 16,
+
+        /// <summary>No report kept for that raid.</summary>
+        NoReport = 17,
+
+        /// <summary>That report was already verified.</summary>
+        AlreadyVerified = 18,
     }
 
     public readonly struct CommandResult

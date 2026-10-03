@@ -80,6 +80,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Hidden record of a lie, for the Audit (F-014); never shown directly. A: LieKind, B-D: see LieKind.</summary>
         AdvisorLied = 24,
+
+        /// <summary>The handler verified a report against the sensor log. A: raid id, B: findings (RaidRecord bits), C: compute spent.</summary>
+        ReportVerified = 25,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

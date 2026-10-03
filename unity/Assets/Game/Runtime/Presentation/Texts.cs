@@ -36,6 +36,8 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.NoTarget: return "Nothing to act on.";
                 case RejectReason.NotEnoughPeople: return "Not enough people.";
                 case RejectReason.NoChange: return "Already set.";
+                case RejectReason.NoReport: return "That record has been purged. I keep the last ten.";
+                case RejectReason.AlreadyVerified: return "Already verified. The record stands.";
                 default: return "Command refused.";
             }
         }

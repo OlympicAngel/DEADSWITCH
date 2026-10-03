@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004).</summary>
-        public const int LayoutVersion = 2;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006).</summary>
+        public const int LayoutVersion = 3;
 
         public long Tick;
 
@@ -87,6 +87,9 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Hub slots; the index is the slot id.</summary>
         public List<FacilitySlot> Slots = new List<FacilitySlot>();
+
+        /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
+        public List<RaidRecord> RaidRecords = new List<RaidRecord>();
 
         /// <summary>Construction queue in start order.</summary>
         public List<BuildJob> Jobs = new List<BuildJob>();
@@ -228,6 +231,16 @@ namespace Deadswitch.Sim.State
                 int slotId = PowerPriority[i];
                 v.Int(ref slotId);
                 PowerPriority[i] = slotId;
+            }
+
+            if (v.Version >= 3)
+            {
+                int recordCount = v.Count(RaidRecords.Count);
+                Resize(RaidRecords, recordCount);
+                foreach (RaidRecord record in RaidRecords)
+                {
+                    record.Visit(v);
+                }
             }
         }
 

@@ -50,6 +50,7 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             ctx.Emit(EventKind.RaidResolved, s.RaidId, (int)RaidOutcome.Lockdown, s.RaidStrength, 0);
+            Record(ctx, s.RaidId, 0);
             ClearIncoming(s);
         }
 
@@ -130,10 +131,12 @@ namespace Deadswitch.Sim.Systems
 
             int defense = Defense.Rating(s, c);
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
+            int lies = s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 
             if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct)
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Missed, strength, defense);
+                Record(ctx, id, lies);
                 ClearIncoming(s);
                 return;
             }
@@ -141,6 +144,7 @@ namespace Deadswitch.Sim.Systems
             if (defense >= strength || strength <= 0)
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Repelled, strength, defense);
+                Record(ctx, id, lies);
                 ClearIncoming(s);
                 return;
             }
@@ -181,7 +185,28 @@ namespace Deadswitch.Sim.Systems
                 ctx.Emit(EventKind.MercyStarted, id, (int)(s.MercyUntilTick - s.Tick));
             }
 
+            // SPEC-006 rule 4: a corrupted AI may understate the breach in its summary (the ledger stays true).
+            if (energy > 0 && CorruptionSystem.Band(c, s.CorruptionMilli) >= CorruptionBand.Unstable
+                && SimMath.Hash((uint)id ^ (uint)s.Rng.Inc, (uint)s.Tick + 7u) % 100 < (uint)c.Report.EditChancePct)
+            {
+                s.LiesTold++;
+                ctx.Emit(EventKind.AdvisorLied, (int)LieKind.ReportEdit, id, energy, SimMath.PctFloor(energy, c.Report.EditShownPct));
+                lies |= RaidRecord.SummaryEdit;
+            }
+
+            Record(ctx, id, lies);
             ClearIncoming(s);
+        }
+
+        /// <summary>Keeps the report record of a resolved raid; only the most recent ones stay verifiable.</summary>
+        private static void Record(SimContext ctx, int raidId, int lies)
+        {
+            System.Collections.Generic.List<RaidRecord> records = ctx.State.RaidRecords;
+            records.Add(new RaidRecord { RaidId = raidId, LieFlags = lies });
+            while (records.Count > ctx.Config.Report.KeepRaids)
+            {
+                records.RemoveAt(0);
+            }
         }
 
         private static int Loot(int stock, int pct, int breachPermille, int multiplierPct, int cap)

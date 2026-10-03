@@ -42,6 +42,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Host-reported presence. A: 1 = away (logout), 0 = here.</summary>
         SetPresence = 11,
+
+        /// <summary>A: raid id. Verify that raid's report (SPEC-006).</summary>
+        VerifyReport = 12,
     }
 
     /// <summary>
@@ -114,6 +117,11 @@ namespace Deadswitch.Sim.Commands
         public static Command SetGarrison(int defenders)
         {
             return new Command(CommandKind.SetGarrison, defenders);
+        }
+
+        public static Command VerifyReport(int raidId)
+        {
+            return new Command(CommandKind.VerifyReport, raidId);
         }
 
         public static Command SetPresence(bool away)

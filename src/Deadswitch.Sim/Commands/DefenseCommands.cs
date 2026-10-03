@@ -87,6 +87,38 @@ namespace Deadswitch.Sim.Commands
             return CommandResult.Ok;
         }
 
+        /// <summary>Verify a report against the sensor log (SPEC-006 rule 5): costs compute, once per raid.</summary>
+        public static CommandResult VerifyReport(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            if (cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            RaidRecord? record = s.RaidRecords.Find(r => r.RaidId == cmd.A);
+            if (record == null)
+            {
+                return CommandResult.Reject(RejectReason.NoReport);
+            }
+
+            if (record.Verified)
+            {
+                return CommandResult.Reject(RejectReason.AlreadyVerified);
+            }
+
+            int cost = ctx.Config.Report.VerifyComputeCost;
+            if (s.Compute < cost)
+            {
+                return CommandResult.Reject(RejectReason.NotEnoughCompute);
+            }
+
+            s.Compute -= cost;
+            record.Verified = true;
+            ctx.Emit(EventKind.ReportVerified, record.RaidId, record.LieFlags, cost);
+            return CommandResult.Ok;
+        }
+
         public static CommandResult SetPresence(SimContext ctx, Command cmd)
         {
             GameState s = ctx.State;

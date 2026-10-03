@@ -225,6 +225,22 @@ first_lie = true
 lie_chance_permille_at_full_boldness = 300
 
 # --------------------------------------------------------------------------------------------------
+# Battle reports: AI edits to the summary and the Verify tool (SPEC-006). All (tune).
+[report]
+
+# Chance the AI edits a breach summary while corruption is Unstable or worse. [0..100]
+edit_chance_pct = 35
+
+# An edited summary shows this % of the true energy loss. [0..100]
+edit_shown_pct = 60
+
+# Compute spent to verify one report against the sensor log. [0..100000]
+verify_compute_cost = 20
+
+# Reports kept (and verifiable) for the most recent raids. [1..100]
+keep_raids = 10
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 
