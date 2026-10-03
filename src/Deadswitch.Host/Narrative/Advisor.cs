@@ -33,6 +33,7 @@ namespace Deadswitch.Host.Narrative
             "build_done", "build_cancelled", "demolished", "band_glitchy", "band_unstable", "band_critical", "band_down",
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
+            "research_started", "research_done", "research_memory", "tier_up",
         };
 
         private const int MaxQueue = 4;
@@ -277,6 +278,15 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.AuditDrain:
                     Enqueue(new Pending(e.A > 0 || e.B > 0 ? "audit_found" : "audit_clean", Priority.Urgent).With("skim", e.A.ToString()).With("lies", e.B.ToString()));
+                    break;
+                case EventKind.ResearchStarted:
+                    Enqueue(new Pending("research_started", Priority.Normal).With("module", e.A.ToString()));
+                    break;
+                case EventKind.ResearchCompleted:
+                    Enqueue(new Pending(e.A <= (int)ModuleNode.M3 ? "research_memory" : "research_done", Priority.Normal).With("module", ((ModuleNode)e.A).ToString()));
+                    break;
+                case EventKind.TierAdvanced:
+                    Enqueue(new Pending("tier_up", Priority.Urgent).With("tier", e.A.ToString()).With("people", e.B.ToString()));
                     break;
                 case EventKind.ReportVerified:
                     Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));

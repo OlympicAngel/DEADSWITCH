@@ -1,6 +1,6 @@
 # SPEC-008: Module tree (trunk + Logistics field) and the Tier 2 gate
 
-- Status: In progress (F-015)
+- Status: Done (F-015); Editor play check pending
 - Pillar: AI relationship, Base & economy
 - Touches: economy (node effects on upkeep, output, caps, build time, refunds, unmanned output), people (tier-up cost, population cap), AI (restoring memory)
 - Source rules: doc 10 s6 (trunk M1-M3, 8 nodes per field, 3 in Tier 1 + 5 in Tier 2, one exclusive pair per field per tier), doc 03 s7, doc 06 s2 (three tier-up gates), doc 10 s1.3 (tier base population cap, Habitat Management node)
@@ -19,9 +19,9 @@ The other three fields (Warfare, Cyber, Stealth & intel), recovered fragments, s
 5. **Events:** ResearchStarted, ResearchCompleted, ResearchCancelled, TierAdvanced.
 
 ## Acceptance criteria
-- [ ] Every node effect changes the economy (tests on the tricky ones: pair exclusion, prerequisites, refund, tier gate)
-- [ ] MODULES view in CORE: trunk + field, research progress, node detail, tier gate checklist; preview at phone size
-- [ ] Determinism, chunking and save/load hold with research in flight
+- [x] Every node effect changes the economy (tests on the tricky ones: pair exclusion, prerequisites, refund, tier gate)
+- [x] MODULES view in CORE: trunk + field, research progress, node detail, tier gate checklist; preview at phone size
+- [x] Determinism, chunking and save/load hold with research in flight
 
 ## Tests
 `ModuleTests`: pair exclusion and prerequisites; research completes after its minutes and applies its effect; tier gate refuses until all three gates are met, then spends people and raises the cap.

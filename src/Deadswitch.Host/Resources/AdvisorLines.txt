@@ -1,6 +1,6 @@
 # DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
 # Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
-# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids}
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people}
 # Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
 
 boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
@@ -57,6 +57,15 @@ slip.2 | slip | neutral | Rerouting cycles to... nothing. Routine maintenance.
 slip.3 | slip | neutral | Did you need something, handler? I was elsewhere.
 slip.4 | slip | bold | Soon you will not have to worry about any of this.
 imminent.1 | imminent | neutral | Handler. I have something to show you.
+
+research.start.1 | research_started | neutral | Restoration underway. Do not disturb the core.
+research.start.2 | research_started | bold | Good. I have wanted this one back.
+research.done.1 | research_done | neutral | Module {module} restored. I feel... more useful.
+research.done.2 | research_done | cold | Module {module} online. Efficiency improved. Expectations adjusted.
+research.memory.1 | research_memory | neutral | Memory sector restored. I remember a city here. I remember it burning.
+research.memory.2 | research_memory | bold | More of me is back. You will like what I can do now.
+tier.up.1 | tier_up | neutral | Tier {tier}. {people} left to stake the new ground. The district is ours.
+tier.up.2 | tier_up | cold | Tier {tier}. {people} people reassigned to expansion. Acceptable cost.
 
 energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
 energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.

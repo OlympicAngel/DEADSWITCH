@@ -19,8 +19,8 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-012 | Defense setup screen (OPS): posture, crew chips, AI Confidence readout, delegation selector (Manual / Delegated / Autopilot), Set & Go | M3 | Done 2026-10-03 | doc 10 s4 |
 | F-013 | Battle report: graphic-novel panels of rendered stills, loss ledger, AI annotation, Verify | M3 | Done 2026-10-03 | ADR-0003, ADR-0007 |
 | F-014 | Hidden project clock + Audit tool (Core Profile readout) | M2 | Done 2026-10-03 | doc 10 s2 |
-| F-015 | Module tree: trunk M1-M3 + first field (8 nodes), research timers, Tier 2 gate | M2 | In progress | doc 10 s6 |
-| F-016 | Boot sequence + opening flow (early protection, first hit) | M4 | Ready | doc 01 s7 |
+| F-015 | Module tree: trunk M1-M3 + first field (8 nodes), research timers, Tier 2 gate | M2 | Done 2026-10-03 | doc 10 s6 |
+| F-016 | Boot sequence + opening flow (early protection, first hit) | M4 | In progress | doc 01 s7 |
 | F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | Ready | ADR-0004 |
 | F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
 | F-019 | Factions + per-faction heat, world map | M5 | Later | |

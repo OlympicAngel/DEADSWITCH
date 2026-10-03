@@ -25,7 +25,7 @@ Spec: `docs/specs/SPEC-001-pressure-loop.md`
 - [x] Coldness / Boldness dials (hidden), delegation levels (Manual / Delegated / Offline autopilot)
 - [x] Advisor line system with lie rules (`docs/narrative/ADVISOR_VOICE.md`); the first lie
 - [x] Hidden project clock (Dormant / Active / Advanced / Imminent) + Audit tool
-- [ ] Module trunk M1-M3 + one field (8 nodes)
+- [x] Module trunk M1-M3 + one field (8 nodes)
 - [ ] Terminal HUD in Unity (text-first, always-visible essentials)
 - **Exit:** a tester catches the first lie via cross-checking and says "clever", not "bug".
 
