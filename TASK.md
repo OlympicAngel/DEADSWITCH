@@ -1,22 +1,21 @@
-# TASK: F-016 Boot sequence + opening flow
+# TASK: F-017 Logout projection + local notifications
 
-- Status: Done
+- Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: AI relationship / M4
-- Spec: docs/specs/SPEC-009-opening.md
-- Sources: doc 01 s7, doc 10 s7.4
+- Pillar / milestone: Defense & offline / M3
+- Spec: docs/specs/SPEC-010-notifications.md
+- Sources: ADR-0004, doc 11 surface priorities
 
 ## Goal
-Prologue, boot sequence, a beatable opening raid, early protection, the first real hit with the first lie, and a short objective guide.
+Opt-in local notifications in the AI's voice, forecast by running a copy of the sim forward at logout.
 
 ## Steps
-- [x] 1. Sim: `[opening]` config (opening raid, protection), `ai.first_lie_raid`, tests
-- [x] 2. Host: opening guide (objectives from state), prologue cards
-- [x] 3. Unity: prologue overlay, boot reveal of the HUD, guide chip with control highlight; previews
-- [x] 4. Docs (SPEC-009, SPEC-004 first-lie note, BACKLOG, HANDOFF)
+- [ ] 1. Host: `LogoutProjection` + alert texts, test
+- [ ] 2. Unity: notifications facade + optional mobile backend, schedule on pause/quit, cancel on resume, OPS opt-in toggle
+- [ ] 3. Docs (SPEC-010, BACKLOG, HANDOFF)
 
 ## Notes
-- F-015 closed 2026-10-03 (modules + Tier 2 gate).
+- F-016 closed 2026-10-03 (opening flow).
 
 ## Blocked / questions
 - none
