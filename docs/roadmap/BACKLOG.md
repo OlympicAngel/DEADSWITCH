@@ -2,6 +2,7 @@
 
 Ordered queue. The top `Ready` item is next (see `docs/agents/continue.md`). Status: `Ready`, `In progress`, `Done`, `Later`, `Blocked`.
 Order follows pillar rank (AI relationship > Base & economy > Defense & offline > Offense) **after** the foundations every pillar needs.
+Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward because the project clock otherwise stalls at Imminent.
 
 | ID | Feature | Milestone | Status | Notes |
 |----|---------|-----------|--------|-------|
@@ -25,6 +26,7 @@ Order follows pillar rank (AI relationship > Base & economy > Defense & offline 
 | F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Later | |
 | F-019 | Factions + per-faction heat, world map | M5 | Later | |
 | F-021 | Ruthless choices: forced labor surge, purge, sacrifice (raise Coldness, lower loyalty) | M3 | Later | doc 03 s1, doc 10 s1.3 |
-| F-022 | Project climax: final 24h warning at Imminent, counterplay (purge core, silence the AI via OVERRIDE, cancel AI actions), betrayal / fork events | M3 | Later | doc 03 s5-6, doc 10 s2 |
+| F-022 | Project climax: final 24h warning at Imminent, counterplay (purge core, silence the AI via OVERRIDE, cancel AI actions), betrayal / fork events | M3 | In progress | doc 03 s5-6, doc 10 s2 |
 | F-023 | Tier 2 district: new plots outside the walls, visual evolution of the compound per tier, Tier 2 threats scaling | M3 | Later | doc 06 s2-3 |
+| F-024 | Settings and accessibility screen: effect intensity, reduced motion, haptics, text scale, alerts; reachable from CORE | M4 | Ready | doc 08 s6, doc 10 (assists), quality bar |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Later | fold into CLI |

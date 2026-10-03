@@ -1,21 +1,21 @@
-# TASK: F-017 Logout projection + local notifications
+# TASK: F-022 Project climax and counterplay
 
-- Status: Done
+- Status: In progress
 - Started: 2026-10-03   Branch: claude/magical-ritchie-bx4xbb
-- Pillar / milestone: Defense & offline / M3
-- Spec: docs/specs/SPEC-010-notifications.md
-- Sources: ADR-0004, doc 11 surface priorities
+- Pillar / milestone: AI relationship / M3
+- Spec: docs/specs/SPEC-011-project-climax.md
+- Sources: doc 03 s5-6, doc 10 s2
 
 ## Goal
-Opt-in local notifications in the AI's voice, forecast by running a copy of the sim forward at logout.
+Imminent opens a visible 24-hour window with three answers (purge, silence, cancel); if it expires the AI betrays or forks.
 
 ## Steps
-- [x] 1. Host: `LogoutProjection` + alert texts, test
-- [x] 2. Unity: notifications facade + optional mobile backend, schedule on pause/quit, cancel on resume, OPS opt-in toggle
-- [x] 3. Docs (SPEC-010, BACKLOG, HANDOFF)
+- [ ] 1. Sim: `[climax]` config, window, purge / silence (OVERRIDE) / cancel commands, betrayal and fork, tests
+- [ ] 2. Host + UI: advisor lines; CORE warning card with countdown and answers; silenced AI hides estimates
+- [ ] 3. Docs (SPEC-011, BACKLOG, HANDOFF)
 
 ## Notes
-- F-016 closed 2026-10-03 (opening flow).
+- F-017 closed 2026-10-03 (notifications).
 
 ## Blocked / questions
 - none
