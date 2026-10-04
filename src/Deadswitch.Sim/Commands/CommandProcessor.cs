@@ -70,6 +70,10 @@ namespace Deadswitch.Sim.Commands
                     return ScarSystem.Repair(ctx, command);
                 case CommandKind.ClearWreckage:
                     return ScarSystem.ClearWreckage(ctx, command);
+                case CommandKind.Relocate:
+                    return LegacySystem.Relocate(ctx, command);
+                case CommandKind.BuyPerk:
+                    return LegacySystem.BuyPerk(ctx, command);
                 case CommandKind.FlushCore:
                     return GlitchSystem.Flush(ctx, command);
                 case CommandKind.TakeCommand:

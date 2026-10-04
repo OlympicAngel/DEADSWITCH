@@ -120,6 +120,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Flush the core: corruption down, AI offline for a while (SPEC-021).</summary>
         FlushCore = 37,
+
+        /// <summary>No args. Relocate by choice: end the cycle at a peak for the full legacy bonus (SPEC-022).</summary>
+        Relocate = 38,
+
+        /// <summary>Buy the next level of a legacy perk. A: Perk.</summary>
+        BuyPerk = 39,
     }
 
     /// <summary>
@@ -267,6 +273,16 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command Relocate()
+        {
+            return new Command(CommandKind.Relocate);
+        }
+
+        public static Command BuyPerk(Perk perk)
+        {
+            return new Command(CommandKind.BuyPerk, (int)perk);
         }
 
         public static Command FlushCore()

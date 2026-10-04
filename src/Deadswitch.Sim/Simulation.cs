@@ -93,6 +93,7 @@ namespace Deadswitch.Sim
                 LivingSystem.Hourly(ctx);
                 IntelSystem.Hourly(ctx);
                 GlitchSystem.Hourly(ctx);
+                LegacySystem.Hourly(ctx);
             }
 
             ClimaxSystem.Tick(ctx);

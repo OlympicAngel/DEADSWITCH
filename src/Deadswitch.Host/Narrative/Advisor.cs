@@ -34,7 +34,7 @@ namespace Deadswitch.Host.Narrative
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
             "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
-            "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
+            "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
             "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
             "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
             "facility_scarred", "forced_labor", "glitch_defected", "glitch_drain", "glitch_misfire", "glitch_stall", "heat_hunted", "heat_marked",
@@ -442,6 +442,13 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.RepairDone:
                     Enqueue(new Pending("repair_done", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.B)));
+                    break;
+                case EventKind.CycleEnded:
+                    _queue.Clear();
+                    Enqueue(new Pending(e.A == (int)RebootReason.Relocation ? "relocated" : "rebooted", Priority.Urgent).With("people", e.D.ToString()));
+                    break;
+                case EventKind.MasteryEarned:
+                    Enqueue(new Pending("mastery", Priority.Normal));
                     break;
                 case EventKind.UnitGlitched:
                     string[] glitch = { "glitch_misfire", "glitch_stall", "glitch_drain" };

@@ -289,6 +289,7 @@ namespace Deadswitch.Sim.Systems
             if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct + (Modules.Has(s, ModuleNode.ST1) ? c.Modules.MaskingPts : 0))
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Missed, strength, defense);
+                Survived(ctx);
                 Record(ctx, id, lies);
                 ClearIncoming(s);
                 return;
@@ -297,6 +298,12 @@ namespace Deadswitch.Sim.Systems
             if (defense >= strength || strength <= 0)
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Repelled, strength, defense);
+                Survived(ctx);
+                if (s.BattleEndTick != 0)
+                {
+                    // a live battle held with no casualties (mastery, SPEC-022)
+                    LegacySystem.Earn(ctx, Mastery.CleanBattle);
+                }
                 ScarSystem.Repelled(ctx);
                 Record(ctx, id, lies);
                 ClearIncoming(s);
@@ -357,6 +364,11 @@ namespace Deadswitch.Sim.Systems
             }
 
             ScarSystem.Breached(ctx, id, s.RaidKind, breach);
+            if (s.RaidKind == AttackKind.Purge && s.Posture == Posture.None && s.Garrison == 0)
+            {
+                // doc 06 s4: the Hub falls to a purge it met undefended after ignoring the ladder; the cycle ends
+                s.HubFallen = true;
+            }
 
             // devastating loss (doc 10 s4): a Hub building downgraded, or too many people lost
             if (downgrades > 0 || (populationBefore > 0 && (long)casualties * 100 > (long)populationBefore * c.Raid.DevastatingPopLossPct))
@@ -376,6 +388,15 @@ namespace Deadswitch.Sim.Systems
 
             Record(ctx, id, lies);
             ClearIncoming(s);
+        }
+
+        /// <summary>A purge held without leaning on the AI (Manual delegation): mastery (SPEC-022).</summary>
+        private static void Survived(SimContext ctx)
+        {
+            if (ctx.State.RaidKind == AttackKind.Purge && ctx.State.Delegation == DelegationLevel.Manual)
+            {
+                LegacySystem.Earn(ctx, Mastery.PurgeNoAi);
+            }
         }
 
         /// <summary>Keeps the report record of a resolved raid; only the most recent ones stay verifiable.</summary>

@@ -138,6 +138,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>The AI has taken over and ignores that order (flush the core to end it).</summary>
         AiTakeover = 45,
+
+        /// <summary>Not enough legacy points.</summary>
+        NotEnoughLegacy = 46,
     }
 
     public readonly struct CommandResult

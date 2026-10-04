@@ -175,7 +175,7 @@ namespace Deadswitch.Sim.Systems
             long hour = SimConfig.TicksPerHour;
             if (s.Ultimatum == UltimatumStage.None)
             {
-                if (s.Tier == 1 && !s.Away && c.Raid.MaxPerDay > 0 && s.Tick >= (long)l.UltimatumDay * SimConfig.TicksPerDay)
+                if (s.Tier == 1 && !s.Away && c.Raid.MaxPerDay > 0 && s.Tick - s.CycleStartTick >= (long)l.UltimatumDay * SimConfig.TicksPerDay)
                 {
                     s.Ultimatum = UltimatumStage.Issued;
                     s.UltimatumDeadlineTick = s.Tick + (l.UltimatumHours * hour);

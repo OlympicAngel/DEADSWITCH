@@ -17,7 +17,8 @@ namespace Deadswitch.Sim.Systems
             {
                 int gap = cap - s.People;
                 // wrecks in the yard slow regrowth (SPEC-018)
-                int gain = (int)((((long)gap * ctx.Config.People.RegrowthPctOfGapPerHour * ScarSystem.RegrowthPct(s, ctx.Config)) + 9_999) / 10_000);
+                int pct = SimMath.PctFloor(ctx.Config.People.RegrowthPctOfGapPerHour, 100 + (s.Perks[(int)Perk.Regrowth] * ctx.Config.Legacy.PerkRegrowthPct));
+                int gain = (int)((((long)gap * pct * ScarSystem.RegrowthPct(s, ctx.Config)) + 9_999) / 10_000);
                 s.People = SimMath.Clamp(s.People + gain, 0, cap);
             }
         }

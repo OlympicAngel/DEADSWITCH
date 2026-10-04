@@ -128,6 +128,13 @@ namespace Deadswitch.Game.Base
 
             _tier = s.Tier;
             _surroundings = Spawn("Surroundings", HubScene.Surroundings(Seed, slots, s.Tier), Vector3.zero, 0f, _world, true);
+            // a relocation (SPEC-022) starts a smaller site: drop plots that no longer exist
+            while (_slots.Count > slots)
+            {
+                Destroy(_slots[_slots.Count - 1].Root.gameObject);
+                _slots.RemoveAt(_slots.Count - 1);
+            }
+
             for (int i = _slots.Count; i < slots; i++)
             {
                 var root = new GameObject("Slot " + i).transform;

@@ -220,7 +220,8 @@ namespace Deadswitch.Sim.Systems
             WorldConfig w = ctx.Config.World;
             for (int f = 0; f < FactionCount; f++)
             {
-                AddHeat(ctx, (Faction)f, -(Modules.Has(s, ModuleNode.ST3) ? SimMath.PctFloor(w.HeatDecayPerHour, 100 + ctx.Config.Modules.HeatSinkPct) : w.HeatDecayPerHour));
+                int decay = Modules.Has(s, ModuleNode.ST3) ? SimMath.PctFloor(w.HeatDecayPerHour, 100 + ctx.Config.Modules.HeatSinkPct) : w.HeatDecayPerHour;
+                AddHeat(ctx, (Faction)f, -SimMath.PctFloor(decay, 100 + (s.Perks[(int)Perk.HeatDecay] * ctx.Config.Legacy.PerkHeatDecayPct)));
             }
 
             for (int i = 0; i < s.Sites.Count; i++)
@@ -241,6 +242,7 @@ namespace Deadswitch.Sim.Systems
                 {
                     site.Outpost = false;
                     site.Cleared = false;
+                    s.OutpostsLostThisCycle++;
                     ctx.Emit(EventKind.OutpostLost, i, (int)owner);
                 }
             }

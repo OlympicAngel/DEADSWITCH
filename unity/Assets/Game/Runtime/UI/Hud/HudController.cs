@@ -117,11 +117,12 @@ namespace Deadswitch.Game.UI.Hud
             Router.Register(new OpsScreen(OpenReport));
             var premium = new PremiumScreen(Router);
             Router.Register(premium);
+            Router.Register(new LegacyScreen(Router));
             Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings"), () =>
             {
                 premium.ReturnTo("core");
                 Router.Show("premium");
-            }));
+            }, () => Router.Show("legacy")));
             Router.Register(new SettingsScreen(Router, () =>
             {
                 premium.ReturnTo("settings");
@@ -199,6 +200,12 @@ namespace Deadswitch.Game.UI.Hud
                 _chipRaid = e.A;
                 _reportChip.Q<Label>("report-chip-label").text = "AFTER-ACTION // " + (BattleReport.Build(_host.Sim.Log.Events, e.A) is BattleReport br ? Names.Attack(br.Kind) : "RAID") + " " + e.A;
                 _reportChip.RemoveFromClassList("is-hidden");
+            }
+
+            if (e.Kind == EventKind.CycleEnded)
+            {
+                // a new site (SPEC-022): show what the core carried
+                Router.Show("legacy");
             }
 
             if (e.Kind == EventKind.BattleStarted)

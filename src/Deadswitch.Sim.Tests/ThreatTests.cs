@@ -1,6 +1,7 @@
 using System.Linq;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Events;
+using Deadswitch.Sim.Persistence;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
 using Xunit;
@@ -150,6 +151,31 @@ namespace Deadswitch.Sim.Tests
             sim.Run(2 * WorldSystem.Sites[2].TravelHours * SimConfig.TicksPerHour);
             SimEvent scout = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
             Assert.Equal(scout.C == 1 ? SpyState.None : SpyState.Double, sim.State.Spies[(int)Faction.Rustborn]);
+        }
+
+        [Fact]
+        public void Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly()
+        {
+            var sim = new Simulation(51UL);
+            Deadswitch.Host.Dev.ScriptedPlayer.Play(sim, 8L * SimConfig.TicksPerDay);
+            Assert.Equal(2, sim.State.Tier);
+            int nextRaid = sim.State.NextRaidId;
+            Assert.True(sim.Execute(Command.Relocate()).Accepted || sim.State.RaidId != 0);
+            if (sim.State.Cycle == 0)
+            {
+                return;
+            }
+
+            // a fresh site (doc 10 s1.2): tier 1 again, full legacy bonus, kept modules, raid ids keep counting
+            Assert.Equal(1, sim.State.Tier);
+            SimEvent end = sim.Log.Events.Last(e => e.Kind == EventKind.CycleEnded);
+            Assert.Equal(end.B, end.C);
+            Assert.Equal(end.C, sim.State.LegacyPoints);
+            Assert.Equal(nextRaid, sim.State.NextRaidId);
+            Assert.Contains(Modules.Catalog, d => d.Field != ModuleField.Trunk && Modules.IsRestored(sim.State, d.Node));
+            sim.Run(SimConfig.TicksPerDay);
+            Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
+            Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(loaded.State));
         }
 
         [Fact]

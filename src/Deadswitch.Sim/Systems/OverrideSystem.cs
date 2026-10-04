@@ -25,7 +25,7 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Charge cap after a fork took one away (never below one).</summary>
         public static int MaxCharges(GameState s, SimConfig c)
         {
-            return System.Math.Max(1, c.Override.MaxCharges - s.OverrideMaxPenalty);
+            return System.Math.Max(1, c.Override.MaxCharges + s.Perks[(int)Perk.Override] - s.OverrideMaxPenalty);
         }
 
         public static bool Ready(GameState s)

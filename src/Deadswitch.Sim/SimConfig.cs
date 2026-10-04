@@ -39,6 +39,7 @@ namespace Deadswitch.Sim
         public IntelConfig Intel = new IntelConfig();
         public BattleConfig Battle = new BattleConfig();
         public GlitchConfig Glitch = new GlitchConfig();
+        public LegacyConfig Legacy = new LegacyConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -144,6 +145,7 @@ namespace Deadswitch.Sim
             Intel.Visit(visitor);
             Battle.Visit(visitor);
             Glitch.Visit(visitor);
+            Legacy.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

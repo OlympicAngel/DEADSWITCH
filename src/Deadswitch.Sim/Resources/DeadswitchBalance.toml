@@ -980,6 +980,73 @@ flush_milli = 25000
 flush_hours = 3
 
 # --------------------------------------------------------------------------------------------------
+# Relocation and reboot cycles, legacy score and perks (doc 06 s4, doc 10 s1.2 + s6). All (tune).
+[legacy]
+
+# Lowest tier the Hub must have reached to relocate by choice. [1..10]
+relocate_min_tier = 2
+
+# Legacy score per highest tier reached (doc 10: 100). [0..100000]
+score_per_tier = 100
+
+# Legacy score: peak power rating divided by this (doc 10: 10). [1..1000]
+power_divisor = 10
+
+# Legacy score per surviving veteran (doc 10: 20). [0..10000]
+score_per_veteran = 20
+
+# Legacy score per mastery challenge (doc 10: 50). [0..10000]
+score_per_mastery = 50
+
+# Share of the score kept as legacy points after a forced reboot (doc 10: 50%). [0..100]
+forced_bonus_pct = 50
+
+# Share kept after a voluntary relocation (doc 10: 100%). [0..200]
+voluntary_bonus_pct = 100
+
+# Veterans who always follow the core to the next site. [0..20]
+base_veterans = 2
+
+# Plus one veteran per this many people at the move. [1..1000]
+veteran_per_people = 10
+
+# Restored field modules that stay unlocked (legacy modules). [0..32]
+kept_modules = 2
+
+# Faction heat carried into the new cycle (faction scars). [0..100]
+heat_kept_pct = 50
+
+# Corruption kept after a forced reboot (a relocation starts clean). [0..100]
+forced_corruption_kept_pct = 50
+
+# Population collapse: hours at the people floor before a forced reboot. [1..1000]
+collapse_hours = 24
+
+# Total AI takeover: hours at Critical corruption before a forced reboot. [1..1000]
+takeover_critical_hours = 48
+
+# Legacy points for the next perk level (x level). [1..100000]
+perk_cost = 100
+
+# Highest level of each perk. [1..10]
+perk_max_level = 3
+
+# Starting resources perk: energy per level at each new cycle. [0..100000]
+perk_start_energy = 150
+
+# Starting resources perk: fuel per level. [0..10000]
+perk_start_fuel = 30
+
+# Regrowth perk: population regrowth +% per level. [0..1000]
+perk_regrowth_pct = 15
+
+# Heat perk: faction heat fades +% per level. [0..1000]
+perk_heat_decay_pct = 25
+
+# Mastery: corruption kept under this for a full tier (doc 10: 40). [0..100000]
+mastery_corruption_milli = 40000
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

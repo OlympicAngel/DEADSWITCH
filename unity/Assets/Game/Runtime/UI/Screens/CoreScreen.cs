@@ -26,7 +26,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _visible;
         private bool _showModules;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium, System.Action openLegacy)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -35,6 +35,7 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _ui.Q("open-legacy").RegisterCallback<ClickEvent>(_ => openLegacy());
             _ui.Q("flush-run").RegisterCallback<ClickEvent>(_ =>
             {
                 CommandResult r = _host.Execute(Command.FlushCore());
@@ -105,6 +106,8 @@ namespace Deadswitch.Game.UI.Screens
 
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
+
+            Kit.SetButtonText(_ui.Q("open-legacy"), "LEGACY // CYCLE " + (s.Cycle + 1) + " // " + Fmt.Num(s.LegacyPoints) + " LP");
 
             // corruption effects (SPEC-021)
             var g = c.Glitch;

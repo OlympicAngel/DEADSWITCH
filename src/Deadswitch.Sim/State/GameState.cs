@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021).</summary>
-        public const int LayoutVersion = 14;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022).</summary>
+        public const int LayoutVersion = 15;
 
         public long Tick;
 
@@ -209,6 +209,42 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>Cycles completed (relocations and reboots, SPEC-022); 0 in the first run.</summary>
+        public int Cycle;
+
+        public long CycleStartTick;
+
+        /// <summary>Unspent legacy points.</summary>
+        public int LegacyPoints;
+
+        /// <summary>Sum of every finished cycle's legacy score (the recorded legacy).</summary>
+        public int LegacyTotal;
+
+        /// <summary>Perk levels, indexed by <see cref="Perk"/>.</summary>
+        public int[] Perks = new int[Systems.LegacySystem.PerkCount];
+
+        /// <summary>Mastery challenges earned (bit per <see cref="State.Mastery"/>); kept across cycles.</summary>
+        public int Mastery;
+
+        public int HighestTier = 1;
+
+        public int PeakPower;
+
+        /// <summary>Delegation stayed Manual for the whole current tier.</summary>
+        public bool TierManual = true;
+
+        public int TierMaxCorruption;
+
+        public int OutpostsLostThisCycle;
+
+        /// <summary>Hours in a row at the people floor / at Critical corruption (forced reboot triggers).</summary>
+        public int CollapseHours;
+
+        public int CriticalHours;
+
+        /// <summary>The Hub fell to a purge it ignored, undefended: the cycle ends at the next hour.</summary>
+        public bool HubFallen;
 
         /// <summary>No Critical crisis before this tick (SPEC-021).</summary>
         public long NextCrisisTick;
@@ -511,6 +547,28 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref Wreckage);
                 v.Long(ref ScarredAtTick);
+            }
+
+            if (v.Version >= 15)
+            {
+                v.Int(ref Cycle);
+                v.Long(ref CycleStartTick);
+                v.Int(ref LegacyPoints);
+                v.Int(ref LegacyTotal);
+                for (int p = 0; p < Perks.Length; p++)
+                {
+                    v.Int(ref Perks[p]);
+                }
+
+                v.Int(ref Mastery);
+                v.Int(ref HighestTier);
+                v.Int(ref PeakPower);
+                v.Bool(ref TierManual);
+                v.Int(ref TierMaxCorruption);
+                v.Int(ref OutpostsLostThisCycle);
+                v.Int(ref CollapseHours);
+                v.Int(ref CriticalHours);
+                v.Bool(ref HubFallen);
             }
 
             if (v.Version >= 14)

@@ -239,6 +239,15 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Core flushed. A: energy paid, B: corruption removed (milli), C: hours offline.</summary>
         CoreFlushed = 77,
+
+        /// <summary>Mastery challenge earned (SPEC-022). A: Mastery.</summary>
+        MasteryEarned = 78,
+
+        /// <summary>A: Perk, B: new level, C: legacy points paid.</summary>
+        PerkBought = 79,
+
+        /// <summary>The cycle ended and the core moved on. A: RebootReason, B: legacy score, C: points earned, D: veterans carried.</summary>
+        CycleEnded = 80,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

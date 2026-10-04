@@ -124,6 +124,11 @@ namespace Deadswitch.Sim.Commands
 
             s.Compute -= cost;
             record.Verified = true;
+            if (record.LieFlags != 0)
+            {
+                LegacySystem.Earn(ctx, Mastery.CatchLie);
+            }
+
             ctx.Emit(EventKind.ReportVerified, record.RaidId, record.LieFlags, cost);
             return CommandResult.Ok;
         }

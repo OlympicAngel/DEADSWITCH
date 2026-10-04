@@ -201,6 +201,15 @@ namespace Deadswitch.Sim.Persistence
             return new SaveInfo(version, r.U64(), r.U64(), r.I64(), r.U64());
         }
 
+        /// <summary>Overwrites every field of <paramref name="into"/> with <paramref name="from"/> (a reboot's fresh site, SPEC-022).</summary>
+        internal static void CopyInto(GameState from, GameState into)
+        {
+            var w = new ByteWriter();
+            from.Visit(new StateWriter(w));
+            byte[] bytes = w.ToArray();
+            into.Visit(new StateReader(new ByteReader(bytes, 0, bytes.Length), GameState.LayoutVersion));
+        }
+
         private sealed class StateWriter : IStateVisitor
         {
             private readonly ByteWriter _w;

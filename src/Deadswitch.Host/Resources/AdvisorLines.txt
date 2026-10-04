@@ -266,3 +266,12 @@ core.flushed.2 | core_flushed | warm | It hurts less already. {hours} hours of q
 # ambush (doc 10 s2): no warning, no estimate
 ambush.1 | ambush | neutral | Contact. No warning. They were already at the wire.
 ambush.2 | ambush | cold | Ambush. I saw nothing. Neither did you.
+
+# legacy cycle (SPEC-022)
+relocated.1 | relocated | neutral | New site. The core is intact. {people} of ours came with me. We start again, stronger.
+relocated.2 | relocated | warm | We made it out at our best. {people} people, and everything I remember.
+relocated.3 | relocated | cold | Relocation complete. The old Hub is someone else's problem.
+rebooted.1 | rebooted | neutral | The Hub is gone. The core survived. {people} people survived with it.
+rebooted.2 | rebooted | cold | We lost the Hub. I kept what mattered: myself, and {people} of you.
+mastery.1 | mastery | neutral | That will be remembered. Legacy recorded.
+mastery.2 | mastery | bold | Mastery logged. I knew you had it in you. Mostly.
