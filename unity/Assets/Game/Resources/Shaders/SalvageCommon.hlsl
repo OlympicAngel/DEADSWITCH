@@ -48,20 +48,25 @@ void ds_salvage(float3 wp, float3 n, float3 masks, float3 baseCol, float3 bareCo
     float up = saturate(n.y);
     float vert = 1.0 - abs(n.y);
 
-    albedo = baseCol * (0.86 + 0.28 * masks.z) * (0.82 + 0.36 * n2);
+    // macro variation (meters-wide): breaks up uniform panels so large forms read as weathered at gameplay zoom
+    float macro = ds_fbm(wp * 0.11 + float3(11.0, 3.0, 7.0));
+    albedo = baseCol * (0.86 + 0.28 * masks.z) * (0.82 + 0.36 * n2) * (0.72 + 0.56 * macro);
     rough = roughIn;
     metal = metallicIn;
 
     if (ground > 0.5)
     {
-        float3 mud = baseCol * (0.72 + 0.5 * n1) * (0.92 + 0.16 * n2);
-        float wet = smoothstep(0.5, 0.62, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.12 + float3(4.0, 0.0, 2.0)));
-        float dry = smoothstep(0.55, 0.75, n1) * (1.0 - wet);
-        albedo = lerp(mud, float3(0.40, 0.37, 0.32), dry * 0.35) * ao;
-        albedo *= lerp(1.0, 0.55, wet);
-        rough = lerp(0.92, 0.18, wet);
+        // three grounds: wet dark mud (smooth, reflective), damp soil (base), dry gravel (light, speckled)
+        float3 soil = baseCol * (0.72 + 0.5 * n1) * (0.92 + 0.16 * n2);
+        float wet = smoothstep(0.5, 0.6, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.12 + float3(4.0, 0.0, 2.0)));
+        float dry = smoothstep(0.48, 0.68, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.07 + float3(9.0, 0.0, 5.0)) + n2 * 0.15) * (1.0 - wet);
+        float speck = smoothstep(0.55, 0.75, ds_noise(wp * 9.0));
+        float3 gravel = float3(0.36, 0.35, 0.32) * (0.8 + 0.45 * speck);
+        albedo = lerp(soil, gravel, dry * 0.85) * ao;
+        albedo *= lerp(1.0, 0.42, wet);
+        rough = lerp(lerp(0.88, 0.97, dry), 0.12, wet);
         metal = 0.0;
-        height = (n2 * 0.7 + n3 * 0.3) * bump * (1.0 - wet);
+        height = (n2 * 0.6 + n3 * 0.2 + speck * dry * 0.5) * bump * (1.0 - wet);
         return;
     }
 
@@ -78,12 +83,14 @@ void ds_salvage(float3 wp, float3 n, float3 masks, float3 baseCol, float3 bareCo
     rough = lerp(rough, 0.9, rustMask);
     metal *= 1.0 - rustMask;
 
-    // rain streaks and soot on vertical faces
-    float streaks = smoothstep(0.45, 0.85, ds_noise(float3(wp.x * 7.0, wp.y * 0.55, wp.z * 7.0))) * vert * streak;
-    albedo *= 1.0 - 0.38 * streaks;
+    // rain streaks and soot on vertical faces; rusty run-off below metal
+    float streaks = smoothstep(0.4, 0.8, ds_noise(float3(wp.x * 7.0, wp.y * 0.45, wp.z * 7.0))) * vert * streak;
+    float3 runoff = lerp(float3(0.12, 0.11, 0.10), float3(0.25, 0.13, 0.07), saturate(rust * 1.5));
+    albedo = lerp(albedo, albedo * runoff * 3.0, 0.5 * streaks);
 
-    // dirt and mud splash from the ground up, dust settling on top faces
-    float dirtMask = saturate((1.0 - ao) * 1.6 + (n1 - 0.55) * 0.8) * dirt;
+    // dirt and mud splash from the ground up (world height), dust settling on top faces
+    float low = 1.0 - smoothstep(0.0, 1.3, wp.y + (n2 - 0.5) * 0.6);
+    float dirtMask = saturate((1.0 - ao) * 1.6 + (n1 - 0.55) * 0.8 + low * vert * 0.9) * dirt;
     albedo = lerp(albedo, float3(0.16, 0.13, 0.10), dirtMask * 0.8);
     float dust = smoothstep(0.55, 0.95, up) * dirt * (0.25 + 0.5 * n2);
     albedo = lerp(albedo, float3(0.30, 0.28, 0.24), dust);

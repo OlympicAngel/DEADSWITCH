@@ -27,10 +27,18 @@ namespace Deadswitch.Game.Base
         private Transform _world;
         private Vector3[] _walkPoints;
         private GameObject _surroundings;
+        private Light _sun;
+        private readonly List<(Light light, float baseIntensity)> _points = new List<(Light, float)>();
         private int _tier;
         private float _time;
 
+        private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
+        private static readonly int ConeScaleId = Shader.PropertyToID("_DsConeScale");
+
         public static BaseView Instance { get; private set; }
+
+        /// <summary>Lighting for the current game time (also read by the camera background and post stack).</summary>
+        public LightKey Lighting { get; private set; } = new LightKey();
 
         public int SlotCount => _slots.Count;
 
@@ -133,29 +141,48 @@ namespace Deadswitch.Game.Base
 
         private void SetupLighting()
         {
-            var sun = new GameObject("Sun").AddComponent<Light>();
-            sun.transform.SetParent(transform, false);
-            sun.type = LightType.Directional;
-            sun.color = BaseLook.Srgb(_look.sunColor);
-            sun.intensity = _look.sunIntensity * _look.unitySunScale;
-            sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.85f;
-            // Preview space is right-handed: mirror Z of the light direction.
-            float az = _look.sunAzimuth * Mathf.Deg2Rad;
-            float el = _look.sunElevation * Mathf.Deg2Rad;
-            var toSun = new Vector3(Mathf.Cos(el) * Mathf.Sin(az), Mathf.Sin(el), -Mathf.Cos(el) * Mathf.Cos(az));
-            sun.transform.rotation = Quaternion.LookRotation(-toSun);
-            RenderSettings.sun = sun;
-
+            _sun = new GameObject("Sun").AddComponent<Light>();
+            _sun.transform.SetParent(transform, false);
+            _sun.type = LightType.Directional;
+            _sun.shadows = LightShadows.Soft;
+            _sun.shadowStrength = 0.85f;
+            RenderSettings.sun = _sun;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            float a = _look.ambient * _look.unityAmbientScale;
-            RenderSettings.ambientSkyColor = BaseLook.Srgb(_look.skyColor, a);
-            RenderSettings.ambientEquatorColor = Color.Lerp(BaseLook.Srgb(_look.skyColor), BaseLook.Srgb(_look.groundColor), 0.5f) * a;
-            RenderSettings.ambientGroundColor = BaseLook.Srgb(_look.groundColor, a);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = _look.fogDensity;
-            RenderSettings.fogColor = BaseLook.Srgb(_look.fogColor);
+            ApplyLight(_look.At(12f));
+        }
+
+        /// <summary>Time-of-day lighting (doc 11): sun, sky/ground ambient, fog, practical lamps, emission.</summary>
+        private void ApplyLight(LightKey k)
+        {
+            _sun.color = BaseLook.Srgb(k.sunColor);
+            _sun.intensity = k.sunIntensity * _look.unitySunScale;
+            // Preview space is right-handed: mirror Z of the light direction.
+            float az = k.sunAzimuth * Mathf.Deg2Rad;
+            float el = k.sunElevation * Mathf.Deg2Rad;
+            var toSun = new Vector3(Mathf.Cos(el) * Mathf.Sin(az), Mathf.Sin(el), -Mathf.Cos(el) * Mathf.Cos(az));
+            _sun.transform.rotation = Quaternion.LookRotation(-toSun);
+
+            float a = k.ambient * _look.unityAmbientScale;
+            RenderSettings.ambientSkyColor = BaseLook.Srgb(k.skyColor, a);
+            RenderSettings.ambientEquatorColor = Color.Lerp(BaseLook.Srgb(k.skyColor), BaseLook.Srgb(k.groundColor), 0.5f) * a;
+            RenderSettings.ambientGroundColor = BaseLook.Srgb(k.groundColor, a);
+            RenderSettings.fogDensity = k.fogDensity;
+            RenderSettings.fogColor = BaseLook.Srgb(k.fogColor);
+            Shader.SetGlobalFloat(EmissionScaleId, k.emissionScale);
+            Shader.SetGlobalFloat(ConeScaleId, k.coneIntensity);
+            float points = k.pointScale * _look.unityPointScale;
+            for (int i = _points.Count - 1; i >= 0; i--)
+            {
+                if (_points[i].light == null)
+                {
+                    _points.RemoveAt(i);
+                    continue;
+                }
+
+                _points[i].light.intensity = _points[i].baseIntensity * points;
+            }
         }
 
         /// <summary>Re-reads the sim and updates every slot (called after ticks and commands).</summary>
@@ -306,6 +333,12 @@ namespace Deadswitch.Game.Base
         {
             float dt = Time.deltaTime;
             _time += dt;
+            if (_host != null && _host.IsReady)
+            {
+                Lighting = _look.At(BaseLook.Hour(_host.Sim.State.Tick, _host.TickProgress));
+                ApplyLight(Lighting);
+            }
+
             bool reduced = _host != null && _host.Settings.ReducedMotion;
             foreach (SlotObject o in _slots)
             {
@@ -431,7 +464,8 @@ namespace Deadswitch.Game.Base
             l.transform.localPosition = ArtBridge.V(spec.Position);
             l.type = LightType.Point;
             l.color = new Color(spec.Color.X, spec.Color.Y, spec.Color.Z);
-            l.intensity = spec.Intensity * _look.pointScale * _look.unityPointScale;
+            l.intensity = spec.Intensity * Lighting.pointScale * _look.unityPointScale;
+            _points.Add((l, spec.Intensity));
             l.range = spec.Range * _look.rangeScale;
             l.shadows = LightShadows.None;
             if (spec.Intensity <= 0f)

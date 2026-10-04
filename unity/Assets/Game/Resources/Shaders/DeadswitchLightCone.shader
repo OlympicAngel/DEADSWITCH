@@ -30,6 +30,9 @@ Shader "Deadswitch/LightCone"
                 half _Intensity;
             CBUFFER_END
 
+            // time-of-day scale (BaseView): cones only show at dusk and night
+            half _DsConeScale;
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
@@ -60,7 +63,7 @@ Shader "Deadswitch/LightCone"
             {
                 float rim = pow(saturate(abs(dot(normalize(i.normalWS), normalize(i.viewWS)))), 1.5);
                 half a = i.a * i.a * i.a;
-                return half4(_Color.rgb * _Intensity * a * rim * rim, 1);
+                return half4(_Color.rgb * _Intensity * _DsConeScale * a * rim * rim, 1);
             }
             ENDHLSL
         }

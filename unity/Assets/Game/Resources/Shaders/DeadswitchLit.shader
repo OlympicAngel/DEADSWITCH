@@ -52,6 +52,9 @@ Shader "Deadswitch/VertexColorLit"
                 float4 _WearB;
             CBUFFER_END
 
+            // time-of-day emission scale (BaseView): lamps and windows glow more at night
+            half _DsEmissionScale;
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
@@ -126,7 +129,7 @@ Shader "Deadswitch/VertexColorLit"
                 s.smoothness = 1.0 - rough;
                 s.occlusion = 1;
                 s.alpha = 1;
-                s.emission = _EmissionColor.rgb;
+                s.emission = _EmissionColor.rgb * _DsEmissionScale;
                 s.normalTS = half3(0, 0, 1);
 
                 half4 c = UniversalFragmentPBR(inputData, s);

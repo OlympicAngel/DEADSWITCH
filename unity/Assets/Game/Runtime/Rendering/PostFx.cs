@@ -9,16 +9,18 @@ using UnityEngine.Rendering.Universal;
 namespace Deadswitch.Game.Rendering
 {
     /// <summary>
-    /// URP post stack for the drone feed (ADR-0007, doc 11): ACES, exposure and grade from BaseLook, bloom for
-    /// lamps, bokeh depth of field focused on the compound (tilt-shift miniature), and sensor effects (grain,
-    /// chromatic aberration, vignette) that scale with the effect-intensity setting and corruption.
+    /// URP post stack for the drone feed (ADR-0007, doc 11): ACES, exposure and bloom from the time-of-day
+    /// lighting (BaseLook keyframes), and faint sensor effects (grain, chromatic aberration, vignette) that scale
+    /// with the effect-intensity setting and corruption. No depth of field: blur reads as a miniature (doc 11).
     /// Kept in its own assembly because it depends on URP.
     /// </summary>
     public sealed class PostFx : MonoBehaviour
     {
         private BaseLook _look;
         private Volume _volume;
-        private DepthOfField _dof;
+        private ColorAdjustments _color;
+        private Bloom _bloom;
+        private float _envDay;
         private FilmGrain _grain;
         private ChromaticAberration _ca;
         private Vignette _vignette;
@@ -50,21 +52,12 @@ namespace Deadswitch.Game.Rendering
             _volume.sharedProfile = profile;
 
             profile.Add<Tonemapping>(true).mode.Override(TonemappingMode.ACES);
-            ColorAdjustments color = profile.Add<ColorAdjustments>(true);
-            color.postExposure.Override(Mathf.Log(Mathf.Max(0.01f, _look.exposure), 2f));
-            color.contrast.Override(10f);
-            color.saturation.Override(-6f);
+            _color = profile.Add<ColorAdjustments>(true);
+            _color.contrast.Override(10f);
+            _color.saturation.Override(-6f);
 
-            Bloom bloom = profile.Add<Bloom>(true);
-            bloom.intensity.Override(_look.bloomStrength * 1.4f);
-            bloom.threshold.Override(_look.bloomThreshold);
-            bloom.scatter.Override(0.65f);
-
-            _dof = profile.Add<DepthOfField>(true);
-            _dof.mode.Override(DepthOfFieldMode.Bokeh);
-            _dof.focusDistance.Override(_look.camDistance);
-            _dof.focalLength.Override(70f + (_look.tiltBlur * 20f));
-            _dof.aperture.Override(5.6f);
+            _bloom = profile.Add<Bloom>(true);
+            _bloom.scatter.Override(0.65f);
 
             _vignette = profile.Add<Vignette>(true);
             _vignette.smoothness.Override(0.45f);
@@ -82,10 +75,16 @@ namespace Deadswitch.Game.Rendering
         private void LateUpdate()
         {
             GameHost host = GameHost.Instance;
-            if (_dof == null || host == null || !host.IsReady)
+            if (_color == null || host == null || !host.IsReady)
             {
                 return;
             }
+
+            LightKey k = BaseView.Instance != null ? BaseView.Instance.Lighting : _look.At(12f);
+            _color.postExposure.Override(Mathf.Log(Mathf.Max(0.01f, k.exposure), 2f));
+            _bloom.intensity.Override(k.bloomStrength * 1.4f);
+            _bloom.threshold.Override(k.bloomThreshold);
+            RenderSettings.reflectionIntensity = k.envIntensity / Mathf.Max(0.01f, _envDay);
 
             float effects = host.Settings.Effects;
             GameState s = host.Sim.State;
@@ -93,22 +92,17 @@ namespace Deadswitch.Game.Rendering
             _grain.intensity.Override(Mathf.Clamp01((_look.grain * 6f) + (corruption * 0.35f)) * effects);
             _ca.intensity.Override(Mathf.Clamp01((_look.chromatic * 10f) + (corruption * 0.5f)) * effects);
             _vignette.intensity.Override(_look.vignette * 0.7f * (0.5f + (0.5f * effects)));
-
-            Camera cam = DroneCamera.Instance != null ? DroneCamera.Instance.Camera : null;
-            if (cam != null)
-            {
-                _dof.focusDistance.Override(Vector3.Distance(cam.transform.position, _look.Target));
-                _dof.active = effects > 0.05f;
-            }
         }
 
-        /// <summary>Dim sky-gradient cubemap so wet mud and metal reflect the mood, not black.</summary>
+        /// <summary>Overcast sky-gradient cubemap (midday key) so wet mud and metal reflect the sky; its intensity follows the hour.</summary>
         private void SetupReflections()
         {
             const int size = 32;
+            LightKey day = _look.At(12f);
+            _envDay = day.envIntensity;
             var cube = new Cubemap(size, TextureFormat.RGBA32, false) { name = "DS Sky Reflection" };
-            Color sky = BaseLook.Srgb(_look.skyColor, 0.6f * _look.envIntensity);
-            Color ground = BaseLook.Srgb(_look.groundColor, 0.6f * _look.envIntensity);
+            Color sky = BaseLook.Srgb(day.skyColor, day.envIntensity);
+            Color ground = BaseLook.Srgb(day.groundColor, day.envIntensity);
             for (int f = 0; f < 6; f++)
             {
                 var pixels = new Color[size * size];

@@ -4,8 +4,9 @@
 <script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
 </head><body>
 <script type="module">
-// Mirrors the Unity look (Runtime/Rendering): PBR + vertex-color weathering, cold sun, warm lamps,
-// drone camera (narrow FOV, high three-quarter), tilt-shift, bloom, grain, vignette.
+// Mirrors the Unity look (Runtime/Rendering): PBR + procedural weathering, time-of-day lighting keyframes
+// (overcast day is the reference look), warm practical lamps, drone camera (narrow FOV, high three-quarter),
+// soft shadows, AO, bloom, faint sensor grain. No tilt-shift: it reads as a miniature (doc 11).
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -13,18 +14,28 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
-import { HorizontalTiltShiftShader } from 'three/addons/shaders/HorizontalTiltShiftShader.js';
-import { VerticalTiltShiftShader } from 'three/addons/shaders/VerticalTiltShiftShader.js';
 
 const P = new URLSearchParams(location.search);
 const W = +P.get('w') || 1080, H = +P.get('h') || 1920;
 const scene = await (await fetch('/scene.json')).json();
-const look = await (await fetch('/look.json')).json();
+const look = timeOfDay(await (await fetch('/look.json')).json(), P.get('hour') !== null ? +P.get('hour') : 12);
+
+// Blends the lighting keyframes around the game hour into one flat look (same rule as BaseLook.cs).
+function timeOfDay(file, hour) {
+  const k = file.times;
+  let i = 0;
+  while (i < k.length - 2 && k[i + 1].hour <= hour) i++;
+  const a = k[i], b = k[i + 1], f = Math.min(1, Math.max(0, (hour - a.hour) / Math.max(0.0001, b.hour - a.hour)));
+  const mix = (x, y) => Array.isArray(x) ? x.map((v, j) => v + (y[j] - v) * f) : x + (y - x) * f;
+  const out = { ...file };
+  for (const key of Object.keys(a)) if (key !== 'hour') out[key] = mix(a[key], b[key]);
+  return out;
+}
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(W, H);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = (look.shadowSoftness ?? 0) > 0 ? THREE.VSMShadowMap : THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = look.exposure;
 document.body.appendChild(renderer.domElement);
@@ -38,7 +49,7 @@ world.fog = new THREE.FogExp2(world.background.getHex(), look.fogDensity);
   const envScene = new THREE.Scene();
   const sky = new THREE.Mesh(new THREE.SphereGeometry(10, 16, 8), new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { top: { value: new THREE.Color().setRGB(...look.skyColor, THREE.SRGBColorSpace) }, bottom: { value: new THREE.Color().setRGB(...look.groundColor, THREE.SRGBColorSpace) } },
     vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
-    fragmentShader: 'uniform vec3 top, bottom; varying vec3 vP; void main(){ float h = normalize(vP).y; gl_FragColor = vec4(mix(bottom, top, smoothstep(-0.2, 0.6, h)) * 0.6, 1.); }' }));
+    fragmentShader: 'uniform vec3 top, bottom; varying vec3 vP; void main(){ float h = normalize(vP).y; gl_FragColor = vec4(mix(bottom, top, smoothstep(-0.2, 0.6, h)), 1.); }' }));
   envScene.add(sky);
   world.environment = new THREE.PMREMGenerator(renderer).fromScene(envScene).texture;
   world.environmentIntensity = look.envIntensity ?? 0.5;
@@ -52,6 +63,7 @@ sun.castShadow = true;
 sun.shadow.mapSize.set(4096, 4096);
 Object.assign(sun.shadow.camera, { left: -32, right: 32, top: 32, bottom: -32, near: 1, far: 160 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+if ((look.shadowSoftness ?? 0) > 0) { sun.shadow.radius = look.shadowSoftness; sun.shadow.blurSamples = 16; sun.shadow.bias = -0.0002; }
 world.add(sun);
 
 const salvage = (await (await fetch('/salvage.txt')).text()).replace(/^#(ifndef|define|endif).*$/gm, '');
@@ -115,6 +127,7 @@ function mesh(md, powered) {
 
 const t = +P.get('t') || 3.2;
 let lights = 0;
+const cones = [];
 for (const o of scene.objects) {
   const root = new THREE.Group();
   root.name = o.name;
@@ -122,7 +135,7 @@ for (const o of scene.objects) {
   root.rotation.y = o.yaw * Math.PI / 180;
   const md = scene.meshes[o.mesh];
   if (md.positions.length) root.add(mesh(md, o.powered));
-  if (o.cones >= 0 && o.powered) { const c = new THREE.Mesh(geometry(scene.meshes[o.cones]), scene.palette.map((_, i) => mat(i, true))); c.castShadow = false; c.receiveShadow = false; c.renderOrder = 10; root.add(c); }
+  if (o.cones >= 0 && o.powered && (look.coneIntensity ?? 0) > 0.005) { const c = new THREE.Mesh(geometry(scene.meshes[o.cones]), scene.palette.map((_, i) => mat(i, true))); c.castShadow = false; c.receiveShadow = false; c.renderOrder = 10; root.add(c); cones.push(c); }
   for (const p of o.parts) {
     const pivot = new THREE.Group(); pivot.position.set(...p.pivot);
     const pm = mesh(scene.meshes[p.mesh], o.powered);
@@ -154,10 +167,9 @@ const composer = new EffectComposer(renderer);
 composer.setSize(W, H);
 composer.addPass(new RenderPass(world, cam));
 const ao = new GTAOPass(world, cam, W, H); ao.updateGtaoMaterial({ radius: 1.2, distanceExponent: 1.5, thickness: 2, scale: 1.4 }); ao.blendIntensity = look.aoIntensity ?? 1.0; composer.addPass(ao);
+// light cones are additive volumes, not surfaces: keep them out of the AO normal/depth pass (Unity: transparent queue)
+{ const aoRender = ao.render.bind(ao); ao.render = (...a) => { for (const c of cones) c.visible = false; aoRender(...a); for (const c of cones) c.visible = true; }; }
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), look.bloomStrength, look.bloomRadius, look.bloomThreshold));
-const hts = new ShaderPass(HorizontalTiltShiftShader); hts.uniforms.h.value = look.tiltBlur / W; hts.uniforms.r.value = look.tiltFocus;
-const vts = new ShaderPass(VerticalTiltShiftShader); vts.uniforms.v.value = look.tiltBlur / H; vts.uniforms.r.value = look.tiltFocus;
-composer.addPass(hts); composer.addPass(vts);
 composer.addPass(new OutputPass());
 composer.addPass(new ShaderPass({
   uniforms: { tDiffuse: { value: null }, grain: { value: look.grain }, vignette: { value: look.vignette }, ca: { value: look.chromatic } },
@@ -205,7 +217,7 @@ if (scene.report && P.get('report')) {
 window.__done = { lights };
 
 async function renderReport(rep) {
-  hts.enabled = false; vts.enabled = false; novel.enabled = true;
+  novel.enabled = true;
   renderer.toneMappingExposure = look.exposure * 1.45;
   const sizes = [[1000, 400], [492, 500], [492, 500], [1000, 400]];
   const imgs = [];

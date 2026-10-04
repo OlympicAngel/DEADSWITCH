@@ -65,7 +65,7 @@ namespace Deadswitch.Game.Base
             _cam.nearClipPlane = 1f;
             _cam.farClipPlane = 400f;
             _cam.clearFlags = CameraClearFlags.SolidColor;
-            _cam.backgroundColor = BaseLook.Srgb(_look.fogColor);
+            _cam.backgroundColor = BaseLook.Srgb(_look.At(12f).fogColor);
             _cam.allowHDR = true;
         }
 
@@ -83,6 +83,11 @@ namespace Deadswitch.Game.Base
         {
             float dt = Time.unscaledDeltaTime;
             _time += dt;
+            if (BaseView.Instance != null)
+            {
+                _cam.backgroundColor = BaseLook.Srgb(BaseView.Instance.Lighting.fogColor);
+            }
+
             bool reduced = GameHost.Instance != null && GameHost.Instance.Settings.ReducedMotion;
             float k = 1f - Mathf.Exp(-dt * 8f);
             _pan = Vector3.Lerp(_pan, _panTarget, k);

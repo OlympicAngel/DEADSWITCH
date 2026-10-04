@@ -114,8 +114,7 @@ namespace Deadswitch.Game.Base
                 shader = Shader.Find("Universal Render Pipeline/Lit");
             }
 
-            BaseLook look = BaseLook.Load();
-            float emissionScale = look.emissionScale;
+            const float emissionScale = 1f; // time of day scales emission globally (_DsEmissionScale, BaseView)
             Shader coneShader = Resources.Load<Shader>("Shaders/DeadswitchLightCone");
             _on = new Material[Palette.Count];
             _off = new Material[Palette.Count];
@@ -126,7 +125,7 @@ namespace Deadswitch.Game.Base
                 {
                     var cone = new Material(coneShader) { name = "DS LightCone" };
                     cone.SetVector("_Color", Linear(d.EmissionColor.X, d.EmissionColor.Y, d.EmissionColor.Z, 1f));
-                    cone.SetFloat("_Intensity", look.coneIntensity);
+                    cone.SetFloat("_Intensity", 1f);
                     _on[i] = cone;
                     _off[i] = cone;
                     continue;
