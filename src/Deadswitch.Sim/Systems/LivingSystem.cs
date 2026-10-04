@@ -260,13 +260,14 @@ namespace Deadswitch.Sim.Systems
                 return;
             }
 
-            uint h = SimMath.Hash((uint)(s.Tick / hour) ^ 0xD11Eu, (uint)(s.Rng.State >> 32));
-            s.NextDilemmaTick = s.Tick + ((l.DilemmaEveryHours + (int)(h % (uint)(l.DilemmaJitterHours + 1))) * hour);
             if (s.Away)
             {
-                // nobody is here to answer: skip this one
+                // nobody is here to answer: it waits for the handler's return
                 return;
             }
+
+            uint h = SimMath.Hash((uint)(s.Tick / hour) ^ 0xD11Eu, (uint)(s.Rng.State >> 32));
+            s.NextDilemmaTick = s.Tick + ((l.DilemmaEveryHours + (int)(h % (uint)(l.DilemmaJitterHours + 1))) * hour);
 
             var kind = (DilemmaKind)(1 + (int)((h >> 8) % DilemmaKinds));
             s.Dilemma = kind;

@@ -934,7 +934,7 @@ seize_corruption = 3000
 # Corruption effects: AI-run unit glitches, defection, the Critical crisis ladder and the core flush (doc 03 s3-4). Corruption is milli. All (tune).
 [glitch]
 
-# Hourly chance each AI-run producer glitches, per band (Stable, Glitchy, Unstable, Critical). [4..4 items, each 0..100]
+# Hourly chance each AI-run producer glitches, per band (Stable, Glitchy, Unstable, Critical); crewed ones at a third. [4..4 items, each 0..100]
 glitch_pct_by_band = [0, 3, 8, 15]
 
 # Disobedience: a glitched facility stops for this long. [1..100]

@@ -89,6 +89,9 @@ namespace Deadswitch.Host.Notifications
                     case EventKind.UltimatumIssued when (kinds & AlertKinds.Raids) != 0:
                         alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "WARLORD ULTIMATUM", "Mother Kess wants " + e.B + " energy and " + e.C + " fuel. " + (e.A / 60) + " hours, or her wave comes."));
                         break;
+                    case EventKind.CrisisStruck when (kinds & AlertKinds.Raids) != 0:
+                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "CORE CRISIS", "I am failing. Come back and flush me before it spreads."));
+                        break;
                     case EventKind.BuildCompleted when (kinds & AlertKinds.Construction) != 0:
                         alerts.Add(new ProjectedAlert(at, AlertKinds.Construction, "CONSTRUCTION COMPLETE", Names.Facility((FacilityKind)e.B) + " level " + e.C + " is online."));
                         break;

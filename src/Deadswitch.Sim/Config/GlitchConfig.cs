@@ -21,7 +21,7 @@ namespace Deadswitch.Sim.Config
         public void Visit(IConfigVisitor v)
         {
             v.BeginSection("glitch", "Corruption effects: AI-run unit glitches, defection, the Critical crisis ladder and the core flush (doc 03 s3-4). Corruption is milli. All (tune).");
-            v.IntList("glitch_pct_by_band", ref GlitchPctByBand, 0, 100, 4, 4, "Hourly chance each AI-run producer glitches, per band (Stable, Glitchy, Unstable, Critical).");
+            v.IntList("glitch_pct_by_band", ref GlitchPctByBand, 0, 100, 4, 4, "Hourly chance each AI-run producer glitches, per band (Stable, Glitchy, Unstable, Critical); crewed ones at a third.");
             v.Int("stall_hours", ref StallHours, 1, 100, "Disobedience: a glitched facility stops for this long.");
             v.Int("drain_energy", ref DrainEnergy, 0, 10_000, "Overextension: energy a glitched facility burns.");
             v.Int("defection_pct", ref DefectionPct, 0, 100, "Unstable or worse: chance an AI-run turret is hijacked in a fight (its guns turn on us).");

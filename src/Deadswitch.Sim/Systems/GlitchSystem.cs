@@ -28,7 +28,7 @@ namespace Deadswitch.Sim.Systems
     }
 
     /// <summary>
-    /// What corruption does (SPEC-021, doc 03 s3-4): AI-run producers glitch by band (misfire, stall, drain), AI-run
+    /// What corruption does (SPEC-021, doc 03 s3-4): producers glitch by band (misfire, stall, drain; a crew catches two in three), AI-run
     /// turrets can defect mid-fight at Unstable+, and Critical runs a crisis ladder (collapse, AI takeover, forced
     /// rollback, rival swarm). The core flush cuts corruption at the cost of energy and a blind, idle AI.
     /// Hash decisions, no RNG draws.
@@ -77,13 +77,14 @@ namespace Deadswitch.Sim.Systems
                 for (int i = 0; i < s.Slots.Count; i++)
                 {
                     FacilitySlot f = s.Slots[i];
-                    if (!ScarSystem.Affects(f.Kind) || !f.Enabled || f.Staffed || Stalled(s, f))
+                    if (!ScarSystem.Affects(f.Kind) || !f.Enabled || Stalled(s, f))
                     {
                         continue;
                     }
 
+                    // a crew catches most of the AI's errors (doc 10: occasional errors in Glitchy)
                     uint h = SimMath.Hash(hour ^ ((uint)i * 0x6A09u), rng ^ 0x611Cu);
-                    if (h % 100 >= (uint)pct)
+                    if (h % 300 >= (uint)(f.Staffed ? pct : pct * 3))
                     {
                         continue;
                     }
