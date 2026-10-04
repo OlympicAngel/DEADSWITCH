@@ -251,6 +251,12 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Ironman switched. A: 1 on, 0 off.</summary>
         IronmanSet = 81,
+
+        /// <summary>Ceasefire agreed (SPEC-023). A: Faction, B: days, C: energy paid, D: fuel paid.</summary>
+        CeasefireStarted = 82,
+
+        /// <summary>A: Faction, B: 1 if the Hub broke it.</summary>
+        CeasefireEnded = 83,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

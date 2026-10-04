@@ -33,6 +33,11 @@ namespace Deadswitch.Sim.Systems
 
             int basePrice = good == TradeGood.Fuel ? l.TradeFuelPrice : good == TradeGood.EnergyCells ? l.TradeEnergyPrice : l.TradeComputePrice;
             int price = SimMath.PctFloor(basePrice, l.TradePricePctByLevel[(int)level]);
+            if (DiplomacySystem.Ceasefire(s, f))
+            {
+                price = SimMath.PctFloor(price, 100 - c.Diplomacy.TradeDiscountPct);
+            }
+
             return Active(s, WorldEventKind.SupplyWindow) ? SimMath.PctFloor(price, 100 - l.SupplyWindowPricePct) : price;
         }
 

@@ -187,10 +187,16 @@ namespace Deadswitch.Sim.Systems
                 s.Tier >= 2 ? w.AttackerWeightVanguardTier2 + Percent(s.Heat[1]) : Percent(s.Heat[1]),
                 Modules.IsRestored(s, ModuleNode.M1) ? w.AttackerWeightChurch + Percent(s.Heat[2]) : Percent(s.Heat[2]),
             };
+            // a faction under ceasefire sends nobody (SPEC-023); drifters from another camp still come
+            if (s.CeasefireFaction >= 0 && s.Tick < s.CeasefireUntilTick)
+            {
+                weights[s.CeasefireFaction] = 0;
+            }
+
             int total = weights[0] + weights[1] + weights[2];
             if (total <= 0)
             {
-                return Faction.Rustborn;
+                return DiplomacySystem.Ceasefire(s, Faction.Rustborn) ? Faction.Vanguard : Faction.Rustborn;
             }
 
             int roll = (int)(SimMath.Hash((uint)s.NextRaidId * 31u, (uint)(s.Rng.State >> 32) ^ 0xFAC7u) % (uint)total);
@@ -320,6 +326,12 @@ namespace Deadswitch.Sim.Systems
             int hours = kind == OpKind.Hack ? 1 : 2 * d.TravelHours;
             var op = new Operation { Id = s.NextOpId++, Site = site, Kind = kind, Squad = squad, Compute = compute, ReturnTick = s.Tick + ((long)hours * SimConfig.TicksPerHour) };
             s.Ops.Add(op);
+
+            // striking a faction under ceasefire breaks it (scouting does not)
+            if (kind != OpKind.Scout)
+            {
+                DiplomacySystem.Struck(ctx, d.Owner);
+            }
 
             // doc 10 s4: launching offense ends the mercy window
             s.MercyUntilTick = System.Math.Min(s.MercyUntilTick, s.Tick);

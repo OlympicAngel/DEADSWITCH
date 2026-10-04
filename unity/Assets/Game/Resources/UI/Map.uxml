@@ -18,6 +18,7 @@
           <ui:VisualElement name="spy-0-a" class="map-spy__btn"><ui:Label name="spy-0-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
           <ui:VisualElement name="spy-0-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
+        <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:Label name="pact-0-label" text="CEASEFIRE // 320 E" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-1" class="map-heat__cell map-heat__cell--vanguard">
         <ui:Label text="VANGUARD" class="map-heat__name" />
@@ -28,6 +29,7 @@
           <ui:VisualElement name="spy-1-a" class="map-spy__btn"><ui:Label name="spy-1-a-label" text="FRAME" class="map-spy__label" /></ui:VisualElement>
           <ui:VisualElement name="spy-1-b" class="map-spy__btn"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
+        <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:Label name="pact-1-label" text="CEASEFIRE // 320 E" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-2" class="map-heat__cell map-heat__cell--church">
         <ui:Label text="CHURCH" class="map-heat__name" />
@@ -38,6 +40,7 @@
           <ui:VisualElement name="spy-2-a" class="map-spy__btn"><ui:Label name="spy-2-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
           <ui:VisualElement name="spy-2-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
+        <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:Label name="pact-2-label" text="CEASEFIRE // 320 E" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
 

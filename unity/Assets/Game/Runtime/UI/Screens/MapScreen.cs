@@ -59,6 +59,7 @@ namespace Deadswitch.Game.UI.Screens
                 var faction = (Faction)f;
                 _ui.Q("spy-" + f + "-a").RegisterCallback<ClickEvent>(_ => Run(IntelSystem.Has(_host.Sim.State, faction) ? Command.FrameFaction(faction) : Command.PlantSpy(faction)));
                 _ui.Q("spy-" + f + "-b").RegisterCallback<ClickEvent>(_ => Run(Command.RecallSpy(faction)));
+                _ui.Q("pact-" + f).RegisterCallback<ClickEvent>(_ => Run(Command.ProposeCeasefire(faction)));
             }
 
             for (int g = 0; g <= (int)TradeGood.Compute; g++)
@@ -163,6 +164,7 @@ namespace Deadswitch.Game.UI.Screens
                 case RejectReason.NotClaimable: return "Only ruins we have cleared can hold an outpost.";
                 case RejectReason.NotEnoughFuel: return "Not enough fuel.";
                 case RejectReason.SpyActive: return "We already have someone in that camp.";
+                case RejectReason.PactActive: return "One ceasefire at a time, and not so soon after the last.";
                 case RejectReason.NoSpy: return "Nobody of ours is in that camp.";
                 default: return Texts.Reason(reason);
             }
@@ -189,6 +191,15 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("spy-" + f + "-a-label").text = spy ? "FRAME" : "PLANT " + Fmt.Num(c.Intel.SpyEnergy) + " E";
                 _ui.Q("spy-" + f + "-a").EnableInClassList("is-disabled", !spy && s.Energy < c.Intel.SpyEnergy);
                 _ui.Q("spy-" + f + "-b").EnableInClassList("is-hidden", !spy);
+
+                // ceasefire (SPEC-023): one at a time, priced by heat, none with a Marked faction
+                bool peace = DiplomacySystem.Ceasefire(s, (Faction)f);
+                bool talks = DiplomacySystem.Price(s, c, (Faction)f, out int pe, out int pf);
+                bool cooling = s.Tick < s.CeasefireReadyTick || (s.CeasefireFaction >= 0 && !peace);
+                _ui.Q("pact-" + f).EnableInClassList("is-on", peace);
+                _ui.Q<Label>("pact-" + f + "-label").text = peace ? "CEASEFIRE // " + Fmt.Countdown(_host.SecondsUntilTick(s.CeasefireUntilTick))
+                    : !talks ? "WILL NOT TALK" : "CEASEFIRE // " + Fmt.Num(pe) + " E " + Fmt.Num(pf) + " F";
+                _ui.Q("pact-" + f).EnableInClassList("is-disabled", !peace && (!talks || cooling || s.CeasefireFaction >= 0 || s.Energy < pe || s.Fuel < pf));
             }
 
             var busy = new HashSet<int>();

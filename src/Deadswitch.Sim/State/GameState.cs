@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge.</summary>
-        public const int LayoutVersion = 17;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023).</summary>
+        public const int LayoutVersion = 18;
 
         public long Tick;
 
@@ -209,6 +209,14 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>Faction under ceasefire (-1 = none, SPEC-023), until <see cref="CeasefireUntilTick"/>.</summary>
+        public int CeasefireFaction = -1;
+
+        public long CeasefireUntilTick;
+
+        /// <summary>No new ceasefire before this tick.</summary>
+        public long CeasefireReadyTick;
 
         /// <summary>Memory sector (trunk M1-M3) restoring in its own lane, beside field research (0 = none).</summary>
         public int MemoryNode;
@@ -567,6 +575,13 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref Wreckage);
                 v.Long(ref ScarredAtTick);
+            }
+
+            if (v.Version >= 18)
+            {
+                v.Int(ref CeasefireFaction);
+                v.Long(ref CeasefireUntilTick);
+                v.Long(ref CeasefireReadyTick);
             }
 
             if (v.Version >= 17)

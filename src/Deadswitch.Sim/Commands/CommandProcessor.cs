@@ -74,6 +74,8 @@ namespace Deadswitch.Sim.Commands
                     return LegacySystem.Relocate(ctx, command);
                 case CommandKind.BuyPerk:
                     return LegacySystem.BuyPerk(ctx, command);
+                case CommandKind.ProposeCeasefire:
+                    return DiplomacySystem.Propose(ctx, command);
                 case CommandKind.SetIronman:
                     return LegacySystem.SetIronman(ctx, command);
                 case CommandKind.FlushCore:

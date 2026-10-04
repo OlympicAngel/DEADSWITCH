@@ -1056,6 +1056,31 @@ ironman_choose_hours = 24
 ironman_mercy_pct = 50
 
 # --------------------------------------------------------------------------------------------------
+# Temporary pacts: a paid ceasefire with one faction at a time, broken by striking its sites (doc 05 s3). Heat is milli. All (tune).
+[diplomacy]
+
+# How long a ceasefire holds. [1..100]
+ceasefire_days = 3
+
+# Ceasefire price: energy (before the heat multiplier). [0..100000]
+ceasefire_energy = 400
+
+# Ceasefire price: fuel (before the heat multiplier). [0..10000]
+ceasefire_fuel = 60
+
+# Price % by that faction's heat level (Cold, Watched, Hunted); a Marked faction will not talk. [3..3 items, each 1..10000]
+price_pct_by_level = [80, 100, 160]
+
+# Days after a ceasefire ends before any new one. [0..100]
+cooldown_days = 5
+
+# Heat added when the Hub breaks a ceasefire by striking that faction. [0..100000]
+break_heat = 30000
+
+# Trade with a faction under ceasefire is this much cheaper. [0..99]
+trade_discount_pct = 20
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

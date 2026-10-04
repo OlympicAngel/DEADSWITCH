@@ -129,6 +129,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Choose Ironman for this run (only at its start). A: 1 on, 0 off.</summary>
         SetIronman = 40,
+
+        /// <summary>Buy a ceasefire with a faction (SPEC-023). A: Faction.</summary>
+        ProposeCeasefire = 41,
     }
 
     /// <summary>
@@ -282,6 +285,11 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command ProposeCeasefire(Faction faction)
+        {
+            return new Command(CommandKind.ProposeCeasefire, (int)faction);
         }
 
         public static Command SetIronman(bool on)

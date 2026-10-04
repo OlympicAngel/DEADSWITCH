@@ -277,3 +277,10 @@ mastery.1 | mastery | neutral | That will be remembered. Legacy recorded.
 mastery.2 | mastery | bold | Mastery logged. I knew you had it in you. Mostly.
 ironman.1 | ironman_on | neutral | Ironman. No shield, no second core. If we fall, we stay fallen.
 ironman.2 | ironman_on | bold | Ironman. Good. I prefer it when it matters.
+
+# ceasefires (SPEC-023)
+ceasefire.1 | ceasefire | neutral | {faction} took the payment. {hours} hours of quiet from them. Do not touch their sites.
+ceasefire.2 | ceasefire | cold | Peace, purchased. {faction} for {hours} hours. It will cost more next time.
+ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {faction} will remember it.
+ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
+ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.

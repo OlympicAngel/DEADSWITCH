@@ -21,6 +21,8 @@
 .map-spy__btn:active { background-color: rgba(168, 213, 138, 0.14); }
 .map-spy__btn.is-disabled { opacity: 0.38; }
 .map-spy__btn.is-hidden { display: none; }
+.map-pact { margin-top: var(--s-1); flex-grow: 0; }
+.map-pact.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
 .map-spy__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 16px; letter-spacing: 1px; color: var(--c-text-dim); }
 .map-heat__cell.is-hot .map-heat__level { color: var(--c-red); }
 

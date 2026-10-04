@@ -141,6 +141,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Not enough legacy points.</summary>
         NotEnoughLegacy = 46,
+
+        /// <summary>A ceasefire is running, or the last one ended too recently.</summary>
+        PactActive = 47,
     }
 
     public readonly struct CommandResult

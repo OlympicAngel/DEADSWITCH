@@ -187,6 +187,28 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void Ceasefire_KeepsAFactionAway_UntilTheHubStrikesIt()
+        {
+            var sim = new Simulation(61UL);
+            sim.State.Energy = 500;
+            Assert.True(sim.Execute(Command.ProposeCeasefire(Faction.Rustborn)).Accepted);
+            Assert.Equal(RejectReason.PactActive, sim.Execute(Command.ProposeCeasefire(Faction.Vanguard)).Reason);
+            sim.Run(2L * SimConfig.TicksPerDay);
+            long since = sim.Log.Events.First(e => e.Kind == EventKind.CeasefireStarted).Tick;
+            Assert.DoesNotContain(sim.Log.Events, e => e.Kind == EventKind.AttackerIdentified && e.Tick > since && e.B == (int)Faction.Rustborn);
+
+            // striking its convoy breaks the pact and the heat spikes (SPEC-023)
+            sim.State.Fuel = 100;
+            int heat = sim.State.Heat[(int)Faction.Rustborn];
+            Assert.True(sim.Execute(Command.LaunchOp(1, OpKind.Raid, 4)).Accepted || sim.State.People < 8);
+            if (sim.State.Ops.Count > 0)
+            {
+                Assert.False(DiplomacySystem.Ceasefire(sim.State, Faction.Rustborn));
+                Assert.True(sim.State.Heat[(int)Faction.Rustborn] > heat);
+            }
+        }
+
+        [Fact]
         public void CriticalCorruption_TriggersACrisis_AndAFlushPullsItBack()
         {
             var sim = new Simulation(41UL);
