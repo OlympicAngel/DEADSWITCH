@@ -30,6 +30,7 @@ namespace Deadswitch.Game.UI.Screens
         private int _squad = 4;
         private int _compute = 40;
         private bool _visible;
+        private long _allyArmedAt = -1;
 
         public MapScreen()
         {
@@ -60,6 +61,7 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q("spy-" + f + "-a").RegisterCallback<ClickEvent>(_ => Run(IntelSystem.Has(_host.Sim.State, faction) ? Command.FrameFaction(faction) : Command.PlantSpy(faction)));
                 _ui.Q("spy-" + f + "-b").RegisterCallback<ClickEvent>(_ => Run(Command.RecallSpy(faction)));
                 _ui.Q("pact-" + f).RegisterCallback<ClickEvent>(_ => Run(Command.ProposeCeasefire(faction)));
+                _ui.Q("ally-" + f).RegisterCallback<ClickEvent>(_ => Ally(faction));
             }
 
             for (int g = 0; g <= (int)TradeGood.Compute; g++)
@@ -148,6 +150,28 @@ namespace Deadswitch.Game.UI.Screens
             Refresh();
         }
 
+        /// <summary>Ally with a faction, or end the alliance with two taps (it costs heat).</summary>
+        private void Ally(Faction faction)
+        {
+            if (!DiplomacySystem.Allied(_host.Sim.State, faction))
+            {
+                Run(Command.ProposeAlliance(faction));
+                return;
+            }
+
+            long now = System.Environment.TickCount;
+            if (_allyArmedAt < 0 || now - _allyArmedAt > 4000)
+            {
+                _allyArmedAt = now;
+                _reason.text = "Tap again to end the alliance. They will remember it.";
+                Refresh();
+                return;
+            }
+
+            _allyArmedAt = -1;
+            Run(Command.EndAlliance());
+        }
+
         private void Run(Command command)
         {
             CommandResult r = _host.Execute(command);
@@ -166,6 +190,8 @@ namespace Deadswitch.Game.UI.Screens
                 case RejectReason.SpyActive: return "We already have someone in that camp.";
                 case RejectReason.PactActive: return "One ceasefire at a time, and not so soon after the last.";
                 case RejectReason.NoSpy: return "Nobody of ours is in that camp.";
+                case RejectReason.NotTrusted: return "They only stand with a Hub that has given them no reason to hate it. Cool their heat first.";
+                case RejectReason.AllianceActive: return "One alliance at a time.";
                 default: return Texts.Reason(reason);
             }
         }
@@ -200,6 +226,18 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("pact-" + f + "-label").text = peace ? "PACT // " + Fmt.Countdown(_host.SecondsUntilTick(s.CeasefireUntilTick))
                     : !talks ? "WILL NOT TALK" : "PACT // " + Fmt.Num(pe) + " E " + Fmt.Num(pf) + " F";
                 _ui.Q("pact-" + f).EnableInClassList("is-disabled", !peace && (!talks || cooling || s.CeasefireFaction >= 0 || s.Energy < pe || s.Fuel < pf));
+
+                // alliance (SPEC-025): only with a Cold faction; their fighters man the wall for a daily share
+                var d = c.Diplomacy;
+                bool allied = DiplomacySystem.Allied(s, (Faction)f);
+                bool armed = allied && _allyArmedAt >= 0 && System.Environment.TickCount - _allyArmedAt <= 4000;
+                VisualElement ally = _ui.Q("ally-" + f);
+                ally.EnableInClassList("is-on", allied);
+                ally.EnableInClassList("is-armed", armed);
+                _ui.Q("heat-" + f).EnableInClassList("is-allied", allied);
+                _ui.Q<Label>("ally-" + f + "-label").text = armed ? "CONFIRM // END" : allied ? "ALLIED // +" + DiplomacySystem.AllyDefense(s, c) + " DEF"
+                    : level != HeatLevel.Cold ? "ALLY // NEEDS COLD" : "ALLY // " + Fmt.Num(d.AllianceEnergy) + " E " + Fmt.Num(d.AllianceFuel) + " F";
+                ally.EnableInClassList("is-disabled", !allied && (level != HeatLevel.Cold || s.AllyFaction >= 0 || s.Energy < d.AllianceEnergy || s.Fuel < d.AllianceFuel));
             }
 
             var busy = new HashSet<int>();

@@ -196,10 +196,25 @@ namespace Deadswitch.Sim.Systems
                 weights[s.CeasefireFaction] = 0;
             }
 
+            // an ally sends fighters, not raiders (SPEC-025)
+            if (s.AllyFaction >= 0)
+            {
+                weights[s.AllyFaction] = 0;
+            }
+
             int total = weights[0] + weights[1] + weights[2] + weights[3];
             if (total <= 0)
             {
-                return DiplomacySystem.Ceasefire(s, Faction.Rustborn) ? Faction.Vanguard : Faction.Rustborn;
+                // nobody wants a fight: drifters from the first camp that is neither at peace nor allied
+                for (int f = 0; f < FactionCount; f++)
+                {
+                    if (!DiplomacySystem.Ceasefire(s, (Faction)f) && !DiplomacySystem.Allied(s, (Faction)f))
+                    {
+                        return (Faction)f;
+                    }
+                }
+
+                return Faction.Rustborn;
             }
 
             int roll = (int)(SimMath.Hash((uint)s.NextRaidId * 31u, (uint)(s.Rng.State >> 32) ^ 0xFAC7u) % (uint)total);

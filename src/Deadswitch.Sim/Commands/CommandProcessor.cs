@@ -76,6 +76,10 @@ namespace Deadswitch.Sim.Commands
                     return LegacySystem.BuyPerk(ctx, command);
                 case CommandKind.ProposeCeasefire:
                     return DiplomacySystem.Propose(ctx, command);
+                case CommandKind.ProposeAlliance:
+                    return DiplomacySystem.Ally(ctx, command);
+                case CommandKind.EndAlliance:
+                    return DiplomacySystem.EndAlliance(ctx, command);
                 case CommandKind.SetIronman:
                     return LegacySystem.SetIronman(ctx, command);
                 case CommandKind.FlushCore:

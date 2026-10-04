@@ -266,6 +266,15 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The chapter closed. A: tier, B: fragment recovered (-1 = all three known), C: energy paid, D: compute paid.</summary>
         ChapterClosed = 86,
+
+        /// <summary>Alliance agreed (SPEC-025). A: Faction, B: energy paid, C: fuel paid.</summary>
+        AllianceFormed = 87,
+
+        /// <summary>Alliance over. A: Faction, B: AllianceEnd, C: heat added with that faction.</summary>
+        AllianceEnded = 88,
+
+        /// <summary>The ally took its daily share. A: Faction, B: energy.</summary>
+        AllianceUpkeep = 89,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

@@ -132,6 +132,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Buy a ceasefire with a faction (SPEC-023). A: Faction.</summary>
         ProposeCeasefire = 41,
+
+        /// <summary>Ally with a Cold faction (SPEC-025). A: Faction.</summary>
+        ProposeAlliance = 42,
+
+        /// <summary>No args. Dissolve the current alliance.</summary>
+        EndAlliance = 43,
     }
 
     /// <summary>
@@ -290,6 +296,16 @@ namespace Deadswitch.Sim.Commands
         public static Command ProposeCeasefire(Faction faction)
         {
             return new Command(CommandKind.ProposeCeasefire, (int)faction);
+        }
+
+        public static Command ProposeAlliance(Faction faction)
+        {
+            return new Command(CommandKind.ProposeAlliance, (int)faction);
+        }
+
+        public static Command EndAlliance()
+        {
+            return new Command(CommandKind.EndAlliance);
         }
 
         public static Command SetIronman(bool on)

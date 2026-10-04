@@ -24,6 +24,9 @@
 .map-spy__btn.is-hidden { display: none; }
 .map-pact { margin-top: var(--s-1); flex-grow: 0; }
 .map-pact.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+.map-ally.is-on { border-color: var(--c-blue); background-color: rgba(130, 174, 182, 0.16); }
+.map-ally.is-armed { border-color: var(--c-red); background-color: rgba(216, 91, 82, 0.18); }
+.map-heat__cell.is-allied { border-color: var(--c-blue); }
 .map-spy__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 16px; letter-spacing: 1px; color: var(--c-text-dim); }
 .map-heat__cell.is-hot .map-heat__level { color: var(--c-red); }
 

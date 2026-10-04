@@ -113,4 +113,22 @@ namespace Deadswitch.Sim.State
             v.Long(ref ReturnTick);
         }
     }
+
+    /// <summary>Why an alliance ended (SPEC-025). Stored in events.</summary>
+    public enum AllianceEnd
+    {
+        Dissolved = 0,
+
+        /// <summary>The Hub struck the ally's sites.</summary>
+        Betrayed = 1,
+
+        /// <summary>The daily share went unpaid.</summary>
+        Unpaid = 2,
+
+        /// <summary>The ally walked out on its own.</summary>
+        Walkout = 3,
+
+        /// <summary>The ally's heat with the Hub reached Watched.</summary>
+        Distrust = 4,
+    }
 }

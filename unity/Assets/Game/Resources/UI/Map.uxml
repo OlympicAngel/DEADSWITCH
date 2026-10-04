@@ -19,6 +19,7 @@
           <ui:VisualElement name="spy-0-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:Label name="pact-0-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-0" class="map-spy__btn map-pact map-ally is-disabled"><ui:Label name="ally-0-label" text="ALLY // NEEDS COLD" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-1" class="map-heat__cell map-heat__cell--vanguard">
         <ui:Label text="VANGUARD" class="map-heat__name" />
@@ -30,6 +31,7 @@
           <ui:VisualElement name="spy-1-b" class="map-spy__btn"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:Label name="pact-1-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-1" class="map-spy__btn map-pact map-ally is-on"><ui:Label name="ally-1-label" text="ALLIED // END" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-2" class="map-heat__cell map-heat__cell--church">
         <ui:Label text="CHURCH" class="map-heat__name" />
@@ -41,6 +43,7 @@
           <ui:VisualElement name="spy-2-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:Label name="pact-2-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-2" class="map-spy__btn map-pact map-ally"><ui:Label name="ally-2-label" text="ALLY // 600 E 100 F" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-3" class="map-heat__cell map-heat__cell--holdout">
         <ui:Label text="HALCYON" class="map-heat__name" />
@@ -52,6 +55,7 @@
           <ui:VisualElement name="spy-3-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="pact-3" class="map-spy__btn map-pact"><ui:Label name="pact-3-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-3" class="map-spy__btn map-pact map-ally"><ui:Label name="ally-3-label" text="ALLY // 600 E 100 F" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
 

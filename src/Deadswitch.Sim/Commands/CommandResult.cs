@@ -144,6 +144,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>A ceasefire is running, or the last one ended too recently.</summary>
         PactActive = 47,
+
+        /// <summary>An alliance needs a Cold faction.</summary>
+        NotTrusted = 48,
+
+        /// <summary>No alliance to end, or one is already running.</summary>
+        AllianceActive = 49,
     }
 
     public readonly struct CommandResult

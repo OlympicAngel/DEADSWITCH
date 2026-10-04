@@ -214,6 +214,20 @@ namespace Deadswitch.Sim.Tests
                 Assert.False(DiplomacySystem.Ceasefire(sim.State, Faction.Rustborn));
                 Assert.True(sim.State.Heat[(int)Faction.Rustborn] > heat);
             }
+
+            // an alliance (SPEC-025): only with a Cold faction, its fighters man the wall, and it ends unpaid
+            var ally = new Simulation(62UL);
+            ally.State.Energy = 700;
+            ally.State.Fuel = 100;
+            int wall = Defense.Rating(ally.State, ally.Config);
+            Assert.True(ally.Execute(Command.ProposeAlliance(Faction.Vanguard)).Accepted);
+            Assert.Equal(RejectReason.AllianceActive, ally.Execute(Command.ProposeAlliance(Faction.Church)).Reason);
+            Assert.Equal(wall + ally.Config.Diplomacy.AllianceDefenseByTier[0], Defense.Rating(ally.State, ally.Config));
+            ally.Run(ally.State.AllyUpkeepTick - ally.State.Tick - 1);
+            ally.State.Energy = 0;
+            ally.Run(2);
+            Assert.Equal(-1, ally.State.AllyFaction);
+            Assert.Contains(ally.Log.Events, e => e.Kind == EventKind.AllianceEnded && e.B == (int)AllianceEnd.Unpaid);
         }
 
         [Fact]

@@ -45,6 +45,9 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
+            // the ally's fighters man the wall too (SPEC-025)
+            total += DiplomacySystem.AllyDefense(s, c);
+
             if (posture == Posture.Turtle)
             {
                 total = SimMath.PctFloor(total, 100 + c.Defense.TurtleDefensePct + (Modules.Has(s, ModuleNode.WF2B) ? c.Modules.KillZonePts : 0));

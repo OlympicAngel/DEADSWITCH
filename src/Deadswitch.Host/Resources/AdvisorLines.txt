@@ -285,6 +285,14 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+alliance.formed.1 | alliance_formed | neutral | {faction} stands with us. Their fighters are on the wall. They will want paying every day.
+alliance.formed.2 | alliance_formed | cold | Alliance with {faction}. Useful. Temporary. Everything is.
+alliance.ended.1 | alliance_ended | neutral | The alliance with {faction} is over. Their fighters have left the wall.
+alliance.ended.2 | alliance_ended | cold | {faction} is gone. We were paying for bodies. Now we are not.
+alliance.walkout.1 | alliance_walkout | neutral | {faction} walked out. No warning. Their fighters took the east stairs.
+alliance.walkout.2 | alliance_walkout | bold | {faction} left us. I would have left them first.
+alliance.betrayed.1 | alliance_betrayed | neutral | We hit our own ally. {faction} will not forget it, and neither will anyone watching.
+alliance.betrayed.2 | alliance_betrayed | cold | {faction} was an ally. Was.
 chapter.open.1 | chapter_opened | neutral | Chapter {tier}: {site}. {faction} is the pressure now.
 chapter.open.2 | chapter_opened | cold | New chapter. {site}. {faction} will test the wall.
 chapter.twist.1 | chapter_twist | neutral | Something changed. The record is in the story log. Read it before you trust me again.

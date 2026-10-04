@@ -1077,7 +1077,7 @@ ironman_choose_hours = 24
 ironman_mercy_pct = 50
 
 # --------------------------------------------------------------------------------------------------
-# Temporary pacts: a paid ceasefire with one faction at a time, broken by striking its sites (doc 05 s3). Heat is milli. All (tune).
+# Temporary pacts: a paid ceasefire and an alliance, one of each at a time, that either side can break (doc 05 s3). Heat is milli. All (tune).
 [diplomacy]
 
 # How long a ceasefire holds. [1..100]
@@ -1098,8 +1098,32 @@ cooldown_days = 5
 # Heat added when the Hub breaks a ceasefire by striking that faction. [0..100000]
 break_heat = 30000
 
-# Trade with a faction under ceasefire is this much cheaper. [0..99]
+# Trade with a faction under ceasefire or alliance is this much cheaper. [0..99]
 trade_discount_pct = 20
+
+# Alliance price: energy (only with a Cold faction). [0..100000]
+alliance_energy = 600
+
+# Alliance price: fuel. [0..10000]
+alliance_fuel = 100
+
+# Energy the ally takes each day; unpaid, the alliance lapses. [0..100000]
+alliance_upkeep_energy = 120
+
+# Defense the ally's fighters add to the wall, by tier. [4..4 items, each 0..100000]
+alliance_defense_by_tier = [40, 80, 140, 220]
+
+# Heat per day with the ally's rival (Rustborn and Vanguard, Church and Halcyon). [0..100000]
+alliance_rival_heat = 3000
+
+# Chance per day that the ally walks out on its own. [0..100]
+alliance_walkout_pct = 5
+
+# Heat with the ally when the Hub dissolves the alliance or cannot pay. [0..100000]
+alliance_end_heat = 5000
+
+# Heat with the ally when the Hub strikes its sites. [0..100000]
+alliance_betray_heat = 40000
 
 # --------------------------------------------------------------------------------------------------
 # Chapter arcs: one per tier with a villain, a twist and a payoff; each payoff recovers a memory fragment that survives reboots (doc 07 s4). Heat and corruption are milli. All (tune).
