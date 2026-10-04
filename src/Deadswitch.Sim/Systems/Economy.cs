@@ -106,6 +106,12 @@ namespace Deadswitch.Sim.Systems
             }
 
             int upkeep = f.UpkeepPerHour[slot.Level - 1];
+            if (ThreatSystem.Shielded(s))
+            {
+                // doc 10: upkeep halved while the vacation shield holds
+                upkeep = SimMath.PctCeil(upkeep, c.Threats.ShieldUpkeepPct);
+            }
+
             return slot.Kind != FacilityKind.Generator && Modules.Has(s, ModuleNode.LG1) ? SimMath.PctCeil(upkeep, 100 - c.Modules.LoadBalancingPct) : upkeep;
         }
 

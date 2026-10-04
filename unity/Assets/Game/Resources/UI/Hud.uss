@@ -74,6 +74,8 @@
 }
 
 .hud-alert.is-hidden { display: none; }
+.hud-alert--red { border-color: var(--c-red); background-color: rgba(52, 16, 14, 0.9); }
+.hud-alert--red .hud-alert__title, .hud-alert--red .hud-alert__time { color: var(--c-red); text-shadow: 0 0 10px var(--c-red-glow); }
 .hud-alert__pip { width: 18px; height: 18px; margin-right: var(--s-3); }
 .hud-alert__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
 .hud-alert__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); color: var(--c-amber); text-shadow: 0 0 10px var(--c-amber-glow); }

@@ -224,6 +224,11 @@ namespace Deadswitch.Sim
                 problems.Add("hub.slots plus every tier.slots_added must not exceed 64.");
             }
 
+            if (Threats.ShieldStartCharges > Threats.ShieldMaxCharges)
+            {
+                problems.Add("threats.shield_start_charges must not exceed shield_max_charges.");
+            }
+
             if (Threats.PurgeUltimatumHours >= Threats.PurgeStagingHours)
             {
                 problems.Add("threats.purge_ultimatum_hours must be below purge_staging_hours.");

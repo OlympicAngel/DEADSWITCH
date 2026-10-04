@@ -166,7 +166,10 @@ namespace Deadswitch.Sim.State
 
         public int ShieldCharges;
 
-        /// <summary>Vacation shield holds while away until this tick (0 = down).</summary>
+        /// <summary>Vacation shield holds from this tick (after the activation delay) until <see cref="ShieldUntilTick"/>.</summary>
+        public long ShieldFromTick;
+
+        /// <summary>Vacation shield end (0 = none raised or pending).</summary>
         public long ShieldUntilTick;
 
         public long ShieldNextChargeTick;
@@ -192,6 +195,7 @@ namespace Deadswitch.Sim.State
             OverrideCharges = config.Override.StartCharges;
             OverrideNextChargeTick = config.Override.RegenMinutes;
             ShieldCharges = config.Threats.ShieldStartCharges;
+            ShieldNextChargeTick = (long)config.Threats.ShieldRegenDays * SimConfig.TicksPerDay;
 
             for (int i = 0; i < config.Hub.Slots; i++)
             {
@@ -380,6 +384,7 @@ namespace Deadswitch.Sim.State
                 v.Long(ref LockedUntilTick);
                 v.Bool(ref FalseIntel);
                 v.Int(ref ShieldCharges);
+                v.Long(ref ShieldFromTick);
                 v.Long(ref ShieldUntilTick);
                 v.Long(ref ShieldNextChargeTick);
                 v.Bool(ref TributeOrder);

@@ -79,25 +79,32 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
-        public void Shield_HoldsOffAttacksWhileAway_AndDropsOnReturn()
+        public void Shield_RisesAfterItsDelay_PausesAttacks_AndHalvesUpkeep()
         {
+            // doc 10: 2 h activation delay, 72 h pause, upkeep halved, limited charges
             var sim = new Simulation(24UL);
+            var t = sim.Config.Threats;
             sim.Run(sim.Config.Opening.ProtectionHours * SimConfig.TicksPerHour);
             while (sim.State.RaidId != 0)
             {
                 sim.Run(1);
             }
 
+            int upkeep = Economy.UpkeepPerHour(sim.State, sim.Config, sim.State.Slots[1]);
             Assert.True(sim.Execute(Command.ActivateShield()).Accepted);
             Assert.Equal(RejectReason.NoChange, sim.Execute(Command.ActivateShield()).Reason);
-            sim.Execute(Command.SetPresence(true));
+            sim.Run(t.ShieldDelayMinutes);
+            while (sim.State.RaidId != 0)
+            {
+                sim.Run(1);
+            }
+
+            Assert.True(ThreatSystem.Shielded(sim.State));
+            Assert.True(Economy.UpkeepPerHour(sim.State, sim.Config, sim.State.Slots[1]) < upkeep);
             int warnings = sim.Log.Events.Count(e => e.Kind == EventKind.RaidWarning);
             sim.Run(48 * SimConfig.TicksPerHour);
             Assert.Equal(warnings, sim.Log.Events.Count(e => e.Kind == EventKind.RaidWarning));
-
-            sim.Execute(Command.SetPresence(false));
-            Assert.Equal(0, sim.State.ShieldUntilTick);
-            Assert.Equal(RejectReason.NoShield, sim.Execute(Command.ActivateShield()).Reason);
+            Assert.Equal(RejectReason.NoChange, sim.Execute(Command.ActivateShield()).Reason);
         }
     }
 }

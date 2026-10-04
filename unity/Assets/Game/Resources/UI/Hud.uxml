@@ -61,9 +61,9 @@
         <ui:VisualElement class="spacer" />
         <ui:VisualElement class="hud-right">
           <ui:VisualElement name="raid-banner" class="hud-alert">
-            <ui:VisualElement class="ds-pip ds-pip--amber ds-pip--diamond hud-alert__pip" />
+            <ui:VisualElement name="raid-pip" class="ds-pip ds-pip--amber ds-pip--diamond hud-alert__pip" />
             <ui:VisualElement>
-              <ui:Label text="RAID INCOMING" class="hud-alert__title" />
+              <ui:Label name="raid-title" text="RAID INCOMING" class="hud-alert__title" />
               <ui:Label name="raid-time" text="17:42" class="hud-alert__time" />
             </ui:VisualElement>
           </ui:VisualElement>

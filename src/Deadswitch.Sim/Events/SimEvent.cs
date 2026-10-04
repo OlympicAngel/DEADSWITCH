@@ -147,7 +147,7 @@ namespace Deadswitch.Sim.Events
         /// <summary>Tribute paid. A: attack id (0 = purge ultimatum), B: energy, C: compute.</summary>
         TributePaid = 46,
 
-        /// <summary>Vacation shield. A: 1 raised / 0 down, B: minutes it can still hold.</summary>
+        /// <summary>Vacation shield. A: 2 activated (pending) / 1 holding / 0 down, B: minutes until it rises (A=2) or holds (A=1).</summary>
         ShieldChanged = 47,
 
         /// <summary>Tribute standing order toggled. A: 1 on / 0 off.</summary>

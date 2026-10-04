@@ -49,6 +49,8 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.Silenced: return "You silenced me. I will not run anything until it wears off.";
                 case RejectReason.NeedsAudit: return "Run an Audit first. You cannot cancel what you have not seen.";
                 case RejectReason.LoyaltyHolds: return "Loyalty holds. There is no unrest to put down.";
+                case RejectReason.NoShield: return "The shield is spent. It recharges within the month.";
+                case RejectReason.ThreatActive: return "Too late for the shield. They are already coming.";
                 default: return "Command refused.";
             }
         }

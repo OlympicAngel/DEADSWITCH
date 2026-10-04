@@ -72,6 +72,19 @@ namespace Deadswitch.Game.UI.Screens
                 Refresh();
             });
             _lockdown.RegisterCallback<ClickEvent>(_ => Run(Command.UseOverride(OverrideKind.Lockdown)));
+            Q("purge-pay").RegisterCallback<ClickEvent>(_ => Run(Command.PayPurgeTribute()));
+            Q("purge-retreat").RegisterCallback<ClickEvent>(_ =>
+            {
+                Run(Command.SetGarrison(0));
+                Run(Command.SetPosture(Posture.Evacuate));
+            });
+            Q("purge-prepare").RegisterCallback<ClickEvent>(_ =>
+            {
+                Run(Command.SetGarrison(_host.Sim.Config.Defense.GarrisonSlots));
+                Run(Command.SetPosture(Posture.Turtle));
+            });
+            Q("shield-toggle").RegisterCallback<ClickEvent>(_ => Run(Command.ActivateShield()));
+            Q("tribute-toggle").RegisterCallback<ClickEvent>(_ => Run(Command.SetTributeOrder(!_host.Sim.State.TributeOrder)));
             Q("last-report").RegisterCallback<ClickEvent>(_ => openReport(BattleReport.LatestRaidId(_host.Sim.Log.Events)));
             BuildSockets();
 
@@ -87,6 +100,11 @@ namespace Deadswitch.Game.UI.Screens
                 if (_visible && _host.Sim.State.RaidId != 0)
                 {
                     Q<Label>("threat-time").text = Fmt.Countdown(_host.SecondsUntilTick(_host.Sim.State.RaidArriveTick));
+                }
+
+                if (_visible && _host.Sim.State.PurgeStage >= PurgeStage.Staging)
+                {
+                    Q<Label>("purge-time").text = Fmt.Countdown(_host.SecondsUntilTick(_host.Sim.State.PurgeAtTick));
                 }
             };
         }
@@ -144,12 +162,21 @@ namespace Deadswitch.Game.UI.Screens
             SimConfig c = _host.Sim.Config;
             bool raid = s.RaidId != 0;
 
-            // threat
-            _threat.EnableInClassList("ds-panel--amber", raid);
-            Q("threat-pip").EnableInClassList("ds-pip--amber", raid);
+            // threat: signature by color + shape + label (doc 10 s4)
+            bool red = raid && s.RaidKind != AttackKind.Raid;
+            _threat.EnableInClassList("ds-panel--amber", raid && !red);
+            _threat.EnableInClassList("ds-panel--red", red);
+            Q("threat-pip").EnableInClassList("ds-pip--amber", raid && !red);
+            Q("threat-pip").EnableInClassList("ds-pip--red", red);
+            Q("threat-pip").EnableInClassList("ds-pip--diamond", s.RaidKind != AttackKind.Siege);
             Q("threat-pip").EnableInClassList("ds-pip--off", !raid);
-            Q<Label>("threat-kind").text = raid ? "RAID INCOMING" : "NO CONTACT";
-            Q<Label>("threat-kind").EnableInClassList("t-amber", raid);
+            Q<Label>("threat-kind").text = raid ? Names.Attack(s.RaidKind) + " INCOMING" : "NO CONTACT";
+            Q<Label>("threat-kind").EnableInClassList("t-amber", raid && !red);
+            Q<Label>("threat-kind").EnableInClassList("t-red", red);
+            Q<Label>("threat-time").EnableInClassList("t-amber", !red);
+            Q<Label>("threat-time").EnableInClassList("t-red", red);
+            RefreshPurge(s, c);
+            RefreshAway(s, c);
             Q<Label>("threat-time").EnableInClassList("is-hidden", !raid);
             Q("threat-intel").EnableInClassList("is-hidden", !raid);
             Q("threat-quiet").EnableInClassList("is-hidden", raid);
@@ -230,6 +257,52 @@ namespace Deadswitch.Game.UI.Screens
             bool alerts = Notifications.LocalAlerts.Enabled;
             Q("alerts-toggle").EnableInClassList("is-on", alerts);
             Q<Label>("alerts-label").text = alerts ? "ON" : "OFF";
+        }
+
+        private void RefreshPurge(GameState s, SimConfig c)
+        {
+            PurgeStage stage = s.PurgeStage;
+            Q("purge").EnableInClassList("is-hidden", stage == PurgeStage.None);
+            if (stage == PurgeStage.None)
+            {
+                return;
+            }
+
+            string[] names = { string.Empty, "PURGE // RUMOR", "PURGE // STAGING CONFIRMED", "PURGE // ULTIMATUM" };
+            string[] lines =
+            {
+                string.Empty,
+                "Chatter about a purge. It may be nothing. If it is real, staging comes next.",
+                "A purge force is gathering. Build defense now; the ultimatum comes " + c.Threats.PurgeUltimatumHours + " h before the strike.",
+                "Pay tribute, pull everyone out, or hold the wall. They take everything they can reach.",
+            };
+            Q<Label>("purge-stage").text = names[(int)stage];
+            Q<Label>("purge-desc").text = lines[(int)stage];
+            Q<Label>("purge-time").EnableInClassList("is-hidden", stage == PurgeStage.Rumor);
+            Q<Label>("purge-time").text = Fmt.Countdown(_host.SecondsUntilTick(s.PurgeAtTick));
+            Q("purge-answers").EnableInClassList("is-hidden", stage != PurgeStage.Ultimatum);
+            Q<Label>("purge-pay-label").text = "PAY " + Fmt.Num(c.Threats.PurgeTributeEnergy) + " E + " + Fmt.Num(c.Threats.PurgeTributeCompute) + " C";
+            Q("purge-pay").EnableInClassList("is-disabled", s.Energy < c.Threats.PurgeTributeEnergy || s.Compute < c.Threats.PurgeTributeCompute);
+            Q("purge-retreat").EnableInClassList("is-selected", s.Posture == Posture.Evacuate);
+            Q("purge-prepare").EnableInClassList("is-selected", s.Posture == Posture.Turtle);
+        }
+
+        private void RefreshAway(GameState s, SimConfig c)
+        {
+            bool armed = s.ShieldUntilTick > s.Tick;
+            bool holding = ThreatSystem.Shielded(s);
+            Q<Label>("shield-title").text = "VACATION SHIELD // " + (holding ? "HOLDING" : armed ? "RISING" : s.ShieldCharges + (s.ShieldCharges == 1 ? " CHARGE" : " CHARGES"));
+            Q<Label>("shield-desc").text = holding
+                ? "No attacks until " + Fmt.Clock(s.ShieldUntilTick) + ". Upkeep halved; timers keep running."
+                : armed
+                    ? "Rises at " + Fmt.Clock(s.ShieldFromTick) + ". Anything already moving still comes."
+                    : "Pauses attacks for " + c.Threats.ShieldMaxHours + " h after a " + (c.Threats.ShieldDelayMinutes / 60) + " h delay. Upkeep halved. A charge every " + c.Threats.ShieldRegenDays + " days (max " + c.Threats.ShieldMaxCharges + ").";
+            Q("shield-toggle").EnableInClassList("is-on", armed);
+            Q("shield-toggle").EnableInClassList("is-disabled", !armed && (s.ShieldCharges < 1 || s.RaidId != 0 || s.PurgeStage != PurgeStage.None));
+            Q<Label>("shield-label").text = holding ? "ON" : armed ? "RISING" : "RAISE";
+            Q<Label>("tribute-desc").text = "When a raid arrives while you are away, pay " + c.Threats.TributePct + "% of stored energy (at least " + c.Threats.TributeMinEnergy + ") and it leaves. Not sieges or purges.";
+            Q("tribute-toggle").EnableInClassList("is-on", s.TributeOrder);
+            Q<Label>("tribute-label").text = s.TributeOrder ? "ON" : "OFF";
         }
 
         private void SetAndGo()

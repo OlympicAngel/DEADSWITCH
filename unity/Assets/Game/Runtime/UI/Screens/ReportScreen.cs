@@ -1,6 +1,7 @@
 using Deadswitch.Game.Base;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Reports;
+using Deadswitch.Host.Narrative;
 using Deadswitch.Host.Reports;
 using Deadswitch.Sim.Commands;
 using UnityEngine;
@@ -70,7 +71,7 @@ namespace Deadswitch.Game.UI.Screens
 
         private void Fill(BattleReport r)
         {
-            _ui.Q<Label>("rep-title").text = "AFTER-ACTION // RAID " + r.RaidId + " // " + r.Outcome.ToString().ToUpperInvariant();
+            _ui.Q<Label>("rep-title").text = "AFTER-ACTION // " + Names.Attack(r.Kind) + " " + r.RaidId + " // " + r.Outcome.ToString().ToUpperInvariant();
             var vector = _ui.Q<Label>("rep-vector");
             vector.text = "PREDICTED " + Host.Narrative.Names.Gate(r.PredictedGate) + "  //  CONTACT " + Host.Narrative.Names.Gate(r.ContactGate);
             vector.EnableInClassList("is-mismatch", r.PredictionMismatch);

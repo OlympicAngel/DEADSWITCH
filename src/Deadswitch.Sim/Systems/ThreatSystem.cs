@@ -13,10 +13,10 @@ namespace Deadswitch.Sim.Systems
     /// </summary>
     public static class ThreatSystem
     {
-        /// <summary>True while the vacation shield holds (raised and the handler is away).</summary>
+        /// <summary>True while the vacation shield holds (doc 10: 72 h attack pause after a 2 h delay; timers keep running).</summary>
         public static bool Shielded(GameState s)
         {
-            return s.Away && s.ShieldUntilTick > s.Tick;
+            return s.ShieldUntilTick > s.Tick && s.Tick >= s.ShieldFromTick;
         }
 
         /// <summary>A siege is due: the next raid spawn becomes a siege (Tier 2+).</summary>
@@ -31,16 +31,23 @@ namespace Deadswitch.Sim.Systems
             ThreatConfig c = ctx.Config.Threats;
 
             // shield: expiry and charge regrowth
+            if (s.ShieldUntilTick > 0 && s.Tick == s.ShieldFromTick)
+            {
+                ctx.Emit(EventKind.ShieldChanged, 1, (int)(s.ShieldUntilTick - s.Tick));
+            }
+
             if (s.ShieldUntilTick > 0 && s.Tick >= s.ShieldUntilTick)
             {
+                s.ShieldFromTick = 0;
                 s.ShieldUntilTick = 0;
                 ctx.Emit(EventKind.ShieldChanged, 0, 0);
             }
 
-            if (s.ShieldCharges < 1 && s.ShieldNextChargeTick > 0 && s.Tick >= s.ShieldNextChargeTick)
+            // doc 10: a new charge every shield_regen_days, up to shield_max_charges
+            if (s.ShieldNextChargeTick > 0 && s.Tick >= s.ShieldNextChargeTick)
             {
-                s.ShieldCharges = 1;
-                s.ShieldNextChargeTick = 0;
+                s.ShieldCharges = System.Math.Min(c.ShieldMaxCharges, s.ShieldCharges + 1);
+                s.ShieldNextChargeTick = s.Tick + ((long)c.ShieldRegenDays * SimConfig.TicksPerDay);
             }
 
             // schedules start when their signature unlocks
@@ -77,15 +84,9 @@ namespace Deadswitch.Sim.Systems
             PurgeLadder(ctx);
         }
 
-        /// <summary>The handler came back: the shield drops (it only covers absence).</summary>
+        /// <summary>Presence does not end the shield (doc 10: a fixed 72 h pause); kept as the hook for return effects.</summary>
         public static void OnReturn(SimContext ctx)
         {
-            GameState s = ctx.State;
-            if (s.ShieldUntilTick > 0)
-            {
-                s.ShieldUntilTick = 0;
-                ctx.Emit(EventKind.ShieldChanged, 0, 0);
-            }
         }
 
         public static CommandResult ActivateShield(SimContext ctx, Command cmd)
@@ -107,15 +108,16 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.NoShield);
             }
 
-            if (s.RaidId != 0 || s.PurgeStage >= PurgeStage.Staging)
+            if (s.RaidId != 0 || s.PurgeStage != PurgeStage.None)
             {
                 return CommandResult.Reject(RejectReason.ThreatActive);
             }
 
+            // doc 10: rises after a delay (no dodging a visible attack), then pauses attacks for a fixed time
             s.ShieldCharges--;
-            s.ShieldNextChargeTick = s.Tick + ((long)c.ShieldRegenDays * SimConfig.TicksPerDay);
-            s.ShieldUntilTick = s.Tick + ((long)c.ShieldMaxHours * SimConfig.TicksPerHour);
-            ctx.Emit(EventKind.ShieldChanged, 1, c.ShieldMaxHours * SimConfig.TicksPerHour);
+            s.ShieldFromTick = s.Tick + c.ShieldDelayMinutes;
+            s.ShieldUntilTick = s.ShieldFromTick + ((long)c.ShieldMaxHours * SimConfig.TicksPerHour);
+            ctx.Emit(EventKind.ShieldChanged, 2, (int)(s.ShieldFromTick - s.Tick));
             return CommandResult.Ok;
         }
 
@@ -208,7 +210,7 @@ namespace Deadswitch.Sim.Systems
                 for (int i = 0; i < s.Slots.Count; i++)
                 {
                     FacilitySlot f = s.Slots[i];
-                    if (f.IsEmpty || f.Level < 2 || s.JobForSlot(i) != null)
+                    if (f.IsEmpty || !f.Enabled || f.Level < 2 || s.JobForSlot(i) != null)
                     {
                         continue;
                     }
@@ -248,8 +250,8 @@ namespace Deadswitch.Sim.Systems
 
             int burned = s.Compute;
             s.Compute = 0;
-            ModuleNode locked = PickLock(s);
-            if (locked != ModuleNode.None && c.VirusLockHours > 0)
+            ModuleNode locked = c.VirusLockHours > 0 ? PickLock(s) : ModuleNode.None;
+            if (locked != ModuleNode.None)
             {
                 s.LockedModule = (int)locked;
                 s.LockedUntilTick = s.Tick + ((long)c.VirusLockHours * SimConfig.TicksPerHour);
@@ -331,9 +333,17 @@ namespace Deadswitch.Sim.Systems
                 case PurgeStage.Ultimatum:
                     if (s.Tick >= s.PurgeAtTick)
                     {
-                        if (s.RaidId != 0)
+                        if (ctx.Config.Raid.MaxPerDay <= 0)
                         {
-                            // another attack is still inbound: the purge force waits for it to clear
+                            // attacks are switched off in this config: the force never comes
+                            EndLadder(ctx, 1);
+                            break;
+                        }
+
+                        bool protectedNow = ctx.Config.Opening.Enabled && s.Tick < (long)ctx.Config.Opening.ProtectionHours * hour;
+                        if (s.RaidId != 0 || s.Tick < s.MercyUntilTick || protectedNow || s.RaidsToday >= RaidSystem.MaxPerDay(s, ctx.Config))
+                        {
+                            // fairness first (doc 10 s4): the purge waits for the inbound attack, mercy and the daily cap
                             s.PurgeAtTick = s.Tick + hour;
                             break;
                         }

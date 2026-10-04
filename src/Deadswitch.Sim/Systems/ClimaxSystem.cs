@@ -143,7 +143,7 @@ namespace Deadswitch.Sim.Systems
                 int lost = 0;
                 foreach (ModuleDef d in Modules.Catalog)
                 {
-                    if (d.Field != ModuleField.Trunk && Modules.Has(s, d.Node))
+                    if (d.Field != ModuleField.Trunk && Modules.IsRestored(s, d.Node))
                     {
                         lost++;
                     }

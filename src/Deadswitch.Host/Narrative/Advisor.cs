@@ -348,7 +348,7 @@ namespace Deadswitch.Host.Narrative
                     Enqueue(new Pending("tribute_paid", Priority.Normal).With("lost", e.B.ToString()));
                     break;
                 case EventKind.ShieldChanged:
-                    Enqueue(new Pending(e.A == 1 ? "shield_up" : "shield_down", Priority.Normal).With("hours", (e.B / 60).ToString()));
+                    Enqueue(new Pending(e.A == 2 ? "shield_armed" : e.A == 1 ? "shield_up" : "shield_down", Priority.Normal).With("hours", (e.B / 60).ToString()));
                     break;
                 case EventKind.ForcedLabor:
                     Enqueue(new Pending("forced_labor", Priority.Normal).With("lost", e.A.ToString()).With("hours", e.B.ToString()));

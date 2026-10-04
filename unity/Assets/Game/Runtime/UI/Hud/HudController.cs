@@ -3,6 +3,7 @@ using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Game.UI.Screens;
 using Deadswitch.Host.Narrative;
+using Deadswitch.Host.Reports;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
@@ -177,7 +178,7 @@ namespace Deadswitch.Game.UI.Hud
             if (e.Kind == EventKind.RaidResolved)
             {
                 _chipRaid = e.A;
-                _reportChip.Q<Label>("report-chip-label").text = "AFTER-ACTION // RAID " + e.A;
+                _reportChip.Q<Label>("report-chip-label").text = "AFTER-ACTION // " + (BattleReport.Build(_host.Sim.Log.Events, e.A) is BattleReport br ? Names.Attack(br.Kind) : "RAID") + " " + e.A;
                 _reportChip.RemoveFromClassList("is-hidden");
             }
 
@@ -250,6 +251,13 @@ namespace Deadswitch.Game.UI.Hud
             _coreDot.EnableInClassList("is-hidden", band == CorruptionBand.Stable && s.ClimaxAtTick == 0);
             bool raid = s.RaidId != 0;
             _raid.EnableInClassList("is-hidden", !raid);
+            // signature reads at a glance (doc 10 s4): raid amber diamond, siege red square, purge red diamond
+            bool red = s.RaidKind != AttackKind.Raid;
+            _raid.EnableInClassList("hud-alert--red", red);
+            Q<VisualElement>("raid-pip").EnableInClassList("ds-pip--amber", !red);
+            Q<VisualElement>("raid-pip").EnableInClassList("ds-pip--red", red);
+            Q<VisualElement>("raid-pip").EnableInClassList("ds-pip--diamond", s.RaidKind != AttackKind.Siege);
+            Q<Label>("raid-title").text = Names.Attack(s.RaidKind) + " INCOMING";
             _raidDetail.EnableInClassList("is-hidden", !raid);
             if (raid)
             {

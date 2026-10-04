@@ -39,6 +39,21 @@
       </ui:VisualElement>
     </ui:VisualElement>
 
+    <!-- Purge warning ladder (SPEC-015, doc 10): rumor -> staging -> ultimatum with three answers -->
+    <ui:VisualElement name="purge" class="ds-panel ds-panel--red ops-purge">
+      <ui:VisualElement class="row">
+        <ui:VisualElement class="ds-pip ds-pip--red ds-pip--diamond ops-threat__pip" />
+        <ui:Label name="purge-stage" text="PURGE // ULTIMATUM" class="ds-label t-red ops-threat__kind grow" />
+        <ui:Label name="purge-time" text="5:42:10" class="ds-value t-red ops-purge__time" />
+      </ui:VisualElement>
+      <ui:Label name="purge-desc" text="Pay tribute, pull everyone out, or hold the wall. They take everything they can reach." class="ds-body t-dim ops-purge__desc" />
+      <ui:VisualElement name="purge-answers" class="row ops-purge__answers">
+        <ui:VisualElement name="purge-pay" class="ds-btn ds-btn--warn ops-purge__btn"><ui:Label name="purge-pay-label" text="PAY 800 E + 60 C" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="purge-retreat" class="ds-btn ds-btn--ghost ops-purge__btn"><ui:Label text="RETREAT" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="purge-prepare" class="ds-btn ds-btn--ghost ops-purge__btn"><ui:Label text="PREPARE" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
     <!-- Posture -->
     <ui:Label text="POSTURE" class="ds-label ops-section" />
     <ui:VisualElement class="ops-postures">
@@ -123,6 +138,22 @@
       <ui:VisualElement name="deleg-autopilot" class="ops-seg__item"><ui:Label text="AUTOPILOT" class="ops-seg__label" /></ui:VisualElement>
     </ui:VisualElement>
     <ui:Label name="deleg-desc" text="I only advise. You run everything." class="ds-body t-dim ops-seg__desc" />
+    <!-- Away protection (SPEC-015 rules 5-6) -->
+    <ui:Label text="WHILE YOU ARE AWAY" class="ds-label ops-section" />
+    <ui:VisualElement class="row ops-alerts">
+      <ui:VisualElement class="grow">
+        <ui:Label name="shield-title" text="VACATION SHIELD // 1 CHARGE" class="ds-label" />
+        <ui:Label name="shield-desc" text="Pauses attacks for 72 h after a 2 h delay. Upkeep halved. A charge every 60 days (max 2)." class="ds-body t-dim ops-alerts__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement name="shield-toggle" class="ops-toggle"><ui:Label name="shield-label" text="RAISE" class="ops-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement class="row ops-alerts">
+      <ui:VisualElement class="grow">
+        <ui:Label text="TRIBUTE ORDER" class="ds-label" />
+        <ui:Label name="tribute-desc" text="When a raid arrives while you are away, pay 25% of stored energy and it leaves. Not sieges or purges." class="ds-body t-dim ops-alerts__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement name="tribute-toggle" class="ops-toggle"><ui:Label name="tribute-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
     <ui:VisualElement class="row ops-alerts">
       <ui:VisualElement class="grow">
         <ui:Label text="ALERTS WHILE AWAY" class="ds-label" />

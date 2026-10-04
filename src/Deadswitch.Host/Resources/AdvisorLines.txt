@@ -167,5 +167,6 @@ purge.paid.1 | purge_paid | neutral | Tribute delivered. The purge force is turn
 purge.paid.2 | purge_paid | cold | Paid. They will remember that we pay.
 tribute.paid.1 | tribute_paid | neutral | Your standing order paid {lost} energy. They left without a fight.
 tribute.paid.2 | tribute_paid | cold | {lost} energy for peace. A fair trade, today.
-shield.up.1 | shield_up | neutral | Shield raised. I will keep them off for up to {hours} hours while you are gone.
+shield.armed.1 | shield_armed | neutral | Shield charging. It rises in {hours} hours. Anything already moving still comes.
+shield.up.1 | shield_up | neutral | Shield up. Nobody attacks us for {hours} hours. The clocks keep running.
 shield.down.1 | shield_down | neutral | Shield down. We are visible again.

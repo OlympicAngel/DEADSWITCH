@@ -79,7 +79,7 @@ namespace Deadswitch.Game.UI.Screens
             {
                 VisualElement el = _ui.Q("node-" + d.Node);
                 RejectReason why = Modules.Availability(s, d.Node);
-                bool restored = Modules.Has(s, d.Node);
+                bool restored = Modules.IsRestored(s, d.Node);
                 bool active = s.ResearchNode == (int)d.Node;
                 el.EnableInClassList("is-restored", restored);
                 el.EnableInClassList("is-active", active);
@@ -96,7 +96,7 @@ namespace Deadswitch.Game.UI.Screens
             RejectReason state = Modules.Availability(s, _selected);
             bool selActive = s.ResearchNode == (int)_selected;
             _ui.Q<Label>("detail-title").text = _selected + " // " + ModuleTexts.Name(_selected);
-            _ui.Q<Label>("detail-state").text = Modules.Has(s, _selected) ? "RESTORED" : selActive ? "RESTORING" : state == RejectReason.None ? "AVAILABLE" : state.ToString().ToUpperInvariant();
+            _ui.Q<Label>("detail-state").text = Modules.IsRestored(s, _selected) ? (Modules.Has(s, _selected) ? "RESTORED" : "LOCKED // INTRUSION") : selActive ? "RESTORING" : state == RejectReason.None ? "AVAILABLE" : state.ToString().ToUpperInvariant();
             _ui.Q<Label>("detail-desc").text = ModuleTexts.Effect(_selected, c);
             int energy = c.Modules.ResearchEnergy[sel.Index];
             int compute = c.Modules.ResearchCompute[sel.Index];
@@ -109,7 +109,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("detail-time").text = Fmt.Countdown(c.Modules.ResearchMinutes[sel.Index] * 60.0 / _host.Settings.DevTimeScale);
             VisualElement start = _ui.Q("detail-start");
             bool canStart = state == RejectReason.None && !busy;
-            start.style.display = Modules.Has(s, _selected) ? DisplayStyle.None : DisplayStyle.Flex;
+            start.style.display = Modules.IsRestored(s, _selected) ? DisplayStyle.None : DisplayStyle.Flex;
             start.EnableInClassList("ds-btn--primary", canStart);
             start.EnableInClassList("ds-btn--ghost", selActive);
             start.EnableInClassList("is-disabled", !canStart && !selActive);

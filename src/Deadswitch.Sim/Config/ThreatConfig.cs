@@ -31,8 +31,11 @@ namespace Deadswitch.Sim.Config
         public int PurgeTributeCompute = 60;
 
         public int ShieldStartCharges = 1;
-        public int ShieldRegenDays = 30;
+        public int ShieldMaxCharges = 2;
+        public int ShieldRegenDays = 60;
         public int ShieldMaxHours = 72;
+        public int ShieldDelayMinutes = 120;
+        public int ShieldUpkeepPct = 50;
 
         public int TributePct = 25;
         public int TributeMinEnergy = 60;
@@ -64,9 +67,12 @@ namespace Deadswitch.Sim.Config
             v.Int("purge_downgrades", ref PurgeDowngrades, 0, 10, "Facilities downgraded by a breached purge.");
             v.Int("purge_tribute_energy", ref PurgeTributeEnergy, 0, 100_000, "Ultimatum tribute: energy.");
             v.Int("purge_tribute_compute", ref PurgeTributeCompute, 0, 100_000, "Ultimatum tribute: compute.");
-            v.Int("shield_start_charges", ref ShieldStartCharges, 0, 1, "Vacation shield charges at the start of a run (max 1).");
-            v.Int("shield_regen_days", ref ShieldRegenDays, 1, 1_000, "Game days to regain a used shield charge.");
-            v.Int("shield_max_hours", ref ShieldMaxHours, 1, 1_000, "Longest a vacation shield holds; it ends when the handler returns.");
+            v.Int("shield_start_charges", ref ShieldStartCharges, 0, 10, "Vacation shield charges at the start of a run (doc 10: 1).");
+            v.Int("shield_max_charges", ref ShieldMaxCharges, 1, 10, "Most shield charges held at once (doc 10: 2).");
+            v.Int("shield_regen_days", ref ShieldRegenDays, 1, 1_000, "Game days per new shield charge (doc 10: 60).");
+            v.Int("shield_max_hours", ref ShieldMaxHours, 1, 1_000, "Attack pause per shield (doc 10: 72 h; timers keep running).");
+            v.Int("shield_delay_minutes", ref ShieldDelayMinutes, 0, 10_000, "The shield rises this long after activation so it cannot dodge a visible attack (doc 10: 2 h).");
+            v.Int("shield_upkeep_pct", ref ShieldUpkeepPct, 0, 100, "Facility upkeep while the shield holds, percent (doc 10: halved).");
             v.Int("tribute_pct", ref TributePct, 0, 100, "Tribute standing order: share of stored energy paid to send a raid away.");
             v.Int("tribute_min_energy", ref TributeMinEnergy, 0, 100_000, "Tribute standing order: minimum payment (no tribute if energy is below it).");
             v.EndSection();

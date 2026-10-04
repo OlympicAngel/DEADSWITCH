@@ -532,14 +532,23 @@ purge_tribute_energy = 800
 # Ultimatum tribute: compute. [0..100000]
 purge_tribute_compute = 60
 
-# Vacation shield charges at the start of a run (max 1). [0..1]
+# Vacation shield charges at the start of a run (doc 10: 1). [0..10]
 shield_start_charges = 1
 
-# Game days to regain a used shield charge. [1..1000]
+# Most shield charges held at once (doc 10: 2). [1..10]
+shield_max_charges = 2
+
+# Game days per new shield charge (doc 10: 60). [1..1000]
 shield_regen_days = 30
 
-# Longest a vacation shield holds; it ends when the handler returns. [1..1000]
+# Attack pause per shield (doc 10: 72 h; timers keep running). [1..1000]
 shield_max_hours = 72
+
+# The shield rises this long after activation so it cannot dodge a visible attack (doc 10: 2 h). [0..10000]
+shield_delay_minutes = 120
+
+# Facility upkeep while the shield holds, percent (doc 10: halved). [0..100]
+shield_upkeep_pct = 50
 
 # Tribute standing order: share of stored energy paid to send a raid away. [0..100]
 tribute_pct = 25
