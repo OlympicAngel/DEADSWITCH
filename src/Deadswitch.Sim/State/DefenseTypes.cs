@@ -89,6 +89,12 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Silence the AI: its agenda stops for a time, and so do its advice and predictions (SPEC-011).</summary>
         Silence = 2,
+
+        /// <summary>Live battle (SPEC-020): the handler takes direct control of the defenses.</summary>
+        Takeover = 3,
+
+        /// <summary>Live battle (SPEC-020): the AI seizes the attackers' machines.</summary>
+        Seize = 4,
     }
 
     /// <summary>Corruption bands (doc 10 s3).</summary>

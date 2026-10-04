@@ -221,6 +221,12 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>False intel planted. A: Faction, B: 1 if it backfired (double agent).</summary>
         SpyFramed = 71,
+
+        /// <summary>Live battle at the wall (SPEC-020). A: attack id, B: minutes, C: AttackKind.</summary>
+        BattleStarted = 72,
+
+        /// <summary>A: attack id, B: BattleAbility.</summary>
+        BattleAbilityUsed = 73,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

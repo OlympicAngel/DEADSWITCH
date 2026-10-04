@@ -129,6 +129,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No spy in that camp.</summary>
         NoSpy = 42,
+
+        /// <summary>No live battle (or it already started).</summary>
+        NoBattle = 43,
+
+        /// <summary>That ability was already spent this battle.</summary>
+        AbilityUsed = 44,
     }
 
     public readonly struct CommandResult

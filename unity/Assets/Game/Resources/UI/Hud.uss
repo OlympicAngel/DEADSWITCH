@@ -128,6 +128,9 @@
 }
 
 .hud-report.is-hidden { display: none; }
+.hud-raidrow__cmd { margin-right: var(--s-2); }
+.hud-raidrow__cmd.is-hidden { display: none; }
+.hud-raidrow__cmd.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
 
 /* Dispatch chip (F-034): an ultimatum (red) or a dilemma (amber) waiting; tap opens DISPATCH */
 .hud-dispatch {

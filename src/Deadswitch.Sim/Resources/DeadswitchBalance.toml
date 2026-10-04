@@ -903,6 +903,34 @@ frame_heat = 20000
 frame_catch_pct = 35
 
 # --------------------------------------------------------------------------------------------------
+# Short live battles: take command at contact and spend a few abilities (doc 04 s7). Corruption is milli. All (tune).
+[battle]
+
+# How long the handler commands at the wall before the fight resolves (1 game minute = one real minute at 1x). [1..60]
+battle_minutes = 1
+
+# FOCUS FIRE: defense + this % for the fight. [0..500]
+focus_defense_pct = 25
+
+# FOCUS FIRE: compute it costs. [0..10000]
+focus_compute = 20
+
+# MORTAR BARRAGE: attack strength - this %. [0..100]
+barrage_strength_pct = 20
+
+# MORTAR BARRAGE: energy it costs. [0..100000]
+barrage_energy = 120
+
+# MANUAL TAKEOVER (OVERRIDE): defense + this %. [0..500]
+takeover_defense_pct = 40
+
+# MACHINE SEIZURE (OVERRIDE): attack strength - this % (their drones turn). [0..100]
+seize_strength_pct = 35
+
+# MACHINE SEIZURE: extra corruption on top of the OVERRIDE cost. [0..100000]
+seize_corruption = 3000
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

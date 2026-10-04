@@ -5,6 +5,7 @@ using Deadswitch.Game.UI.Screens;
 using Deadswitch.Host.Narrative;
 using Deadswitch.Host.Reports;
 using Deadswitch.Sim;
+using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
@@ -133,6 +134,8 @@ namespace Deadswitch.Game.UI.Hud
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
             Router.Register(new MapScreen());
             Router.Register(new DispatchScreen(Router));
+            Router.Register(new BattleScreen(Router));
+            Q<VisualElement>("raid-command").RegisterCallback<ClickEvent>(_ => _host.Execute(Command.TakeCommand(!_host.Sim.State.BattleLive)));
             _dispatchChip = Q<VisualElement>("dispatch-chip");
             _dispatchChip.RegisterCallback<ClickEvent>(_ => Router.Show("dispatch"));
             Q<Label>("feed-id").text = "DRONE_RECON_" + ((_host.Sim.Seed % 89) + 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -195,6 +198,13 @@ namespace Deadswitch.Game.UI.Hud
                 _chipRaid = e.A;
                 _reportChip.Q<Label>("report-chip-label").text = "AFTER-ACTION // " + (BattleReport.Build(_host.Sim.Log.Events, e.A) is BattleReport br ? Names.Attack(br.Kind) : "RAID") + " " + e.A;
                 _reportChip.RemoveFromClassList("is-hidden");
+            }
+
+            if (e.Kind == EventKind.BattleStarted)
+            {
+                // contact with the handler in command: open the fight (SPEC-020)
+                Feedback.Alert();
+                Router.Show("battle");
             }
 
             if (e.Kind == EventKind.UltimatumIssued || e.Kind == EventKind.DilemmaOffered)
@@ -279,6 +289,9 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("raid-pip").EnableInClassList("ds-pip--diamond", s.RaidKind != AttackKind.Siege);
             Q<Label>("raid-title").text = Names.Attack(s.RaidKind) + " INCOMING";
             _raidDetail.EnableInClassList("is-hidden", !raid);
+            Q<VisualElement>("raid-command").EnableInClassList("is-hidden", !raid || s.BattleEndTick != 0);
+            Q<VisualElement>("raid-command").EnableInClassList("is-on", s.BattleLive);
+            Q<Label>("raid-command-label").text = s.BattleLive ? "LIVE // ON" : "TAKE COMMAND";
             if (raid)
             {
                 _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // EST " + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);

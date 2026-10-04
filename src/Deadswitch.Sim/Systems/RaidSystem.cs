@@ -32,7 +32,8 @@ namespace Deadswitch.Sim.Systems
 
             if (s.RaidId != 0)
             {
-                if (s.Tick >= s.RaidArriveTick)
+                // a live battle (SPEC-020) holds resolution while the handler commands at the wall
+                if (s.Tick >= s.RaidArriveTick && !BattleSystem.Holds(ctx))
                 {
                     Resolve(ctx, variance, missRoll);
                 }
@@ -114,6 +115,9 @@ namespace Deadswitch.Sim.Systems
             s.RaidId = s.NextRaidId++;
             s.RaidsToday++;
             s.RaidKind = kind;
+            BattleSystem.Clear(s);
+            // the big ones are commanded live by default; raids when the handler asks (SPEC-020)
+            s.BattleLive = kind != AttackKind.Raid && warningMinutes > 1;
             if (warningMinutes > 1)
             {
                 // WF5B Rapid Response, ST5A Prediction Engine: earlier warnings (never for a betrayal)
@@ -260,6 +264,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             int defense = id == s.BetrayalRaidId ? Defense.Rating(s, c, s.Posture, s.Garrison, false) : Defense.Rating(s, c);
+            BattleSystem.Apply(s, ref strength, ref defense);
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
             int lies = s.RaidGateReported != RaidGate.None && s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 
@@ -387,6 +392,7 @@ namespace Deadswitch.Sim.Systems
             s.RaidGateReported = RaidGate.None;
             s.BetrayalRaidId = 0;
             s.RaidKind = AttackKind.Raid;
+            BattleSystem.Clear(s);
         }
     }
 }

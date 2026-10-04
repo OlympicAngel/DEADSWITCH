@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019).</summary>
-        public const int LayoutVersion = 12;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020).</summary>
+        public const int LayoutVersion = 13;
 
         public long Tick;
 
@@ -209,6 +209,19 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>The handler will command the incoming attack live (SPEC-020).</summary>
+        public bool BattleLive;
+
+        /// <summary>A live battle holds resolution until this tick (0 = no battle).</summary>
+        public long BattleEndTick;
+
+        public int BattleDefensePct;
+
+        public int BattleStrengthCutPct;
+
+        /// <summary>Abilities spent this battle (bit per <see cref="Systems.BattleAbility"/>).</summary>
+        public int BattleUsed;
 
         /// <summary>Spy per faction camp (SPEC-019), indexed by <see cref="Faction"/>.</summary>
         public SpyState[] Spies = new SpyState[Systems.WorldSystem.FactionCount];
@@ -489,6 +502,15 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref Wreckage);
                 v.Long(ref ScarredAtTick);
+            }
+
+            if (v.Version >= 13)
+            {
+                v.Bool(ref BattleLive);
+                v.Long(ref BattleEndTick);
+                v.Int(ref BattleDefensePct);
+                v.Int(ref BattleStrengthCutPct);
+                v.Int(ref BattleUsed);
             }
 
             if (v.Version >= 12)

@@ -434,6 +434,17 @@ namespace Deadswitch.Host.Narrative
                 case EventKind.RepairDone:
                     Enqueue(new Pending("repair_done", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.B)));
                     break;
+                case EventKind.BattleStarted:
+                    Enqueue(new Pending("battle_started", Priority.Urgent).With("kind", Names.Attack((AttackKind)e.C)));
+                    break;
+                case EventKind.BattleAbilityUsed:
+                    string[] ability = { "battle_focus", "battle_barrage", "battle_takeover", "battle_seize" };
+                    if (e.B >= 0 && e.B < ability.Length)
+                    {
+                        Enqueue(new Pending(ability[e.B], Priority.Normal));
+                    }
+
+                    break;
                 case EventKind.SpyPlanted:
                     Enqueue(new Pending("spy_planted", Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
                     break;

@@ -64,6 +64,10 @@ namespace Deadswitch.Sim.Commands
                     return ScarSystem.Repair(ctx, command);
                 case CommandKind.ClearWreckage:
                     return ScarSystem.ClearWreckage(ctx, command);
+                case CommandKind.TakeCommand:
+                    return BattleSystem.TakeCommand(ctx, command);
+                case CommandKind.UseBattleAbility:
+                    return BattleSystem.Ability(ctx, command);
                 case CommandKind.PlantSpy:
                     return IntelSystem.Plant(ctx, command);
                 case CommandKind.RecallSpy:

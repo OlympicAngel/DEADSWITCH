@@ -235,3 +235,14 @@ spy.exposed.1 | spy_exposed | neutral | The scouts' report does not match our ag
 spy.exposed.2 | spy_exposed | cold | Our {faction} agent was theirs all along. I relayed every word. I should have checked.
 spy.framed.1 | spy_framed | neutral | False trail laid. {faction} is looking at someone else now.
 spy.backfired.1 | spy_backfired | neutral | The frame came back on us. {faction} knows. Our agent was never ours.
+
+# live battles (SPEC-020)
+battle.started.1 | battle_started | neutral | {kind} at the wall. You have command. Spend what you must.
+battle.started.2 | battle_started | bold | {kind} at the wall. Give me the guns and I will finish this.
+battle.started.3 | battle_started | cold | Contact. Orders, handler. Quickly.
+battle.focus.1 | battle_focus | neutral | Focusing fire. Every barrel on the gap.
+battle.barrage.1 | battle_barrage | neutral | Shells away. Count to five.
+battle.takeover.1 | battle_takeover | neutral | Override accepted. The guns are yours.
+battle.takeover.2 | battle_takeover | cold | You have the guns. Do not waste them.
+battle.seize.1 | battle_seize | neutral | Their machines are mine now. That cost me something.
+battle.seize.2 | battle_seize | bold | I took their drones. I could get used to this.

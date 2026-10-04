@@ -111,6 +111,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Have a spy plant false intel against its faction. A: Faction.</summary>
         FrameFaction = 34,
+
+        /// <summary>Command the incoming attack live (SPEC-020). A: 1 take command, 0 let it auto-resolve.</summary>
+        TakeCommand = 35,
+
+        /// <summary>Spend a live-battle ability. A: BattleAbility.</summary>
+        UseBattleAbility = 36,
     }
 
     /// <summary>
@@ -258,6 +264,16 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command TakeCommand(bool on)
+        {
+            return new Command(CommandKind.TakeCommand, on ? 1 : 0);
+        }
+
+        public static Command UseBattleAbility(Systems.BattleAbility ability)
+        {
+            return new Command(CommandKind.UseBattleAbility, (int)ability);
         }
 
         public static Command PlantSpy(Faction faction)

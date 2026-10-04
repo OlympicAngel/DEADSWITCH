@@ -240,6 +240,14 @@ namespace Deadswitch.Game.Audio
                     }
 
                     break;
+                case EventKind.BattleStarted:
+                    _battleUntil = Time.time + (float)_host.SecondsUntilTick(_host.Sim.State.BattleEndTick) + 2f;
+                    _nextBattleSound = Time.time;
+                    break;
+                case EventKind.BattleAbilityUsed:
+                    OneShot(_close[Random.Range(0, _close.Length)], 0.7f * master, 0.9f);
+                    OneShot(_far[Random.Range(0, _far.Length)], 0.5f * master, 1.2f);
+                    break;
                 case EventKind.RaidContact:
                     _battleUntil = Time.time + 6f;
                     _nextBattleSound = Time.time;

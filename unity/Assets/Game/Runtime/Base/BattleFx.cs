@@ -42,6 +42,45 @@ namespace Deadswitch.Game.Base
             }
         }
 
+        /// <summary>A pooled burst emitter (flash, fireball or dust): nothing emits until <see cref="Burst"/>.</summary>
+        public static ParticleSystem BurstEmitter(Transform parent, bool smoke)
+        {
+            Build();
+            ParticleSystem ps = New(smoke ? "Burst Smoke" : "Burst Fire", parent, Vector3.zero, smoke ? _smoke : _fire);
+            var main = ps.main;
+            main.loop = false;
+            main.prewarm = false;
+            main.maxParticles = 400;
+            main.startLifetime = smoke ? new ParticleSystem.MinMaxCurve(1.6f, 3.2f) : new ParticleSystem.MinMaxCurve(0.25f, 0.6f);
+            main.startSpeed = smoke ? new ParticleSystem.MinMaxCurve(0.4f, 1.6f) : new ParticleSystem.MinMaxCurve(1.5f, 5f);
+            main.startSize = smoke ? new ParticleSystem.MinMaxCurve(0.8f, 1.8f) : new ParticleSystem.MinMaxCurve(0.4f, 1.1f);
+            main.startColor = smoke ? new ParticleSystem.MinMaxGradient(new Color(0.12f, 0.11f, 0.1f, 0.7f), new Color(0.3f, 0.28f, 0.25f, 0.6f)) : new ParticleSystem.MinMaxGradient(new Color(1f, 0.55f, 0.2f, 1f), new Color(1f, 0.85f, 0.45f, 1f));
+            var emission = ps.emission;
+            emission.enabled = false;
+            var size = ps.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, smoke ? 0.5f : 1f), new Keyframe(1f, smoke ? 2.4f : 0.2f)));
+            var color = ps.colorOverLifetime;
+            color.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) }, new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0.6f, 0.4f), new GradientAlphaKey(0f, 1f) });
+            color.color = g;
+            ps.Play();
+            return ps;
+        }
+
+        /// <summary>Emits one burst (explosion, muzzle flash) at a world point.</summary>
+        public static void Burst(ParticleSystem ps, Vector3 world, int count, float scale)
+        {
+            var p = new ParticleSystem.EmitParams { position = world };
+            for (int i = 0; i < count; i++)
+            {
+                p.position = world + (Random.insideUnitSphere * 0.4f * scale);
+                p.velocity = (Random.insideUnitSphere + Vector3.up * 0.8f) * 2.5f * scale;
+                ps.Emit(p, 1);
+            }
+        }
+
         /// <summary>Flicker for a fire light: layered sines so it never pulses evenly.</summary>
         public static float Flicker(float time, float seed)
         {

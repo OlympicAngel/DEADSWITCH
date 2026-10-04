@@ -27,6 +27,10 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(warn.A, hit.A);
             Assert.True(sim.State.Slots[0].Level < 3);
             Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.MercyStarted && e.A == warn.A);
+            // live battle (SPEC-020): a siege with the handler present is commanded at the wall before it resolves
+            SimEvent battle = sim.Log.Events.First(e => e.Kind == EventKind.BattleStarted);
+            Assert.Equal(warn.A, battle.A);
+            Assert.True(battle.Tick < hit.Tick);
 
             // battle scars (SPEC-018): the breach leaves damage and wrecks; damage cuts output until repaired
             Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.FacilityScarred && e.A == warn.A);

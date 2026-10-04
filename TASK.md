@@ -1,3 +1,3 @@
 # TASK: none active
 
-- Last closed: F-035 Audio (2026-10-04). Next: F-036 demo + premium. All tuning/polish goes to F-099 (last).
+- Last closed: F-037 Live battles (2026-10-04). Next: F-028 corruption effects, then F-099 polish and balance (last).
