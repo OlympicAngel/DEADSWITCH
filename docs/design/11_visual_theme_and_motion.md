@@ -68,6 +68,11 @@ This brief is the style source for every 3D asset, render and preview. Read it a
 
 **How we build it (owner, 2026-10-04: procedural only, no imported assets):** procedural geometry (`src/Deadswitch.Art`) with real-world proportions and bevelled medium forms; a procedural PBR "salvage" material (world-space noise layers for macro variation, rust, chipped paint, dirt rising from the ground, soot, rain and rust run-off, wetness, edge wear and bump; gravel / soil / wet-mud ground) shared by Unity and the headless preview; soft shadows, AO, fog and warm practical lights. How-to: `docs/agents/environment-art.md`.
 
+### Sector map (owner brief 2026-10-04, SPEC-033)
+- A 2.5D map, not a radar plot: one fixed recon angle (about 47 degrees, no free camera) over low-relief ruined ground in the same salvage shader (arid ground mode), with the base's time-of-day light.
+- Sites are kit landmarks at map scale (`SectorLandmarks`), one silhouette per kind, faction beacons in faction colors; hazard zones are ground treatments at full size (glowing crater, quarantine camp, wreck field).
+- What the Hub knows is drawn, not built: faction territory tints, dashed routes (solid while a team is out), hatched fog of war over unscouted ground, fallout as drifting haze. The AI's estimates under the pins may flicker with corruption; effects intensity and reduced motion turn it off.
+
 ## Prototype palette
 
 All hex values are **proposed (tune)**. The alert meanings are locked in doc 10; these exact swatches are not.

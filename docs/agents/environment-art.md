@@ -19,5 +19,6 @@ Use for any 3D world asset (facilities, bunker, props, terrain dressing, lightin
   - Overview: `dotnet run --project src/Deadswitch.Cli -- art export --layout Generator:5,ServerRack:5,LifeSupport:5,BatteryBank:5,Turret:5,None:0 --out artifacts/basepreview/show.json`, then `node tools/basepreview/render.mjs --scene artifacts/basepreview/show.json --hour 12` (also `--hour 19` and `--hour 23`).
   - Close-up of one plot: add `--target x,y,z --dist 22 --w 900 --h 900` (slot positions: `HubScene.SlotPosition`).
   - District / tiers: `art export --tier 2 ...`.
+  - Sector map (SPEC-033): `art export --map --aspect 1 [--scouted 0,3] [--fallout 7] [--op 4] --out artifacts/basepreview/map.json`, then `render.mjs --scene artifacts/basepreview/map.json --hour 12` (`--markers 0` hides the preview's pins, `--bare 1` the whole overlay). For the screen: render at the plot size and pass it to `tools/uipreview/preview.mjs .../Map.uxml --img map-render=plot.png`.
 - Review checklist for every render: doc 11 avoid-list + anti-toy rules. Anything cartoon, toy-like, cube-like, blob-like, flat-colored, plastic or glowing-slab is a defect to fix before committing.
 - Budget check (fully upgraded base, 2026-10-03): ~200k triangles total; facilities 6-18k each, bunker ~42k, surroundings ~62k. Re-check on device when a facility exceeds ~60k triangles.

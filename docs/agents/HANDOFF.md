@@ -13,6 +13,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 
 ## v1.x systems (F-043 to F-054, all in the backlog and doc 10 corrections log)
 - Fourth faction Halcyon, chapters and fragments (STORY screen), alliances, sabotage, faction looks, cosmetic season track (SEASON screen from FULL GAME), verifiable runs (`Host/Online/RunVerifier`, CLI `verify --save`), adaptive enemies, luck swings, reactor, AI initiative with recall, starting regions, hazard zones and the fallout front (`Systems/HazardSystem`, SPEC-032). Save layout v29.
+- Sector map (F-057, SPEC-033): `Base/MapView` (map world on layer 30 at y -2000, render to texture), `Rendering/MapRender` (URP request; not covered by the compile check), overlay drawn as raw UI meshes in `MapScreen.DrawOverlay`. Editor checks: the render appears and follows the hour, pins sit on the landmarks and are tappable, overlay triangles are not culled, no frame hitch while the fallout haze drifts.
 - Play-mode checks for these: STORY/SEASON screens, map ALLY/SABOTAGE/RECALL controls, reactor model (`Facilities.Reactor`) and voice packs (`AudioDirector.BuildVoice`).
 
 ## Balance (latest, 2026-10-04)
