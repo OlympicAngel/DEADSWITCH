@@ -32,12 +32,12 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-025 | Art direction v3: realism pass against the toy/miniature look, day/night lighting cycle, rebuilt kit primitives (owner, 2026-10-04) | M2 | Done 2026-10-04 | doc 11, ADR-0007 |
 | F-027 | One-click Android dev build (Editor menu) | M5 | Done 2026-10-04 | unity/README |
 | F-028 | Corruption effects: unmanned-unit glitches, crisis ladder at Critical, ways to reduce it | M2 | Later | doc 03 s3-4 |
-| F-029 | Battle scars: raid damage persists on facilities and the yard until repaired; repair action | M4 | Later | doc 06 s3, doc 10 |
+| F-029 | Battle scars: raid damage persists on facilities and the yard until repaired; repair action | M4 | Ready | doc 06 s3, doc 10 |
 | F-030 | Full module tree: four fields x 8 nodes (32), exclusive pairs, Tier 2 nodes | M5 | Done 2026-10-04 | doc 03 s7, doc 10 |
 | F-031 | Outposts: small sites on the map that produce and can be raided | M5 | Later | doc 02 s7 |
 | F-032 | Intel: scouts, AI prediction, spies (double-agent risk) | M5 | Later | doc 05 s5, doc 10 |
 | F-033 | Player offense: raids and cyber warfare against factions | M5 | Later | doc 04 s8 |
-| F-034 | Living world: Warlord Ultimatum, dilemma events, faction interactions | M5 | Ready | doc 05 s3-4+s7, doc 10 s4 |
+| F-034 | Living world: Warlord Ultimatum, dilemma events, trade, world events, faction wars (SPEC-017) | M5 | Done 2026-10-04 | doc 05 s3-4+s7, doc 10 s4 |
 | F-035 | Audio pass: ambient dread, glitchy AI voice, silence before purge | M4 | Later | ROADMAP M4 |
 | F-036 | Free demo (Tier 1) + premium unlock, rewarded ads (convenience only) | M5 | Later | ADR-0006, doc 10 |
 | F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | Later | SPEC-014 |

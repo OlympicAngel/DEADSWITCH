@@ -54,6 +54,11 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("op-plus").RegisterCallback<ClickEvent>(_ => Step(1));
             _ui.Q("op-launch").RegisterCallback<ClickEvent>(_ => Run(Command.LaunchOp(_selected, _kind, _kind == OpKind.Hack ? _compute : _squad)));
             _ui.Q("site-claim").RegisterCallback<ClickEvent>(_ => Run(Command.ClaimOutpost(_selected)));
+            for (int g = 0; g <= (int)TradeGood.Compute; g++)
+            {
+                var good = (TradeGood)g;
+                _ui.Q("trade-" + g).RegisterCallback<ClickEvent>(_ => Run(Command.Trade(WorldSystem.Sites[_selected].Owner, good)));
+            }
 
             _host.Ticked += () =>
             {
@@ -149,7 +154,7 @@ namespace Deadswitch.Game.UI.Screens
                 case RejectReason.OpsBusy: return "Every team is already out. Wait for one to come back.";
                 case RejectReason.SiteCooldown: return "Nothing left there to take. Not yet.";
                 case RejectReason.NotClaimable: return "Only ruins we have cleared can hold an outpost.";
-                case RejectReason.NotEnoughFuel: return "Not enough fuel for the trip.";
+                case RejectReason.NotEnoughFuel: return "Not enough fuel.";
                 default: return Texts.Reason(reason);
             }
         }
@@ -184,8 +189,35 @@ namespace Deadswitch.Game.UI.Screens
                 _markers[i].Q<Label>().text = WorldSystem.Sites[i].Name + (st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
             }
 
+            bool world = s.WorldEvent != WorldEventKind.None && s.Tick < s.WorldEventUntilTick;
+            _ui.Q("map-event").EnableInClassList("is-hidden", !world);
+            if (world)
+            {
+                _ui.Q<Label>("map-event-text").text = LivingTexts.EventName(s.WorldEvent) + " // " + LivingTexts.EventEffect(s.WorldEvent, c).ToUpperInvariant();
+            }
+
             RefreshSheet(s, c);
+            RefreshTrade(s, c);
             RefreshOps();
+        }
+
+        private void RefreshTrade(GameState s, SimConfig c)
+        {
+            Faction owner = WorldSystem.Sites[_selected].Owner;
+            HeatLevel level = WorldSystem.Level(s.Heat[(int)owner]);
+            bool hostile = level == HeatLevel.Marked;
+            int left = System.Math.Max(0, c.Living.TradesPerDay - s.TradesToday[(int)owner]);
+            _ui.Q<Label>("trade-left").text = hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant();
+            for (int g = 0; g <= (int)TradeGood.Compute; g++)
+            {
+                var good = (TradeGood)g;
+                int price = LivingSystem.Price(s, c, owner, good);
+                bool payFuel = good == TradeGood.EnergyCells;
+                _ui.Q<Label>("trade-" + g + "-get").text = "+" + Fmt.Num(LivingSystem.Lot(c, good)) + " " + LivingTexts.Good(good);
+                _ui.Q<Label>("trade-" + g + "-pay").text = hostile ? "-" : Fmt.Num(price) + (payFuel ? " F" : " E");
+                bool afford = price >= 0 && (payFuel ? s.Fuel >= price : s.Energy >= price);
+                _ui.Q("trade-" + g).EnableInClassList("is-disabled", hostile || left == 0 || !afford);
+            }
         }
 
         private void RefreshSheet(GameState s, SimConfig c)

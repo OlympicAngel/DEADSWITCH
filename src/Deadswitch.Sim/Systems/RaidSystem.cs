@@ -24,7 +24,8 @@ namespace Deadswitch.Sim.Systems
             SimConfig c = ctx.Config;
 
             // Fixed draw count per tick so no branch can shift the stream.
-            bool spawnRoll = s.Rng.NextBelow((uint)c.Raid.MeanIntervalTicks) == 0;
+            int interval = LivingSystem.Active(s, WorldEventKind.DeadWeek) ? SimMath.PctFloor(c.Raid.MeanIntervalTicks, 100 + c.Living.DeadWeekIntervalPct) : c.Raid.MeanIntervalTicks;
+            bool spawnRoll = s.Rng.NextBelow((uint)System.Math.Max(1, interval)) == 0;
             int variance = (int)s.Rng.NextBelow((uint)((2 * c.Raid.VariancePct) + 1)) - c.Raid.VariancePct;
             int missRoll = (int)s.Rng.NextBelow(100);
             int estimateRoll = (int)s.Rng.NextBelow(2001) - 1000;
@@ -79,6 +80,14 @@ namespace Deadswitch.Sim.Systems
             Spawn(ctx, 0, (int)(SimMath.Hash((uint)s.Tick, (uint)s.NextRaidId ^ 0x9A26u) % 4), 0, ctx.Config.Threats.PurgeStrikeWarningMinutes, AttackKind.Purge);
         }
 
+        /// <summary>The Warlord Ultimatum's wave (F-034): a heavy Rustborn raid. Uses no RNG draws. Returns the attack id.</summary>
+        public static int SpawnWarlord(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            Spawn(ctx, 0, (int)(SimMath.Hash((uint)s.Tick, (uint)s.NextRaidId ^ 0x3A11u) % 4), 0, ctx.Config.Raid.WarningMinutes, AttackKind.Warlord);
+            return s.RaidId;
+        }
+
         /// <summary>
         /// Betrayal (SPEC-011): the AI lets a raid in at once at the given strength, with turrets offline against
         /// it. An incoming raid is the one it lets in. Uses no RNG draws. Returns the raid id.
@@ -114,7 +123,7 @@ namespace Deadswitch.Sim.Systems
             s.RaidArriveTick = s.Tick + warningMinutes;
             s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
             // the purge comes from the faction that marked us; the opening raid stays the fixed tutorial hit
-            s.RaidFaction = kind == AttackKind.Purge ? WorldSystem.Hottest(s) : WorldSystem.PickAttacker(s, c);
+            s.RaidFaction = kind == AttackKind.Purge ? WorldSystem.Hottest(s) : kind == AttackKind.Warlord ? Faction.Rustborn : WorldSystem.PickAttacker(s, c);
             if (fixedStrength <= 0)
             {
                 s.RaidStrength = WorldSystem.ScaleByHeat(s, c, s.RaidFaction, s.RaidStrength);
@@ -135,6 +144,10 @@ namespace Deadswitch.Sim.Systems
             else if (kind == AttackKind.Purge)
             {
                 s.RaidStrength = SimMath.PctFloor(s.RaidStrength, c.Threats.PurgeStrengthPct);
+            }
+            else if (kind == AttackKind.Warlord)
+            {
+                s.RaidStrength = SimMath.PctFloor(s.RaidStrength, c.Living.UltimatumStrengthPct);
             }
 
             int band = (int)CorruptionSystem.Band(c, s.CorruptionMilli);

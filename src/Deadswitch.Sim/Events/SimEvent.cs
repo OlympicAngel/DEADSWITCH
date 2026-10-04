@@ -173,6 +173,27 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Who sent the incoming attack. A: attack id, B: Faction.</summary>
         AttackerIdentified = 55,
+
+        /// <summary>Warlord Ultimatum (F-034). A: minutes to the deadline, B: energy asked, C: fuel asked.</summary>
+        UltimatumIssued = 56,
+
+        /// <summary>A: UltimatumOutcome, B: attack id when the wave came.</summary>
+        UltimatumResolved = 57,
+
+        /// <summary>A: DilemmaKind, B: minutes to answer.</summary>
+        DilemmaOffered = 58,
+
+        /// <summary>A: DilemmaKind, B: choice (0 take, 1 refuse), C: 1 if it expired, D: 1 if the hidden risk struck.</summary>
+        DilemmaResolved = 59,
+
+        /// <summary>A: Faction, B: TradeGood, C: amount got, D: price paid.</summary>
+        Traded = 60,
+
+        /// <summary>A: WorldEventKind, B: hours, C: faction that cooled (factions fight each other).</summary>
+        WorldEventStarted = 61,
+
+        /// <summary>A: WorldEventKind.</summary>
+        WorldEventEnded = 62,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

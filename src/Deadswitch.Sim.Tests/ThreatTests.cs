@@ -125,5 +125,31 @@ namespace Deadswitch.Sim.Tests
             Assert.True(sim.State.Heat[(int)Faction.Rustborn] > 0);
             Assert.Equal(1, back.B);
         }
+
+        [Fact]
+        public void WarlordUltimatum_FiresOnce_ForAHubStuckInTier1_AndTheWaveResolves()
+        {
+            var sim = new Simulation(31UL);
+            int day = sim.Config.Living.UltimatumDay;
+            sim.Run(((long)day + 4) * SimConfig.TicksPerDay);
+
+            Assert.Equal(UltimatumStage.Done, sim.State.Ultimatum);
+            Assert.Single(sim.Log.Events, e => e.Kind == EventKind.UltimatumIssued);
+            SimEvent end = sim.Log.Events.Single(e => e.Kind == EventKind.UltimatumResolved);
+            Assert.Equal((int)UltimatumOutcome.Wave, end.A);
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.RaidResolved && e.A == end.B);
+
+            // trade: a hard daily cap per faction
+            sim.State.Heat[(int)Faction.Rustborn] = 0;
+            sim.State.Energy = 400;
+            sim.State.Compute = 0;
+            for (int i = 0; i < sim.Config.Living.TradesPerDay; i++)
+            {
+                Assert.True(sim.Execute(Command.Trade(Faction.Rustborn, TradeGood.Compute)).Accepted);
+                sim.State.Compute = 0;
+            }
+
+            Assert.Equal(RejectReason.TradeCap, sim.Execute(Command.Trade(Faction.Rustborn, TradeGood.Compute)).Reason);
+        }
     }
 }

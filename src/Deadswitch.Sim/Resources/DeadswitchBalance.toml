@@ -681,6 +681,136 @@ attacker_weight_vanguard_tier2 = 40
 attacker_weight_church = 10
 
 # --------------------------------------------------------------------------------------------------
+# Living world: Warlord Ultimatum, dilemmas, trade, world events (doc 05, doc 10 s4-5). Heat and corruption are milli. All (tune).
+[living]
+
+# Still in Tier 1 on this day: the Warlord Ultimatum arrives (doc 10: about 10). [1..1000]
+ultimatum_day = 10
+
+# Hours to pay before the wave comes. [1..1000]
+ultimatum_hours = 24
+
+# Ultimatum price: energy. [0..100000]
+ultimatum_energy = 400
+
+# Ultimatum price: fuel. [0..100000]
+ultimatum_fuel = 100
+
+# Warlord wave strength as % of a normal raid. [1..10000]
+ultimatum_strength_pct = 250
+
+# Rustborn heat a paid ultimatum takes off. [0..100000]
+ultimatum_paid_heat_drop = 10000
+
+# Hour of the first dilemma. [1..10000]
+dilemma_first_hour = 36
+
+# Hours between dilemmas (plus jitter). [1..10000]
+dilemma_every_hours = 30
+
+# Up to this many extra hours between dilemmas. [0..10000]
+dilemma_jitter_hours = 12
+
+# An unanswered dilemma is refused after this long. [1..1000]
+dilemma_expire_hours = 12
+
+# Trader's offer: fuel you get. [0..10000]
+trader_fuel = 80
+
+# Trader's offer: energy you pay. [0..100000]
+trader_energy = 300
+
+# Chance the trader's offer is a trap (paid, nothing back). [0..100]
+trader_trap_pct = 25
+
+# Refugees taken in. [0..100]
+refugee_people = 3
+
+# Chance a spy is among them. [0..100]
+refugee_spy_pct = 30
+
+# Heat a spy adds to the hottest faction. [0..100000]
+refugee_spy_heat = 15000
+
+# AI shortcut: energy now. [0..100000]
+shortcut_energy = 400
+
+# AI shortcut: compute now. [0..100000]
+shortcut_compute = 40
+
+# AI shortcut: corruption it costs. [0..100000]
+shortcut_corruption = 4000
+
+# Vanguard deserters taken in. [0..100]
+deserter_people = 2
+
+# Vanguard heat for sheltering deserters. [0..100000]
+deserter_heat = 12000
+
+# Vanguard heat taken off for handing them back. [0..100000]
+deserter_return_heat_drop = 10000
+
+# Church signal: corruption a clean broadcast scrubs. [0..100000]
+church_clean_data = 5000
+
+# Chance the broadcast hides something. [0..100]
+church_taint_pct = 30
+
+# Corruption a tainted broadcast adds. [0..100000]
+church_taint_corruption = 6000
+
+# Fuel per trade. [1..10000]
+trade_fuel_lot = 20
+
+# Base energy price of a fuel lot. [0..100000]
+trade_fuel_price = 100
+
+# Energy per trade (energy cells). [1..100000]
+trade_energy_lot = 200
+
+# Base fuel price of an energy lot. [0..10000]
+trade_energy_price = 40
+
+# Compute per trade. [1..10000]
+trade_compute_lot = 20
+
+# Base energy price of a compute lot. [0..100000]
+trade_compute_price = 150
+
+# Price % by the seller's heat level (Cold, Watched, Hunted; Marked will not trade). doc 10: 0.8-1.5. [3..3 items, each 1..1000]
+trade_price_pct_by_level = [80, 100, 150]
+
+# Trades per faction per day. [0..100]
+trades_per_day = 3
+
+# Day of the first world event. [1..1000]
+world_event_first_day = 2
+
+# Hours from one world event's start to the next. [1..10000]
+world_event_every_hours = 72
+
+# How long a world event lasts. [1..10000]
+world_event_hours = 24
+
+# Signal Storm: hack odds minus this. [0..100]
+signal_storm_odds_pts = 20
+
+# Signal Storm: extra corruption per hour. [0..100000]
+signal_storm_corruption_milli = 150
+
+# Supply Window: operation loot +%. [0..1000]
+supply_window_loot_pct = 50
+
+# Supply Window: trade prices -%. [0..99]
+supply_window_price_pct = 25
+
+# Dead Week: time between attacks +%. [0..1000]
+dead_week_interval_pct = 100
+
+# Factions fight each other: at each world event the hottest cools by this, a rival warms by half. [0..100000]
+faction_war_heat = 10000
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

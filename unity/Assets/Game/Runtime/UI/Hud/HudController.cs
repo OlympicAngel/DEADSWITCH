@@ -60,6 +60,7 @@ namespace Deadswitch.Game.UI.Hud
         private Base.BaseScreen _baseScreen;
         private OpeningFlow _opening;
         private VisualElement _reportChip;
+        private VisualElement _dispatchChip;
         private int _chipRaid;
 
         public ScreenRouter Router { get; private set; }
@@ -120,6 +121,9 @@ namespace Deadswitch.Game.UI.Hud
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
             Router.Register(new MapScreen());
+            Router.Register(new DispatchScreen(Router));
+            _dispatchChip = Q<VisualElement>("dispatch-chip");
+            _dispatchChip.RegisterCallback<ClickEvent>(_ => Router.Show("dispatch"));
             Q<Label>("feed-id").text = "DRONE_RECON_" + ((_host.Sim.Seed % 89) + 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));
@@ -180,6 +184,11 @@ namespace Deadswitch.Game.UI.Hud
                 _chipRaid = e.A;
                 _reportChip.Q<Label>("report-chip-label").text = "AFTER-ACTION // " + (BattleReport.Build(_host.Sim.Log.Events, e.A) is BattleReport br ? Names.Attack(br.Kind) : "RAID") + " " + e.A;
                 _reportChip.RemoveFromClassList("is-hidden");
+            }
+
+            if (e.Kind == EventKind.UltimatumIssued || e.Kind == EventKind.DilemmaOffered)
+            {
+                Feedback.Alert();
             }
 
             if (e.Kind == EventKind.RaidWarning)
@@ -264,6 +273,15 @@ namespace Deadswitch.Game.UI.Hud
                 _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // EST " + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
             }
 
+            // dispatch chip (F-034): an ultimatum outranks a dilemma
+            bool ultimatum = s.Ultimatum == UltimatumStage.Issued;
+            bool dilemma = s.Dilemma != DilemmaKind.None;
+            _dispatchChip.EnableInClassList("is-hidden", !ultimatum && !dilemma);
+            _dispatchChip.EnableInClassList("hud-dispatch--red", ultimatum);
+            Q<VisualElement>("dispatch-pip").EnableInClassList("ds-pip--red", ultimatum);
+            Q<VisualElement>("dispatch-pip").EnableInClassList("ds-pip--amber", !ultimatum);
+            Q<Label>("dispatch-title").text = ultimatum ? "WARLORD ULTIMATUM" : "DILEMMA // " + LivingTexts.DilemmaName(s.Dilemma);
+
             UpdateTimers();
         }
 
@@ -303,6 +321,11 @@ namespace Deadswitch.Game.UI.Hud
             if (s.RaidId != 0)
             {
                 _raidTime.text = Fmt.Countdown(SecondsUntil(s.RaidArriveTick));
+            }
+
+            if (s.Ultimatum == UltimatumStage.Issued || s.Dilemma != DilemmaKind.None)
+            {
+                Q<Label>("dispatch-time").text = Fmt.Countdown(SecondsUntil(s.Ultimatum == UltimatumStage.Issued ? s.UltimatumDeadlineTick : s.DilemmaUntilTick));
             }
 
             BuildJob next = null;

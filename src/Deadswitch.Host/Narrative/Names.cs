@@ -48,6 +48,7 @@ namespace Deadswitch.Host.Narrative
             {
                 case AttackKind.Siege: return "SIEGE";
                 case AttackKind.Purge: return "PURGE";
+                case AttackKind.Warlord: return "WARLORD WAVE";
                 default: return "RAID";
             }
         }

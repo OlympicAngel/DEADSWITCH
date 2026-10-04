@@ -45,7 +45,19 @@
 .map-op__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-amber); }
 
 .map-sheet { margin-top: var(--s-3); padding-top: var(--s-3); padding-bottom: var(--s-3); }
-.map-sheet.is-hidden { display: none; }
+.map-sheet.map-event { align-items: center; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3); border-left-width: 6px; border-left-color: var(--c-amber); background-color: var(--c-panel-sunken); }
+.map-event__pip { margin-right: var(--s-3); }
+.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-amber); }
+
+.map-trade { margin-top: var(--s-3); }
+.map-trade__row { margin-top: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-trade__item:last-child { border-right-width: 0; }
+.map-trade__item:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-trade__item.is-disabled { opacity: 0.38; }
+.map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.is-hidden { display: none; }
 .map-sheet__facts { margin-top: var(--s-2); }
 .map-kv { margin-right: var(--s-6); }
 .map-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); margin-top: var(--s-1); }
@@ -65,6 +77,30 @@
 .map-odds__value { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 2px; color: var(--c-phosphor); }
 .map-actions { margin-top: var(--s-3); }
 .map-claim { margin-left: var(--s-3); }
-.map-claim.is-hidden { display: none; }
+.map-claim.map-event { align-items: center; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3); border-left-width: 6px; border-left-color: var(--c-amber); background-color: var(--c-panel-sunken); }
+.map-event__pip { margin-right: var(--s-3); }
+.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-amber); }
+
+.map-trade { margin-top: var(--s-3); }
+.map-trade__row { margin-top: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-trade__item:last-child { border-right-width: 0; }
+.map-trade__item:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-trade__item.is-disabled { opacity: 0.38; }
+.map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.is-hidden { display: none; }
 .map-reason { margin-top: var(--s-2); }
+.map-event { align-items: center; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3); border-left-width: 6px; border-left-color: var(--c-amber); background-color: var(--c-panel-sunken); }
+.map-event__pip { margin-right: var(--s-3); }
+.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-amber); }
+
+.map-trade { margin-top: var(--s-3); }
+.map-trade__row { margin-top: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-trade__item:last-child { border-right-width: 0; }
+.map-trade__item:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-trade__item.is-disabled { opacity: 0.38; }
+.map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
 .is-hidden { display: none; }

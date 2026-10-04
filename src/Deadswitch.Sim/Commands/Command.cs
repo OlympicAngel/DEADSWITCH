@@ -87,6 +87,15 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Set up an outpost on cleared ruins. A: site.</summary>
         ClaimOutpost = 26,
+
+        /// <summary>No args. Pay the Warlord Ultimatum.</summary>
+        PayUltimatum = 27,
+
+        /// <summary>Answer the pending dilemma. A: 0 take the offer, 1 refuse.</summary>
+        ResolveDilemma = 28,
+
+        /// <summary>Buy one lot from a faction. A: Faction, B: TradeGood.</summary>
+        Trade = 29,
     }
 
     /// <summary>
@@ -234,6 +243,21 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command PayUltimatum()
+        {
+            return new Command(CommandKind.PayUltimatum);
+        }
+
+        public static Command ResolveDilemma(int choice)
+        {
+            return new Command(CommandKind.ResolveDilemma, choice);
+        }
+
+        public static Command Trade(Faction faction, TradeGood good)
+        {
+            return new Command(CommandKind.Trade, (int)faction, (int)good);
         }
 
         public static Command SetPresence(bool away)

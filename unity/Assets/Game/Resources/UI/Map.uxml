@@ -26,6 +26,12 @@
       </ui:VisualElement>
     </ui:VisualElement>
 
+    <!-- world event (F-034): what the wastes are doing right now -->
+    <ui:VisualElement name="map-event" class="row map-event">
+      <ui:VisualElement class="ds-pip ds-pip--amber map-event__pip" />
+      <ui:Label name="map-event-text" text="SUPPLY WINDOW // LOOT +50% // TRADERS -25%" class="map-event__text grow" />
+    </ui:VisualElement>
+
     <!-- tactical plot: Hub at center, range rings, sites -->
     <ui:VisualElement name="map-plot" class="map-plot">
       <ui:VisualElement class="map-ring map-ring--1" />
@@ -88,6 +94,18 @@
         <ui:VisualElement class="grow map-odds">
           <ui:Label name="op-odds" text="AI ODDS 62%" class="map-odds__value" />
           <ui:Label name="op-cost" text="FUEL 16 // BACK IN 4 H" class="ds-label t-dim" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <!-- trade with the site's owner (F-034, doc 10 s5): price by their heat; Marked factions refuse -->
+      <ui:VisualElement name="map-trade" class="map-trade">
+        <ui:VisualElement class="row">
+          <ui:Label text="TRADE" class="ds-label grow" />
+          <ui:Label name="trade-left" text="3/3 TODAY // COLD x0.8" class="ds-label t-dim" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row map-trade__row">
+          <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 E" class="map-trade__pay" /></ui:VisualElement>
+          <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 F" class="map-trade__pay" /></ui:VisualElement>
+          <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 E" class="map-trade__pay" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement class="row map-actions">

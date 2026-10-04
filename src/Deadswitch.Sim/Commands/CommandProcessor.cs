@@ -54,6 +54,12 @@ namespace Deadswitch.Sim.Commands
                     return WorldSystem.Launch(ctx, command);
                 case CommandKind.ClaimOutpost:
                     return WorldSystem.Claim(ctx, command);
+                case CommandKind.PayUltimatum:
+                    return LivingSystem.PayUltimatum(ctx, command);
+                case CommandKind.ResolveDilemma:
+                    return LivingSystem.ResolveDilemma(ctx, command);
+                case CommandKind.Trade:
+                    return LivingSystem.Trade(ctx, command);
                 case CommandKind.ActivateShield:
                     return ThreatSystem.ActivateShield(ctx, command);
                 case CommandKind.SetTributeOrder:

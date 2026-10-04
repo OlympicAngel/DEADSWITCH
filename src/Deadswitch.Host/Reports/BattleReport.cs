@@ -220,7 +220,7 @@ namespace Deadswitch.Host.Reports
         private string SummaryLine()
         {
             string gate = Names.Gate(ContactGate);
-            string what = Kind == AttackKind.Siege ? "Siege" : Kind == AttackKind.Purge ? "Purge" : "Raid";
+            string what = Kind == AttackKind.Siege ? "Siege" : Kind == AttackKind.Purge ? "Purge" : Kind == AttackKind.Warlord ? "Warlord wave" : "Raid";
             switch (Outcome)
             {
                 case RaidOutcome.Tribute:

@@ -128,6 +128,24 @@
 }
 
 .hud-report.is-hidden { display: none; }
+
+/* Dispatch chip (F-034): an ultimatum (red) or a dilemma (amber) waiting; tap opens DISPATCH */
+.hud-dispatch {
+    flex-direction: row;
+    align-items: center;
+    min-height: 88px;
+    margin-top: var(--s-2);
+    padding: 0 var(--s-4);
+    border-width: 2px;
+    border-color: var(--c-amber);
+    background-color: rgba(40, 30, 12, 0.88);
+}
+.hud-dispatch.is-hidden { display: none; }
+.hud-dispatch--red { border-color: var(--c-red); background-color: rgba(44, 16, 14, 0.9); }
+.hud-dispatch__pip { margin-right: var(--s-3); }
+.hud-dispatch__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
+.hud-dispatch--red .hud-dispatch__title { color: var(--c-red); }
+.hud-dispatch__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); }
 .hud-report__pip { width: 12px; height: 12px; margin-right: var(--s-3); background-color: var(--c-phosphor); }
 .hud-report__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-phosphor); }
 

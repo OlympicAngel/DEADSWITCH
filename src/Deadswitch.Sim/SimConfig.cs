@@ -34,6 +34,7 @@ namespace Deadswitch.Sim
         public PeopleChoiceConfig PeopleChoices = new PeopleChoiceConfig();
         public ThreatConfig Threats = new ThreatConfig();
         public WorldConfig World = new WorldConfig();
+        public LivingConfig Living = new LivingConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -134,6 +135,7 @@ namespace Deadswitch.Sim
             PeopleChoices.Visit(visitor);
             Threats.Visit(visitor);
             World.Visit(visitor);
+            Living.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

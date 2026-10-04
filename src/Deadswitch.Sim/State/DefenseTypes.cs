@@ -25,6 +25,9 @@ namespace Deadswitch.Sim.State
 
         /// <summary>The end of the warning ladder: combined losses.</summary>
         Purge = 2,
+
+        /// <summary>Warlord Ultimatum wave (F-034): a heavy Rustborn raid.</summary>
+        Warlord = 3,
     }
 
     /// <summary>Purge warning ladder (doc 10 s4). Stored in saves and events: never renumber.</summary>

@@ -74,6 +74,13 @@
               <ui:Label name="next-time" text="12:30" class="hud-next__time" />
             </ui:VisualElement>
           </ui:VisualElement>
+          <ui:VisualElement name="dispatch-chip" class="hud-dispatch is-hidden">
+            <ui:VisualElement name="dispatch-pip" class="ds-pip ds-pip--amber hud-dispatch__pip" />
+            <ui:VisualElement>
+              <ui:Label name="dispatch-title" text="DILEMMA // REFUGEES" class="hud-dispatch__title" />
+              <ui:Label name="dispatch-time" text="11:02:40" class="hud-dispatch__time" />
+            </ui:VisualElement>
+          </ui:VisualElement>
           <ui:VisualElement name="report-chip" class="hud-report is-hidden">
             <ui:VisualElement class="ds-pip hud-report__pip" />
             <ui:Label name="report-chip-label" text="AFTER-ACTION // RAID 3" class="hud-report__label" />

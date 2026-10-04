@@ -188,3 +188,29 @@ heat.marked.1 | heat_marked | neutral | {faction} has marked us. A purge is only
 outpost.claimed.1 | outpost_claimed | neutral | Outpost raised at {site}. Power and fuel will flow home.
 outpost.lost.1 | outpost_lost | neutral | We lost {site}. {faction} took it back.
 outpost.lost.2 | outpost_lost | cold | {site} is gone. {faction}. We knew it was exposed.
+
+# living world (F-034)
+warlord.wave.1 | warlord_wave | neutral | The Warlord's wave. {gate}. Estimate {est}. {min} minutes. This is the big one.
+warlord.wave.2 | warlord_wave | cold | Kess kept her word. {gate}, strength {est}, {min} minutes.
+ultimatum.issued.1 | ultimatum_issued | neutral | Mother Kess sent terms. Pay, or her whole clan comes. {hours} hours.
+ultimatum.issued.2 | ultimatum_issued | bold | Kess thinks we are small. {hours} hours to prove her right or wrong.
+ultimatum.paid.1 | ultimatum_paid | neutral | Paid. The Rustborn stand down. For now.
+ultimatum.paid.2 | ultimatum_paid | cold | Paid. Cheaper than walls. Not cheaper than growing.
+ultimatum.outgrown.1 | ultimatum_outgrown | neutral | We outgrew her threat. Kess has withdrawn the terms.
+dilemma.trader.1 | dilemma_trader | neutral | A trader at the gate. Fuel for energy, today only. I cannot vouch for him. {hours} hours.
+dilemma.trader.2 | dilemma_trader | cold | A trader. Good price. Too good. Your call, {hours} hours.
+dilemma.refugees.1 | dilemma_refugees | neutral | Refugees at the gate. Hands we need. One of them may not be what they seem. {hours} hours.
+dilemma.refugees.2 | dilemma_refugees | warm | People outside. Cold, hungry. We could take them in. {hours} hours.
+dilemma.shortcut.1 | dilemma_shortcut | neutral | I found a shortcut. Power and compute now. It costs me some clarity. {hours} hours.
+dilemma.shortcut.2 | dilemma_shortcut | bold | Let me take the shortcut. I will handle what it does to me. {hours} hours.
+dilemma.deserters.1 | dilemma_deserters | neutral | Vanguard deserters want in. Arm them and Vale will notice. Or send them back. {hours} hours.
+dilemma.deserters.2 | dilemma_deserters | cold | Two trained soldiers. Vale wants them back. Pick. {hours} hours.
+dilemma.church.1 | dilemma_church | neutral | The Church is broadcasting clean archives. Or something wearing them. {hours} hours.
+dilemma.church.2 | dilemma_church | bold | The Prophet is singing on our band. Let me listen. {hours} hours.
+dilemma.trap.1 | dilemma_trap | neutral | The trader is gone. So is our energy. No fuel came.
+dilemma.trap.2 | dilemma_trap | cold | A trap. I said I could not vouch for him.
+dilemma.spy.1 | dilemma_spy | neutral | One of the refugees was a spy. Someone out there knows our walls now.
+dilemma.taint.1 | dilemma_taint | neutral | The broadcast had a hook in it. I am... less clean than I was.
+event.storm.1 | event_storm | neutral | Signal storm rolling in. {hours} hours. Hacks will struggle; so will I. {faction} is busy with a rival.
+event.supply.1 | event_supply | neutral | Supply window. {hours} hours of loose cargo and cheap traders. {faction} is fighting elsewhere.
+event.deadweek.1 | event_deadweek | neutral | Dead week. The wastes go quiet for {hours} hours. {faction} is licking wounds.

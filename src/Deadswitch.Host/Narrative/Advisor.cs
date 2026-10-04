@@ -208,7 +208,7 @@ namespace Deadswitch.Host.Narrative
                     _warnKind = (AttackKind)e.D;
                     break;
                 case EventKind.RaidVector:
-                    Enqueue(new Pending(_warnKind == AttackKind.Siege ? "siege_warning" : _warnKind == AttackKind.Purge ? "purge_strike" : "raid_warning", Priority.Urgent)
+                    Enqueue(new Pending(_warnKind == AttackKind.Siege ? "siege_warning" : _warnKind == AttackKind.Purge ? "purge_strike" : _warnKind == AttackKind.Warlord ? "warlord_wave" : "raid_warning", Priority.Urgent)
                         .With("gate", Names.Gate((RaidGate)e.B))
                         .With("est", _warnEstimate.ToString())
                         .With("min", _warnMinutes.ToString()));
@@ -358,6 +358,31 @@ namespace Deadswitch.Host.Narrative
                     else if (e.C == 1 || e.C == 2)
                     {
                         Enqueue(new Pending(e.C == 1 ? "purge_fizzled" : "purge_paid", Priority.Normal));
+                    }
+
+                    break;
+                case EventKind.UltimatumIssued:
+                    Enqueue(new Pending("ultimatum_issued", Priority.Urgent).With("hours", (e.A / 60).ToString()));
+                    break;
+                case EventKind.UltimatumResolved when e.A != (int)UltimatumOutcome.Wave:
+                    Enqueue(new Pending(e.A == (int)UltimatumOutcome.Paid ? "ultimatum_paid" : "ultimatum_outgrown", Priority.Normal));
+                    break;
+                case EventKind.DilemmaOffered:
+                    string[] offer = { string.Empty, "dilemma_trader", "dilemma_refugees", "dilemma_shortcut", "dilemma_deserters", "dilemma_church" };
+                    if (e.A > 0 && e.A < offer.Length)
+                    {
+                        Enqueue(new Pending(offer[e.A], Priority.Urgent).With("hours", (e.B / 60).ToString()));
+                    }
+
+                    break;
+                case EventKind.DilemmaResolved when e.D == 1:
+                    Enqueue(new Pending(e.A == (int)DilemmaKind.Trader ? "dilemma_trap" : e.A == (int)DilemmaKind.Refugees ? "dilemma_spy" : "dilemma_taint", Priority.Urgent));
+                    break;
+                case EventKind.WorldEventStarted:
+                    string[] world = { string.Empty, "event_storm", "event_supply", "event_deadweek" };
+                    if (e.A > 0 && e.A < world.Length)
+                    {
+                        Enqueue(new Pending(world[e.A], Priority.Normal).With("hours", e.B.ToString()).With("faction", Names.Faction((Faction)e.C)));
                     }
 
                     break;

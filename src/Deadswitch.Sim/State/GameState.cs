@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012).</summary>
-        public const int LayoutVersion = 9;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017).</summary>
+        public const int LayoutVersion = 10;
 
         public long Tick;
 
@@ -177,7 +177,7 @@ namespace Deadswitch.Sim.State
         public bool TributeOrder;
 
         /// <summary>Faction heat (milli, 100000 = 100), indexed by <see cref="Faction"/>.</summary>
-        public int[] Heat = new int[3];
+        public int[] Heat = new int[Systems.WorldSystem.FactionCount];
 
         /// <summary>Faction that sent the incoming attack.</summary>
         public Faction RaidFaction;
@@ -189,6 +189,29 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Operations in the field, in launch order.</summary>
         public List<Operation> Ops = new List<Operation>();
+
+        public UltimatumStage Ultimatum;
+
+        /// <summary>When the Warlord's deadline runs out (moves on by an hour while fairness rules hold the wave back).</summary>
+        public long UltimatumDeadlineTick;
+
+        /// <summary>The dilemma waiting for an answer (None when none).</summary>
+        public DilemmaKind Dilemma;
+
+        public long DilemmaUntilTick;
+
+        /// <summary>When the next dilemma is offered (0 = not scheduled yet).</summary>
+        public long NextDilemmaTick;
+
+        public WorldEventKind WorldEvent;
+
+        public long WorldEventUntilTick;
+
+        /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
+        public long NextWorldEventTick;
+
+        /// <summary>Trades made today, indexed by <see cref="Faction"/>.</summary>
+        public int[] TradesToday = new int[Systems.WorldSystem.FactionCount];
 
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
@@ -428,6 +451,28 @@ namespace Deadswitch.Sim.State
                 foreach (Operation op in Ops)
                 {
                     op.Visit(v);
+                }
+            }
+
+            if (v.Version >= 10)
+            {
+                int ultimatum = (int)Ultimatum;
+                v.Int(ref ultimatum);
+                Ultimatum = (UltimatumStage)ultimatum;
+                v.Long(ref UltimatumDeadlineTick);
+                int dilemma = (int)Dilemma;
+                v.Int(ref dilemma);
+                Dilemma = (DilemmaKind)dilemma;
+                v.Long(ref DilemmaUntilTick);
+                v.Long(ref NextDilemmaTick);
+                int worldEvent = (int)WorldEvent;
+                v.Int(ref worldEvent);
+                WorldEvent = (WorldEventKind)worldEvent;
+                v.Long(ref WorldEventUntilTick);
+                v.Long(ref NextWorldEventTick);
+                for (int f = 0; f < TradesToday.Length; f++)
+                {
+                    v.Int(ref TradesToday[f]);
                 }
             }
 

@@ -108,6 +108,18 @@ namespace Deadswitch.Sim.Commands
         NotClaimable = 34,
 
         NotEnoughFuel = 35,
+
+        /// <summary>No ultimatum or dilemma is waiting.</summary>
+        NothingPending = 36,
+
+        /// <summary>A Marked faction will not trade.</summary>
+        FactionHostile = 37,
+
+        /// <summary>That faction has traded enough today.</summary>
+        TradeCap = 38,
+
+        /// <summary>No room left to store what is on offer.</summary>
+        StorageFull = 39,
     }
 
     public readonly struct CommandResult

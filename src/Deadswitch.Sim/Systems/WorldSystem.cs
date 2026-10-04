@@ -151,7 +151,8 @@ namespace Deadswitch.Sim.Systems
                     return SimMath.Clamp(55 + (squad * 12) - (defense / 4), 10, 95);
                 case OpKind.Hack:
                     int counter = Modules.Has(s, ModuleNode.CY2A) ? m.CounterIntrusionPts : 0;
-                    return SimMath.Clamp(50 + counter + ((compute - d.Cyber) * 50 / System.Math.Max(1, d.Cyber)), 5, 95);
+                    int storm = LivingSystem.Active(s, WorldEventKind.SignalStorm) ? c.Living.SignalStormOddsPts : 0;
+                    return SimMath.Clamp(50 + counter - storm + ((compute - d.Cyber) * 50 / System.Math.Max(1, d.Cyber)), 5, 95);
                 default:
                     int power = squad * (c.World.StrengthPerPerson + (Modules.Has(s, ModuleNode.WF6) ? m.VeteranStrength : 0));
                     int sims = Modules.Has(s, ModuleNode.WF3) ? m.CombatSimsPts : 0;
@@ -411,6 +412,11 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
+            if (LivingSystem.Active(s, WorldEventKind.SupplyWindow))
+            {
+                amount = SimMath.PctFloor(amount, 100 + c.Living.SupplyWindowLootPct);
+            }
+
             int got;
             switch (resource)
             {
@@ -434,7 +440,7 @@ namespace Deadswitch.Sim.Systems
             }
         }
 
-        private static void AddHeat(SimContext ctx, Faction f, int milli)
+        public static void AddHeat(SimContext ctx, Faction f, int milli)
         {
             GameState s = ctx.State;
             int i = (int)f;
