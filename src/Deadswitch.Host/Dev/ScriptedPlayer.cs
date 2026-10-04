@@ -39,6 +39,7 @@ namespace Deadswitch.Host.Dev
                 sim.Execute(Command.SetGarrison(0));
             }
 
+            Care(sim);
             Research(sim);
             TierGates gates = Modules.Gates(s, sim.Config);
             if (gates.Build && gates.ModuleRestored && gates.PeopleAvailable)
@@ -93,11 +94,36 @@ namespace Deadswitch.Host.Dev
             }
         }
 
-        /// <summary>Restores the first available module (catalog order: trunk first) while energy is comfortable.</summary>
+        /// <summary>Keeps the Hub healthy: repairs scars, clears wrecks, flushes a core that slides into Unstable.</summary>
+        private static void Care(Simulation sim)
+        {
+            GameState s = sim.State;
+            SimConfig c = sim.Config;
+            if (CorruptionSystem.Band(c, s.CorruptionMilli) >= CorruptionBand.Unstable && s.Energy >= c.Glitch.FlushEnergy * 2)
+            {
+                sim.Execute(Command.FlushCore());
+            }
+
+            for (int i = 0; i < s.Slots.Count; i++)
+            {
+                FacilitySlot f = s.Slots[i];
+                if (f.Damage > 0 && ScarSystem.RepairCost(c, f) * 2 <= s.Energy && sim.Execute(Command.Repair(i)).Accepted)
+                {
+                    break;
+                }
+            }
+
+            if (s.Wreckage >= 2 && c.Scars.ClearEnergyPerWreck * s.Wreckage * 3 <= s.Energy)
+            {
+                sim.Execute(Command.ClearWreckage());
+            }
+        }
+
+        /// <summary>Restores the first available module (catalog order: trunk first) while energy is comfortable and the core is calm.</summary>
         private static void Research(Simulation sim)
         {
             GameState s = sim.State;
-            if (s.ResearchNode != 0 || s.Energy * 2 < Economy.Flows(s, sim.Config).EnergyCap)
+            if (s.ResearchNode != 0 || s.Energy * 2 < Economy.Flows(s, sim.Config).EnergyCap || CorruptionSystem.Band(sim.Config, s.CorruptionMilli) >= CorruptionBand.Unstable)
             {
                 return;
             }

@@ -93,7 +93,7 @@ warning_minutes = 20
 base_strength = 20
 
 # Tall-poppy scaling: strength += coeff/1000 x power^exponent. [0..1000000]
-power_coeff_permille = 1000
+power_coeff_permille = 1400
 
 # Exponent on the power rating (doc 10: 0.7 = 700). [0..2000]
 power_exponent_permille = 700

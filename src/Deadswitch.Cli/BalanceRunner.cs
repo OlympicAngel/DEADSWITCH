@@ -106,6 +106,13 @@ namespace Deadswitch.Cli
                 bool session = profile == "active" || (profile == "casual" && InSession(minuteOfDay));
                 if (profile == "casual" && sim.State.Away == session)
                 {
+                    if (!session)
+                    {
+                        // a casual handler closes the app prepared (doc 01 s9): turtle with the full garrison
+                        sim.Execute(Command.SetGarrison(Math.Min(sim.Config.Defense.GarrisonSlots, sim.State.People / 4)));
+                        sim.Execute(Command.SetPosture(Posture.Turtle));
+                    }
+
                     sim.Execute(Command.SetPresence(!session));
                 }
 
