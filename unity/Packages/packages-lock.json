@@ -1,5 +1,21 @@
 {
   "dependencies": {
+    "com.deadswitch.art": {
+      "version": "file:../../src/Deadswitch.Art",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.deadswitch.sim": "0.1.0"
+      }
+    },
+    "com.deadswitch.host": {
+      "version": "file:../../src/Deadswitch.Host",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.deadswitch.sim": "0.1.0"
+      }
+    },
     "com.deadswitch.sim": {
       "version": "file:../../src/Deadswitch.Sim",
       "depth": 0,

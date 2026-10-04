@@ -1,0 +1,1 @@
+{"nodes": [{"id": "src_deadswitch_host_resources_advisorlines", "label": "Advisor Lines Data", "file_type": "code", "source_file": "src/Deadswitch.Host/Resources/AdvisorLines.txt", "rationale": "The raw text database for all advisor dialogue triggers and tones."}], "edges": [], "hyperedges": []}

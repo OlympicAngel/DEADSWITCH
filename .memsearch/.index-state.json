@@ -1,0 +1,18 @@
+{
+  "collection": "ms_deadswitch_631841a2",
+  "failed_files": [],
+  "indexed_chunks": 65,
+  "indexed_files": 1,
+  "last_completed_at": "2026-10-04T16:54:27.209239Z",
+  "last_started_at": "2026-10-04T16:52:28.675287Z",
+  "last_success_at": "2026-10-04T16:54:27.209239Z",
+  "milvus_uri": "~/.memsearch/milvus.db",
+  "operation": "index",
+  "paths": [
+    "D:/coding/DEADSWITCH/.memsearch/memory"
+  ],
+  "schema_version": 1,
+  "status": "ok",
+  "total_files": 1,
+  "updated_at": "2026-10-04T16:54:27.209239Z"
+}
