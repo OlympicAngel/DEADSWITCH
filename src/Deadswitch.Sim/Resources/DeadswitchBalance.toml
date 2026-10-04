@@ -457,6 +457,97 @@ rogue_chance_pct = 35
 rogue_energy = 80
 
 # --------------------------------------------------------------------------------------------------
+# Threat signatures and protection tools (SPEC-015, doc 04 s3-5, doc 10 s4). All (tune).
+[threats]
+
+# Tier 2+: a siege is due this often (doc 10: about every 2 days). [1..10000]
+siege_interval_hours = 48
+
+# Siege interval varies by up to this share either way. [0..90]
+siege_jitter_pct = 25
+
+# Warning before a siege lands (longer than a raid). [1..10000]
+siege_warning_minutes = 120
+
+# Siege strength as a share of raid strength. [1..10000]
+siege_strength_pct = 140
+
+# Siege loot as a share of raid loot (sieges break buildings, not stores). [0..1000]
+siege_loot_pct = 30
+
+# A breached siege downgrades one facility per this much breach (at least one). [1..1000]
+siege_damage_per_breach_permille = 400
+
+# After M1: a virus is due this often (doc 10: about every 3 days). [1..10000]
+virus_interval_hours = 72
+
+# Virus interval varies by up to this share either way. [0..90]
+virus_jitter_pct = 25
+
+# Compute the firewall must burn to stop a virus. [0..100000]
+virus_strength = 40
+
+# Added virus strength per tier above 1. [0..100000]
+virus_strength_per_tier = 20
+
+# Corruption added by an infection (milli). [0..100000]
+virus_corruption = 8000
+
+# An infection locks one restored field module for this long. [0..1000]
+virus_lock_hours = 24
+
+# After an infection the next raid estimate is scaled by this (false intel). [1..1000]
+false_intel_pct = 50
+
+# Tier 2+: a purge ladder starts this often (rare) until faction heat drives it (F-019). [1..100000]
+purge_interval_hours = 168
+
+# Rumor stage length before staging is confirmed. [1..1000]
+purge_rumor_hours = 12
+
+# Staging confirmed: hours before the strike (doc 10: 24). [1..1000]
+purge_staging_hours = 24
+
+# Ultimatum: final hours before the strike (doc 10: 6). [1..1000]
+purge_ultimatum_hours = 6
+
+# Chance a purge rumor is wrong and fizzles. [0..100]
+rumor_false_pct = 30
+
+# Contact warning when the purge force moves in. [1..1000]
+purge_strike_warning_minutes = 30
+
+# Purge strength as a share of raid strength. [1..10000]
+purge_strength_pct = 220
+
+# A full purge breach also kills this share of the population (scaled by breach). [0..100]
+purge_population_pct = 15
+
+# Facilities downgraded by a breached purge. [0..10]
+purge_downgrades = 2
+
+# Ultimatum tribute: energy. [0..100000]
+purge_tribute_energy = 800
+
+# Ultimatum tribute: compute. [0..100000]
+purge_tribute_compute = 60
+
+# Vacation shield charges at the start of a run (max 1). [0..1]
+shield_start_charges = 1
+
+# Game days to regain a used shield charge. [1..1000]
+shield_regen_days = 30
+
+# Longest a vacation shield holds; it ends when the handler returns. [1..1000]
+shield_max_hours = 72
+
+# Tribute standing order: share of stored energy paid to send a raid away. [0..100]
+tribute_pct = 25
+
+# Tribute standing order: minimum payment (no tribute if energy is below it). [0..100000]
+tribute_min_energy = 60
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

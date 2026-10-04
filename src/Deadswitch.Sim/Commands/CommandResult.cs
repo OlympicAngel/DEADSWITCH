@@ -91,6 +91,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Loyalty is Steady: a crackdown has no reason.</summary>
         LoyaltyHolds = 29,
+
+        /// <summary>No vacation shield charge left.</summary>
+        NoShield = 30,
+
+        /// <summary>The shield cannot rise with an attack incoming or a purge staged.</summary>
+        ThreatActive = 31,
     }
 
     public readonly struct CommandResult

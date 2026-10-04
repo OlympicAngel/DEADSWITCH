@@ -72,6 +72,15 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Crackdown (only while loyalty is Strained or worse).</summary>
         Crackdown = 21,
+
+        /// <summary>Raise the vacation shield (SPEC-015 rule 5).</summary>
+        ActivateShield = 22,
+
+        /// <summary>Tribute standing order. A: 1 on / 0 off.</summary>
+        SetTributeOrder = 23,
+
+        /// <summary>Pay the purge ultimatum's tribute.</summary>
+        PayPurgeTribute = 24,
     }
 
     /// <summary>
@@ -194,6 +203,21 @@ namespace Deadswitch.Sim.Commands
         public static Command Crackdown()
         {
             return new Command(CommandKind.Crackdown);
+        }
+
+        public static Command ActivateShield()
+        {
+            return new Command(CommandKind.ActivateShield);
+        }
+
+        public static Command SetTributeOrder(bool on)
+        {
+            return new Command(CommandKind.SetTributeOrder, on ? 1 : 0);
+        }
+
+        public static Command PayPurgeTribute()
+        {
+            return new Command(CommandKind.PayPurgeTribute);
         }
 
         public static Command SetPresence(bool away)

@@ -91,6 +91,7 @@ namespace Deadswitch.Sim
             }
 
             ClimaxSystem.Tick(ctx);
+            ThreatSystem.Tick(ctx);
             RaidSystem.Tick(ctx);
             AiSystem.Tick(ctx);
         }

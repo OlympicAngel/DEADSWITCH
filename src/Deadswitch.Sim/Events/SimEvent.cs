@@ -9,7 +9,7 @@ namespace Deadswitch.Sim.Events
     {
         None = 0,
 
-        /// <summary>A raid is incoming. A: raid id, B: minutes until arrival, C: the AI's strength estimate (may be wrong).</summary>
+        /// <summary>An attack is incoming. A: attack id, B: minutes until arrival, C: the AI's strength estimate (may be wrong), D: AttackKind (schema 8+).</summary>
         RaidWarning = 1,
 
         /// <summary>The AI core lost power: no facility runs, regrowth pauses. No payload.</summary>
@@ -134,6 +134,24 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Loyalty status changed. A: new LoyaltyStatus, B: previous.</summary>
         LoyaltyChanged = 42,
+
+        /// <summary>A siege or purge downgraded a facility (SPEC-015). A: attack id, B: slot, C: FacilityKind, D: new level.</summary>
+        FacilityDamaged = 43,
+
+        /// <summary>A virus hit the core (SPEC-015 rule 3). A: 0 burned off / 1 infected, B: compute burned, C: locked ModuleNode (0 none), D: corruption added (milli).</summary>
+        VirusStruck = 44,
+
+        /// <summary>Purge ladder moved (doc 10 s4). A: PurgeStage (0 = ended), B: minutes to the strike, C: end reason (1 rumor false, 2 tribute paid, 3 struck).</summary>
+        PurgeLadder = 45,
+
+        /// <summary>Tribute paid. A: attack id (0 = purge ultimatum), B: energy, C: compute.</summary>
+        TributePaid = 46,
+
+        /// <summary>Vacation shield. A: 1 raised / 0 down, B: minutes it can still hold.</summary>
+        ShieldChanged = 47,
+
+        /// <summary>Tribute standing order toggled. A: 1 on / 0 off.</summary>
+        TributeOrderSet = 48,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

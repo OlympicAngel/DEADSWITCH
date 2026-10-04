@@ -1,0 +1,103 @@
+using System.Linq;
+using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.Events;
+using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
+using Xunit;
+
+namespace Deadswitch.Sim.Tests
+{
+    /// <summary>SPEC-015: each signature has its own losses; the purge always climbs the ladder; the shield holds.</summary>
+    public class ThreatTests
+    {
+        [Fact]
+        public void Siege_BreaksABuilding_AndStartsMercy()
+        {
+            var sim = new Simulation(21UL);
+            sim.State.Tier = 2;
+            sim.State.Slots[0].Level = 3;
+            sim.State.NextSiegeTick = 1;
+            for (int h = 0; h < 96 && !sim.Log.Events.Any(e => e.Kind == EventKind.FacilityDamaged); h++)
+            {
+                sim.Run(SimConfig.TicksPerHour);
+            }
+
+            SimEvent warn = sim.Log.Events.First(e => e.Kind == EventKind.RaidWarning && e.D == (int)AttackKind.Siege);
+            SimEvent hit = sim.Log.Events.First(e => e.Kind == EventKind.FacilityDamaged);
+            Assert.Equal(warn.A, hit.A);
+            Assert.True(sim.State.Slots[0].Level < 3);
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.MercyStarted && e.A == warn.A);
+        }
+
+        [Fact]
+        public void Virus_IsBurnedByComputeReserve_OrLocksAModuleAndPoisonsIntel()
+        {
+            var sim = new Simulation(22UL);
+            sim.State.Modules |= (1UL << (int)ModuleNode.M1) | (1UL << (int)ModuleNode.LG1);
+            sim.Run(1);
+            sim.State.Compute = 100;
+            sim.State.NextVirusTick = sim.State.Tick + 1;
+            sim.Run(1);
+            Assert.Equal(0, sim.Log.Events.Last(e => e.Kind == EventKind.VirusStruck).A);
+            Assert.Equal(0, sim.State.LockedModule);
+
+            sim.State.Compute = 0;
+            int corruption = sim.State.CorruptionMilli;
+            sim.State.NextVirusTick = sim.State.Tick + 1;
+            sim.Run(1);
+            Assert.Equal(1, sim.Log.Events.Last(e => e.Kind == EventKind.VirusStruck).A);
+            Assert.Equal((int)ModuleNode.LG1, sim.State.LockedModule);
+            Assert.False(Modules.Has(sim.State, ModuleNode.LG1));
+            Assert.True(Modules.IsRestored(sim.State, ModuleNode.LG1));
+            Assert.True(sim.State.FalseIntel);
+            Assert.True(sim.State.CorruptionMilli > corruption);
+        }
+
+        [Fact]
+        public void Purge_ClimbsTheLadder_AndTributeCallsItOff()
+        {
+            var sim = new Simulation(23UL);
+            var t = sim.Config.Threats;
+            sim.State.Tier = 2;
+            sim.Run(1);
+            sim.State.NextPurgeTick = sim.State.Tick + 1;
+            sim.Run(1);
+            Assert.Equal(PurgeStage.Rumor, sim.State.PurgeStage);
+            sim.State.PurgeReal = true;
+            Assert.Equal(RejectReason.NoTarget, sim.Execute(Command.PayPurgeTribute()).Reason);
+
+            sim.Run(t.PurgeRumorHours * SimConfig.TicksPerHour);
+            Assert.Equal(PurgeStage.Staging, sim.State.PurgeStage);
+            sim.Run((t.PurgeStagingHours - t.PurgeUltimatumHours) * SimConfig.TicksPerHour);
+            Assert.Equal(PurgeStage.Ultimatum, sim.State.PurgeStage);
+
+            sim.State.Energy = t.PurgeTributeEnergy;
+            sim.State.Compute = t.PurgeTributeCompute;
+            Assert.True(sim.Execute(Command.PayPurgeTribute()).Accepted);
+            Assert.Equal(PurgeStage.None, sim.State.PurgeStage);
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.PurgeLadder && e.A == 0 && e.C == 2);
+        }
+
+        [Fact]
+        public void Shield_HoldsOffAttacksWhileAway_AndDropsOnReturn()
+        {
+            var sim = new Simulation(24UL);
+            sim.Run(sim.Config.Opening.ProtectionHours * SimConfig.TicksPerHour);
+            while (sim.State.RaidId != 0)
+            {
+                sim.Run(1);
+            }
+
+            Assert.True(sim.Execute(Command.ActivateShield()).Accepted);
+            Assert.Equal(RejectReason.NoChange, sim.Execute(Command.ActivateShield()).Reason);
+            sim.Execute(Command.SetPresence(true));
+            int warnings = sim.Log.Events.Count(e => e.Kind == EventKind.RaidWarning);
+            sim.Run(48 * SimConfig.TicksPerHour);
+            Assert.Equal(warnings, sim.Log.Events.Count(e => e.Kind == EventKind.RaidWarning));
+
+            sim.Execute(Command.SetPresence(false));
+            Assert.Equal(0, sim.State.ShieldUntilTick);
+            Assert.Equal(RejectReason.NoShield, sim.Execute(Command.ActivateShield()).Reason);
+        }
+    }
+}

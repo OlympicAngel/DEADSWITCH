@@ -58,7 +58,14 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Trunk module that gates leaving each tier (index = current tier - 1).</summary>
         private static readonly ModuleNode[] TierModule = { ModuleNode.M1, ModuleNode.M2, ModuleNode.M3 };
 
+        /// <summary>The module is restored and its effect is active (a virus lock suspends it, SPEC-015).</summary>
         public static bool Has(GameState s, ModuleNode node)
+        {
+            return IsRestored(s, node) && !(s.LockedModule == (int)node && s.Tick < s.LockedUntilTick);
+        }
+
+        /// <summary>The module is restored (locked or not): research, pairs, prerequisites and tier gates use this.</summary>
+        public static bool IsRestored(GameState s, ModuleNode node)
         {
             return node != ModuleNode.None && (s.Modules & (1UL << (int)node)) != 0;
         }
@@ -91,17 +98,17 @@ namespace Deadswitch.Sim.Systems
                 return RejectReason.InvalidArgument;
             }
 
-            if (Has(s, node))
+            if (IsRestored(s, node))
             {
                 return RejectReason.AlreadyRestored;
             }
 
-            if (Has(s, d.Pair))
+            if (IsRestored(s, d.Pair))
             {
                 return RejectReason.Excluded;
             }
 
-            if (s.Tier < d.Tier || (d.Prereq != ModuleNode.None && !Has(s, d.Prereq)))
+            if (s.Tier < d.Tier || (d.Prereq != ModuleNode.None && !IsRestored(s, d.Prereq)))
             {
                 return RejectReason.Locked;
             }
@@ -211,7 +218,7 @@ namespace Deadswitch.Sim.Systems
             ModuleNode module = TierModule[i];
             int people = c.Tier.PeopleCostBase[i] + (levels / c.Tier.PeopleCostPerLevels);
             bool build = levels >= c.Tier.LevelsToAdvance[i] && net >= c.Tier.NetEnergyToAdvance[i];
-            return new TierGates(build, levels, c.Tier.LevelsToAdvance[i], net, c.Tier.NetEnergyToAdvance[i], module, Has(s, module), people, s.People - s.Garrison > people);
+            return new TierGates(build, levels, c.Tier.LevelsToAdvance[i], net, c.Tier.NetEnergyToAdvance[i], module, IsRestored(s, module), people, s.People - s.Garrison > people);
         }
 
         public static CommandResult TierUp(SimContext ctx, Command cmd)

@@ -186,6 +186,11 @@ namespace Deadswitch.Sim.Commands
 
             s.Away = away;
             ctx.Emit(EventKind.PresenceSet, cmd.A);
+            if (!away)
+            {
+                ThreatSystem.OnReturn(ctx);
+            }
+
             return CommandResult.Ok;
         }
     }

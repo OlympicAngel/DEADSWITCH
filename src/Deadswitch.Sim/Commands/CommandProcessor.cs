@@ -50,6 +50,12 @@ namespace Deadswitch.Sim.Commands
                     return ClimaxSystem.Purge(ctx, command);
                 case CommandKind.CancelProject:
                     return ClimaxSystem.CancelProject(ctx, command);
+                case CommandKind.ActivateShield:
+                    return ThreatSystem.ActivateShield(ctx, command);
+                case CommandKind.SetTributeOrder:
+                    return ThreatSystem.SetTributeOrder(ctx, command);
+                case CommandKind.PayPurgeTribute:
+                    return ThreatSystem.PayPurgeTribute(ctx, command);
                 case CommandKind.ForcedLabor:
                     return PeopleChoices.ForcedLabor(ctx, command);
                 case CommandKind.NeuralCleanse:

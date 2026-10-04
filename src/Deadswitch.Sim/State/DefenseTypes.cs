@@ -15,6 +15,27 @@ namespace Deadswitch.Sim.State
         Evacuate = 3,
     }
 
+    /// <summary>Kind of incoming attack (SPEC-015, doc 04 s3). Stored in saves and events: never renumber.</summary>
+    public enum AttackKind
+    {
+        Raid = 0,
+
+        /// <summary>Bombardment: breaks buildings rather than looting.</summary>
+        Siege = 1,
+
+        /// <summary>The end of the warning ladder: combined losses.</summary>
+        Purge = 2,
+    }
+
+    /// <summary>Purge warning ladder (doc 10 s4). Stored in saves and events: never renumber.</summary>
+    public enum PurgeStage
+    {
+        None = 0,
+        Rumor = 1,
+        Staging = 2,
+        Ultimatum = 3,
+    }
+
     /// <summary>How a raid ended. Stored in events: never renumber.</summary>
     public enum RaidOutcome
     {
@@ -23,6 +44,9 @@ namespace Deadswitch.Sim.State
         Breached = 2,
         Missed = 3,
         Lockdown = 4,
+
+        /// <summary>A tribute standing order paid it to leave (SPEC-015 rule 6).</summary>
+        Tribute = 5,
     }
 
     /// <summary>Where a raid hits the Hub (SPEC-004 rule 5). Stored in saves and events: never renumber.</summary>

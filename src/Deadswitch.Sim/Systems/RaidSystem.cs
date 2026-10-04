@@ -4,9 +4,9 @@ using Deadswitch.Sim.State;
 namespace Deadswitch.Sim.Systems
 {
     /// <summary>
-    /// Raid lifecycle (SPEC-001): spawn -> warning with the AI's estimate -> resolution against defense,
-    /// loot and casualties scaled by the breach, loss ledger, mercy window; gates and the AI's gate report
-    /// (SPEC-004). Exactly four RNG draws per tick.
+    /// Attack lifecycle (SPEC-001, SPEC-015): spawn -> warning with the AI's estimate -> resolution against
+    /// defense, losses by signature (raid: loot; siege: building downgrades; purge: everything) scaled by the
+    /// breach, loss ledger, mercy window; gates and the AI's gate report (SPEC-004). Exactly four RNG draws per tick.
     /// </summary>
     public static class RaidSystem
     {
@@ -42,8 +42,16 @@ namespace Deadswitch.Sim.Systems
             // SPEC-009: the opening raid comes on cue; nothing else before the protection window ends.
             bool opening = c.Opening.Enabled && c.Raid.MaxPerDay > 0 && s.NextRaidId == 1 && s.Tick == c.Opening.RaidAtMinute;
             bool protectedNow = c.Opening.Enabled && s.Tick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
-            if (opening || (spawnRoll && !protectedNow && s.RaidsToday < MaxPerDay(s, c) && s.Tick >= s.MercyUntilTick))
+            if (opening || (spawnRoll && !protectedNow && !ThreatSystem.Shielded(s) && s.RaidsToday < MaxPerDay(s, c) && s.Tick >= s.MercyUntilTick))
             {
+                if (!opening && ThreatSystem.SiegeDue(s))
+                {
+                    // a due siege takes the next attack slot (SPEC-015 rule 2)
+                    s.NextSiegeTick = 0;
+                    Spawn(ctx, estimateRoll, missRoll, 0, c.Threats.SiegeWarningMinutes, AttackKind.Siege);
+                    return;
+                }
+
                 Spawn(ctx, estimateRoll, missRoll, opening ? c.Opening.RaidStrength : 0, c.Raid.WarningMinutes);
             }
         }
@@ -62,6 +70,13 @@ namespace Deadswitch.Sim.Systems
         {
             int[] extra = c.Tier.ExtraRaidsPerDay;
             return c.Raid.MaxPerDay <= 0 ? 0 : c.Raid.MaxPerDay + extra[System.Math.Min(s.Tier, extra.Length) - 1];
+        }
+
+        /// <summary>The purge force moves in at the end of the warning ladder (SPEC-015 rule 4). Uses no RNG draws.</summary>
+        public static void SpawnPurge(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            Spawn(ctx, 0, (int)(SimMath.Hash((uint)s.Tick, (uint)s.NextRaidId ^ 0x9A26u) % 4), 0, ctx.Config.Threats.PurgeStrikeWarningMinutes, AttackKind.Purge);
         }
 
         /// <summary>
@@ -83,26 +98,42 @@ namespace Deadswitch.Sim.Systems
             return s.RaidId;
         }
 
-        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll, int fixedStrength, int warningMinutes)
+        private static void Spawn(SimContext ctx, int estimateRoll, int gateRoll, int fixedStrength, int warningMinutes, AttackKind kind = AttackKind.Raid)
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
             s.RaidId = s.NextRaidId++;
             s.RaidsToday++;
+            s.RaidKind = kind;
             s.RaidArriveTick = s.Tick + warningMinutes;
             s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
+            if (kind == AttackKind.Siege)
+            {
+                s.RaidStrength = SimMath.PctFloor(s.RaidStrength, c.Threats.SiegeStrengthPct);
+            }
+            else if (kind == AttackKind.Purge)
+            {
+                s.RaidStrength = SimMath.PctFloor(s.RaidStrength, c.Threats.PurgeStrengthPct);
+            }
 
             int band = (int)CorruptionSystem.Band(c, s.CorruptionMilli);
             int errorPct = c.Raid.EstimateErrorPctByBand[band];
             long estimate = (long)s.RaidStrength * ((100_000L + (errorPct * estimateRoll)) / 1000) / 100;
             s.RaidEstimate = (int)(estimate < 1 ? 1 : estimate);
+            if (s.FalseIntel)
+            {
+                // a virus fed the AI bad data (SPEC-015 rule 3)
+                s.RaidEstimate = System.Math.Max(1, SimMath.PctFloor(s.RaidEstimate, c.Threats.FalseIntelPct));
+                s.FalseIntel = false;
+            }
+
             if (ClimaxSystem.Silenced(s))
             {
                 // A silenced AI predicts nothing (SPEC-011 rule 3).
                 s.RaidEstimate = 0;
             }
 
-            ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate);
+            ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate, (int)kind);
             ReportGate(ctx, gateRoll);
             AiSystem.OnRaidWarning(ctx);
         }
@@ -164,6 +195,14 @@ namespace Deadswitch.Sim.Systems
             SimConfig c = ctx.Config;
             int id = s.RaidId;
 
+            if (ThreatSystem.TryStandingTribute(ctx))
+            {
+                ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Tribute, s.RaidStrength, 0);
+                Record(ctx, id, 0);
+                ClearIncoming(s);
+                return;
+            }
+
             int strength = SimMath.PctFloor(s.RaidStrength, 100 + variance);
             if (Defense.Unprepared(s))
             {
@@ -193,16 +232,29 @@ namespace Deadswitch.Sim.Systems
             // Breach share in permille: how much of the raid got through.
             int breach = (int)(((long)(strength - defense) * 1000) / strength);
             int lootPct = s.Posture == Posture.Evacuate ? c.Defense.EvacuateLootPct : 100;
+            if (s.RaidKind == AttackKind.Siege)
+            {
+                lootPct = SimMath.PctFloor(lootPct, c.Threats.SiegeLootPct);
+            }
 
             int energy = Loot(s.Energy, c.Raid.LootPctOfEnergy, breach, lootPct, c.Raid.LootCap);
             int compute = Loot(s.Compute, c.Raid.ComputeLootPct, breach, lootPct, c.Raid.ComputeLootCap);
-            int casualties = s.Posture == Posture.Evacuate ? 0 : (int)((long)s.Garrison * c.Defense.CasualtyPct * breach / 100_000);
+            int defenders = s.Posture == Posture.Evacuate ? 0 : (int)((long)s.Garrison * c.Defense.CasualtyPct * breach / 100_000);
+            int civilians = 0;
+            if (s.RaidKind == AttackKind.Purge && s.Posture != Posture.Evacuate)
+            {
+                // a purge also kills people who were never on the wall (SPEC-015 rule 4), never below the floor
+                civilians = (int)((long)(s.People - s.Garrison) * c.Threats.PurgePopulationPct * breach / 100_000);
+                civilians = System.Math.Min(civilians, System.Math.Max(0, s.People - s.Garrison - c.PeopleChoices.MinPeople));
+            }
+
+            int casualties = defenders + civilians;
             int populationBefore = s.People;
 
             s.Energy -= energy;
             s.Compute -= compute;
             s.People -= casualties;
-            s.Garrison -= casualties;
+            s.Garrison -= defenders;
 
             ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Breached, strength, defense);
             if (energy > 0)
@@ -220,7 +272,18 @@ namespace Deadswitch.Sim.Systems
                 ctx.Emit(EventKind.LossLine, id, (int)LossResource.People, casualties);
             }
 
-            if (populationBefore > 0 && (long)casualties * 100 > (long)populationBefore * c.Raid.DevastatingPopLossPct)
+            int downgrades = 0;
+            if (s.RaidKind == AttackKind.Siege)
+            {
+                downgrades = ThreatSystem.Downgrade(ctx, id, System.Math.Max(1, breach / c.Threats.SiegeDamagePerBreachPermille));
+            }
+            else if (s.RaidKind == AttackKind.Purge)
+            {
+                downgrades = ThreatSystem.Downgrade(ctx, id, c.Threats.PurgeDowngrades);
+            }
+
+            // devastating loss (doc 10 s4): a Hub building downgraded, or too many people lost
+            if (downgrades > 0 || (populationBefore > 0 && (long)casualties * 100 > (long)populationBefore * c.Raid.DevastatingPopLossPct))
             {
                 s.MercyUntilTick = s.Tick + (c.Raid.MercyHours * SimConfig.TicksPerHour);
                 ctx.Emit(EventKind.MercyStarted, id, (int)(s.MercyUntilTick - s.Tick));
@@ -270,6 +333,7 @@ namespace Deadswitch.Sim.Systems
             s.RaidGate = RaidGate.None;
             s.RaidGateReported = RaidGate.None;
             s.BetrayalRaidId = 0;
+            s.RaidKind = AttackKind.Raid;
         }
     }
 }

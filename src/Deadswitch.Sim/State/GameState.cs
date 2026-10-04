@@ -10,7 +10,7 @@ namespace Deadswitch.Sim.State
     public sealed class GameState
     {
         /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012).</summary>
-        public const int LayoutVersion = 7;
+        public const int LayoutVersion = 8;
 
         public long Tick;
 
@@ -138,6 +138,41 @@ namespace Deadswitch.Sim.State
         /// <summary>The next surge can be ordered from this tick.</summary>
         public long SurgeReadyTick;
 
+        /// <summary>Kind of the incoming attack (SPEC-015).</summary>
+        public AttackKind RaidKind;
+
+        /// <summary>Next siege / virus / purge-ladder due tick (0 = not scheduled yet).</summary>
+        public long NextSiegeTick;
+
+        public long NextVirusTick;
+
+        public long NextPurgeTick;
+
+        public PurgeStage PurgeStage;
+
+        /// <summary>When the staged purge strikes (0 when no ladder runs).</summary>
+        public long PurgeAtTick;
+
+        /// <summary>False rumors fizzle before staging.</summary>
+        public bool PurgeReal;
+
+        /// <summary>Module locked by a virus, and until when.</summary>
+        public int LockedModule;
+
+        public long LockedUntilTick;
+
+        /// <summary>The next raid estimate is false (virus).</summary>
+        public bool FalseIntel;
+
+        public int ShieldCharges;
+
+        /// <summary>Vacation shield holds while away until this tick (0 = down).</summary>
+        public long ShieldUntilTick;
+
+        public long ShieldNextChargeTick;
+
+        public bool TributeOrder;
+
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
 
@@ -156,6 +191,7 @@ namespace Deadswitch.Sim.State
             People = config.People.Start;
             OverrideCharges = config.Override.StartCharges;
             OverrideNextChargeTick = config.Override.RegenMinutes;
+            ShieldCharges = config.Threats.ShieldStartCharges;
 
             for (int i = 0; i < config.Hub.Slots; i++)
             {
@@ -325,6 +361,28 @@ namespace Deadswitch.Sim.State
                 v.Int(ref LoyaltyMilli);
                 v.Long(ref SurgeUntilTick);
                 v.Long(ref SurgeReadyTick);
+            }
+
+            if (v.Version >= 8)
+            {
+                int kind = (int)RaidKind;
+                v.Int(ref kind);
+                RaidKind = (AttackKind)kind;
+                v.Long(ref NextSiegeTick);
+                v.Long(ref NextVirusTick);
+                v.Long(ref NextPurgeTick);
+                int stage = (int)PurgeStage;
+                v.Int(ref stage);
+                PurgeStage = (PurgeStage)stage;
+                v.Long(ref PurgeAtTick);
+                v.Bool(ref PurgeReal);
+                v.Int(ref LockedModule);
+                v.Long(ref LockedUntilTick);
+                v.Bool(ref FalseIntel);
+                v.Int(ref ShieldCharges);
+                v.Long(ref ShieldUntilTick);
+                v.Long(ref ShieldNextChargeTick);
+                v.Bool(ref TributeOrder);
             }
         }
 

@@ -32,6 +32,7 @@ namespace Deadswitch.Sim
         public OpeningConfig Opening = new OpeningConfig();
         public ClimaxConfig Climax = new ClimaxConfig();
         public PeopleChoiceConfig PeopleChoices = new PeopleChoiceConfig();
+        public ThreatConfig Threats = new ThreatConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -130,6 +131,7 @@ namespace Deadswitch.Sim
             Opening.Visit(visitor);
             Climax.Visit(visitor);
             PeopleChoices.Visit(visitor);
+            Threats.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);
@@ -220,6 +222,11 @@ namespace Deadswitch.Sim
             if (slots > 64)
             {
                 problems.Add("hub.slots plus every tier.slots_added must not exceed 64.");
+            }
+
+            if (Threats.PurgeUltimatumHours >= Threats.PurgeStagingHours)
+            {
+                problems.Add("threats.purge_ultimatum_hours must be below purge_staging_hours.");
             }
 
             if (Climax.CancelToPct >= Project.ImminentFrom)
