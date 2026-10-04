@@ -14,6 +14,7 @@ namespace Deadswitch.Host.Narrative
                 case FacilityKind.LifeSupport: return "LIFE SUPPORT";
                 case FacilityKind.BatteryBank: return "BATTERY BANK";
                 case FacilityKind.Turret: return "TURRET";
+                case FacilityKind.Reactor: return "REACTOR";
                 default: return "EMPTY SLOT";
             }
         }

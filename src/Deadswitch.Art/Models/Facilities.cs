@@ -38,6 +38,9 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.Turret:
                     Turret(b, m, level, seed);
                     break;
+                case FacilityKind.Reactor:
+                    Reactor(b, m, level, seed);
+                    break;
             }
 
             b.Pop();
@@ -236,6 +239,92 @@ namespace Deadswitch.Art.Models
             }
 
             Beacon(b, m, new Vector3(2.0f, 3.1f, 0.25f));
+        }
+
+        // ---------- Reactor (SPEC-029): containment drum and dome, cooling tower, coolant loop, control room ----------
+        private static void Reactor(MeshBuilder b, Model m, int level, uint seed)
+        {
+            var rng = new ArtRandom(seed + 9);
+            b.BoxOn(0f, 0, 0.2f, 6.0f, 0.22f, 5.8f, Mat.Concrete, 0.05f);
+
+            // containment: a stained concrete drum on a stepped base, banded in steel, under a shallow dome
+            Vector3 core = new Vector3(-0.85f, 0.22f, 0.95f);
+            b.Frustum(core, 1.75f, 1.7f, 0.35f, 20, Mat.ConcreteDark, 0.05f);
+            b.Frustum(core + new Vector3(0, 0.35f, 0), 1.5f, 1.45f, 3.0f, 20, Mat.Concrete, 0.04f);
+            foreach (float y in new[] { 0.9f, 1.9f, 2.9f })
+            {
+                b.Frustum(core + new Vector3(0, y, 0), 1.53f, 1.52f, 0.12f, 20, Mat.DarkSteel, 0.01f, false);
+            }
+
+            b.Frustum(core + new Vector3(0, 0.55f, 0), 1.535f, 1.53f, 0.22f, 20, Mat.PaintRed, 0.01f, false);
+            b.Sphere(core + new Vector3(0, 3.35f, 0), new Vector3(1.45f, 0.85f, 1.45f), 6, 20, Mat.ConcreteDark, 0f, 0.5f);
+            b.Frustum(core + new Vector3(0, 4.1f, 0), 0.3f, 0.26f, 0.35f, 10, Mat.DarkSteel, 0.02f);
+            Shapes.Lamp(b, m, core + new Vector3(0, 4.5f, 0), Mat.LampAmber, Model.Amber, 1.0f, 4f, LightRole.Status, 0.1f);
+
+            // personnel airlock and a ladder up the drum
+            b.BoxOn(core.X + 0.2f, 0.22f, core.Z - 1.55f, 1.0f, 2.0f, 0.5f, Mat.DarkSteel, 0.04f);
+            b.Box(new Vector3(core.X + 0.2f, 1.2f, core.Z - 1.81f), new Vector3(0.7f, 1.6f, 0.04f), Mat.OliveSteel, 0.02f);
+            Props.Stencil(b, "RX1", new Vector3(core.X - 0.03f, 2.0f, core.Z - 1.81f), 0.06f, Mat.PaintWhite);
+            KitParts.Ladder(b, new Vector3(core.X - 1.48f, 0.22f, core.Z - 0.3f), 3.3f, 90f, true);
+
+            // cooling tower: hyperbolic concrete shell, streaked
+            Vector3 tower = new Vector3(1.85f, 0.22f, 1.75f);
+            b.Frustum(tower, 1.05f, 0.62f, 2.3f, 18, Mat.Concrete, 0.03f);
+            b.Frustum(tower + new Vector3(0, 2.3f, 0), 0.62f, 0.8f, 1.4f, 18, Mat.Concrete, 0.03f, true, Mat.Char);
+            b.Frustum(tower + new Vector3(0, 3.7f, 0), 0.84f, 0.83f, 0.1f, 18, Mat.ConcreteDark, 0.01f, true, Mat.Char);
+            b.Frustum(tower + new Vector3(0, 3.79f, 0), 0.72f, 0.72f, 0.02f, 18, Mat.Char, 0f);
+            for (int i = 0; i < 8; i++)
+            {
+                float a = MeshBuilder.Deg(i * 45f);
+                b.Strut(tower + new Vector3((float)Math.Cos(a) * 1.15f, 0f, (float)Math.Sin(a) * 1.15f), tower + new Vector3((float)Math.Cos(a) * 0.95f, 0.45f, (float)Math.Sin(a) * 0.95f), 0.06f, Mat.ConcreteDark);
+            }
+
+            // primary coolant loop: drum to heat exchanger to tower
+            KitParts.TankH(b, new Vector3(1.55f, 0.75f, -1.2f), 0.42f, 2.2f, Mat.SandSteel);
+            KitParts.Pipe(b, new[] { new Vector3(core.X + 1.45f, 1.4f, core.Z - 0.4f), new Vector3(0.6f, 1.4f, -0.2f), new Vector3(0.6f, 0.95f, -1.2f), new Vector3(0.45f, 0.95f, -1.2f) }, 0.12f, Mat.Rust);
+            KitParts.Pipe(b, new[] { new Vector3(2.65f, 0.95f, -1.2f), new Vector3(2.85f, 0.95f, -1.2f), new Vector3(2.85f, 0.95f, 0.9f), new Vector3(tower.X + 0.6f, 0.95f, tower.Z - 0.6f) }, 0.1f, Mat.Rust);
+            KitParts.Pipe(b, new[] { new Vector3(core.X + 1.4f, 2.2f, core.Z + 0.5f), new Vector3(tower.X - 0.9f, 2.2f, tower.Z), new Vector3(tower.X - 0.6f, 2.2f, tower.Z) }, 0.09f, Mat.DarkSteel);
+            for (int i = 0; i < 3; i++)
+            {
+                b.Strut(new Vector3(0.6f, 0.22f, -0.2f - (i * 0.45f)), new Vector3(0.6f, 0.85f + (i == 0 ? 0.45f : 0f), -0.2f - (i * 0.45f)), 0.04f, Mat.DarkSteel);
+            }
+
+            // control room facing the yard, hazard fence along the front
+            KitModules.ContainerBlock(b, m, new Vector3(-1.45f, 0.22f, -2.05f), 3.0f, Mat.SandSteel, true, "CONTROL", rng, 2, false);
+            Props.Lamp(b, m, new Vector3(-0.2f, 2.5f, -2.7f), true, 1.3f, LightRole.Status);
+            KitModules.Fence(b, new Vector3(0.3f, 0.22f, -3.05f), new Vector3(3.05f, 0.22f, -3.05f), 1.6f);
+            KitModules.Fence(b, new Vector3(3.05f, 0.22f, -3.05f), new Vector3(3.05f, 0.22f, 2.9f), 1.6f);
+            b.BoxOn(1.6f, 1.1f, -3.08f, 0.9f, 0.6f, 0.03f, Mat.Paint, 0.01f);
+            Props.Stencil(b, "DANGER", new Vector3(1.22f, 1.25f, -3.1f), 0.045f, Mat.PaintRed);
+            KitModules.Barrels(b, new Vector3(2.4f, 0.22f, -2.3f), 3, rng);
+            KitParts.Transformer(b, new Vector3(-2.55f, 0.22f, 2.6f), 0.8f);
+
+            if (level >= 2)
+            {
+                // a second, smaller tower and a steam relief stack
+                Vector3 t2 = new Vector3(2.35f, 0.22f, -0.2f);
+                b.Frustum(t2, 0.6f, 0.38f, 1.5f, 14, Mat.Concrete, 0.03f);
+                b.Frustum(t2 + new Vector3(0, 1.5f, 0), 0.38f, 0.48f, 0.9f, 14, Mat.Concrete, 0.03f, true, Mat.Char);
+                b.Frustum(t2 + new Vector3(0, 2.4f, 0), 0.4f, 0.4f, 0.02f, 14, Mat.Char, 0f);
+                Stack(b, m, new Vector3(-2.6f, 0.22f, -0.4f), 0.16f, 5.2f, true);
+            }
+
+            if (level >= 3)
+            {
+                // a gantry crane straddling the dome for refuelling
+                foreach (int s in new[] { -1, 1 })
+                {
+                    Vector3 leg = core + new Vector3(s * 1.95f, 0, -0.2f);
+                    b.Strut(leg, leg + new Vector3(0, 5.0f, 0), 0.12f, Mat.Paint);
+                    b.Strut(leg + new Vector3(0, 0, 0.8f), leg + new Vector3(0, 5.0f, 0.4f), 0.08f, Mat.Paint);
+                }
+
+                b.BoxOn(core.X, 5.0f, core.Z - 0.1f, 4.2f, 0.35f, 0.5f, Mat.Paint, 0.03f);
+                b.BoxOn(core.X + 0.4f, 4.65f, core.Z - 0.1f, 0.6f, 0.35f, 0.6f, Mat.DarkSteel, 0.03f);
+                b.Strut(new Vector3(core.X + 0.4f, 4.65f, core.Z - 0.1f), new Vector3(core.X + 0.4f, 4.3f, core.Z - 0.1f), 0.02f, Mat.DarkSteel);
+            }
+
+            Beacon(b, m, new Vector3(-0.2f, 2.9f, -2.0f));
         }
 
         // ---------- Compute: server container, antenna mast, dishes, chillers, outdoor racks ----------

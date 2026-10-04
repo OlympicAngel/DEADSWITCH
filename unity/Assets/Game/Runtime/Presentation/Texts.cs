@@ -12,6 +12,7 @@ namespace Deadswitch.Game.Presentation
             switch (kind)
             {
                 case FacilityKind.Generator: return "+" + Fmt.Num(value) + " ENERGY/H";
+                case FacilityKind.Reactor: return "+" + Fmt.Num(value) + " ENERGY/H";
                 case FacilityKind.ServerRack: return "+" + Fmt.Num(value) + " COMPUTE/H";
                 case FacilityKind.LifeSupport: return "+" + Fmt.Num(value) + " PEOPLE CAP";
                 case FacilityKind.BatteryBank: return "+" + Fmt.Num(value) + " ENERGY STORAGE";

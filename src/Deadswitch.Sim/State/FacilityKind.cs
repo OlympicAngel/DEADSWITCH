@@ -9,5 +9,8 @@ namespace Deadswitch.Sim.State
         LifeSupport = 3,
         BatteryBank = 4,
         Turret = 5,
+
+        /// <summary>Compact fission plant (doc 02 s3 risky power): huge output for fuel; raiders go for it (SPEC-029).</summary>
+        Reactor = 6,
     }
 }

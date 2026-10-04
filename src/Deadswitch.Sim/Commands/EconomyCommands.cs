@@ -23,6 +23,11 @@ namespace Deadswitch.Sim.Commands
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
+            if (kind == FacilityKind.Reactor && (s.Tier < c.ReactorRules.MinTier || Economy.CountOfKind(s, kind) >= c.ReactorRules.MaxCount))
+            {
+                return CommandResult.Reject(RejectReason.Locked);
+            }
+
             if (!s.Slots[cmd.A].IsEmpty)
             {
                 return CommandResult.Reject(RejectReason.SlotOccupied);

@@ -10,6 +10,28 @@ namespace Deadswitch.Sim.Tests
 {
     public class EconomyTests
     {
+        [Fact]
+        public void Reactor_IsTierLocked_OnePerHub_AndScramsWithoutFuel()
+        {
+            // SPEC-029: from Tier 3 only, one per Hub, and no fuel means no output
+            var sim = new Simulation(17UL);
+            int plot = sim.State.Slots.FindIndex(x => x.IsEmpty);
+            Assert.Equal(RejectReason.Locked, sim.Execute(Command.Build(plot, FacilityKind.Reactor)).Reason);
+
+            sim.State.Tier = 3;
+            sim.State.Energy = Economy.EnergyCap(sim.State, sim.Config);
+            sim.State.Compute = sim.Config.Compute.Cap;
+            sim.State.Slots[plot].Kind = FacilityKind.Reactor;
+            sim.State.Slots[plot].Level = 1;
+            int other = sim.State.Slots.FindIndex(x => x.IsEmpty);
+            Assert.Equal(RejectReason.Locked, sim.Execute(Command.Build(other, FacilityKind.Reactor)).Reason);
+
+            sim.State.Fuel = 0;
+            sim.Run(SimConfig.TicksPerHour + 1);
+            Assert.False(sim.State.ReactorFueled);
+            Assert.Equal(0, Economy.EffectiveOutput(sim.State, sim.Config, sim.State.Slots[plot]));
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(1)]

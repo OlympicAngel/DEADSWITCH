@@ -48,7 +48,7 @@ namespace Deadswitch.Sim.Systems
                     continue;
                 }
 
-                if (slot.Kind == FacilityKind.Generator)
+                if (Economy.IsSource(slot.Kind))
                 {
                     // Generators are the source; their own upkeep is netted from their output.
                     slot.Powered = slot.Enabled;

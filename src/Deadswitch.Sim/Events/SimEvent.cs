@@ -290,6 +290,12 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A faction crushed at the wall regroups; its sites are weaker for a while. A: Faction, B: hours.</summary>
         FactionRegrouping = 94,
+
+        /// <summary>The reactor's fuel state changed (SPEC-029). A: 1 fueled again, 0 scrammed, B: fuel per hour it needs.</summary>
+        ReactorFuel = 95,
+
+        /// <summary>A damaged reactor leaks: people lost tonight. A: people.</summary>
+        RadiationLeak = 96,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

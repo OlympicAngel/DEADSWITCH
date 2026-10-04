@@ -16,7 +16,7 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Damage only slows facilities that produce (Generator, Server Rack, Turret).</summary>
         public static bool Affects(FacilityKind kind)
         {
-            return kind == FacilityKind.Generator || kind == FacilityKind.ServerRack || kind == FacilityKind.Turret;
+            return kind == FacilityKind.Generator || kind == FacilityKind.ServerRack || kind == FacilityKind.Turret || kind == FacilityKind.Reactor;
         }
 
         public static bool Repairing(GameState s, FacilitySlot slot)
@@ -93,6 +93,12 @@ namespace Deadswitch.Sim.Systems
 
                 uint h = SimMath.Hash((uint)attackId * 0x5CA2u + (uint)n, (uint)(s.Rng.State >> 32));
                 int slot = candidates[(int)(h % (uint)candidates.Count)];
+                // raiders go for the reactor first (SPEC-029)
+                int reactor = candidates.FindIndex(i => s.Slots[i].Kind == FacilityKind.Reactor);
+                if (reactor >= 0 && (h >> 12) % 100 < (uint)ctx.Config.ReactorRules.TargetPct)
+                {
+                    slot = candidates[reactor];
+                }
                 FacilitySlot hit = s.Slots[slot];
                 hit.Damage++;
                 s.ScarredAtTick = s.Tick;

@@ -1361,3 +1361,47 @@ output = [20, 32, 48, 68, 92]
 
 # People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
 crew = [1, 1, 2, 2, 3]
+
+# --------------------------------------------------------------------------------------------------
+# Reactor: compact fission plant from Tier 3 (doc 02 s3 risky power, SPEC-029). Output = energy per game hour while fueled.
+[facility_reactor]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [2400, 3600, 5200]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [80, 140, 220]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [720, 1440, 2160]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 0]
+
+# Energy generated per game hour while fueled, per level. [1..20 items, each 0..1000000]
+output = [1800, 2600, 3600]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [4, 6, 8]
+
+# --------------------------------------------------------------------------------------------------
+# Reactor rules: fuel-fed, one per Hub from Tier 3, the first thing raiders aim for, and a radiation leak while badly damaged (SPEC-029). All (tune).
+[reactor]
+
+# Tier needed to build a reactor. [1..4]
+min_tier = 3
+
+# Reactors allowed per Hub. [0..10]
+max_count = 1
+
+# Fuel burned per game hour, per level; without it the reactor scrams (no output). [1..20 items, each 0..10000]
+fuel_per_hour = [10, 14, 18]
+
+# Chance each point of breach damage goes to the reactor when it can take more. [0..100]
+target_pct = 50
+
+# Damage at which a reactor leaks radiation until repaired. [1..10]
+leak_damage = 2
+
+# People lost each midnight while it leaks (never below the people floor). [0..1000]
+leak_people_per_day = 3

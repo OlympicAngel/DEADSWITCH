@@ -58,6 +58,19 @@ namespace Deadswitch.Sim
             output: new[] { 480, 660, 900, 1200, 1560 },
             crew: new[] { 2, 2, 3, 3, 4 });
 
+        public FacilityConfig Reactor = new FacilityConfig(
+            "facility_reactor",
+            "Reactor: compact fission plant from Tier 3 (doc 02 s3 risky power, SPEC-029). Output = energy per game hour while fueled.",
+            "Energy generated per game hour while fueled, per level.").Set(
+            costEnergy: new[] { 2400, 3600, 5200 },
+            costCompute: new[] { 80, 140, 220 },
+            buildMinutes: new[] { 720, 1440, 2160 },
+            upkeepPerHour: new[] { 0, 0, 0 },
+            output: new[] { 1800, 2600, 3600 },
+            crew: new[] { 4, 6, 8 });
+
+        public ReactorConfig ReactorRules = new ReactorConfig();
+
         public FacilityConfig Turret = new FacilityConfig(
             "facility_turret",
             "Turret: automated Hub defense (doc 02 s6 Military). Output = defense rating while powered.",
@@ -160,6 +173,8 @@ namespace Deadswitch.Sim
             LifeSupport.Visit(visitor);
             Battery.Visit(visitor);
             Turret.Visit(visitor);
+            Reactor.Visit(visitor);
+            ReactorRules.Visit(visitor);
         }
 
         /// <summary>Table for a facility kind, or null for <see cref="State.FacilityKind.None"/> and unknown values.</summary>
@@ -177,6 +192,8 @@ namespace Deadswitch.Sim
                     return Battery;
                 case State.FacilityKind.Turret:
                     return Turret;
+                case State.FacilityKind.Reactor:
+                    return Reactor;
                 default:
                     return null;
             }
@@ -186,13 +203,23 @@ namespace Deadswitch.Sim
         public System.Collections.Generic.List<string> Validate()
         {
             var problems = new System.Collections.Generic.List<string>();
-            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret })
+            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret, Reactor })
             {
                 int n = f.Output.Length;
                 if (f.CostEnergy.Length != n || f.CostCompute.Length != n || f.BuildMinutes.Length != n || f.UpkeepPerHour.Length != n || f.Crew.Length != n)
                 {
                     problems.Add(f.Section + ": every per-level table must have the same length as 'output' (" + n + ").");
                 }
+            }
+
+            if (Luck.CalmPct + Luck.RestlessPct > 100)
+            {
+                problems.Add("luck.calm_pct + luck.restless_pct must not exceed 100.");
+            }
+
+            if (ReactorRules.FuelPerHour.Length != Reactor.MaxLevel)
+            {
+                problems.Add("reactor.fuel_per_hour must have one entry per reactor level (" + Reactor.MaxLevel + ").");
             }
 
             if (Energy.Start > Energy.Cap)

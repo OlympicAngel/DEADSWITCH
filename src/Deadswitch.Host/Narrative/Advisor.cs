@@ -34,7 +34,7 @@ namespace Deadswitch.Host.Narrative
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
             "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
-            "ceasefire", "ceasefire_broken", "ceasefire_over", "chapter_opened", "chapter_twist", "chapter_closed", "alliance_formed", "alliance_ended", "alliance_walkout", "alliance_betrayed", "op_sabotage", "sabotage_clean", "sabotage_traced", "tactic_learned", "site_fortified", "hunch_restless", "hunch_calm", "regrouping", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
+            "ceasefire", "ceasefire_broken", "ceasefire_over", "chapter_opened", "chapter_twist", "chapter_closed", "alliance_formed", "alliance_ended", "alliance_walkout", "alliance_betrayed", "op_sabotage", "sabotage_clean", "sabotage_traced", "tactic_learned", "site_fortified", "hunch_restless", "hunch_calm", "regrouping", "reactor_scram", "reactor_fueled", "radiation_leak", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
             "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
             "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
             "facility_scarred", "forced_labor", "glitch_defected", "glitch_drain", "glitch_misfire", "glitch_stall", "heat_hunted", "heat_marked",
@@ -452,6 +452,12 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.CeasefireEnded:
                     Enqueue(new Pending(e.B == 1 ? "ceasefire_broken" : "ceasefire_over", e.B == 1 ? Priority.Urgent : Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
+                    break;
+                case EventKind.ReactorFuel:
+                    Enqueue(new Pending(e.A == 1 ? "reactor_fueled" : "reactor_scram", e.A == 1 ? Priority.Normal : Priority.Urgent).With("lost", e.B.ToString()));
+                    break;
+                case EventKind.RadiationLeak:
+                    Enqueue(new Pending("radiation_leak", Priority.Urgent).With("people", e.A.ToString()));
                     break;
                 case EventKind.AiHunch:
                     Enqueue(new Pending(e.A > 0 ? "hunch_restless" : "hunch_calm", Priority.Normal).With("hours", e.B.ToString()));

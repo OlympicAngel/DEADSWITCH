@@ -64,7 +64,19 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
+            if (slot.Kind == FacilityKind.Reactor && !s.ReactorFueled)
+            {
+                // scrammed for lack of fuel (SPEC-029)
+                return 0;
+            }
+
             return SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind) - ScarSystem.PenaltyPct(s, c, slot) - GlitchSystem.PenaltyPct(s, slot)));
+        }
+
+        /// <summary>Power sources (generator, reactor): they feed the grid and net their own upkeep from output.</summary>
+        public static bool IsSource(FacilityKind kind)
+        {
+            return kind == FacilityKind.Generator || kind == FacilityKind.Reactor;
         }
 
         /// <summary>Module output bonus for a facility kind, in percentage points.</summary>
@@ -112,7 +124,7 @@ namespace Deadswitch.Sim.Systems
                 upkeep = SimMath.PctCeil(upkeep, c.Threats.ShieldUpkeepPct);
             }
 
-            return slot.Kind != FacilityKind.Generator && Modules.Has(s, ModuleNode.LG1) ? SimMath.PctCeil(upkeep, 100 - c.Modules.LoadBalancingPct) : upkeep;
+            return !IsSource(slot.Kind) && Modules.Has(s, ModuleNode.LG1) ? SimMath.PctCeil(upkeep, 100 - c.Modules.LoadBalancingPct) : upkeep;
         }
 
         public static int CrewNeeded(SimConfig c, FacilitySlot slot)
@@ -133,7 +145,7 @@ namespace Deadswitch.Sim.Systems
             int total = 0;
             foreach (FacilitySlot slot in s.Slots)
             {
-                if (slot.Kind == FacilityKind.Generator && slot.Enabled)
+                if (IsSource(slot.Kind) && slot.Enabled)
                 {
                     total += EffectiveOutput(s, c, slot) - UpkeepPerHour(s, c, slot);
                 }
@@ -230,7 +242,7 @@ namespace Deadswitch.Sim.Systems
                     crewAssigned += need;
                 }
 
-                if (slot.Kind == FacilityKind.Generator || !slot.Powered)
+                if (IsSource(slot.Kind) || !slot.Powered)
                 {
                     continue;
                 }

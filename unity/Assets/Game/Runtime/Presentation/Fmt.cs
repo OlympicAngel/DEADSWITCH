@@ -24,6 +24,7 @@ namespace Deadswitch.Game.Presentation
                 case FacilityKind.LifeSupport: return "Air, water, heat. Raises how many people the Hub can hold.";
                 case FacilityKind.BatteryBank: return "Stores surplus. A bigger buffer for nights and raids.";
                 case FacilityKind.Turret: return "Automated defense. Needs power and a crew to aim well.";
+                case FacilityKind.Reactor: return "Pre-war fission core. More power than anything else, if we can feed it fuel. Raiders want it. Do not let it crack.";
                 default: return "Unused ground inside the perimeter.";
             }
         }

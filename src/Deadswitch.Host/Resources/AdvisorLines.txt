@@ -285,6 +285,11 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+reactor.scram.1 | reactor_scram | neutral | The reactor scrammed. No fuel. It needs {lost} an hour to wake up.
+reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The grid is about to feel it.
+reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
+radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
+radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
 hunch.restless.1 | hunch_restless | neutral | Something is moving out there. I cannot see it. I can feel the static. Next {hours} hours.
 hunch.restless.2 | hunch_restless | cold | Radio chatter is up. Could be nothing. It is rarely nothing.
 hunch.restless.3 | hunch_restless | warm | Keep the wall manned tonight. Call it a hunch. I am not supposed to have those.
