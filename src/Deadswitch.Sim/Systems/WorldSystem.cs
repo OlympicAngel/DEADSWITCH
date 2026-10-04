@@ -133,7 +133,7 @@ namespace Deadswitch.Sim.Systems
         public static int EstimatedDefense(GameState s, SimConfig c, int site)
         {
             SiteDef d = CatalogArray[site];
-            int defense = AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner);
+            int defense = LuckSystem.SiteDefense(s, c, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner), d.Owner);
             if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A) || IntelSystem.Loyal(s, d.Owner))
             {
                 return defense;
@@ -408,7 +408,7 @@ namespace Deadswitch.Sim.Systems
             WorldConfig w = c.World;
             SiteDef d = CatalogArray[op.Site];
             SiteState st = s.Sites[op.Site];
-            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner));
+            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, LuckSystem.SiteDefense(s, c, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner), d.Owner));
             bool won = SimMath.Hash((uint)op.Id * 2654435761u, (uint)(s.Rng.State >> 32)) % 100 < (uint)odds;
             int casualties = 0;
             int heat;

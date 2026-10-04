@@ -43,6 +43,8 @@ namespace Deadswitch.Sim.Tests
                 Assert.InRange(s.CorruptionMilli, 0, CorruptionSystem.MaxMilli);
                 Assert.InRange(s.Wreckage, 0, c.Scars.MaxWreckage);
                 Assert.All(s.Slots, f => Assert.InRange(f.Damage, 0, c.Scars.MaxDamage));
+                Assert.All(s.Learned, l => Assert.InRange(l, 0, c.Adapt.LearnCap));
+                Assert.All(s.Fortified, f => Assert.InRange(f, 0, c.Adapt.FortifyCap));
             }
 
             Assert.All(

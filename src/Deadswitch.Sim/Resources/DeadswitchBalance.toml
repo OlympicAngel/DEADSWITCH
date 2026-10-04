@@ -1197,6 +1197,43 @@ fortify_pct = 15
 fortify_decay_days = 3
 
 # --------------------------------------------------------------------------------------------------
+# Luck swings: hidden calm and restless streaks the AI half-warns about, and regrouping windows after a crushing defense (doc 04 s9). All (tune).
+[luck]
+
+# Length of one hidden streak window. [1..1000]
+streak_hours = 12
+
+# Chance a window is calm. [0..100]
+calm_pct = 25
+
+# Chance a window is restless (calm_pct + restless_pct <= 100). [0..100]
+restless_pct = 25
+
+# Calm windows: the mean time between raids grows by this %. [0..1000]
+calm_interval_pct = 60
+
+# Restless windows: the mean time between raids changes by this % (negative = more raids). [-90..0]
+restless_interval_pct = -30
+
+# Restless windows: raids come this much stronger. [0..100]
+restless_strength_pct = 10
+
+# Chance the AI voices a hunch at the start of a calm or restless window. [0..100]
+hunch_pct = 60
+
+# Chance the hunch names the window's real mood (otherwise it names the opposite). [0..100]
+hunch_accuracy_pct = 70
+
+# A raid repelled with defense at least this % of its strength sends that faction regrouping. [100..1000]
+regroup_margin_pct = 150
+
+# How long a beaten faction regroups. [1..1000]
+regroup_hours = 8
+
+# A regrouping faction's sites are this much weaker (an opportunity window). [0..90]
+regroup_defense_pct = 25
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

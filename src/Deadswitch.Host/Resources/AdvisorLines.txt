@@ -285,6 +285,14 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+hunch.restless.1 | hunch_restless | neutral | Something is moving out there. I cannot see it. I can feel the static. Next {hours} hours.
+hunch.restless.2 | hunch_restless | cold | Radio chatter is up. Could be nothing. It is rarely nothing.
+hunch.restless.3 | hunch_restless | warm | Keep the wall manned tonight. Call it a hunch. I am not supposed to have those.
+hunch.calm.1 | hunch_calm | neutral | The wastes are quiet. Too quiet to trust, quiet enough to use. Maybe {hours} hours.
+hunch.calm.2 | hunch_calm | bold | Nobody is coming for a while. I think. Send the teams out.
+hunch.calm.3 | hunch_calm | cold | Low traffic on every band. A window, if the readings are honest.
+regrouping.1 | regrouping | neutral | {faction} broke and ran. Their sites are thin for {hours} hours. If we are going to hit them, now.
+regrouping.2 | regrouping | bold | They are licking wounds. {hours} hours before they remember they have teeth.
 tactic.learned.1 | tactic_learned | neutral | {faction} has seen us {posture} before. Next time they will come ready for it. Change it up.
 tactic.learned.2 | tactic_learned | cold | {faction} is learning. Next time we {posture}, it will cost us more.
 tactic.learned.3 | tactic_learned | bold | They are studying the wall. Good. Let them study the wrong thing.

@@ -25,6 +25,7 @@ namespace Deadswitch.Sim.Systems
 
             // Fixed draw count per tick so no branch can shift the stream.
             int interval = LivingSystem.Active(s, WorldEventKind.DeadWeek) ? SimMath.PctFloor(c.Raid.MeanIntervalTicks, 100 + c.Living.DeadWeekIntervalPct) : c.Raid.MeanIntervalTicks;
+            interval = LuckSystem.Interval(s, c, interval);
             bool spawnRoll = s.Rng.NextBelow((uint)System.Math.Max(1, interval)) == 0;
             int variance = (int)s.Rng.NextBelow((uint)((2 * c.Raid.VariancePct) + 1)) - c.Raid.VariancePct;
             int missRoll = (int)s.Rng.NextBelow(100);
@@ -149,6 +150,9 @@ namespace Deadswitch.Sim.Systems
                 {
                     s.RaidStrength = SimMath.PctFloor(s.RaidStrength, 100 - c.Modules.DecoyPct);
                 }
+
+                // a restless streak brings them harder (SPEC-028)
+                s.RaidStrength = LuckSystem.Strength(s, c, s.RaidStrength);
 
                 // their depots burned (SPEC-026): a sabotaged faction strikes weaker for a while
                 if ((int)s.RaidFaction == s.SabotageFaction && s.Tick < s.SabotageUntilTick)
@@ -311,6 +315,7 @@ namespace Deadswitch.Sim.Systems
                     LegacySystem.Earn(ctx, Mastery.CleanBattle);
                 }
                 ScarSystem.Repelled(ctx);
+                LuckSystem.Repelled(ctx, strength, defense);
                 Record(ctx, id, lies);
                 ClearIncoming(s);
                 return;

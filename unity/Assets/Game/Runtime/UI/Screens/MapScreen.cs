@@ -226,6 +226,11 @@ namespace Deadswitch.Game.UI.Screens
 
                 int fort = s.Fortified[f];
                 string adapt = learned + (fort > 0 ? (learned.Length > 0 ? " // " : string.Empty) + "FORT " + fort : string.Empty);
+                if (LuckSystem.Regrouping(s, (Faction)f))
+                {
+                    // an opportunity window (SPEC-028): their sites are thin right now
+                    adapt = "REGROUPING " + Fmt.Countdown(_host.SecondsUntilTick(s.RegroupUntilTick)) + (adapt.Length > 0 ? " // " + adapt : string.Empty);
+                }
                 _ui.Q<Label>("adapt-" + f).text = adapt;
                 _ui.Q("adapt-" + f).EnableInClassList("is-hidden", adapt.Length == 0);
 

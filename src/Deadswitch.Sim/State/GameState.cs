@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026). v23: adaptive enemies (SPEC-027).</summary>
-        public const int LayoutVersion = 23;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026). v23: adaptive enemies (SPEC-027). v24: luck swings (SPEC-028).</summary>
+        public const int LayoutVersion = 24;
 
         public long Tick;
 
@@ -209,6 +209,16 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>Hidden streak of the current window (SPEC-028): -1 calm, 0 normal, 1 restless. Never shown.</summary>
+        public int Mood;
+
+        public long MoodUntilTick;
+
+        /// <summary>Faction regrouping after a crushing defense (-1 = none), until <see cref="RegroupUntilTick"/>.</summary>
+        public int RegroupFaction = -1;
+
+        public long RegroupUntilTick;
 
         /// <summary>Counters each faction learned against the Hub's postures (SPEC-027): [faction * 3 + Turtle/Dark/Evacuate].</summary>
         public int[] Learned = new int[Systems.WorldSystem.FactionCount * Systems.AdaptSystem.Tactics];
@@ -606,6 +616,14 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref Wreckage);
                 v.Long(ref ScarredAtTick);
+            }
+
+            if (v.Version >= 24)
+            {
+                v.Int(ref Mood);
+                v.Long(ref MoodUntilTick);
+                v.Int(ref RegroupFaction);
+                v.Long(ref RegroupUntilTick);
             }
 
             if (v.Version >= 23)

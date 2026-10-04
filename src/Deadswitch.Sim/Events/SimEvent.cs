@@ -284,6 +284,12 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A faction fortified its sites against the Hub's raids. A: Faction, B: new level.</summary>
         SiteFortified = 92,
+
+        /// <summary>The AI voices a hunch about the coming hours (SPEC-028). A: 1 restless / -1 calm (may be wrong), B: hours.</summary>
+        AiHunch = 93,
+
+        /// <summary>A faction crushed at the wall regroups; its sites are weaker for a while. A: Faction, B: hours.</summary>
+        FactionRegrouping = 94,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
