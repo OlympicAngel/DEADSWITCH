@@ -1,0 +1,51 @@
+namespace Deadswitch.Sim.Config
+{
+    /// <summary>World map: factions and heat, operations, outposts (SPEC-016, doc 04 s8, doc 05, doc 10 s4-5). Placeholders: tune at F-099.</summary>
+    public sealed class WorldConfig : IConfigSection
+    {
+        public int HeatDecayPerHour = 150;
+        public int HeatStrengthPermille = 800;
+        public int HeatPerRaid = 15_000;
+        public int HeatPerHack = 8_000;
+        public int HeatPerScout = 2_000;
+        public int MaxOps = 2;
+        public int FuelPerTravelHour = 4;
+        public int StrengthPerPerson = 6;
+        public int RaidCooldownHours = 24;
+        public int EstimateErrorPct = 40;
+        public int CasualtyPctWin = 10;
+        public int CasualtyPctLoss = 50;
+        public int OutpostClaimEnergy = 300;
+        public int OutpostEnergyPerHour = 60;
+        public int OutpostFuelPerHour = 6;
+        public int OutpostLossPctPerHour = 2;
+        public int AttackerWeightRustborn = 40;
+        public int AttackerWeightVanguardTier2 = 40;
+        public int AttackerWeightChurch = 10;
+
+        public void Visit(IConfigVisitor v)
+        {
+            v.BeginSection("world", "World map: faction heat, operations and outposts (doc 04 s8, doc 05, doc 10). Heat is milli: 100000 = 100. All (tune).");
+            v.Int("heat_decay_per_hour", ref HeatDecayPerHour, 0, 100_000, "Heat each faction loses per game hour.");
+            v.Int("heat_strength_permille", ref HeatStrengthPermille, 0, 10_000, "Attack strength x (1 + this/1000 x heat) (doc 10: 0.8).");
+            v.Int("heat_per_raid", ref HeatPerRaid, 0, 100_000, "Heat a raid adds to the site's owner.");
+            v.Int("heat_per_hack", ref HeatPerHack, 0, 100_000, "Heat a hack adds to the site's owner.");
+            v.Int("heat_per_scout", ref HeatPerScout, 0, 100_000, "Heat a scouting run adds to the site's owner.");
+            v.Int("max_ops", ref MaxOps, 1, 10, "Operations in the field at once.");
+            v.Int("fuel_per_travel_hour", ref FuelPerTravelHour, 0, 1_000, "Fuel per hour of travel (out and back) for a scout or raid.");
+            v.Int("strength_per_person", ref StrengthPerPerson, 1, 1_000, "Squad strength per person sent.");
+            v.Int("raid_cooldown_hours", ref RaidCooldownHours, 0, 1_000, "A raided site has nothing to take for this long.");
+            v.Int("estimate_error_pct", ref EstimateErrorPct, 0, 100, "The AI's site defense estimate is off by up to this much until scouted.");
+            v.Int("casualty_pct_win", ref CasualtyPctWin, 0, 100, "Share of a squad lost on a won raid.");
+            v.Int("casualty_pct_loss", ref CasualtyPctLoss, 0, 100, "Share of a squad lost on a failed raid.");
+            v.Int("outpost_claim_energy", ref OutpostClaimEnergy, 0, 100_000, "Energy to set up an outpost on cleared ruins.");
+            v.Int("outpost_energy_per_hour", ref OutpostEnergyPerHour, 0, 10_000, "Energy an outpost sends home per hour.");
+            v.Int("outpost_fuel_per_hour", ref OutpostFuelPerHour, 0, 10_000, "Fuel an outpost sends home per hour.");
+            v.Int("outpost_loss_pct_per_hour", ref OutpostLossPctPerHour, 0, 100, "Hourly chance a Hunted-or-worse faction takes an outpost back.");
+            v.Int("attacker_weight_rustborn", ref AttackerWeightRustborn, 0, 1_000, "Base weight for the Rustborn as attacker (plus heat %).");
+            v.Int("attacker_weight_vanguard_tier2", ref AttackerWeightVanguardTier2, 0, 1_000, "Base weight for Vanguard Command from Tier 2 (plus heat %).");
+            v.Int("attacker_weight_church", ref AttackerWeightChurch, 0, 1_000, "Base weight for the Church of the Last Signal after M1 (plus heat %).");
+            v.EndSection();
+        }
+    }
+}

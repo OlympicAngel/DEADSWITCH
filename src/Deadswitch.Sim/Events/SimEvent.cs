@@ -152,6 +152,27 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>Tribute standing order toggled. A: 1 on / 0 off.</summary>
         TributeOrderSet = 48,
+
+        /// <summary>Operation sent (doc 04 s8). A: op id, B: site, C: OpKind, D: squad (or compute for a hack).</summary>
+        OpLaunched = 49,
+
+        /// <summary>Operation back. A: op id, B: site, C: 1 success / 0 failure, D: casualties.</summary>
+        OpReturned = 50,
+
+        /// <summary>Operation loot. A: op id, B: LossResource, C: amount.</summary>
+        OpLoot = 51,
+
+        /// <summary>A faction's heat level changed (doc 10 s4). A: Faction, B: new HeatLevel, C: old.</summary>
+        HeatLevelChanged = 52,
+
+        /// <summary>Outpost set up. A: site.</summary>
+        OutpostClaimed = 53,
+
+        /// <summary>Outpost taken back. A: site, B: Faction.</summary>
+        OutpostLost = 54,
+
+        /// <summary>Who sent the incoming attack. A: attack id, B: Faction.</summary>
+        AttackerIdentified = 55,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

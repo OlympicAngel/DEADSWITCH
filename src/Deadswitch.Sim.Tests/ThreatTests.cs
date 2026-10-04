@@ -59,6 +59,7 @@ namespace Deadswitch.Sim.Tests
             var sim = new Simulation(23UL);
             var t = sim.Config.Threats;
             sim.State.Tier = 2;
+            sim.State.Heat[(int)Faction.Vanguard] = 80_000;
             sim.Run(1);
             sim.State.NextPurgeTick = sim.State.Tick + 1;
             sim.Run(1);
@@ -105,6 +106,24 @@ namespace Deadswitch.Sim.Tests
             sim.Run(48 * SimConfig.TicksPerHour);
             Assert.Equal(warnings, sim.Log.Events.Count(e => e.Kind == EventKind.RaidWarning));
             Assert.Equal(RejectReason.NoChange, sim.Execute(Command.ActivateShield()).Reason);
+        }
+
+        [Fact]
+        public void Operation_ComesHome_WithHeatOnTheOwner_AndEndsMercy()
+        {
+            var sim = new Simulation(25UL);
+            sim.State.Fuel = 100;
+            sim.State.MercyUntilTick = 10_000;
+            int people = sim.State.People;
+            Assert.True(sim.Execute(Command.LaunchOp(1, OpKind.Raid, 4)).Accepted);
+            Assert.Equal(people - 4, sim.State.People);
+            Assert.Equal(sim.State.Tick, sim.State.MercyUntilTick);
+
+            sim.Run(2 * WorldSystem.Sites[1].TravelHours * SimConfig.TicksPerHour);
+            SimEvent back = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
+            Assert.Empty(sim.State.Ops);
+            Assert.True(sim.State.Heat[(int)Faction.Rustborn] > 0);
+            Assert.Equal(1, back.B);
         }
     }
 }

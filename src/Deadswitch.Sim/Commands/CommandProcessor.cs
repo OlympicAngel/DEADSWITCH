@@ -50,6 +50,10 @@ namespace Deadswitch.Sim.Commands
                     return ClimaxSystem.Purge(ctx, command);
                 case CommandKind.CancelProject:
                     return ClimaxSystem.CancelProject(ctx, command);
+                case CommandKind.LaunchOp:
+                    return WorldSystem.Launch(ctx, command);
+                case CommandKind.ClaimOutpost:
+                    return WorldSystem.Claim(ctx, command);
                 case CommandKind.ActivateShield:
                     return ThreatSystem.ActivateShield(ctx, command);
                 case CommandKind.SetTributeOrder:

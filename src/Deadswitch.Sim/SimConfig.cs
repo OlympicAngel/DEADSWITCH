@@ -33,6 +33,7 @@ namespace Deadswitch.Sim
         public ClimaxConfig Climax = new ClimaxConfig();
         public PeopleChoiceConfig PeopleChoices = new PeopleChoiceConfig();
         public ThreatConfig Threats = new ThreatConfig();
+        public WorldConfig World = new WorldConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -132,6 +133,7 @@ namespace Deadswitch.Sim
             Climax.Visit(visitor);
             PeopleChoices.Visit(visitor);
             Threats.Visit(visitor);
+            World.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

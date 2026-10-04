@@ -97,6 +97,17 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>The shield cannot rise with an attack incoming or a purge staged.</summary>
         ThreatActive = 31,
+
+        /// <summary>Every operation slot is in the field.</summary>
+        OpsBusy = 32,
+
+        /// <summary>The site was hit recently, or the Hub holds it.</summary>
+        SiteCooldown = 33,
+
+        /// <summary>Only cleared ruins can become an outpost.</summary>
+        NotClaimable = 34,
+
+        NotEnoughFuel = 35,
     }
 
     public readonly struct CommandResult

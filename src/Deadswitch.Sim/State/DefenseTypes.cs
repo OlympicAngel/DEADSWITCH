@@ -71,6 +71,9 @@ namespace Deadswitch.Sim.State
         Energy = 1,
         Compute = 2,
         People = 3,
+
+        /// <summary>Fuel (operation loot).</summary>
+        Fuel = 4,
     }
 
     /// <summary>OVERRIDE uses (doc 03 s6). Stored in commands: never renumber.</summary>

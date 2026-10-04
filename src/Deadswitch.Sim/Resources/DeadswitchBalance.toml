@@ -557,6 +557,67 @@ tribute_pct = 25
 tribute_min_energy = 60
 
 # --------------------------------------------------------------------------------------------------
+# World map: faction heat, operations and outposts (doc 04 s8, doc 05, doc 10). Heat is milli: 100000 = 100. All (tune).
+[world]
+
+# Heat each faction loses per game hour. [0..100000]
+heat_decay_per_hour = 150
+
+# Attack strength x (1 + this/1000 x heat) (doc 10: 0.8). [0..10000]
+heat_strength_permille = 800
+
+# Heat a raid adds to the site's owner. [0..100000]
+heat_per_raid = 15000
+
+# Heat a hack adds to the site's owner. [0..100000]
+heat_per_hack = 8000
+
+# Heat a scouting run adds to the site's owner. [0..100000]
+heat_per_scout = 2000
+
+# Operations in the field at once. [1..10]
+max_ops = 2
+
+# Fuel per hour of travel (out and back) for a scout or raid. [0..1000]
+fuel_per_travel_hour = 4
+
+# Squad strength per person sent. [1..1000]
+strength_per_person = 6
+
+# A raided site has nothing to take for this long. [0..1000]
+raid_cooldown_hours = 24
+
+# The AI's site defense estimate is off by up to this much until scouted. [0..100]
+estimate_error_pct = 40
+
+# Share of a squad lost on a won raid. [0..100]
+casualty_pct_win = 10
+
+# Share of a squad lost on a failed raid. [0..100]
+casualty_pct_loss = 50
+
+# Energy to set up an outpost on cleared ruins. [0..100000]
+outpost_claim_energy = 300
+
+# Energy an outpost sends home per hour. [0..10000]
+outpost_energy_per_hour = 60
+
+# Fuel an outpost sends home per hour. [0..10000]
+outpost_fuel_per_hour = 6
+
+# Hourly chance a Hunted-or-worse faction takes an outpost back. [0..100]
+outpost_loss_pct_per_hour = 2
+
+# Base weight for the Rustborn as attacker (plus heat %). [0..1000]
+attacker_weight_rustborn = 40
+
+# Base weight for Vanguard Command from Tier 2 (plus heat %). [0..1000]
+attacker_weight_vanguard_tier2 = 40
+
+# Base weight for the Church of the Last Signal after M1 (plus heat %). [0..1000]
+attacker_weight_church = 10
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

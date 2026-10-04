@@ -81,6 +81,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Pay the purge ultimatum's tribute.</summary>
         PayPurgeTribute = 24,
+
+        /// <summary>Send an operation. A: site, B: OpKind, C: squad (people) or compute (hack).</summary>
+        LaunchOp = 25,
+
+        /// <summary>Set up an outpost on cleared ruins. A: site.</summary>
+        ClaimOutpost = 26,
     }
 
     /// <summary>
@@ -218,6 +224,16 @@ namespace Deadswitch.Sim.Commands
         public static Command PayPurgeTribute()
         {
             return new Command(CommandKind.PayPurgeTribute);
+        }
+
+        public static Command LaunchOp(int site, OpKind kind, int squadOrCompute)
+        {
+            return new Command(CommandKind.LaunchOp, site, (int)kind, squadOrCompute);
+        }
+
+        public static Command ClaimOutpost(int site)
+        {
+            return new Command(CommandKind.ClaimOutpost, site);
         }
 
         public static Command SetPresence(bool away)

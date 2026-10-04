@@ -88,10 +88,12 @@ namespace Deadswitch.Sim
                 AiSystem.Hourly(ctx);
                 ProjectSystem.Hourly(ctx);
                 PeopleChoices.Hourly(ctx);
+                WorldSystem.Hourly(ctx);
             }
 
             ClimaxSystem.Tick(ctx);
             ThreatSystem.Tick(ctx);
+            WorldSystem.Tick(ctx);
             RaidSystem.Tick(ctx);
             AiSystem.Tick(ctx);
         }

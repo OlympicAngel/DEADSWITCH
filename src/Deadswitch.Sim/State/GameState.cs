@@ -10,7 +10,7 @@ namespace Deadswitch.Sim.State
     public sealed class GameState
     {
         /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012).</summary>
-        public const int LayoutVersion = 8;
+        public const int LayoutVersion = 9;
 
         public long Tick;
 
@@ -176,6 +176,20 @@ namespace Deadswitch.Sim.State
 
         public bool TributeOrder;
 
+        /// <summary>Faction heat (milli, 100000 = 100), indexed by <see cref="Faction"/>.</summary>
+        public int[] Heat = new int[3];
+
+        /// <summary>Faction that sent the incoming attack.</summary>
+        public Faction RaidFaction;
+
+        public int NextOpId = 1;
+
+        /// <summary>Per map site (index = <see cref="Systems.WorldSystem.Sites"/>).</summary>
+        public List<SiteState> Sites = new List<SiteState>();
+
+        /// <summary>Operations in the field, in launch order.</summary>
+        public List<Operation> Ops = new List<Operation>();
+
         /// <summary>Recent raids' report records, oldest first (at most <c>report.keep_raids</c>).</summary>
         public List<RaidRecord> RaidRecords = new List<RaidRecord>();
 
@@ -195,6 +209,7 @@ namespace Deadswitch.Sim.State
             OverrideCharges = config.Override.StartCharges;
             OverrideNextChargeTick = config.Override.RegenMinutes;
             ShieldCharges = config.Threats.ShieldStartCharges;
+            Resize(Sites, Systems.WorldSystem.Sites.Count);
             ShieldNextChargeTick = (long)config.Threats.ShieldRegenDays * SimConfig.TicksPerDay;
 
             for (int i = 0; i < config.Hub.Slots; i++)
@@ -388,6 +403,38 @@ namespace Deadswitch.Sim.State
                 v.Long(ref ShieldUntilTick);
                 v.Long(ref ShieldNextChargeTick);
                 v.Bool(ref TributeOrder);
+            }
+
+            if (v.Version >= 9)
+            {
+                for (int f = 0; f < Heat.Length; f++)
+                {
+                    v.Int(ref Heat[f]);
+                }
+
+                int faction = (int)RaidFaction;
+                v.Int(ref faction);
+                RaidFaction = (Faction)faction;
+                v.Int(ref NextOpId);
+                int siteCount = v.Count(Sites.Count);
+                Resize(Sites, siteCount);
+                foreach (SiteState site in Sites)
+                {
+                    site.Visit(v);
+                }
+
+                int opCount = v.Count(Ops.Count);
+                Resize(Ops, opCount);
+                foreach (Operation op in Ops)
+                {
+                    op.Visit(v);
+                }
+            }
+
+            if (v.IsReading)
+            {
+                // older saves (and a catalog that grew) get a state entry for every map site
+                Resize(Sites, System.Math.Max(Sites.Count, Systems.WorldSystem.Sites.Count));
             }
         }
 

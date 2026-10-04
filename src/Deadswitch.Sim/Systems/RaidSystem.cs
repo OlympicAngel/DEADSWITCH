@@ -107,6 +107,8 @@ namespace Deadswitch.Sim.Systems
             s.RaidKind = kind;
             s.RaidArriveTick = s.Tick + warningMinutes;
             s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
+            s.RaidFaction = WorldSystem.PickAttacker(s, c);
+            s.RaidStrength = WorldSystem.ScaleByHeat(s, c, s.RaidFaction, s.RaidStrength);
             if (kind == AttackKind.Siege)
             {
                 s.RaidStrength = SimMath.PctFloor(s.RaidStrength, c.Threats.SiegeStrengthPct);
@@ -134,6 +136,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate, (int)kind);
+            ctx.Emit(EventKind.AttackerIdentified, s.RaidId, (int)s.RaidFaction);
             ReportGate(ctx, gateRoll);
             AiSystem.OnRaidWarning(ctx);
         }

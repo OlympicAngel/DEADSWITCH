@@ -299,7 +299,7 @@ namespace Deadswitch.Sim.Systems
             switch (s.PurgeStage)
             {
                 case PurgeStage.None:
-                    if (s.NextPurgeTick > 0 && s.Tick >= s.NextPurgeTick && !Shielded(s) && s.ClimaxAtTick == 0)
+                    if (s.NextPurgeTick > 0 && s.Tick >= s.NextPurgeTick && !Shielded(s) && s.ClimaxAtTick == 0 && WorldSystem.AnyMarked(s))
                     {
                         s.PurgeStage = PurgeStage.Rumor;
                         s.PurgeAtTick = s.Tick + ((c.PurgeRumorHours + c.PurgeStagingHours) * hour);
