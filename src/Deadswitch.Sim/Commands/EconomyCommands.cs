@@ -238,7 +238,6 @@ namespace Deadswitch.Sim.Commands
             int minutes = Economy.BuildMinutes(ctx.State, ctx.Config, kind, targetLevel);
             s.Energy -= energy;
             s.Compute -= compute;
-            CorruptionSystem.ComputeUse(ctx, compute);
             s.Jobs.Add(new BuildJob
             {
                 Slot = slot,
@@ -250,6 +249,7 @@ namespace Deadswitch.Sim.Commands
                 PaidCompute = compute,
             });
             ctx.Emit(EventKind.BuildStarted, slot, (int)kind, targetLevel, minutes);
+            CorruptionSystem.ComputeUse(ctx, compute);
         }
 
         private static void Refund(SimContext ctx, int energy, int compute)

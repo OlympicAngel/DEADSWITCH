@@ -12,8 +12,8 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Time-of-day lighting (F-025): check `BaseView.ApplyLight` / `PostFx` light levels against the preview (`unitySunScale`, `unityPointScale` in BaseLook.json) and the `_DsEmissionScale` / `_DsConeScale` globals.
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).
 
-## Open decision (owner)
-- Casual profile (away most of the day, Delegated routines) has ~87% of raids breach; Autopilot defends at 0%. Decide whether away players need more passive defense (SPEC-014 findings).
+## Balance (owner, 2026-10-04)
+- Feature work first, balance at the end. Parked: away players (casual profile) lose ~85% of raids because unprepared defense is turrets only (raid strength ~2-3x defense by day 6); no fix chosen yet. Use `balance` (SPEC-014) when tuning resumes.
 
 ## Gotchas
 - Saves that reached Tier 2 before F-023 have no district plots (no migration; pre-release).

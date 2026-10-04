@@ -33,6 +33,22 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void Research_StrainsTheCore_AndCorruptionDecaysWithItsLevel()
+        {
+            // F-026 (shipped balance): heavy compute use adds corruption; decay scales with the current level
+            var sim = new Simulation(4UL, TestConfigs.Get(TestConfigs.Shipped));
+            var c = sim.Config.Corruption;
+            sim.State.Energy = 500;
+            sim.State.Compute = 100;
+            Assert.True(sim.Execute(Command.StartResearch(ModuleNode.M1)).Accepted);
+            Assert.Equal(sim.Config.Modules.ResearchCompute[0] * c.ComputeMilliPerPoint, sim.State.CorruptionMilli);
+
+            sim.State.CorruptionMilli = 50_000;
+            sim.Run(SimConfig.TicksPerHour - (sim.State.Tick % SimConfig.TicksPerHour));
+            Assert.Equal(50_000 - c.DecayMilliPerHour - (50_000 * c.DecayPermillePerHour / 1000) + (sim.State.AutomationLoad * c.AutomationMilliPerHour), sim.State.CorruptionMilli);
+        }
+
+        [Fact]
         public void TierUp_NeedsAllThreeGates_ThenSpendsPeopleAndRaisesTheCap()
         {
             var sim = new Simulation(3UL);

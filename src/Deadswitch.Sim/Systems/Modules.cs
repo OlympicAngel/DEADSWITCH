@@ -145,13 +145,13 @@ namespace Deadswitch.Sim.Systems
             int minutes = ctx.Config.Modules.ResearchMinutes[d.Index];
             s.Energy -= energy;
             s.Compute -= compute;
-            CorruptionSystem.ComputeUse(ctx, compute);
             s.ResearchNode = (int)node;
             s.ResearchStartTick = s.Tick;
             s.ResearchCompleteTick = s.Tick + minutes;
             s.ResearchPaidEnergy = energy;
             s.ResearchPaidCompute = compute;
             ctx.Emit(EventKind.ResearchStarted, (int)node, minutes);
+            CorruptionSystem.ComputeUse(ctx, compute);
             return CommandResult.Ok;
         }
 
