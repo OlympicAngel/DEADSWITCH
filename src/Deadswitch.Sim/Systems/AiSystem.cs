@@ -189,7 +189,9 @@ namespace Deadswitch.Sim.Systems
         public static bool Outgunned(GameState s, SimConfig c)
         {
             int full = SimMath.Clamp(s.People, 0, c.Defense.GarrisonSlots);
-            return (long)Defense.Rating(s, c, Posture.None, full) * 100 < (long)Defense.BaseRaidStrength(s, c) * c.Ai.PlanDefensePct;
+            // an ally can walk out any day: the planner builds a wall that stands without it
+            int own = Defense.Rating(s, c, Posture.None, full) - DiplomacySystem.AllyDefense(s, c);
+            return (long)own * 100 < (long)Defense.BaseRaidStrength(s, c) * c.Ai.PlanDefensePct;
         }
 
         /// <summary>Repairs the most damaged producer when half the stock covers it.</summary>

@@ -136,6 +136,15 @@ namespace Deadswitch.Sim.Tests
             var whole = new Simulation(9UL);
             var chunked = new Simulation(9UL);
 
+            // an alliance and a sabotage team in flight (SPEC-025, SPEC-026) cross the chunk boundaries too
+            foreach (Simulation sim in new[] { whole, chunked })
+            {
+                sim.State.Energy = 700;
+                sim.State.Fuel = 120;
+                sim.Execute(Command.ProposeAlliance(Faction.Vanguard));
+                sim.Execute(Command.LaunchOp(3, OpKind.Sabotage, 2));
+            }
+
             whole.Run(700);
             whole.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
             whole.Execute(Command.SetPresence(true));
@@ -148,6 +157,8 @@ namespace Deadswitch.Sim.Tests
             chunked.Run(1);
             chunked.Run(2999);
 
+            Assert.Contains(whole.Log.Events, e => e.Kind == EventKind.AllianceFormed);
+            Assert.Contains(whole.Log.Events, e => e.Kind == EventKind.OpLaunched && e.C == (int)OpKind.Sabotage);
             Assert.Equal(StateHasher.Hash(whole.State), StateHasher.Hash(chunked.State));
         }
 
