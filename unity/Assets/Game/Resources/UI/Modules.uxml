@@ -6,7 +6,7 @@
     <ui:VisualElement name="tier" class="ds-panel mod-tier">
       <ui:VisualElement class="row">
         <ui:Label name="tier-title" text="TIER 1 // BUNKER" class="ds-title grow" />
-        <ui:Label text="NEXT: DISTRICT" class="ds-label t-dim" />
+        <ui:Label name="tier-next" text="NEXT: DISTRICT" class="ds-label t-dim" />
       </ui:VisualElement>
       <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-build-pip" class="mod-gate__pip is-ok" /><ui:Label name="gate-build" text="FACILITY LEVELS 11 / 10  //  NET POWER +140 / +100 H" class="mod-gate__text" /></ui:VisualElement>
       <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-module-pip" class="mod-gate__pip" /><ui:Label name="gate-module" text="MEMORY SECTOR M1 NOT RESTORED" class="mod-gate__text" /></ui:VisualElement>

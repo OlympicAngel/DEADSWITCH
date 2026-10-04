@@ -33,8 +33,8 @@ namespace Deadswitch.Cli
             w.WriteLine("Seeds 1.." + seeds + ", " + days + " days each, config hash " + config.ComputeHash().ToString("x16", CultureInfo.InvariantCulture) + ".");
             w.WriteLine("Values are median [p10-p90] over seeds. Days count from 1; levels are summed over all plots at the end of a day.");
             w.WriteLine();
-            w.WriteLine("| Profile | Levels d1 / d3 / d7 / end | Tier 2 day | Reached T2 | Raids/day | Breach % | People end | People min | Blackout h | Core % end | Stage | Climax |");
-            w.WriteLine("|---|---|---|---|---|---|---|---|---|---|---|---|");
+            w.WriteLine("| Profile | Levels d1 / d3 / d7 / end | Tier 2 day | Reached T2 | Raids/day | Breach % | People end | People min | Blackout h | Core % end | Core % max | Glitchy+ h/day | Stage | Climax |");
+            w.WriteLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
             var guards = new List<string>();
             foreach (string profile in profiles)
             {
@@ -52,6 +52,8 @@ namespace Deadswitch.Cli
                     + " | " + Spread(runs.Select(r => (double)r.PeopleMin))
                     + " | " + Spread(runs.Select(r => (double)r.BlackoutHours))
                     + " | " + Spread(runs.Select(r => (double)r.CorruptionEndPct))
+                    + " | " + Spread(runs.Select(r => (double)r.CorruptionMaxPct))
+                    + " | " + Spread(runs.Select(r => r.GlitchyHours / (double)days), 1)
                     + " | " + StageMix(runs)
                     + " | " + Pct(runs.Count(r => r.Climax), seeds) + " |");
 
@@ -125,6 +127,9 @@ namespace Deadswitch.Cli
                     blackoutRun = s.Blackout ? blackoutRun + 1 : 0;
                     r.BlackoutHours += s.Blackout ? 1 : 0;
                     r.LongestBlackoutHours = Math.Max(r.LongestBlackoutHours, blackoutRun);
+                    int core = CorruptionSystem.Percent(s.CorruptionMilli);
+                    r.CorruptionMaxPct = Math.Max(r.CorruptionMaxPct, core);
+                    r.GlitchyHours += core >= config.Corruption.GlitchyFrom ? 1 : 0;
                 }
             }
 
@@ -238,6 +243,8 @@ namespace Deadswitch.Cli
             public int BlackoutHours;
             public int LongestBlackoutHours;
             public int CorruptionEndPct;
+            public int CorruptionMaxPct;
+            public int GlitchyHours;
             public int Stage;
             public bool Climax;
             public bool CapOk;

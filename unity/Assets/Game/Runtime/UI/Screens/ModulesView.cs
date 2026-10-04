@@ -47,6 +47,14 @@ namespace Deadswitch.Game.UI.Screens
             // tier gates
             TierGates g = Modules.Gates(s, c);
             _ui.Q<Label>("tier-title").text = "TIER " + s.Tier + " // " + ModuleTexts.TierName(s.Tier);
+            bool final = s.Tier >= c.Tier.MaxTier;
+            _ui.Q<Label>("tier-next").text = final ? "FINAL TIER IN THIS BUILD" : "NEXT: " + ModuleTexts.TierName(s.Tier + 1);
+            foreach (string gate in new[] { "gate-build", "gate-module", "gate-people" })
+            {
+                _ui.Q(gate).parent.style.display = final ? DisplayStyle.None : DisplayStyle.Flex;
+            }
+
+            _ui.Q("tier-up").style.display = final ? DisplayStyle.None : DisplayStyle.Flex;
             Gate("gate-build", g.Build, "FACILITY LEVELS " + g.Levels + " / " + g.LevelsNeeded + "  //  NET POWER " + Fmt.Signed(g.NetEnergy) + " / " + Fmt.Signed(g.NetEnergyNeeded) + " H");
             Gate("gate-module", g.ModuleRestored, (g.Module == ModuleNode.None ? "NO FURTHER MEMORY" : ModuleTexts.Name(g.Module)) + (g.ModuleRestored ? " RESTORED" : " NOT RESTORED"));
             Gate("gate-people", g.PeopleAvailable, "HUMAN COST: " + g.PeopleCost + " PEOPLE LEAVE TO EXPAND");

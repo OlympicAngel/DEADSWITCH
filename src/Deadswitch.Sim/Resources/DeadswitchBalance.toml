@@ -56,10 +56,16 @@ regrowth_pct_of_gap_per_hour = 5
 [corruption]
 
 # Idle recovery per game hour (1000 = 1%). [0..100000]
-decay_milli_per_hour = 1000
+decay_milli_per_hour = 200
 
 # Added per game hour for each unmanned (AI-run) facility. [0..100000]
 automation_milli_per_hour = 150
+
+# Extra recovery per game hour, per mille of the current level: corruption settles instead of running away. [0..1000]
+decay_permille_per_hour = 10
+
+# Heavy compute use (doc 03 s3): added per compute point spent on research and construction. [0..10000]
+compute_milli_per_point = 75
 
 # Band start (percent): Glitchy. [1..100]
 glitchy_from = 31
@@ -285,7 +291,7 @@ research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900]
 research_compute = [90, 100, 100, 30, 60, 60, 80, 90, 80, 80, 100]
 
 # Research time per node (game minutes). [11..11 items, each 1..100000]
-research_minutes = [240, 600, 1440, 90, 150, 150, 240, 300, 300, 300, 420]
+research_minutes = [1440, 600, 1440, 90, 150, 150, 240, 300, 300, 300, 420]
 
 # Share of the cost returned when research is cancelled. [0..100]
 cancel_refund_pct = 50
@@ -318,11 +324,14 @@ automation_unmanned_pct = 75
 # Hub tiers and tier-up gates (doc 06 s2, SPEC-008). All (tune).
 [tier]
 
+# Highest tier reachable in this build (doc 10: two tiers at launch, Bunker and District). [1..4]
+max_tier = 2
+
 # Base population cap bonus per tier over people.cap (doc 10: 20 / 45 / 100 / 220). [4..4 items, each 0..10000]
 pop_bonus = [0, 25, 80, 200]
 
 # Build gate: total facility levels needed to leave tier 1 / 2 / 3. [3..3 items, each 0..1000]
-levels_to_advance = [10, 25, 45]
+levels_to_advance = [22, 40, 60]
 
 # Build gate: net energy per hour needed to leave tier 1 / 2 / 3. [3..3 items, each -100000..100000]
 net_energy_to_advance = [100, 300, 600]
@@ -477,7 +486,7 @@ cost_energy = [300, 260, 450, 780, 1350]
 cost_compute = [0, 0, 10, 25, 50]
 
 # Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
-build_minutes = [30, 45, 90, 180, 360]
+build_minutes = [30, 90, 270, 540, 1080]
 
 # Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
 upkeep_per_hour = [0, 0, 0, 0, 0]
@@ -499,7 +508,7 @@ cost_energy = [120, 220, 400, 700, 1200]
 cost_compute = [0, 15, 30, 60, 100]
 
 # Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
-build_minutes = [15, 40, 80, 160, 320]
+build_minutes = [15, 80, 240, 480, 960]
 
 # Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
 upkeep_per_hour = [180, 300, 450, 660, 930]
@@ -521,7 +530,7 @@ cost_energy = [200, 340, 560, 900, 1400]
 cost_compute = [0, 10, 20, 40, 70]
 
 # Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
-build_minutes = [60, 120, 240, 420, 720]
+build_minutes = [60, 240, 720, 1260, 2160]
 
 # Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
 upkeep_per_hour = [120, 210, 330, 480, 660]
@@ -543,7 +552,7 @@ cost_energy = [100, 200, 380, 650, 1050]
 cost_compute = [0, 0, 10, 20, 40]
 
 # Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
-build_minutes = [15, 40, 80, 150, 300]
+build_minutes = [15, 80, 240, 450, 900]
 
 # Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
 upkeep_per_hour = [0, 0, 30, 60, 120]
@@ -565,7 +574,7 @@ cost_energy = [150, 250, 420, 700, 1150]
 cost_compute = [0, 10, 20, 40, 70]
 
 # Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
-build_minutes = [20, 45, 90, 180, 360]
+build_minutes = [20, 90, 270, 540, 1080]
 
 # Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
 upkeep_per_hour = [60, 100, 150, 220, 300]

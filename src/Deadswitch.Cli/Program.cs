@@ -79,7 +79,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  run [--seed N] [--hours N] [--config PATH] [--load SAVE] [--save SAVE] [--garrison N] [--posture none|turtle|dark|evacuate] [--away]");
             w.WriteLine("  report [--days N] [--seed N] [--raid ID] [--verify]");
             w.WriteLine("  advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]");
-            w.WriteLine("  balance [--seeds N] [--days N] [--profile active|casual|autopilot|idle|all] [--out PATH]");
+            w.WriteLine("  balance [--seeds N] [--days N] [--profile active|casual|autopilot|idle|all] [--config PATH] [--out PATH]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
@@ -235,7 +235,7 @@ namespace Deadswitch.Cli
             return 0;
         }
 
-        /// <summary>balance [--seeds N] [--days N] [--profile NAME|all] [--out PATH]: the SPEC-014 report; exit 1 on a failed guard.</summary>
+        /// <summary>balance [--seeds N] [--days N] [--profile NAME|all] [--config PATH] [--out PATH]: the SPEC-014 report; exit 1 on a failed guard.</summary>
         private static int BalanceCommand(string[] args)
         {
             int seeds = (int)ParseLong(ValueAfter(args, "--seeds") ?? "100", "seeds");
@@ -248,7 +248,7 @@ namespace Deadswitch.Cli
             }
 
             var report = new StringWriter(CultureInfo.InvariantCulture);
-            bool ok = BalanceRunner.Run(LoadConfig(null, out _), seeds, days, profiles, report);
+            bool ok = BalanceRunner.Run(LoadConfig(ValueAfter(args, "--config"), out _), seeds, days, profiles, report);
             string? outPath = ValueAfter(args, "--out");
             if (outPath != null)
             {

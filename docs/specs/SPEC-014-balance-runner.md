@@ -1,6 +1,6 @@
 # SPEC-014: Balance scenario runner
 
-- Status: Done (F-020); tuning decision pending (see Findings)
+- Status: Done (F-020); first retune applied (F-026, owner targets 2026-10-04)
 - Pillar: all (tuning tool)
 - Touches: CLI (`balance` command), Host `ScriptedPlayer` (research, tier-up, extra plots)
 - Source rules: doc 10 s3-4 (placeholders, attack caps), `docs/agents/balance-tuning.md`
@@ -31,4 +31,4 @@ None (dev tool over the tested sim); the guards are the check.
 - **Autopilot stalls at 18 levels from day 2** (energy sits at cap; it neither researches nor upgrades further) while the project reaches Imminent and the climax fires in every run.
 - **Raids:** the cap holds (guards pass). Breaches reach 95%+ once tier scaling kicks in for fast climbers; people are rarely lost (minimum 12 in every profile, from the opening raid).
 - **Corruption ends at 0%** in every profile: decay outpaces gain at current values.
-- Not retuned here: pacing, difficulty and the Tier 1 length are design decisions (see HANDOFF).
+- Retuned 2026-10-04 (F-026, owner: Tier 1 lasts 5-7 days; corruption should be visible pressure): see doc 10 corrections log. Result (100 seeds x 30 days): Tier 2 on day 6 for active and casual; max tier 2; active corruption peaks ~46% with ~3 h/day in Glitchy; casual still sees ~87% of raids breach while away (open owner question).

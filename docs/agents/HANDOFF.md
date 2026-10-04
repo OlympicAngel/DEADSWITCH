@@ -13,7 +13,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).
 
 ## Open decision (owner)
-- Balance pacing (SPEC-014 findings): Tier 2 is reached on day 2 and all tiers within ~2 weeks; corruption never sticks. Needs a target Tier 1 length before retuning economy costs/gates.
+- Casual profile (away most of the day, Delegated routines) has ~87% of raids breach; Autopilot defends at 0%. Decide whether away players need more passive defense (SPEC-014 findings).
 
 ## Gotchas
 - Saves that reached Tier 2 before F-023 have no district plots (no migration; pre-release).

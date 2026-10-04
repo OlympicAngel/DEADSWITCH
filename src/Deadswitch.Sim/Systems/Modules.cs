@@ -145,6 +145,7 @@ namespace Deadswitch.Sim.Systems
             int minutes = ctx.Config.Modules.ResearchMinutes[d.Index];
             s.Energy -= energy;
             s.Compute -= compute;
+            CorruptionSystem.ComputeUse(ctx, compute);
             s.ResearchNode = (int)node;
             s.ResearchStartTick = s.Tick;
             s.ResearchCompleteTick = s.Tick + minutes;
@@ -195,7 +196,7 @@ namespace Deadswitch.Sim.Systems
         public static TierGates Gates(GameState s, SimConfig c)
         {
             int i = s.Tier - 1;
-            if (i >= c.Tier.LevelsToAdvance.Length)
+            if (i >= c.Tier.LevelsToAdvance.Length || s.Tier >= c.Tier.MaxTier)
             {
                 return new TierGates(false, 0, 0, 0, 0, ModuleNode.None, false, 0, false);
             }
@@ -221,7 +222,7 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
-            if (s.Tier - 1 >= ctx.Config.Tier.LevelsToAdvance.Length)
+            if (s.Tier - 1 >= ctx.Config.Tier.LevelsToAdvance.Length || s.Tier >= ctx.Config.Tier.MaxTier)
             {
                 return CommandResult.Reject(RejectReason.MaxTier);
             }
