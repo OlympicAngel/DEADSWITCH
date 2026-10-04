@@ -346,7 +346,7 @@ namespace Deadswitch.Game.UI.Screens
             oddsLabel.text = (st.Scouted ? "ODDS " : "AI ODDS ") + odds + "%";
             oddsLabel.EnableInClassList("t-amber", odds < 60);
             int back = hack ? 1 : 2 * d.TravelHours;
-            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, d, _kind)) + " // BACK IN " + back + " H"
+            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, _selected, _kind)) + " // BACK IN " + back + " H"
                 + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty);
             string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK", "SEND SABOTEURS" };
             Kit.SetButtonText(_ui.Q("op-launch"), verbs[(int)_kind]);

@@ -45,7 +45,7 @@ namespace Deadswitch.Sim.Systems
             for (int i = 0; i < WorldSystem.Sites.Count; i++)
             {
                 SiteDef d = WorldSystem.Sites[i];
-                if (s.Sites[i].Outpost || s.Tick < s.Sites[i].CooldownUntilTick || DiplomacySystem.Ceasefire(s, d.Owner) || DiplomacySystem.Allied(s, d.Owner))
+                if (HazardSystem.Wild(d.Kind) || s.Sites[i].Outpost || s.Tick < s.Sites[i].CooldownUntilTick || DiplomacySystem.Ceasefire(s, d.Owner) || DiplomacySystem.Allied(s, d.Owner))
                 {
                     continue;
                 }
@@ -59,7 +59,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             // it never spends the fuel the reactor needs for the next half day
-            bool keepsReactorFed = best < 0 || s.Fuel - WorldSystem.FuelCost(s, c, WorldSystem.Sites[best], OpKind.Raid) >= ReactorSystem.FuelPerHour(s, c) * 12;
+            bool keepsReactorFed = best < 0 || s.Fuel - WorldSystem.FuelCost(s, c, best, OpKind.Raid) >= ReactorSystem.FuelPerHour(s, c) * 12;
             if (best < 0 || !keepsReactorFed || !WorldSystem.Launch(ctx, Command.LaunchOp(best, OpKind.Raid, a.InitiativeSquad)).Accepted)
             {
                 return;

@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026). v23: adaptive enemies (SPEC-027). v24: luck swings (SPEC-028). v25: reactor (SPEC-029). v26: AI initiative (SPEC-030). v27: starting regions (SPEC-031). v28: reactor fuel per tick, AI initiative only when present.</summary>
-        public const int LayoutVersion = 28;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026). v23: adaptive enemies (SPEC-027). v24: luck swings (SPEC-028). v25: reactor (SPEC-029). v26: AI initiative (SPEC-030). v27: starting regions (SPEC-031). v28: reactor fuel per tick, AI initiative only when present. v29: fallout front (SPEC-032).</summary>
+        public const int LayoutVersion = 29;
 
         public long Tick;
 
@@ -215,6 +215,12 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Where this cycle's Hub stands (SPEC-031); chosen when relocating.</summary>
         public Region Region;
+
+        /// <summary>Map site under the drifting fallout front (SPEC-032); -1 before it first settles.</summary>
+        public int FalloutSite = -1;
+
+        /// <summary>When the fallout front next drifts (0 = not scheduled yet).</summary>
+        public long NextFalloutTick;
 
         /// <summary>The reactor had its fuel at the last hour (SPEC-029); without it the reactor makes nothing.</summary>
         public bool ReactorFueled = true;
@@ -762,6 +768,12 @@ namespace Deadswitch.Sim.State
                     v.Int(ref spy);
                     Spies[f] = (SpyState)spy;
                 }
+            }
+
+            if (v.Version >= 29)
+            {
+                v.Int(ref FalloutSite);
+                v.Long(ref NextFalloutTick);
             }
 
             if (v.IsReading)

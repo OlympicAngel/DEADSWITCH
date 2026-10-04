@@ -44,6 +44,7 @@ namespace Deadswitch.Sim
         public ChapterConfig Chapters = new ChapterConfig();
         public AdaptConfig Adapt = new AdaptConfig();
         public LuckConfig Luck = new LuckConfig();
+        public HazardConfig Hazards = new HazardConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -167,6 +168,7 @@ namespace Deadswitch.Sim
             Chapters.Visit(visitor);
             Adapt.Visit(visitor);
             Luck.Visit(visitor);
+            Hazards.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

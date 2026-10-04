@@ -13,14 +13,16 @@ routes are safe. Done = sim rules + config + saves, advisor lines, map UI wired,
 
 ## Steps
 - [x] 1. Spec, task, backlog and roadmap (stale boxes ticked)
-- [ ] 2. Sim: wild zones in the catalog, `[hazards]` config, zone rewards and risks, no faction effects (verification: test)
-- [ ] 3. Sim: fallout front (state, save v29, drift, fuel/sickness/outpost effects) (verification: test, chunking, CLI run)
+- [x] 2. Sim: wild zones in the catalog, `[hazards]` config, zone rewards and risks, no faction effects (verification: test)
+- [x] 3. Sim: fallout front (state, save v29, drift, fuel/sickness/outpost effects) (verification: test, chunking, CLI run)
 - [ ] 4. Host: advisor lines for the new events; balance file dump (verification: config check, advisor tests)
 - [ ] 5. Unity: map shows zones and the fallout front; site sheet states risk (verification: Unity compile check)
 - [ ] 6. Docs (doc 10 corrections log, doc 05 open task, HANDOFF), finish feature
 
 ## Notes
 - Owner direction (2026-10-04): continue gameplay work in the cloud; visual styling waits for the end (F-099).
+- Owner queued F-057 (2.5D sector map rework) right after this feature; F-056 follows it.
+- New events need no schema bump (only payload changes do); save layout v29.
 - F-099 stays open (phone and Editor checks need the owner).
 
 ## Blocked / questions

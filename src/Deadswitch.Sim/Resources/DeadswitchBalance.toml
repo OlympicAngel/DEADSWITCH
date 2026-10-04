@@ -1255,6 +1255,55 @@ regroup_hours = 8
 regroup_defense_pct = 25
 
 # --------------------------------------------------------------------------------------------------
+# Hazard zones (radiation, plague, machine graveyard) and the drifting fallout front (SPEC-032, doc 05 s6-7). All (tune).
+[hazards]
+
+# A raided zone has nothing left to take for this long. [0..1000]
+zone_cooldown_hours = 48
+
+# A scouted zone's sickness and infection chances are this % of normal. [0..100]
+prepared_risk_pct = 50
+
+# Extra fuel % to enter a radiation zone. [0..1000]
+radiation_fuel_pct = 50
+
+# Chance a squad back from radiation (or fallout) is sick. [0..100]
+radiation_sick_pct = 40
+
+# Share of a sick squad's survivors lost (at least 1). [0..100]
+radiation_casualty_pct = 25
+
+# Survivors a won plague raid brings home (up to the population cap). [0..100]
+plague_people = 3
+
+# Chance a squad back from a plague zone carries infection home. [0..100]
+plague_infection_pct = 35
+
+# People at home lost to an infection (never under the people floor). [0..100]
+plague_infected = 2
+
+# Damage points a won graveyard raid repairs for free (most damaged facility). [0..20]
+graveyard_repair_points = 2
+
+# Extra share of the squad lost to drone nests on a failed graveyard raid. [0..100]
+graveyard_nest_pct = 20
+
+# Day the fallout front first settles over a site. [0..1000]
+fallout_first_day = 3
+
+# Hours between fallout drifts. [1..1000]
+fallout_drift_hours = 60
+
+# Up to this many extra hours before each drift (hash). [0..1000]
+fallout_jitter_hours = 24
+
+# Extra fuel % for an op to a site under fallout. [0..1000]
+fallout_fuel_pct = 50
+
+# An outpost under fallout sends this % of its output. [0..100]
+fallout_outpost_pct = 25
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

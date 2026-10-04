@@ -165,6 +165,33 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void HazardZones_PayAndHurt_WithoutHeat_AndFalloutDrifts()
+        {
+            // SPEC-032: a wild zone belongs to nobody (no heat, no sabotage); plague pays in survivors and can infect the Hub
+            var sim = new Simulation(31UL);
+            sim.Config.Hazards.PlagueInfectionPct = 100;
+            sim.State.Fuel = 200;
+            int plague = Enumerable.Range(0, WorldSystem.Sites.Count).First(i => WorldSystem.Sites[i].Kind == SiteKind.Plague);
+            Assert.Equal(RejectReason.InvalidArgument, sim.Execute(Command.LaunchOp(plague, OpKind.Sabotage, 2)).Reason);
+            Assert.True(sim.Execute(Command.LaunchOp(plague, OpKind.Raid, 6)).Accepted);
+            sim.Run(2 * WorldSystem.Sites[plague].TravelHours * SimConfig.TicksPerHour);
+            SimEvent back = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
+            Assert.All(sim.State.Heat, h => Assert.Equal(0, h));
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.PlagueInfection);
+            Assert.Equal(back.C == 1, sim.Log.Events.Any(e => e.Kind == EventKind.SurvivorsFound));
+
+            // the fallout front settles on a faction site, drifts on schedule, and survives a save
+            sim.Run((long)sim.Config.Hazards.FalloutFirstDay * SimConfig.TicksPerDay);
+            int first = sim.State.FalloutSite;
+            Assert.True(first >= 0 && !HazardSystem.Wild(WorldSystem.Sites[first].Kind));
+            Assert.True(WorldSystem.FuelCost(sim.State, sim.Config, first, OpKind.Raid) > 2 * WorldSystem.Sites[first].TravelHours * sim.Config.World.FuelPerTravelHour);
+            sim.Run(sim.State.NextFalloutTick - sim.State.Tick + SimConfig.TicksPerHour);
+            Assert.NotEqual(first, sim.State.FalloutSite);
+            Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
+            Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(loaded.State));
+        }
+
+        [Fact]
         public void Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly()
         {
             var sim = new Simulation(51UL);

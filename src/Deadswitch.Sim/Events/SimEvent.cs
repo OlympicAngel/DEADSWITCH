@@ -302,6 +302,21 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The core settled at a new site (SPEC-031). A: Region.</summary>
         RegionSettled = 98,
+
+        /// <summary>A squad came back sick from radiation or fallout (SPEC-032). A: site, B: people lost.</summary>
+        HazardSickness = 99,
+
+        /// <summary>A squad brought plague home. A: site, B: people lost at the Hub.</summary>
+        PlagueInfection = 100,
+
+        /// <summary>A plague raid found survivors who joined the Hub. A: site, B: people.</summary>
+        SurvivorsFound = 101,
+
+        /// <summary>Graveyard parts repaired a facility for free. A: slot, B: damage points repaired.</summary>
+        PartsRecovered = 102,
+
+        /// <summary>The fallout front moved. A: new site, B: previous site (-1 none), C: hours to the next drift.</summary>
+        FalloutDrifted = 103,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

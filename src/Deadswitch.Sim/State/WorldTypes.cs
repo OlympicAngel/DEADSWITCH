@@ -32,6 +32,15 @@ namespace Deadswitch.Sim.State
         Outpost = 1,
         DataCenter = 2,
         Ruins = 3,
+
+        /// <summary>Wild hazard zone (SPEC-032): rich salvage, radiation sickness.</summary>
+        Radiation = 4,
+
+        /// <summary>Wild hazard zone: survivors and medical finds, infection.</summary>
+        Plague = 5,
+
+        /// <summary>Wild hazard zone: wrecks and repair parts, drone nests.</summary>
+        Graveyard = 6,
     }
 
     /// <summary>Kind of operation sent from the Hub (doc 04 s8, doc 05 s5). Stored in commands and events.</summary>

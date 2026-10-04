@@ -28,7 +28,7 @@ risk, so the map rewards a careful player. A fallout front drifts between sites 
    sites nearest its current one. While covered: ops to that site cost +`fallout_fuel_pct`% fuel and their squads
    risk radiation sickness as in rule 2; an outpost there sends `fallout_outpost_pct`% of its output. It never covers
    the Hub.
-7. Hash picks, no RNG draws. Save layout v29 (fallout site and next drift tick), event schema v28.
+7. Hash picks, no RNG draws. Save layout v29 (fallout site and next drift tick); new event kinds 99-103 (schema unchanged).
 
 ## Feedback
 Map: zones drawn neutral with their hazard named; the fallout front marked on its site with the hours to the next
@@ -36,4 +36,4 @@ drift; the site sheet states the risk and whether it is halved by scouting. Advi
 survivors found, parts recovered, fallout drift.
 
 ## Tests
-`WorldTests.HazardZones_PayAndHurt_AndFalloutDrifts` (zones give no heat; plague survivors; fallout drifts and saves).
+`ThreatTests.HazardZones_PayAndHurt_WithoutHeat_AndFalloutDrifts` (no heat, no sabotage; plague survivors and infection; fallout drifts, costs fuel and saves).
