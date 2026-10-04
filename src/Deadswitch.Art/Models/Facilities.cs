@@ -425,8 +425,7 @@ namespace Deadswitch.Art.Models
                 float z = zFront + 0.9f + ((i / 3) * 2.0f);
                 float y = y0 + hFront + 0.12f + ((z - zFront) * (hBack - hFront) / (zBack - zFront)) + 0.12f;
                 b.Push(Matrix4x4.CreateRotationX(-pitch) * Matrix4x4.CreateTranslation(new Vector3(-1.95f + ((i % 3) * 1.95f), y, z)));
-                b.Box(new Vector3(0, -0.05f, 0), new Vector3(1.85f, 0.06f, 1.75f), Mat.DarkSteel, 0.01f);
-                b.Box(Vector3.Zero, new Vector3(1.75f, 0.04f, 1.65f), Mat.Glass, 0.005f);
+                KitParts.SolarModule(b, 1.85f, 1.75f, rng.Next() < 0.25f);
                 b.Pop();
             }
 
@@ -539,28 +538,56 @@ namespace Deadswitch.Art.Models
             b.Frustum(new Vector3(0, top, 0), 0.8f, 0.65f, 0.45f, 14, Mat.DarkSteel, 0.05f);
             float pivotY = top + 0.45f;
 
+            // pintle-mounted gun behind an angled, patched gunner shield (no box housing)
             var head = new MeshBuilder(seed + 7) { GroundOffset = pivotY + PadTop };
-            float w = level >= 3 ? 1.4f : 1.2f;
-            head.BoxOn(0, 0, 0.1f, w, 0.72f, 1.2f, Mat.OliveSteel, 0.1f);
-            head.BoxOn(0, 0.72f, 0.2f, w * 0.6f, 0.22f, 0.7f, Mat.OliveSteel, 0.06f);
-            head.BoxOn(0, 0.1f, 0.85f, w * 0.8f, 0.5f, 0.35f, Mat.DarkSteel, 0.04f);
-            int barrels = level >= 5 ? 4 : (level >= 2 ? 2 : 1);
-            for (int i = 0; i < barrels; i++)
+            float w = level >= 3 ? 1.5f : 1.3f;
+            head.Frustum(Vector3.Zero, 0.62f, 0.6f, 0.1f, 20, Mat.DarkSteel, 0.02f);
+            head.Frustum(new Vector3(0, 0.1f, 0.1f), 0.14f, 0.12f, 0.5f, 12, Mat.OliveSteel, 0.02f);
+            foreach (int s in new[] { -1, 1 })
             {
-                float x = barrels == 1 ? 0f : (-0.16f * (barrels - 1)) + (i * 0.32f);
-                float y = barrels == 4 ? (i % 2 == 0 ? 0.25f : 0.45f) : 0.36f;
-                float xx = x * (barrels == 4 ? 0.6f : 1f);
-                head.CylinderZ(new Vector3(xx, y, -1.05f), 0.075f, 1.5f, 10, Mat.DarkSteel, 0.01f);
-                head.CylinderZ(new Vector3(xx, y, -1.75f), 0.11f, 0.22f, 10, Mat.DarkSteel, 0.02f);
+                // cradle side plates
+                head.Box(new Vector3(s * 0.2f, 0.62f, 0.05f), new Vector3(0.03f, 0.34f, 0.7f), Mat.OliveSteel, 0.01f);
             }
 
-            head.Box(new Vector3(w * 0.45f, 0.64f, -0.52f), new Vector3(0.22f, 0.2f, 0.22f), Mat.DarkSteel, 0.03f);
-            head.Box(new Vector3(w * 0.45f, 0.64f, -0.64f), new Vector3(0.12f, 0.08f, 0.02f), Mat.LampRed, 0f);
-            head.Box(new Vector3(-w * 0.52f, 0.2f, 0.3f), new Vector3(0.3f, 0.35f, 0.5f), Mat.OliveSteel, 0.03f);
+            int guns = level >= 5 ? 4 : (level >= 2 ? 2 : 1);
+            for (int i = 0; i < guns; i++)
+            {
+                float x = guns == 1 ? 0f : (-0.13f * (guns - 1)) + (i * 0.26f);
+                float y = guns == 4 ? (i % 2 == 0 ? 0.56f : 0.74f) : 0.65f;
+                float xx = x * (guns == 4 ? 0.62f : 1f);
+                head.Box(new Vector3(xx, y, 0.15f), new Vector3(0.13f, 0.15f, 0.75f), Mat.DarkSteel, 0.015f);
+                head.CylinderZ(new Vector3(xx, y, -0.55f), 0.055f, 0.65f, 12, Mat.DarkSteel, 0.008f);
+                head.CylinderZ(new Vector3(xx, y, -1.15f), 0.028f, 0.6f, 8, Mat.DarkSteel, 0.004f);
+                head.CylinderZ(new Vector3(xx, y, -1.48f), 0.042f, 0.09f, 10, Mat.DarkSteel, 0.006f);
+                // ammo can with a belt into the receiver
+                Vector3 can = new Vector3(xx + (xx >= 0 ? 0.17f : -0.17f), y - 0.12f, 0.25f);
+                head.Box(can, new Vector3(0.11f, 0.19f, 0.3f), Mat.OliveSteel, 0.01f);
+                head.Strut(can + new Vector3(0, 0.1f, -0.05f), new Vector3(xx, y + 0.02f, 0.1f), 0.025f, Mat.Copper);
+            }
+
+            // shield: center plate leaning back, two angled wings, welded patch, sight slit
+            head.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-16f)) * Matrix4x4.CreateTranslation(new Vector3(0, 0.38f, -0.38f)));
+            head.Box(new Vector3(0, 0.38f, 0), new Vector3(w * 0.62f, 0.8f, 0.035f), Mat.OliveSteel, 0.01f);
+            head.Box(new Vector3(-w * 0.12f, 0.24f, -0.03f), new Vector3(0.36f, 0.26f, 0.02f), Mat.Rust, 0.004f);
+            head.Box(new Vector3(w * 0.12f, 0.66f, -0.025f), new Vector3(0.22f, 0.04f, 0.02f), Mat.Rubber, 0f);
+            head.Pop();
+            foreach (int s in new[] { -1, 1 })
+            {
+                head.Push(Matrix4x4.CreateRotationY(MeshBuilder.Deg(s * 34f)) * Matrix4x4.CreateTranslation(new Vector3(s * w * 0.3f, 0.38f, -0.36f)));
+                head.Box(new Vector3(s * w * 0.15f, 0.34f, 0), new Vector3(w * 0.3f, 0.7f, 0.03f), Mat.OliveSteel, 0.01f);
+                head.Pop();
+            }
+
+            // optics box with the red status lamp, grips and a seat behind
+            head.Box(new Vector3(w * 0.22f, 0.98f, -0.1f), new Vector3(0.16f, 0.14f, 0.22f), Mat.DarkSteel, 0.02f);
+            head.Box(new Vector3(w * 0.22f, 0.98f, -0.22f), new Vector3(0.09f, 0.06f, 0.02f), Mat.LampRed, 0f);
+            head.Strut(new Vector3(-0.16f, 0.62f, 0.55f), new Vector3(-0.16f, 0.5f, 0.75f), 0.03f, Mat.Rubber);
+            head.Strut(new Vector3(0.16f, 0.62f, 0.55f), new Vector3(0.16f, 0.5f, 0.75f), 0.03f, Mat.Rubber);
+            head.Strut(new Vector3(0, 0.1f, 0.2f), new Vector3(0, 0.42f, 0.9f), 0.04f, Mat.DarkSteel);
+            head.Box(new Vector3(0, 0.44f, 0.95f), new Vector3(0.34f, 0.05f, 0.3f), Mat.Rubber, 0.02f);
             if (level >= 3)
             {
-                head.Box(new Vector3(-w * 0.56f, 0.36f, -0.1f), new Vector3(0.09f, 0.62f, 1.15f), Mat.DarkSteel, 0.02f);
-                head.Box(new Vector3(w * 0.56f, 0.36f, -0.1f), new Vector3(0.09f, 0.62f, 1.15f), Mat.DarkSteel, 0.02f);
+                head.Box(new Vector3(0, 0.12f, 0.75f), new Vector3(0.5f, 0.2f, 0.32f), Mat.OliveSteel, 0.02f);
             }
 
             m.Parts.Add(new AnimPart(head.Mesh, new Vector3(0, pivotY, 0), AnimKind.SweepY, 0.08f + (level * 0.01f), 55f));
@@ -680,11 +707,19 @@ namespace Deadswitch.Art.Models
             m.Parts.Add(Fan(baseCenter + new Vector3(0, 0.52f, 0), 0.36f, 520f, seed));
         }
 
-        /// <summary>Outdoor server rack cabinet with phosphor status lights, facing -Z.</summary>
+        /// <summary>Outdoor server rack cabinet (perforated door, small display, phosphor status lights), facing -Z.</summary>
         private static void Rack(MeshBuilder b, Vector3 baseCenter)
         {
             b.BoxOn(baseCenter.X, baseCenter.Y, baseCenter.Z, 0.56f, 1.95f, 0.7f, Mat.DarkSteel, 0.03f);
-            b.Box(new Vector3(baseCenter.X, baseCenter.Y + 1.0f, baseCenter.Z - 0.36f), new Vector3(0.48f, 1.7f, 0.02f), Mat.Screen, 0f);
+            // perforated steel door: vent slot rows, a small status display, hinges and a handle
+            b.Box(new Vector3(baseCenter.X, baseCenter.Y + 1.0f, baseCenter.Z - 0.36f), new Vector3(0.5f, 1.8f, 0.02f), Mat.OliveSteel, 0.005f);
+            for (int r = 0; r < 9; r++)
+            {
+                b.Box(new Vector3(baseCenter.X, baseCenter.Y + 0.25f + (r * 0.12f), baseCenter.Z - 0.372f), new Vector3(0.36f, 0.035f, 0.006f), Mat.Rubber, 0f);
+            }
+
+            b.Box(new Vector3(baseCenter.X, baseCenter.Y + 1.62f, baseCenter.Z - 0.372f), new Vector3(0.26f, 0.14f, 0.006f), Mat.Screen, 0f);
+            b.Box(new Vector3(baseCenter.X + 0.2f, baseCenter.Y + 1.0f, baseCenter.Z - 0.38f), new Vector3(0.03f, 0.22f, 0.03f), Mat.DarkSteel, 0.005f);
             for (int i = 0; i < 8; i++)
             {
                 b.Box(new Vector3(baseCenter.X - 0.12f + ((i % 2) * 0.2f), baseCenter.Y + 0.3f + (i * 0.2f), baseCenter.Z - 0.38f), new Vector3(0.05f, 0.03f, 0.02f), i % 5 == 4 ? Mat.LampAmber : Mat.LampPhosphor, 0f);
@@ -715,8 +750,7 @@ namespace Deadswitch.Art.Models
             b.Strut(baseCenter + new Vector3(-w * 0.45f, 0, d * 0.4f), baseCenter + new Vector3(-w * 0.45f, 0.75f, d * 0.4f), 0.05f, Mat.DarkSteel);
             b.Strut(baseCenter + new Vector3(w * 0.45f, 0, d * 0.4f), baseCenter + new Vector3(w * 0.45f, 0.75f, d * 0.4f), 0.05f, Mat.DarkSteel);
             b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-tiltDeg)) * Matrix4x4.CreateTranslation(baseCenter + new Vector3(0, 0.55f, 0)));
-            b.Box(new Vector3(0, -0.04f, 0), new Vector3(w, 0.05f, d), Mat.DarkSteel, 0.01f);
-            b.Box(Vector3.Zero, new Vector3(w - 0.1f, 0.04f, d - 0.1f), Mat.Glass, 0.005f);
+            KitParts.SolarModule(b, w, d);
             b.Pop();
         }
 

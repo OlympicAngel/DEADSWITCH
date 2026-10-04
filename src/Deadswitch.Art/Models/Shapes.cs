@@ -52,23 +52,25 @@ namespace Deadswitch.Art.Models
         /// <summary>A ring of sandbags (two staggered layers) on y = 0.</summary>
         public static void SandbagRing(MeshBuilder b, Vector3 center, float radius, int count, int layers, float gapStartDeg = -1f, float gapDeg = 0f)
         {
-            for (int layer = 0; layer < layers; layer++)
+            // laid bags are flat (0.15 m): more courses than the old layer count, staggered, slightly irregular
+            int courses = (int)Math.Round(layers * 1.6f);
+            int bags = Math.Max(count, (int)(2 * Math.PI * radius / 0.5f));
+            for (int layer = 0; layer < courses; layer++)
             {
                 float offset = layer % 2 == 0 ? 0f : 0.5f;
-                for (int i = 0; i < count; i++)
+                float r = radius - (layer * 0.03f);
+                for (int i = 0; i < bags; i++)
                 {
-                    float deg = ((i + offset) * 360f / count) - 90f;
+                    float deg = ((i + offset) * 360f / bags) - 90f;
                     if (gapStartDeg >= 0f && Within(deg, gapStartDeg, gapDeg))
                     {
                         continue;
                     }
 
                     float a = MeshBuilder.Deg(deg);
-                    var p = center + new Vector3((float)Math.Cos(a) * radius, 0.13f + (layer * 0.24f), (float)Math.Sin(a) * radius);
-                    float len = (float)(2 * Math.PI * radius / count) * 0.96f;
-                    b.Push(Matrix4x4.CreateRotationY(-a + MeshBuilder.Deg(90)) * Matrix4x4.CreateTranslation(p));
-                    b.Box(Vector3.Zero, new Vector3(len, 0.26f, 0.42f), Mat.Sandbag, 0.11f);
-                    b.Pop();
+                    var p = center + new Vector3((float)Math.Cos(a) * r, 0.075f + (layer * 0.145f), (float)Math.Sin(a) * r);
+                    float len = (float)(2 * Math.PI * r / bags) * 1.02f;
+                    Sandbag(b, p, -a + MeshBuilder.Deg(90), len, (uint)((layer * 131) + i));
                 }
             }
         }
@@ -78,24 +80,41 @@ namespace Deadswitch.Art.Models
         {
             Vector3 d = to - from;
             float len = d.Length();
-            int count = Math.Max(1, (int)(len / 0.62f));
+            int count = Math.Max(1, (int)(len / 0.5f));
             float yaw = (float)Math.Atan2(d.X, d.Z);
-            for (int layer = 0; layer < layers; layer++)
+            int courses = (int)Math.Round(layers * 1.6f);
+            for (int layer = 0; layer < courses; layer++)
             {
                 for (int i = 0; i < count; i++)
                 {
-                    float t = (i + 0.5f + (layer % 2 == 0 ? 0f : 0.25f)) / count;
+                    float t = (i + 0.5f + (layer % 2 == 0 ? 0f : 0.5f)) / count;
                     if (t > 1f)
                     {
                         continue;
                     }
 
-                    Vector3 p = from + (d * t) + new Vector3(0, 0.13f + (layer * 0.24f), 0);
-                    b.Push(Matrix4x4.CreateRotationY(yaw) * Matrix4x4.CreateTranslation(p));
-                    b.Box(Vector3.Zero, new Vector3(0.44f, 0.26f, (len / count) * 0.96f), Mat.Sandbag, 0.11f);
-                    b.Pop();
+                    Vector3 p = from + (d * t) + new Vector3(0, 0.075f + (layer * 0.145f), 0);
+                    // bags lie across the wall line (headers): their length runs along it
+                    Sandbag(b, p, yaw + MeshBuilder.Deg(90), (len / count) * 1.02f, (uint)((layer * 131) + i));
                 }
             }
+        }
+
+        /// <summary>
+        /// One filled sandbag lying on its side (along local X, length <paramref name="len"/>): a squashed,
+        /// bevelled body with pinched, tied ends and a little sag and jitter so courses never look molded.
+        /// </summary>
+        public static void Sandbag(MeshBuilder b, Vector3 center, float yaw, float len, uint seed)
+        {
+            uint h = (seed * 2654435761u) ^ 0x9E3779B9u;
+            float j1 = ((h & 0xFF) / 255f) - 0.5f;
+            float j2 = (((h >> 8) & 0xFF) / 255f) - 0.5f;
+            b.Push(Matrix4x4.CreateRotationZ(j1 * 0.06f) * Matrix4x4.CreateRotationY(yaw + (j2 * 0.08f)) * Matrix4x4.CreateTranslation(center));
+            float body = len * 0.8f;
+            b.Box(Vector3.Zero, new Vector3(body, 0.15f, 0.34f), Mat.Sandbag, 0.06f);
+            b.Box(new Vector3((body * 0.5f) + (len * 0.05f), -0.01f, 0), new Vector3(len * 0.12f, 0.1f, 0.24f), Mat.Sandbag, 0.035f);
+            b.Box(new Vector3((-body * 0.5f) - (len * 0.05f), -0.01f, 0), new Vector3(len * 0.12f, 0.1f, 0.24f), Mat.Sandbag, 0.035f);
+            b.Pop();
         }
 
         /// <summary>Small emissive lamp housing with a point light.</summary>

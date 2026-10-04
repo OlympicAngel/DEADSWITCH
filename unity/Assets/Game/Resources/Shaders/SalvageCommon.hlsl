@@ -60,7 +60,7 @@ void ds_salvage(float3 wp, float3 n, float3 masks, float3 baseCol, float3 bareCo
         float3 soil = baseCol * (0.72 + 0.5 * n1) * (0.92 + 0.16 * n2);
         float wet = smoothstep(0.5, 0.6, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.12 + float3(4.0, 0.0, 2.0)));
         float dry = smoothstep(0.48, 0.68, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.07 + float3(9.0, 0.0, 5.0)) + n2 * 0.15) * (1.0 - wet);
-        float speck = smoothstep(0.55, 0.75, ds_noise(wp * 9.0));
+        float speck = smoothstep(0.5, 0.8, ds_noise(wp * 3.5));
         float3 gravel = float3(0.33, 0.32, 0.30) * (0.88 + 0.22 * speck) * (0.85 + 0.3 * n2);
         albedo = lerp(soil, gravel, dry * 0.85) * ao;
         albedo *= lerp(1.0, 0.42, wet);

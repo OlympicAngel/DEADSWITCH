@@ -205,6 +205,31 @@ namespace Deadswitch.Art.Models
         }
 
         /// <summary>Welded patch plate (thin, slightly proud of a wall facing -Z).</summary>
+        /// <summary>
+        /// Solar module in local space (centered, facing +Y, w x d): aluminium frame, dark glass with a visible cell
+        /// grid and bus lines, so it reads as a real panel rather than a flat slab.
+        /// </summary>
+        public static void SolarModule(MeshBuilder b, float w, float d, bool cracked = false)
+        {
+            b.Box(new Vector3(0, -0.05f, 0), new Vector3(w, 0.05f, d), Mat.DarkSteel, 0.01f);
+            b.Box(Vector3.Zero, new Vector3(w - 0.08f, 0.035f, d - 0.08f), Mat.Glass, 0.004f);
+            const float cell = 0.16f;
+            for (float x = (-w * 0.5f) + 0.04f + cell; x < (w * 0.5f) - 0.06f; x += cell)
+            {
+                b.Box(new Vector3(x, 0.019f, 0), new Vector3(0.012f, 0.004f, d - 0.1f), Mat.DarkSteel, 0f);
+            }
+
+            for (float z = (-d * 0.5f) + 0.04f + (cell * 2f); z < (d * 0.5f) - 0.06f; z += cell * 2f)
+            {
+                b.Box(new Vector3(0, 0.019f, z), new Vector3(w - 0.1f, 0.004f, 0.008f), Mat.PaintWhite, 0f);
+            }
+
+            if (cracked)
+            {
+                b.Box(new Vector3(w * 0.18f, 0.022f, -d * 0.12f), new Vector3(w * 0.3f, 0.004f, d * 0.26f), Mat.ConcreteDark, 0f);
+            }
+        }
+
         /// <summary>200-litre steel drum (0.58 m x 0.88 m): rolling hoops, rolled rims, recessed lid with bungs.</summary>
         public static void Barrel(MeshBuilder b, Vector3 baseCenter, Mat mat, bool lyingAlongZ = false)
         {

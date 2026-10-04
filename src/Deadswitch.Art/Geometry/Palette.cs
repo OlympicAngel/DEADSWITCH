@@ -104,7 +104,7 @@ namespace Deadswitch.Art.Geometry
             new MaterialDef("SandSteel", 0x837A64, 0.25f, 0.3f, PaintedSteel),
             new MaterialDef("DarkSteel", 0x33363A, 0.6f, 0.34f, BareSteel),
             new MaterialDef("Tarp", 0x51583F, 0f, 0.2f, Fabric),
-            new MaterialDef("Sandbag", 0x7F7357, 0f, 0.08f, new Wear(0f, 0f, 0.85f, 0.2f, 0.6f, 3f, 0x5A5040)),
+            new MaterialDef("Sandbag", 0x6F6750, 0f, 0.08f, new Wear(0f, 0f, 0.85f, 0.2f, 0.6f, 3f, 0x5A5040)),
             new MaterialDef("Wood", 0x5C4632, 0f, 0.16f, new Wear(0f, 0f, 0.55f, 0.35f, 0.6f, 2.4f, 0x3A2C20)),
             new MaterialDef("Rubber", 0x1D1F20, 0f, 0.3f, new Wear(0f, 0f, 0.6f, 0f, 0.2f, 2f, 0x1D1F20)),
             new MaterialDef("Ground", 0x4A4234, 0f, 0.1f, new Wear(0f, 0f, 0f, 0f, 0.7f, 0.6f, 0x2E2820, ground: true)),

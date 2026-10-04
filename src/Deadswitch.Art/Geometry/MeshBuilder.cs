@@ -154,7 +154,8 @@ namespace Deadswitch.Art.Geometry
         {
             // round things are round (doc 11 anti-toy rules): faceting only survives on thin parts
             float rMax = Math.Max(rBottom, rTop);
-            if (mat != Mat.Foliage && mat != Mat.Rock)
+            // (architecture wider than 1.5 m keeps its polygon: an octagonal emplacement is meant to be octagonal)
+            if (mat != Mat.Foliage && mat != Mat.Rock && rMax < 1.5f)
             {
                 segments = Math.Max(segments, rMax >= 0.25f ? 18 : (rMax >= 0.12f ? 12 : segments));
             }
