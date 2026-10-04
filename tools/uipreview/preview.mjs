@@ -22,7 +22,8 @@ const opt = (name, dflt) => { const i = args.indexOf('--' + name); return i >= 0
 const uxmlPath = args.find(a => a.endsWith('.uxml'));
 if (!uxmlPath) { console.error('usage: preview.mjs <screen.uxml> [--out png]'); process.exit(2); }
 const out = opt('out', path.join(ROOT, 'artifacts/uipreview', path.basename(uxmlPath, '.uxml') + '.png'));
-const width = 1080, height = parseInt(opt('height', '2340'), 10), scale = parseFloat(opt('scale', '0.5'));
+// 1920 = 16:9, the shortest common phone (and Unity's default portrait Game view): overlaps show up here first.
+const width = 1080, height = parseInt(opt('height', '1920'), 10), scale = parseFloat(opt('scale', '0.5'));
 const bg = opt('bg', null);
 
 // ---------- UXML -> HTML ----------
@@ -163,6 +164,12 @@ const browser = await playwright.chromium.launch({ executablePath: fs.existsSync
 const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
 await page.setContent(html, { waitUntil: 'load' });
 await page.waitForTimeout(150);
+// Unity shrinks flex children (flex-shrink: 1) instead of overflowing, so text that needs more height than it
+// got overlaps its neighbours in the Editor. Report it; long screens belong in a ScrollView.
+const squeezed = await page.evaluate(() => [...document.querySelectorAll('.ui-label')]
+  .filter(e => e.offsetParent && e.textContent.trim() && e.scrollHeight > e.clientHeight + 3)
+  .map(e => `${e.id || e.className.split(' ').slice(-1)[0]} '${e.textContent.trim().slice(0, 24)}' needs ${e.scrollHeight}px, has ${e.clientHeight}px`));
+for (const s of squeezed) console.warn('squeezed: ' + s);
 await page.screenshot({ path: out });
 await browser.close();
 console.log('wrote ' + path.relative(ROOT, out));

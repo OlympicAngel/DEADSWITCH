@@ -29,7 +29,7 @@ namespace Deadswitch.Cli
             var objects = new StringBuilder();
             int count = 0;
 
-            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null)
+            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null, int damage = 0)
             {
                 int meshIndex = meshes.Count;
                 meshes.Add(model.Static);
@@ -71,6 +71,11 @@ namespace Deadswitch.Cli
                     .Append(",\"powered\":").Append(powered ? "true" : "false")
                     .Append(",\"unmanned\":").Append(unmanned ? "true" : "false")
                     .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append(']');
+                if (damage > 0)
+                {
+                    objects.Append(",\"damage\":").Append(damage);
+                }
+
                 if (fx != null)
                 {
                     objects.Append(",\"fires\":[").Append(string.Join(",", fx.Fires.Select(V))).Append("],\"smokes\":[").Append(string.Join(",", fx.Smokes.Select(V)))
@@ -93,7 +98,7 @@ namespace Deadswitch.Cli
                 if (v.Kind != FacilityKind.None)
                 {
                     Model facility = Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31));
-                    AddModel("slot" + i, facility, pos, yaw, v.Powered, v.Unmanned);
+                    AddModel("slot" + i, facility, pos, yaw, v.Powered, v.Unmanned, null, v.Damage);
                     if (v.Damage > 0)
                     {
                         facility.Static.Bounds(out Vector3 min, out Vector3 max);
