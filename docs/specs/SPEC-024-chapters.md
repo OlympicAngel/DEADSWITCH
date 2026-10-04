@@ -20,7 +20,7 @@ truth. Fragments survive reboots, so later cycles reveal what the first could no
    - Any chapter: `twist_fallback_hours` after it opened.
 3. After the twist, each repelled or missed attack adds 1 point, or `villain_points` if the villain sent it. At `payoff_points` the chapter closes and pays `payoff_energy`[tier] and `payoff_compute`[tier] (capped by storage). It also lowers the villain's heat by `payoff_heat_drop` and corruption by `payoff_corruption_drop`.
 4. A closed chapter recovers the first missing of its three fragments, numbered (tier-1)*3 + k. Twelve fragments in all. They are kept across every reboot, Ironman included, because the record outlives the core.
-5. No RNG draws. Save layout v20, event schema v20.
+5. No RNG draws. Save layout v20, event schema v20. A save from before v20 opens the current tier's chapter on the next hour and starts with no fragments (earlier chapters are not granted retroactively).
 
 ## Tests
 `ThreatTests.Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly` (chapter 1 pays a fragment; fragments survive the move; First Boot reopens).

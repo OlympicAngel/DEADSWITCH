@@ -145,10 +145,15 @@ namespace Deadswitch.Sim.Systems
             }
 
             // raids grow with the Hub (tall poppy): keep the wall ahead of them before growing anything else
-            if (Outgunned(s, c) && net - c.Facility(FacilityKind.Turret)!.UpkeepPerHour[0] >= margin
-                && (TryUpgradeLowest(ctx, FacilityKind.Turret) || TryBuild(ctx, FacilityKind.Turret)))
+            if (Outgunned(s, c))
             {
-                return;
+                FacilityConfig turret = c.Facility(FacilityKind.Turret)!;
+                int lowest = LowestOfKind(s, FacilityKind.Turret, turret.MaxLevel);
+                int extra = lowest >= 0 ? turret.UpkeepPerHour[s.Slots[lowest].Level] - turret.UpkeepPerHour[s.Slots[lowest].Level - 1] : turret.UpkeepPerHour[0];
+                if (net - extra >= margin && (lowest >= 0 ? TryUpgradeLowest(ctx, FacilityKind.Turret) : TryBuild(ctx, FacilityKind.Turret)))
+                {
+                    return;
+                }
             }
 
             int best = -1;
@@ -229,20 +234,27 @@ namespace Deadswitch.Sim.Systems
             return true;
         }
 
-        private static bool TryUpgradeLowest(SimContext ctx, FacilityKind kind)
+        /// <summary>The lowest-level facility of a kind that can still be upgraded and has no job, or -1.</summary>
+        private static int LowestOfKind(GameState s, FacilityKind kind, int maxLevel)
         {
-            GameState s = ctx.State;
-            FacilityConfig table = ctx.Config.Facility(kind)!;
             int best = -1;
             for (int i = 0; i < s.Slots.Count; i++)
             {
                 FacilitySlot f = s.Slots[i];
-                if (f.Kind == kind && f.Level < table.MaxLevel && s.JobForSlot(i) == null && (best < 0 || f.Level < s.Slots[best].Level))
+                if (f.Kind == kind && f.Level < maxLevel && s.JobForSlot(i) == null && (best < 0 || f.Level < s.Slots[best].Level))
                 {
                     best = i;
                 }
             }
 
+            return best;
+        }
+
+        private static bool TryUpgradeLowest(SimContext ctx, FacilityKind kind)
+        {
+            GameState s = ctx.State;
+            FacilityConfig table = ctx.Config.Facility(kind)!;
+            int best = LowestOfKind(s, kind, table.MaxLevel);
             return best >= 0 && Act(ctx, best, kind, s.Slots[best].Level + 1, EconomyCommands.Upgrade(ctx, Command.Upgrade(best)));
         }
 
