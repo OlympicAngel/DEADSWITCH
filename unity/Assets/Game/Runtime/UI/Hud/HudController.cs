@@ -154,6 +154,9 @@ namespace Deadswitch.Game.UI.Hud
             Router.BindTab("core", Q<VisualElement>("tab-core"));
             Router.BindTab("ops", Q<VisualElement>("tab-ops"));
             Q<VisualElement>("raid-defend").RegisterCallback<ClickEvent>(_ => Router.Show("ops"));
+            // The drone-feed frame belongs to BASE; over the other screens its text collides with their headers.
+            VisualElement frame = Q<VisualElement>("frame");
+            Router.Changed += id => frame.EnableInClassList("is-covered", id != "base");
             Router.Show("base");
             _opening = new OpeningFlow(_host, _hud, _voice, _baseScreen);
 

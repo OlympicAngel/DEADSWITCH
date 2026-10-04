@@ -9,7 +9,7 @@
 
 .set-seg { flex-direction: row; border-width: var(--bw); border-color: var(--c-line-mid); }
 .set-seg__item { flex-grow: 1; flex-basis: 0; min-height: var(--touch); align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
-.set-seg__item:last-child { border-right-width: 0; }
+.set-seg__item.is-last { border-right-width: 0; }
 .set-seg__item.is-selected { background-color: rgba(168, 213, 138, 0.14); }
 .set-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-text-dim); }
 .set-seg__item.is-selected > .set-seg__label { color: var(--c-phosphor); }

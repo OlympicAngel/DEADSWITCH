@@ -85,7 +85,7 @@
     border-right-width: 1px;
     border-color: var(--c-line-mid);
 }
-.ops-seg__item:last-child { border-right-width: 0; }
+.ops-seg__item.is-last { border-right-width: 0; }
 .ops-seg__item.is-selected { background-color: rgba(168, 213, 138, 0.14); }
 .ops-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
 .ops-seg__item.is-selected > .ops-seg__label { color: var(--c-phosphor); }

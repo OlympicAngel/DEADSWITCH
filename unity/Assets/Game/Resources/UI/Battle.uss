@@ -28,7 +28,7 @@
     transition-property: scale, opacity;
     transition-duration: 0.12s;
 }
-.bat-ab:last-child { margin-right: 0; }
+.bat-ab.is-last { margin-right: 0; }
 .bat-ab:active { scale: 0.97 0.97; }
 .bat-ab--override { border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.08); }
 .bat-ab.is-used { opacity: 0.32; }

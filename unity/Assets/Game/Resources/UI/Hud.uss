@@ -11,8 +11,8 @@
     padding: var(--s-4) var(--s-4) var(--s-3) var(--s-4);
 }
 
-.hud-cell { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; padding: 0 var(--s-2); }
-.hud-cell + .hud-cell { border-left-width: 1px; border-color: var(--c-line); }
+.hud-cell { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; padding: 0 var(--s-2); border-left-width: 1px; border-color: var(--c-line); }
+.hud-cell.is-first { border-left-width: 0; }
 .hud-cell__icon { width: 46px; height: 46px; margin-right: var(--s-2); --icon-color: var(--c-phosphor); }
 .hud-cell__gauge { width: 54px; height: 54px; margin-right: var(--s-2); }
 .hud-cell__body { flex-shrink: 1; }
@@ -51,6 +51,7 @@
 .hud-bracket--bl { left: 0; bottom: 0; border-left-width: 3px; border-bottom-width: 3px; }
 .hud-bracket--br { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; }
 
+.hud-frame.is-covered { display: none; }
 .hud-frame__top { flex-direction: row; align-items: flex-start; padding: var(--s-5) var(--s-5) 0 var(--s-6); }
 
 .hud-feed { flex-shrink: 0; }
@@ -174,6 +175,11 @@
     align-items: center;
     justify-content: flex-end;
     margin: var(--s-3) var(--s-5) 0 0;
+    padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+    /* Backing so floating facility labels behind the row stay unreadable instead of colliding with it. */
+    background-color: rgba(10, 13, 12, 0.88);
+    border-width: 1px;
+    border-color: var(--c-line);
 }
 
 .hud-raidrow.is-hidden { display: none; }

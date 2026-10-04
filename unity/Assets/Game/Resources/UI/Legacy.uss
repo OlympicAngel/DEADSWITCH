@@ -31,7 +31,7 @@
 .lgc-move__desc { margin-top: var(--s-2); font-size: var(--fs-micro); }
 .lgc-regions { margin-top: var(--s-3); }
 .lgc-region { flex-grow: 1; flex-basis: 0; min-height: 88px; margin-right: var(--s-2); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
-.lgc-region:last-child { margin-right: 0; }
+.lgc-region.is-last { margin-right: 0; }
 .lgc-region.is-selected { border-color: var(--c-amber); background-color: rgba(255, 179, 71, 0.10); }
 .lgc-region__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text); }
 .lgc-region__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
