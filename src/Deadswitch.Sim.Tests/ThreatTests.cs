@@ -151,6 +151,14 @@ namespace Deadswitch.Sim.Tests
             sim.Run(2 * WorldSystem.Sites[2].TravelHours * SimConfig.TicksPerHour);
             SimEvent scout = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
             Assert.Equal(scout.C == 1 ? SpyState.None : SpyState.Double, sim.State.Spies[(int)Faction.Rustborn]);
+
+            // sabotage (SPEC-026): a small team only; when it lands, the owner's attacks are crippled for a while
+            sim.State.Fuel = 100;
+            Assert.Equal(RejectReason.InvalidArgument, sim.Execute(Command.LaunchOp(3, OpKind.Sabotage, sim.Config.World.SabotageMaxSquad + 1)).Reason);
+            Assert.True(sim.Execute(Command.LaunchOp(3, OpKind.Sabotage, 2)).Accepted);
+            sim.Run(2 * WorldSystem.Sites[3].TravelHours * SimConfig.TicksPerHour);
+            SimEvent sabotage = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
+            Assert.Equal(sabotage.C == 1 ? (int)WorldSystem.Sites[3].Owner : -1, sim.State.SabotageFaction);
         }
 
         [Fact]

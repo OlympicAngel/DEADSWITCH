@@ -683,6 +683,21 @@ seize_energy = 600
 # Heat a seized outpost adds to its old owner. [0..100000]
 seize_heat = 20000
 
+# Sabotage is a small elite team: at most this many people. [1..50]
+sabotage_max_squad = 3
+
+# A successful sabotage cripples that faction's attacks for this long. [1..10000]
+sabotage_hours = 48
+
+# Strength taken off that faction's attacks launched while crippled. [0..90]
+sabotage_strength_pct = 30
+
+# Chance a successful sabotage is traced back to the Hub (raid heat instead of scout heat). [0..100]
+sabotage_trace_pct = 35
+
+# Odds points from a loyal agent inside the target's faction. [0..100]
+sabotage_spy_pts = 20
+
 # Energy a held (seized) outpost sends home per hour. [0..10000]
 held_energy_per_hour = 120
 

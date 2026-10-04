@@ -51,6 +51,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("op-scout").RegisterCallback<ClickEvent>(_ => Pick(OpKind.Scout));
             _ui.Q("op-raid").RegisterCallback<ClickEvent>(_ => Pick(OpKind.Raid));
             _ui.Q("op-hack").RegisterCallback<ClickEvent>(_ => Pick(OpKind.Hack));
+            _ui.Q("op-sabotage").RegisterCallback<ClickEvent>(_ => Pick(OpKind.Sabotage));
             _ui.Q("op-minus").RegisterCallback<ClickEvent>(_ => Step(-1));
             _ui.Q("op-plus").RegisterCallback<ClickEvent>(_ => Step(1));
             _ui.Q("op-launch").RegisterCallback<ClickEvent>(_ => Run(Command.LaunchOp(_selected, _kind, _kind == OpKind.Hack ? _compute : _squad)));
@@ -133,6 +134,11 @@ namespace Deadswitch.Game.UI.Screens
         private void Pick(OpKind kind)
         {
             _kind = kind;
+            if (kind == OpKind.Sabotage)
+            {
+                _squad = SimMath.Clamp(_squad, 1, _host.Sim.Config.World.SabotageMaxSquad);
+            }
+
             Refresh();
         }
 
@@ -144,7 +150,7 @@ namespace Deadswitch.Game.UI.Screens
             }
             else
             {
-                _squad = SimMath.Clamp(_squad + d, 1, 20);
+                _squad = SimMath.Clamp(_squad + d, 1, _kind == OpKind.Sabotage ? _host.Sim.Config.World.SabotageMaxSquad : 20);
             }
 
             Refresh();
@@ -205,7 +211,8 @@ namespace Deadswitch.Game.UI.Screens
             for (int f = 0; f < WorldSystem.FactionCount; f++)
             {
                 HeatLevel level = WorldSystem.Level(s.Heat[f]);
-                _ui.Q<Label>("heat-" + f + "-level").text = level.ToString().ToUpperInvariant() + " " + WorldSystem.Percent(s.Heat[f]);
+                bool crippled = s.SabotageFaction == f && s.Tick < s.SabotageUntilTick;
+                _ui.Q<Label>("heat-" + f + "-level").text = level.ToString().ToUpperInvariant() + " " + WorldSystem.Percent(s.Heat[f]) + (crippled ? " // CRIPPLED" : string.Empty);
                 Kit.SetMeter(_ui.Q("heat-" + f + "-meter"), s.Heat[f] / 100_000f);
                 _ui.Q("heat-" + f).EnableInClassList("is-hot", level >= HeatLevel.Hunted);
 
@@ -309,6 +316,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("op-raid").EnableInClassList("is-selected", _kind == OpKind.Raid);
             _ui.Q("op-hack").EnableInClassList("is-selected", _kind == OpKind.Hack);
             _ui.Q("op-hack").EnableInClassList("is-disabled", d.Cyber == 0);
+            _ui.Q("op-sabotage").EnableInClassList("is-selected", _kind == OpKind.Sabotage);
 
             bool hack = _kind == OpKind.Hack;
             _ui.Q<Label>("op-amount").text = (hack ? _compute : _squad).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -318,8 +326,9 @@ namespace Deadswitch.Game.UI.Screens
             oddsLabel.text = (st.Scouted ? "ODDS " : "AI ODDS ") + odds + "%";
             oddsLabel.EnableInClassList("t-amber", odds < 60);
             int back = hack ? 1 : 2 * d.TravelHours;
-            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, d, _kind)) + " // BACK IN " + back + " H";
-            string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK" };
+            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, d, _kind)) + " // BACK IN " + back + " H"
+                + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty);
+            string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK", "SEND SABOTEURS" };
             Kit.SetButtonText(_ui.Q("op-launch"), verbs[(int)_kind]);
             bool cooling = _kind != OpKind.Scout && s.Tick < st.CooldownUntilTick;
             _ui.Q("op-launch").EnableInClassList("is-disabled", st.Outpost || cooling || s.Ops.Count >= WorldSystem.MaxOps(s, c));
@@ -334,7 +343,7 @@ namespace Deadswitch.Game.UI.Screens
         {
             GameState s = _host.Sim.State;
             _ops.Clear();
-            string[] kinds = { "SCOUT", "RAID", "HACK" };
+            string[] kinds = { "SCOUT", "RAID", "HACK", "SABOTAGE" };
             foreach (Operation op in s.Ops)
             {
                 var row = new VisualElement();

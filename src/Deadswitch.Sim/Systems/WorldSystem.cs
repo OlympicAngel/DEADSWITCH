@@ -157,6 +157,11 @@ namespace Deadswitch.Sim.Systems
             {
                 case OpKind.Scout:
                     return SimMath.Clamp(55 + (squad * 12) - (defense / 4), 10, 95);
+                case OpKind.Sabotage:
+                    // stealth over strength: a small team, helped by masking and a loyal agent inside
+                    int masking = Modules.Has(s, ModuleNode.ST1) ? c.Modules.MaskingPts : 0;
+                    int inside = s.Spies[(int)d.Owner] == SpyState.Loyal ? c.World.SabotageSpyPts : 0;
+                    return SimMath.Clamp(40 + (squad * 10) + masking + inside - (defense / 6), 5, 90);
                 case OpKind.Hack:
                     int counter = Modules.Has(s, ModuleNode.CY2A) ? m.CounterIntrusionPts : 0;
                     int storm = LivingSystem.Active(s, WorldEventKind.SignalStorm) ? c.Living.SignalStormOddsPts : 0;
@@ -295,7 +300,7 @@ namespace Deadswitch.Sim.Systems
             SimConfig c = ctx.Config;
             int site = cmd.A;
             var kind = (OpKind)cmd.B;
-            if (site < 0 || site >= CatalogArray.Length || cmd.B < 0 || cmd.B > (int)OpKind.Hack || cmd.C < 0)
+            if (site < 0 || site >= CatalogArray.Length || cmd.B < 0 || cmd.B > (int)OpKind.Sabotage || cmd.C < 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
@@ -303,7 +308,7 @@ namespace Deadswitch.Sim.Systems
             SiteDef d = CatalogArray[site];
             int squad = kind == OpKind.Hack ? 0 : cmd.C;
             int compute = kind == OpKind.Hack ? cmd.C : 0;
-            if ((kind != OpKind.Hack && squad < 1) || (kind == OpKind.Hack && (compute < 1 || d.Cyber == 0)))
+            if ((kind != OpKind.Hack && squad < 1) || (kind == OpKind.Hack && (compute < 1 || d.Cyber == 0)) || (kind == OpKind.Sabotage && squad > c.World.SabotageMaxSquad))
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
@@ -414,6 +419,24 @@ namespace Deadswitch.Sim.Systems
                     {
                         st.Scouted = true;
                         IntelSystem.CrossCheck(ctx, d.Owner);
+                    }
+                    else
+                    {
+                        casualties = System.Math.Min(1, op.Squad);
+                    }
+
+                    break;
+                case OpKind.Sabotage:
+                    heat = w.HeatPerRaid;
+                    if (won)
+                    {
+                        // cripple the owner's next strikes; traced or not decides how much they hate us for it
+                        st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
+                        bool traced = SimMath.Hash((uint)op.Id ^ 0x5AB0u, (uint)(s.Rng.State >> 32)) % 100 < (uint)w.SabotageTracePct;
+                        heat = traced ? w.HeatPerRaid : w.HeatPerScout;
+                        s.SabotageFaction = (int)d.Owner;
+                        s.SabotageUntilTick = s.Tick + ((long)w.SabotageHours * SimConfig.TicksPerHour);
+                        ctx.Emit(EventKind.SabotageStruck, (int)d.Owner, w.SabotageHours, traced ? 1 : 0);
                     }
                     else
                     {

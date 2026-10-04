@@ -275,6 +275,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The ally took its daily share. A: Faction, B: energy.</summary>
         AllianceUpkeep = 89,
+
+        /// <summary>A sabotage landed (SPEC-026). A: Faction crippled, B: hours, C: 1 if it was traced to the Hub.</summary>
+        SabotageStruck = 90,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

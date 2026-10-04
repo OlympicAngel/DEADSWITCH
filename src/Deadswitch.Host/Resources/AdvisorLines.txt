@@ -285,6 +285,12 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+op.sabotage.1 | op_sabotage | neutral | {people} going in quiet toward {site}. No radio until it is done.
+op.sabotage.2 | op_sabotage | cold | Small team, {site}. If they are caught, they were never ours.
+sabotage.clean.1 | sabotage_clean | neutral | Their depots are burning. {faction} will hit softer for {hours} hours, and they do not know who did it.
+sabotage.clean.2 | sabotage_clean | bold | Clean work. {faction} is limping for {hours} hours.
+sabotage.traced.1 | sabotage_traced | neutral | It worked. {faction} is weaker for {hours} hours. They also found our boot prints.
+sabotage.traced.2 | sabotage_traced | cold | Their strikes are crippled for {hours} hours. So is any doubt about who did it.
 alliance.formed.1 | alliance_formed | neutral | {faction} stands with us. Their fighters are on the wall. They will want paying every day.
 alliance.formed.2 | alliance_formed | cold | Alliance with {faction}. Useful. Temporary. Everything is.
 alliance.ended.1 | alliance_ended | neutral | The alliance with {faction} is over. Their fighters have left the wall.

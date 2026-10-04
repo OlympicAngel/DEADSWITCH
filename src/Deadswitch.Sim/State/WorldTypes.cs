@@ -40,6 +40,9 @@ namespace Deadswitch.Sim.State
         Scout = 0,
         Raid = 1,
         Hack = 2,
+
+        /// <summary>A small elite team cripples the owner's next attacks (doc 04 s8, SPEC-026).</summary>
+        Sabotage = 3,
     }
 
     /// <summary>A spy in a faction camp (SPEC-019). Loyalty is hidden from the player. Stored in saves: never renumber.</summary>

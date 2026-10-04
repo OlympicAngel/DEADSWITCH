@@ -116,6 +116,7 @@
         <ui:VisualElement name="op-scout" class="map-seg__item"><ui:Label text="SCOUT" class="map-seg__label" /></ui:VisualElement>
         <ui:VisualElement name="op-raid" class="map-seg__item is-selected"><ui:Label text="RAID" class="map-seg__label" /></ui:VisualElement>
         <ui:VisualElement name="op-hack" class="map-seg__item"><ui:Label text="HACK" class="map-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="op-sabotage" class="map-seg__item"><ui:Label text="SABOTAGE" class="map-seg__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement class="row map-launch">
         <ui:VisualElement name="op-minus" class="map-step"><ui:Label text="-" class="map-step__label" /></ui:VisualElement>

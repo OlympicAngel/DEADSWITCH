@@ -149,6 +149,12 @@ namespace Deadswitch.Sim.Systems
                 {
                     s.RaidStrength = SimMath.PctFloor(s.RaidStrength, 100 - c.Modules.DecoyPct);
                 }
+
+                // their depots burned (SPEC-026): a sabotaged faction strikes weaker for a while
+                if ((int)s.RaidFaction == s.SabotageFaction && s.Tick < s.SabotageUntilTick)
+                {
+                    s.RaidStrength = SimMath.PctFloor(s.RaidStrength, 100 - c.World.SabotageStrengthPct);
+                }
             }
             if (kind == AttackKind.Siege)
             {

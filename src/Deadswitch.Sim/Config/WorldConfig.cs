@@ -21,6 +21,11 @@ namespace Deadswitch.Sim.Config
         public int OutpostLossPctPerHour = 2;
         public int SeizeEnergy = 600;
         public int SeizeHeat = 20_000;
+        public int SabotageMaxSquad = 3;
+        public int SabotageHours = 48;
+        public int SabotageStrengthPct = 30;
+        public int SabotageTracePct = 35;
+        public int SabotageSpyPts = 20;
         public int HeldEnergyPerHour = 120;
         public int HeldFuelPerHour = 15;
         public int HeldLossPctPerHour = 4;
@@ -50,6 +55,11 @@ namespace Deadswitch.Sim.Config
             v.Int("outpost_loss_pct_per_hour", ref OutpostLossPctPerHour, 0, 100, "Hourly chance a Hunted-or-worse faction takes an outpost back.");
             v.Int("seize_energy", ref SeizeEnergy, 0, 100_000, "Conquer and hold: energy to garrison a raided faction outpost as ours.");
             v.Int("seize_heat", ref SeizeHeat, 0, 100_000, "Heat a seized outpost adds to its old owner.");
+            v.Int("sabotage_max_squad", ref SabotageMaxSquad, 1, 50, "Sabotage is a small elite team: at most this many people.");
+            v.Int("sabotage_hours", ref SabotageHours, 1, 10_000, "A successful sabotage cripples that faction's attacks for this long.");
+            v.Int("sabotage_strength_pct", ref SabotageStrengthPct, 0, 90, "Strength taken off that faction's attacks launched while crippled.");
+            v.Int("sabotage_trace_pct", ref SabotageTracePct, 0, 100, "Chance a successful sabotage is traced back to the Hub (raid heat instead of scout heat).");
+            v.Int("sabotage_spy_pts", ref SabotageSpyPts, 0, 100, "Odds points from a loyal agent inside the target's faction.");
             v.Int("held_energy_per_hour", ref HeldEnergyPerHour, 0, 10_000, "Energy a held (seized) outpost sends home per hour.");
             v.Int("held_fuel_per_hour", ref HeldFuelPerHour, 0, 10_000, "Fuel a held outpost sends home per hour.");
             v.Int("held_loss_pct_per_hour", ref HeldLossPctPerHour, 0, 100, "Hourly chance the old owner (Watched or worse) takes a held outpost back.");

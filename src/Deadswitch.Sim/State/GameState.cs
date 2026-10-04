@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025).</summary>
-        public const int LayoutVersion = 21;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026).</summary>
+        public const int LayoutVersion = 22;
 
         public long Tick;
 
@@ -209,6 +209,11 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>Faction whose attacks are crippled by sabotage (-1 = none, SPEC-026), until <see cref="SabotageUntilTick"/>.</summary>
+        public int SabotageFaction = -1;
+
+        public long SabotageUntilTick;
 
         /// <summary>Allied faction (-1 = none, SPEC-025).</summary>
         public int AllyFaction = -1;
@@ -595,6 +600,12 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref Wreckage);
                 v.Long(ref ScarredAtTick);
+            }
+
+            if (v.Version >= 22)
+            {
+                v.Int(ref SabotageFaction);
+                v.Long(ref SabotageUntilTick);
             }
 
             if (v.Version >= 21)
