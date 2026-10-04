@@ -12,7 +12,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Agent driving: `unity command eval_file` runs C# in the live Editor; `capture_game_view --save_path` writes under `Assets/` (move the PNG out, delete the folder and .meta). Set `Application.runInBackground = true` at runtime or Play mode freezes when Unity is unfocused. Editing C#/USS/UXML during Play breaks the UI: stop and press Play again.
 
 ## v1.x systems (F-043 to F-054, all in the backlog and doc 10 corrections log)
-- Fourth faction Halcyon, chapters and fragments (STORY screen), alliances, sabotage, faction looks, cosmetic season track (SEASON screen from FULL GAME), verifiable runs (`Host/Online/RunVerifier`, CLI `verify --save`), adaptive enemies, luck swings, reactor, AI initiative with recall, starting regions. Save layout v28.
+- Fourth faction Halcyon, chapters and fragments (STORY screen), alliances, sabotage, faction looks, cosmetic season track (SEASON screen from FULL GAME), verifiable runs (`Host/Online/RunVerifier`, CLI `verify --save`), adaptive enemies, luck swings, reactor, AI initiative with recall, starting regions, hazard zones and the fallout front (`Systems/HazardSystem`, SPEC-032). Save layout v29.
 - Play-mode checks for these: STORY/SEASON screens, map ALLY/SABOTAGE/RECALL controls, reactor model (`Facilities.Reactor`) and voice packs (`AudioDirector.BuildVoice`).
 
 ## Balance (latest, 2026-10-04)

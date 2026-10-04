@@ -1,6 +1,6 @@
 # SPEC-032: Hazard zones and drifting fallout
 
-- Status: In progress (numbers are placeholders, tune with play data)
+- Status: Done (numbers are placeholders, tune with play data)
 - Pillar: Offense & world (supports Base & economy)
 - Touches: operations (scout/raid), economy (loot, fuel), people, battle scars (repair parts), outposts
 - Source rules: doc 05 s6 (zone types: reward and risk), doc 05 s7 (drifting hazards), doc 07 (the four kinds of damage)
