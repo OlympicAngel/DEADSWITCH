@@ -34,7 +34,7 @@ const browser = await playwright.chromium.launch({ args: ['--use-gl=angle', '--u
 const page = await browser.newPage({ viewport: { width: +w, height: +h } });
 page.on('console', m => { if (m.type() === 'error') console.error('page:', m.text()); });
 page.on('pageerror', e => console.error('page error:', e.message));
-const extra = ['target', 'dist', 'az', 'report', 'hour'].filter(k => opt(k, null) !== null).map(k => `&${k}=${opt(k)}`).join('');
+const extra = ['target', 'dist', 'az', 'report', 'hour', 'markers', 'bare'].filter(k => opt(k, null) !== null).map(k => `&${k}=${opt(k)}`).join('');
 await page.goto(`http://127.0.0.1:${port}/?w=${w}&h=${h}&t=${t}${extra}`);
 await page.waitForFunction(() => window.__done, null, { timeout: 180000 });
 fs.mkdirSync(path.dirname(out), { recursive: true });

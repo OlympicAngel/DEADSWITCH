@@ -74,6 +74,9 @@ namespace Deadswitch.Game.Base
             _cam.clearFlags = CameraClearFlags.SolidColor;
             _cam.backgroundColor = BaseLook.Srgb(_look.At(12f).fogColor);
             _cam.allowHDR = true;
+
+            // the sector map world lives on its own layer far below (SPEC-033)
+            _cam.cullingMask &= ~(1 << MapView.Layer);
         }
 
         private void Start()

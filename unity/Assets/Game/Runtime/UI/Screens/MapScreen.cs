@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Deadswitch.Art.World;
+using Deadswitch.Game.Base;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Host.Narrative;
@@ -6,14 +8,16 @@ using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Deadswitch.Game.UI.Screens
 {
     /// <summary>
-    /// SECTOR MAP (F-019): faction heat, the sites around the Hub, operations in the field and the selected site's
-    /// sheet (scout, raid, hack with the AI's possibly wrong odds; claim cleared ruins as an outpost). Every action
-    /// is a sim command. Layout: Resources/UI/Map.uxml + Map.uss.
+    /// SECTOR MAP (F-019, SPEC-033): faction heat, the 2.5D map (a 3D render of the sector from <see cref="MapView"/>,
+    /// the illustrated layer drawn with Painter2D, pins on the projected landmarks with the AI's estimates glitching
+    /// by corruption), operations in the field and the selected site's sheet. Every action is a sim command.
+    /// Layout: Resources/UI/Map.uxml + Map.uss.
     /// </summary>
     public sealed class MapScreen : IGameScreen
     {
@@ -25,6 +29,15 @@ namespace Deadswitch.Game.UI.Screens
         private readonly VisualElement _ops;
         private readonly Label _reason;
         private readonly List<VisualElement> _markers = new List<VisualElement>();
+        private readonly List<Label> _estimates = new List<Label>();
+        private readonly VisualElement _plot;
+        private readonly VisualElement _render;
+        private readonly VisualElement _overlay;
+        private VisualElement _hubMarker;
+        private SectorOverlay _layer;
+        private float _hazeTime;
+        private float _tickClock;
+        private int _frame;
         private int _selected;
         private OpKind _kind = OpKind.Raid;
         private int _squad = 4;
@@ -42,6 +55,17 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _sites = _ui.Q("map-sites");
+            _plot = _ui.Q("map-plot");
+            _render = _ui.Q("map-render");
+            _overlay = _ui.Q("map-overlay");
+            _overlay.generateVisualContent += DrawOverlay;
+            _plot.RegisterCallback<GeometryChangedEvent>(_ =>
+            {
+                if (_visible)
+                {
+                    RenderMap(true);
+                }
+            });
             _ops = _ui.Q("map-ops");
             _reason = _ui.Q<Label>("map-reason");
             for (int f = 0; f < WorldSystem.FactionCount; f++)
@@ -80,11 +104,12 @@ namespace Deadswitch.Game.UI.Screens
                     Refresh();
                 }
             };
-            UiRoot.Instance.Frame += _ =>
+            UiRoot.Instance.Frame += dt =>
             {
                 if (_visible)
                 {
                     RefreshOps();
+                    TickMap(dt);
                 }
             };
         }
@@ -97,6 +122,8 @@ namespace Deadswitch.Game.UI.Screens
         {
             _visible = true;
             _reason.text = string.Empty;
+            MapView.Ensure();
+            RenderMap(true);
             Refresh();
         }
 
@@ -109,19 +136,12 @@ namespace Deadswitch.Game.UI.Screens
         {
             _sites.Clear();
             _markers.Clear();
+            _estimates.Clear();
             for (int i = 0; i < WorldSystem.Sites.Count; i++)
             {
                 SiteDef d = WorldSystem.Sites[i];
                 int index = i;
-                var marker = new VisualElement();
-                marker.AddToClassList("map-site");
-                marker.AddToClassList(HazardSystem.Wild(d.Kind) ? "map-site--wild" : FactionClass[(int)d.Owner]);
-                marker.style.left = Length.Percent(50f + (d.MapX * 0.45f));
-                marker.style.top = Length.Percent(50f - (d.MapY * 0.45f));
-                var mark = new VisualElement();
-                mark.AddToClassList("map-site__mark");
-                marker.Add(mark);
-                marker.Add(Kit.Label(d.Name, "map-site__name"));
+                VisualElement marker = Marker(d.Name, HazardSystem.Wild(d.Kind) ? "map-site--wild" : FactionClass[(int)d.Owner], out Label estimate);
                 marker.RegisterCallback<ClickEvent>(_ =>
                 {
                     _selected = index;
@@ -130,7 +150,269 @@ namespace Deadswitch.Game.UI.Screens
                 });
                 _sites.Add(marker);
                 _markers.Add(marker);
+                _estimates.Add(estimate);
             }
+
+            _hubMarker = Marker("HUB S-17", "map-site--hub", out Label hubEstimate);
+            hubEstimate.EnableInClassList("is-hidden", true);
+            _sites.Add(_hubMarker);
+        }
+
+        /// <summary>A pin (touch target) with a tag: the site's name and, below it, the AI's defense estimate.</summary>
+        private static VisualElement Marker(string name, string kindClass, out Label estimate)
+        {
+            var marker = new VisualElement();
+            marker.AddToClassList("map-site");
+            marker.AddToClassList(kindClass);
+            marker.style.left = Length.Percent(-100f);
+            var mark = new VisualElement();
+            mark.AddToClassList("map-site__mark");
+            marker.Add(mark);
+            var tag = new VisualElement();
+            tag.AddToClassList("map-site__tag");
+            tag.pickingMode = PickingMode.Ignore;
+            tag.Add(Kit.Label(name, "map-site__name"));
+            estimate = Kit.Label(string.Empty, "map-site__est");
+            tag.Add(estimate);
+            marker.Add(tag);
+            return marker;
+        }
+
+        /// <summary>Renders the 3D sector at the plot's pixel size (only when the size or the hour's light changed).</summary>
+        private void RenderMap(bool force)
+        {
+            MapView view = MapView.Instance;
+            Rect r = _plot.contentRect;
+            if (view == null || float.IsNaN(r.width) || r.width < 32f || r.height < 32f || _plot.panel == null)
+            {
+                return;
+            }
+
+            float scale = Screen.height / Mathf.Max(1f, _plot.panel.visualTree.layout.height);
+            if (view.Render(Mathf.RoundToInt(r.width * scale), Mathf.RoundToInt(r.height * scale), force) || force)
+            {
+                _render.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(view.Texture));
+                _render.MarkDirtyRepaint();
+                RefreshLayer(_host.Sim.State);
+            }
+        }
+
+        /// <summary>Per frame while open: the haze drifts, estimates flicker by corruption, the light follows the hour.</summary>
+        private void TickMap(float dt)
+        {
+            GameState s = _host.Sim.State;
+            bool reduced = _host.Settings.ReducedMotion;
+            _tickClock += dt;
+            if (_tickClock < 0.12f)
+            {
+                return;
+            }
+
+            _tickClock = 0f;
+            _frame++;
+            if (_frame % 40 == 0)
+            {
+                RenderMap(false);
+            }
+
+            if (!reduced && s.FalloutSite >= 0)
+            {
+                _hazeTime += 0.12f;
+                RefreshLayer(s);
+            }
+
+            if (!reduced && GlitchWeight(s) > 0f)
+            {
+                RefreshEstimates(s);
+            }
+        }
+
+        private float GlitchWeight(GameState s)
+        {
+            if (_host.Settings.ReducedMotion)
+            {
+                return 0f;
+            }
+
+            return GlitchText.BandWeight((int)CorruptionSystem.Band(_host.Sim.Config, s.CorruptionMilli)) * _host.Settings.Effects;
+        }
+
+        /// <summary>Rebuilds the illustrated layer and moves the pins onto the projected landmarks, labels laid out to miss each other.</summary>
+        private void RefreshLayer(GameState s)
+        {
+            MapView view = MapView.Instance;
+            if (view == null || view.Texture == null)
+            {
+                return;
+            }
+
+            _layer = SectorOverlay.Build(s, view.Pose, view.Aspect, BaseView.Seed, _hazeTime);
+            _overlay.MarkDirtyRepaint();
+
+            Rect r = _plot.contentRect;
+            float font = _markers.Count > 0 && _markers[0].Q<Label>().resolvedStyle.fontSize > 0f ? _markers[0].Q<Label>().resolvedStyle.fontSize : 20f;
+            int n = _markers.Count;
+            var pins = new System.Numerics.Vector2[n + 1];
+            var widths = new float[n + 1];
+            for (int i = 0; i < n; i++)
+            {
+                pins[i] = _layer.SiteAnchors[i];
+                widths[i] = ((Label(i).Length * 0.62f * font) + 24f) / r.width;
+            }
+
+            pins[n] = _layer.HubAnchor;
+            widths[n] = ((8 * 0.62f * font) + 24f) / r.width;
+            int[] sides = SectorOverlay.PlaceLabels(pins, widths, (font * 2.9f) / r.height, 28f / r.height);
+            for (int i = 0; i <= n; i++)
+            {
+                VisualElement m = i < n ? _markers[i] : _hubMarker;
+                m.style.left = Length.Percent(pins[i].X * 100f);
+                m.style.top = Length.Percent(pins[i].Y * 100f);
+                m.EnableInClassList("map-site--left", sides[i] % 2 == 1);
+                m.EnableInClassList("map-site--low", sides[i] >= 2);
+            }
+        }
+
+        /// <summary>The pin label for a site (state suffixes included), as shown.</summary>
+        private string Label(int i)
+        {
+            SiteState st = _host.Sim.State.Sites[i];
+            return WorldSystem.Sites[i].Name + (HazardSystem.Covered(_host.Sim.State, i) ? " // FALLOUT" : st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
+        }
+
+        /// <summary>Under each pin: the scouted defense, or the AI's estimate, which flickers as the core corrupts.</summary>
+        private void RefreshEstimates(GameState s)
+        {
+            SimConfig c = _host.Sim.Config;
+            float weight = GlitchWeight(s);
+            for (int i = 0; i < _estimates.Count; i++)
+            {
+                SiteState st = s.Sites[i];
+                Label est = _estimates[i];
+                est.EnableInClassList("is-hidden", st.Outpost);
+                est.EnableInClassList("is-known", st.Scouted);
+                string text = (st.Scouted ? "DEF " : "~") + WorldSystem.EstimatedDefense(s, c, i);
+                est.text = st.Scouted ? text : GlitchText.Flicker(text, weight, _frame + (i * 7));
+            }
+        }
+
+        /// <summary>
+        /// Draws the illustrated layer with raw UI meshes (fans for the blobs, quads for lines; works on every
+        /// UI Toolkit version): shapes first, then a leader line from each pin to its landmark.
+        /// </summary>
+        private void DrawOverlay(MeshGenerationContext ctx)
+        {
+            if (_layer == null)
+            {
+                return;
+            }
+
+            Rect r = _overlay.contentRect;
+            var pts = new List<Vector2>();
+            foreach (OverlayShape shape in _layer.Shapes)
+            {
+                if (shape.Points.Count < 2)
+                {
+                    continue;
+                }
+
+                pts.Clear();
+                foreach (System.Numerics.Vector2 q in shape.Points)
+                {
+                    pts.Add(new Vector2(q.X * r.width, q.Y * r.height));
+                }
+
+                Color32 color = new Color(shape.Color.X, shape.Color.Y, shape.Color.Z, shape.Color.W);
+                if (shape.Fill)
+                {
+                    Fan(ctx, pts, color);
+                }
+                else
+                {
+                    Polyline(ctx, pts, Mathf.Max(1f, shape.Width * r.height), color);
+                }
+            }
+
+            // leader lines: each pin floats over its landmark; the line shows where it stands
+            for (int i = 0; i < _layer.SiteAnchors.Length; i++)
+            {
+                SiteDef d = WorldSystem.Sites[i];
+                Vector3 tint = HazardSystem.Wild(d.Kind) ? new Vector3(0.62f, 0.85f, 0.8f) : ToUnity(SectorOverlay.FactionTint[(int)d.Owner]);
+                pts.Clear();
+                pts.Add(new Vector2(_layer.SiteAnchors[i].X * r.width, (_layer.SiteAnchors[i].Y * r.height) + 12f));
+                pts.Add(new Vector2(_layer.GroundAnchors[i].X * r.width, _layer.GroundAnchors[i].Y * r.height));
+                Polyline(ctx, pts, 2f, new Color(tint.x, tint.y, tint.z, 0.7f));
+            }
+        }
+
+        /// <summary>A filled blob as a triangle fan around its centroid (the overlay's blobs are star-shaped).</summary>
+        private static void Fan(MeshGenerationContext ctx, List<Vector2> pts, Color32 color)
+        {
+            Vector2 c = Vector2.zero;
+            foreach (Vector2 q in pts)
+            {
+                c += q;
+            }
+
+            c /= pts.Count;
+
+            // UI meshes want clockwise triangles (y down): follow the outline's own winding
+            float area = 0f;
+            for (int k = 0; k < pts.Count; k++)
+            {
+                Vector2 a = pts[k];
+                Vector2 b = pts[(k + 1) % pts.Count];
+                area += (a.x * b.y) - (b.x * a.y);
+            }
+
+            bool clockwise = area > 0f;
+            MeshWriteData mesh = ctx.Allocate(pts.Count + 1, pts.Count * 3);
+            mesh.SetNextVertex(new Vertex { position = new Vector3(c.x, c.y, Vertex.nearZ), tint = color });
+            foreach (Vector2 q in pts)
+            {
+                mesh.SetNextVertex(new Vertex { position = new Vector3(q.x, q.y, Vertex.nearZ), tint = color });
+            }
+
+            for (int k = 0; k < pts.Count; k++)
+            {
+                ushort here = (ushort)(1 + k);
+                ushort next = (ushort)(1 + ((k + 1) % pts.Count));
+                mesh.SetNextIndex(0);
+                mesh.SetNextIndex(clockwise ? here : next);
+                mesh.SetNextIndex(clockwise ? next : here);
+            }
+        }
+
+        /// <summary>An open polyline as one quad per segment.</summary>
+        private static void Polyline(MeshGenerationContext ctx, List<Vector2> pts, float width, Color32 color)
+        {
+            int segments = pts.Count - 1;
+            MeshWriteData mesh = ctx.Allocate(segments * 4, segments * 6);
+            float h = width * 0.5f;
+            for (int k = 0; k < segments; k++)
+            {
+                Vector2 a = pts[k];
+                Vector2 b = pts[k + 1];
+                Vector2 dir = b - a;
+                Vector2 n = dir.sqrMagnitude > 1e-6f ? new Vector2(-dir.y, dir.x).normalized * h : new Vector2(0f, h);
+                ushort i0 = (ushort)(k * 4);
+                mesh.SetNextVertex(new Vertex { position = new Vector3(a.x + n.x, a.y + n.y, Vertex.nearZ), tint = color });
+                mesh.SetNextVertex(new Vertex { position = new Vector3(b.x + n.x, b.y + n.y, Vertex.nearZ), tint = color });
+                mesh.SetNextVertex(new Vertex { position = new Vector3(b.x - n.x, b.y - n.y, Vertex.nearZ), tint = color });
+                mesh.SetNextVertex(new Vertex { position = new Vector3(a.x - n.x, a.y - n.y, Vertex.nearZ), tint = color });
+                // clockwise in y-down UI space
+                mesh.SetNextIndex(i0);
+                mesh.SetNextIndex((ushort)(i0 + 2));
+                mesh.SetNextIndex((ushort)(i0 + 1));
+                mesh.SetNextIndex(i0);
+                mesh.SetNextIndex((ushort)(i0 + 3));
+                mesh.SetNextIndex((ushort)(i0 + 2));
+            }
+        }
+
+        private static Vector3 ToUnity(System.Numerics.Vector3 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
         }
 
         private void Pick(OpKind kind)
@@ -281,8 +563,11 @@ namespace Deadswitch.Game.UI.Screens
                 _markers[i].EnableInClassList("map-site--cooldown", s.Tick < st.CooldownUntilTick);
                 _markers[i].EnableInClassList("map-site--op", busy.Contains(i));
                 _markers[i].EnableInClassList("map-site--fallout", HazardSystem.Covered(s, i));
-                _markers[i].Q<Label>().text = WorldSystem.Sites[i].Name + (HazardSystem.Covered(s, i) ? " // FALLOUT" : st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
+                _markers[i].Q<Label>(className: "map-site__name").text = Label(i);
             }
+
+            RefreshEstimates(s);
+            RefreshLayer(s);
 
             // world event and the fallout front (SPEC-032) share the banner
             bool world = s.WorldEvent != WorldEventKind.None && s.Tick < s.WorldEventUntilTick;

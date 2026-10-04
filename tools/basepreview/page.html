@@ -261,6 +261,7 @@ async function drawOverlay(ov) {
     for (let i = 0; i < s.p.length; i += 2) { const x = s.p[i] * W, y = s.p[i + 1] * H; if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); }
     if (s.f) { g.closePath(); g.fillStyle = col(s.c); g.fill(); } else { g.lineWidth = Math.max(1, s.w * H); g.strokeStyle = col(s.c); g.lineCap = 'round'; g.stroke(); }
   }
+  if (P.get('markers') === '0') return;
   const f = new FontFace('Chakra', 'url(/fonts/ChakraPetch-Bold.ttf)'); await f.load(); document.fonts.add(f);
   const tint = [[232, 180, 92], [130, 174, 182], [193, 118, 180], [240, 235, 221]];
   g.font = `${Math.round(H * 0.017)}px Chakra`; g.textBaseline = 'middle';

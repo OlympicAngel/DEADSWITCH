@@ -53,6 +53,32 @@ namespace Deadswitch.Game.UI
             return sb.ToString();
         }
 
+        /// <summary>
+        /// The map's AI estimates (SPEC-033): unlike advisor text, a figure may flicker for a frame, one character
+        /// swapped for noise or a wrong digit, with a chance per frame that grows with corruption. Most frames show
+        /// the estimate as computed, so it stays readable; off at zero intensity.
+        /// </summary>
+        public static string Flicker(string text, float intensity, int frame)
+        {
+            if (string.IsNullOrEmpty(text) || intensity <= 0.01f)
+            {
+                return text;
+            }
+
+            uint rng = ((uint)frame * 2654435761u) ^ ((uint)text.Length * 40503u);
+            rng = (rng * 1664525u) + 1013904223u;
+            if ((rng >> 8) / 16777216f >= 0.22f * intensity)
+            {
+                return text;
+            }
+
+            rng = (rng * 1664525u) + 1013904223u;
+            int at = (int)((rng >> 8) % (uint)text.Length);
+            rng = (rng * 1664525u) + 1013904223u;
+            char swap = char.IsDigit(text[at]) && (rng & 1u) == 0u ? (char)('0' + ((rng >> 4) % 10u)) : Noise[(int)((rng >> 4) % (uint)Noise.Length)];
+            return text.Substring(0, at) + swap + text.Substring(at + 1);
+        }
+
         /// <summary>Corruption band (0..3) to a 0..1 glitch weight.</summary>
         public static float BandWeight(int band)
         {

@@ -16,8 +16,8 @@ estimates. Done = renders reviewed at day/dusk/night, Unity wired and compiling,
 - [x] 2. Art: `SectorScene` terrain + fixed camera + projection; `art export --map`; preview reads the camera from the scene (verification: renders day/dusk/night)
 - [x] 3. Art: site landmarks per kind, the Hub, hazard ground treatments (verification: renders, close-ups)
 - [x] 4. Art: `SectorOverlay` from the game state (territory, routes, fog of war, fallout haze, marker anchors); preview draws it (verification: render with overlay)
-- [ ] 5. Unity: `MapView` (map world on its own layer, map camera, render to texture on demand, fog/shadow overrides) (verification: Unity compile check)
-- [ ] 6. Unity: map screen shows the render, draws the overlay (Painter2D) and projected markers, glitching estimates (verification: Unity compile check, UI preview)
+- [x] 5. Unity: `MapView` (map world on its own layer, map camera, render to texture on demand, fog/shadow overrides) (verification: Unity compile check)
+- [x] 6. Unity: map screen shows the render, draws the overlay (Painter2D) and projected markers, glitching estimates (verification: Unity compile check, UI preview)
 - [ ] 7. Docs (doc 11 map note, HANDOFF Editor checklist), finish
 
 ## Notes
