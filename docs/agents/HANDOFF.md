@@ -10,10 +10,11 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Report stills use `RenderPipeline.SubmitRenderRequest` (`Rendering/ReportRender.cs`, Unity 2023.2+ API) with a `Camera.Render` fallback; check the four panels render and are graded.
 - Local notifications (SPEC-010): install `com.unity.mobile.notifications` (Package Manager) to activate `Runtime/Notifications/Mobile` (versionDefines); without it alerts only log. Check Android 13 permission prompt and iOS authorization on device.
 - Time-of-day lighting (F-025): check `BaseView.ApplyLight` / `PostFx` light levels against the preview (`unitySunScale`, `unityPointScale` in BaseLook.json) and the `_DsEmissionScale` / `_DsConeScale` globals.
+- Later systems to look at in Play mode (all compile-checked only): battle-scar fire and smoke (`Base/BattleFx.cs`, `Shaders/DeadswitchParticle.shader`; pink = shader not found), the live battle at the gate (`Base/LiveBattle.cs`: raiders, tracers via LineRenderer, bursts), procedural audio (`Audio/AudioDirector.cs` + `Synth.cs`; adds the only AudioListener), HUD themes (`Store/Theme.cs`, `theme-cold`/`theme-bone` token classes), and the FULL GAME screen (`Store/Entitlements.cs`: dev builds grant premium directly; no store or ad SDK linked yet).
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).
 
-## Balance (owner, 2026-10-04)
-- Feature work first, balance at the end. Parked: away players (casual profile) lose ~85% of raids because unprepared defense is turrets only (raid strength ~2-3x defense by day 6); no fix chosen yet. Use `balance` (SPEC-014) when tuning resumes.
+## Balance (F-099 pass, 2026-10-04)
+- Done with the balance runner (SPEC-014 findings, doc 10 corrections log): active breach ~5%, a casual player who leaves prepared ~37%, unprepared ~89%; corruption peaks ~60%; ~1 glitch and ~0.5 dilemma a day for a casual player. All guards pass. Retune only from real play data.
 
 ## Gotchas
 - Saves that reached Tier 2 before F-023 have no district plots (no migration; pre-release).

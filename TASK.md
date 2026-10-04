@@ -1,3 +1,7 @@
-# TASK: none active
+# TASK: F-099 polish and balance pass (last)
 
-- Last closed: F-028 Corruption effects (2026-10-04). Every v1 feature is in. Next: F-099 polish and balance pass (last).
+- [x] Balance pass with the runner (doc 10 corrections log, SPEC-014 findings)
+- [x] Missing doc 10 rules: ambushes, highest heat on the HUD
+- [x] Corruption visuals on the base; crewed glitches; dilemmas wait for the handler
+- [ ] Play in the Unity Editor and on an Android phone (owner: no Unity in cloud sessions; checklist in docs/agents/HANDOFF.md)
+- [ ] Fix whatever that run finds
