@@ -13,8 +13,12 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Later systems to look at in Play mode (all compile-checked only): battle-scar fire and smoke (`Base/BattleFx.cs`, `Shaders/DeadswitchParticle.shader`; pink = shader not found), the live battle at the gate (`Base/LiveBattle.cs`: raiders, tracers via LineRenderer, bursts), procedural audio (`Audio/AudioDirector.cs` + `Synth.cs`; adds the only AudioListener), HUD themes (`Store/Theme.cs`, `theme-cold`/`theme-bone` token classes), and the FULL GAME screen (`Store/Entitlements.cs`: dev builds grant premium directly; no store or ad SDK linked yet).
 - Nothing in `unity/Assets/Game` has run in the Editor yet (cloud sessions have no Unity). Compile check covers runtime code except `Runtime/Rendering/` (URP) and `Editor/`. First owner run: open `unity/`, press Play, check Console for `[DEADSWITCH]` lines and pink materials (shader `Resources/Shaders/DeadswitchLit.shader`).
 
-## Balance (F-099 pass, 2026-10-04)
-- Done with the balance runner (SPEC-014 findings, doc 10 corrections log): active breach ~5%, a casual player who leaves prepared ~37%, unprepared ~89%; corruption peaks ~60%; ~1 glitch and ~0.5 dilemma a day for a casual player. All guards pass. Retune only from real play data.
+## v1.x systems (F-043 to F-054, all in the backlog and doc 10 corrections log)
+- Fourth faction Halcyon, chapters and fragments (STORY screen), alliances, sabotage, faction looks, cosmetic season track (SEASON screen from FULL GAME), verifiable runs (`Host/Online/RunVerifier`, CLI `verify --save`), adaptive enemies, luck swings, reactor, AI initiative with recall, starting regions. Save layout v28.
+- Play-mode checks for these: STORY/SEASON screens, map ALLY/SABOTAGE/RECALL controls, reactor model (`Facilities.Reactor`) and voice packs (`AudioDirector.BuildVoice`).
+
+## Balance (latest, 2026-10-04)
+- Turret planning (F-044) plus adaptation and luck: active breach ~0-2%, casual-prepared ~12%, autopilot ~0%; Tier 2/3/4 on days ~6/20/40. All guards pass. Retune only from real play data.
 
 ## Gotchas
 - Saves that reached Tier 2 before F-023 have no district plots (no migration; pre-release).
