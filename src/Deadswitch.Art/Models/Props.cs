@@ -278,39 +278,127 @@ namespace Deadswitch.Art.Models
         }
 
         /// <summary>
-        /// A raider for report panels: a hooded, gas-masked silhouette in dark rags with a rifle, leaning forward,
-        /// facing -Z. Dark materials so the graphic-novel grade reads it as ink; one dim lens for menace, no gore.
+        /// An attacker for live battles and report panels, facing -Z, in its faction's look (doc 05 s8, doc 07 s5):
+        /// 0 Rustborn: hooded, gas-masked scavenger in rags with a rust scarf and a scrap shoulder plate.
+        /// 1 Vanguard: helmeted soldier in olive with a chest rig and a service rifle.
+        /// 2 Church: long hooded robe, a magenta signal lamp on the chest and an antenna staff.
+        /// 3 Halcyon: worn white composite armour, one cold visor slit and a compact rifle.
+        /// Dark, readable silhouettes; one emissive accent per faction; no gore.
         /// </summary>
-        public static MeshData Raider(uint seed)
+        public static MeshData Raider(uint seed, int faction = 0)
         {
             var b = new MeshBuilder(seed) { AoHeight = 0.5f, AoFloor = 0.7f, FaceJitter = 0.03f };
             var rng = new ArtRandom(seed);
-            Mat coat = rng.Next() < 0.5f ? Mat.Rubber : Mat.DarkSteel;
-            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-8f)));
+            Mat coat = faction switch
+            {
+                1 => Mat.OliveSteel,
+                2 => Mat.Rubber,
+                3 => Mat.PaintWhite,
+                _ => rng.Next() < 0.5f ? Mat.Rubber : Mat.DarkSteel,
+            };
+            Mat cloth = faction switch
+            {
+                1 => Mat.Tarp,
+                2 => Mat.Char,
+                3 => Mat.DarkSteel,
+                _ => Mat.Tarp,
+            };
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(faction == 2 ? -3f : -8f)));
             foreach (int s in new[] { -1, 1 })
             {
                 float stride = s * rng.Range(0.08f, 0.16f);
-                b.Capsule(new Vector3(s * 0.11f, 0.12f, stride), new Vector3(s * 0.1f, 0.86f, 0f), 0.075f, Mat.Rubber, 8);
+                b.Capsule(new Vector3(s * 0.11f, 0.12f, stride), new Vector3(s * 0.1f, 0.86f, 0f), 0.075f, faction == 3 ? Mat.DarkSteel : Mat.Rubber, 8);
                 b.BoxOn(s * 0.11f, 0, stride - 0.03f, 0.14f, 0.13f, 0.28f, Mat.Rubber, 0.04f);
+                if (faction == 3)
+                {
+                    // knee and shin plates
+                    b.Box(new Vector3(s * 0.11f, 0.48f, stride - 0.06f), new Vector3(0.12f, 0.2f, 0.05f), coat, 0.02f);
+                }
             }
 
-            b.Frustum(new Vector3(0, 0.62f, 0), 0.26f, 0.2f, 0.82f, 10, coat, 0.04f);
+            if (faction == 2)
+            {
+                // a robe to the ankles with a ragged hem, under a heavy shoulder mantle
+                b.Frustum(new Vector3(0, 0.08f, 0), 0.3f, 0.23f, 0.8f, 11, coat, 0.06f);
+                b.Frustum(new Vector3(0, 0.04f, 0.02f), 0.32f, 0.3f, 0.1f, 9, cloth, 0.08f);
+                b.Frustum(new Vector3(0, 0.86f, 0.01f), 0.23f, 0.21f, 0.4f, 11, coat, 0.04f);
+                b.Frustum(new Vector3(0, 1.22f, 0.01f), 0.31f, 0.14f, 0.24f, 11, cloth, 0.05f);
+            }
+            else
+            {
+                b.Frustum(new Vector3(0, 0.62f, 0), 0.26f, 0.2f, 0.82f, 10, coat, 0.04f);
+            }
+
             b.Capsule(new Vector3(0, 1.0f, 0), new Vector3(0, 1.38f, 0.02f), 0.2f, coat, 12);
-            b.BoxOn(0, 0.98f, 0.18f, 0.32f, 0.46f, 0.18f, Mat.Tarp, 0.05f);
-            b.Sphere(new Vector3(0, 1.62f, 0.01f), new Vector3(0.13f, 0.14f, 0.13f), 5, 10, Mat.Rubber);
-            b.Sphere(new Vector3(0, 1.66f, 0.03f), new Vector3(0.16f, 0.15f, 0.16f), 4, 10, coat, 0f, 0.6f);
-            b.Box(new Vector3(0, 1.56f, -0.13f), new Vector3(0.1f, 0.1f, 0.08f), Mat.DarkSteel, 0.03f);
-            foreach (int s in new[] { -1, 1 })
+            b.BoxOn(0, 0.98f, 0.18f, 0.32f, 0.46f, 0.18f, faction == 1 ? Mat.OliveSteel : cloth, 0.05f);
+
+            switch (faction)
             {
-                b.Box(new Vector3(s * 0.05f, 1.64f, -0.12f), new Vector3(0.05f, 0.035f, 0.02f), Mat.LampRed, 0f);
+                case 1:
+                    // chest rig with pouches, helmet with a brim, dark goggles
+                    b.Box(new Vector3(0, 1.18f, -0.19f), new Vector3(0.34f, 0.22f, 0.07f), Mat.Tarp, 0.03f);
+                    foreach (int s in new[] { -1, 0, 1 })
+                    {
+                        b.Box(new Vector3(s * 0.1f, 1.1f, -0.24f), new Vector3(0.08f, 0.1f, 0.05f), Mat.Tarp, 0.02f);
+                    }
+
+                    b.Sphere(new Vector3(0, 1.6f, 0.01f), new Vector3(0.12f, 0.13f, 0.12f), 5, 10, Mat.Rubber);
+                    b.Sphere(new Vector3(0, 1.7f, 0.02f), new Vector3(0.155f, 0.11f, 0.165f), 3, 10, Mat.OliveSteel, 0f, 0.45f);
+                    b.Box(new Vector3(0, 1.63f, -0.12f), new Vector3(0.18f, 0.045f, 0.03f), Mat.Glass, 0.01f);
+                    break;
+                case 2:
+                    // a peaked hood over a shadowed face, the signal lamp on the chest
+                    b.Sphere(new Vector3(0, 1.6f, -0.02f), new Vector3(0.11f, 0.12f, 0.11f), 5, 10, Mat.Rubber);
+                    b.Sphere(new Vector3(0, 1.65f, 0.04f), new Vector3(0.17f, 0.18f, 0.18f), 5, 12, cloth, 0f, 0.75f);
+                    b.Frustum(new Vector3(0, 1.36f, 0.12f), 0.17f, 0.1f, 0.3f, 9, cloth, 0.04f);
+                    b.Box(new Vector3(0, 1.22f, -0.21f), new Vector3(0.09f, 0.09f, 0.03f), Mat.LampMagenta, 0f);
+                    b.Box(new Vector3(0, 1.6f, -0.13f), new Vector3(0.07f, 0.02f, 0.02f), Mat.LampMagenta, 0f);
+                    break;
+                case 3:
+                    // a closed helmet with one cold visor slit, shoulder plates
+                    b.Sphere(new Vector3(0, 1.64f, 0.01f), new Vector3(0.15f, 0.16f, 0.15f), 6, 12, coat);
+                    b.Box(new Vector3(0, 1.56f, 0.02f), new Vector3(0.2f, 0.06f, 0.24f), Mat.DarkSteel, 0.02f);
+                    b.Box(new Vector3(0, 1.65f, -0.135f), new Vector3(0.2f, 0.03f, 0.03f), Mat.LampCold, 0f);
+                    foreach (int s in new[] { -1, 1 })
+                    {
+                        b.Box(new Vector3(s * 0.22f, 1.38f, 0f), new Vector3(0.14f, 0.08f, 0.2f), coat, 0.03f);
+                    }
+
+                    break;
+                default:
+                    // hood, gas mask with two dim red lenses, a rust scarf and a scrap shoulder plate
+                    b.Sphere(new Vector3(0, 1.62f, 0.01f), new Vector3(0.13f, 0.14f, 0.13f), 5, 10, Mat.Rubber);
+                    b.Sphere(new Vector3(0, 1.66f, 0.03f), new Vector3(0.16f, 0.15f, 0.16f), 4, 10, coat, 0f, 0.6f);
+                    b.Box(new Vector3(0, 1.56f, -0.13f), new Vector3(0.1f, 0.1f, 0.08f), Mat.DarkSteel, 0.03f);
+                    foreach (int s in new[] { -1, 1 })
+                    {
+                        b.Box(new Vector3(s * 0.05f, 1.64f, -0.12f), new Vector3(0.05f, 0.035f, 0.02f), Mat.LampRed, 0f);
+                    }
+
+                    b.Frustum(new Vector3(0, 1.4f, 0.01f), 0.2f, 0.17f, 0.1f, 9, Mat.Rust, 0.05f);
+                    b.Box(new Vector3(-0.22f, 1.4f, 0f), new Vector3(0.15f, 0.05f, 0.22f), Mat.Rust, 0.03f);
+                    break;
             }
 
-            // rifle held across the body, pointing ahead
-            b.Strut(new Vector3(0.18f, 1.12f, 0.12f), new Vector3(-0.08f, 1.24f, -0.62f), 0.045f, Mat.DarkSteel);
-            b.Box(new Vector3(0.12f, 1.12f, 0.05f), new Vector3(0.06f, 0.14f, 0.2f), Mat.DarkSteel, 0.02f);
-            foreach (int s in new[] { -1, 1 })
+            if (faction == 2)
             {
-                b.Capsule(new Vector3(s * 0.24f, 1.4f, 0f), new Vector3(s * 0.08f, 1.18f, -0.3f), 0.06f, coat, 8);
+                // the antenna staff, held upright, a lamp at its tip
+                b.Strut(new Vector3(0.26f, 0.05f, -0.1f), new Vector3(0.28f, 2.05f, -0.14f), 0.025f, Mat.DarkSteel);
+                b.Box(new Vector3(0.28f, 2.06f, -0.14f), new Vector3(0.05f, 0.05f, 0.05f), Mat.LampMagenta, 0f);
+                b.Strut(new Vector3(0.28f, 1.85f, -0.14f), new Vector3(0.42f, 1.95f, -0.14f), 0.01f, Mat.DarkSteel);
+                b.Capsule(new Vector3(0.22f, 1.4f, 0f), new Vector3(0.27f, 1.2f, -0.12f), 0.06f, coat, 8);
+                b.Capsule(new Vector3(-0.22f, 1.4f, 0f), new Vector3(-0.12f, 1.15f, -0.16f), 0.06f, coat, 8);
+            }
+            else
+            {
+                // rifle held across the body, pointing ahead (shorter for Halcyon's compact carbine)
+                float reach = faction == 3 ? -0.46f : -0.62f;
+                b.Strut(new Vector3(0.18f, 1.12f, 0.12f), new Vector3(-0.08f, 1.24f, reach), 0.045f, Mat.DarkSteel);
+                b.Box(new Vector3(0.12f, 1.12f, 0.05f), new Vector3(0.06f, 0.14f, 0.2f), Mat.DarkSteel, 0.02f);
+                foreach (int s in new[] { -1, 1 })
+                {
+                    b.Capsule(new Vector3(s * 0.24f, 1.4f, 0f), new Vector3(s * 0.08f, 1.18f, -0.3f), 0.06f, coat, 8);
+                }
             }
 
             b.Pop();

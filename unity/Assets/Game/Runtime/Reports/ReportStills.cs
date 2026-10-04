@@ -50,7 +50,7 @@ namespace Deadswitch.Game.Reports
                 cast.transform.SetParent(root.transform, false);
                 foreach (RaiderSpec r in ReportScene.Raiders(gate, shot, report.Outcome, seed))
                 {
-                    Mesh mesh = ArtBridge.ToMesh(Props.Raider(r.Seed), "Raider", out Material[] mats);
+                    Mesh mesh = ArtBridge.ToMesh(Props.Raider(r.Seed, (int)report.Faction), "Raider", out Material[] mats);
                     meshes.Add(mesh);
                     var go = new GameObject("Raider");
                     go.transform.SetParent(cast.transform, false);

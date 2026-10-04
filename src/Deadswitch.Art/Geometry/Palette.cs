@@ -127,6 +127,8 @@ namespace Deadswitch.Art.Geometry
             new MaterialDef("LightCone", 0x000000, 0f, 0f, Wear.None, 0xFFC27A, 0.22f, true),
             new MaterialDef("Char", 0x1E1C1A, 0.1f, 0.08f, new Wear(0f, 0.3f, 0.5f, 0.6f, 0.7f, 1.8f, 0x2E2A26)),
             new MaterialDef("Ember", 0x2A140A, 0f, 0.3f, Wear.None, 0xFF6A1E, 7f, false),
+            new MaterialDef("LampMagenta", 0x2A1226, 0f, 0.6f, Wear.None, 0xE07AD2, 5f, true),
+            new MaterialDef("LampCold", 0x1E2428, 0f, 0.7f, Wear.None, 0xD8F0FF, 5f, true),
         };
 
         public static MaterialDef Get(Mat m)

@@ -127,7 +127,7 @@ namespace Deadswitch.Game.Base
             {
                 var go = new GameObject("Raider " + i);
                 go.transform.SetParent(_root, false);
-                Mesh mesh = ArtBridge.ToMesh(Props.Raider(Seed + 300 + (uint)i), "Raider", out Material[] mats);
+                Mesh mesh = ArtBridge.ToMesh(Props.Raider(Seed + 300 + (uint)i, (int)s.RaidFaction), "Raider", out Material[] mats);
                 go.AddComponent<MeshFilter>().sharedMesh = mesh;
                 go.AddComponent<MeshRenderer>().sharedMaterials = mats;
                 Vector3 side = Vector3.Cross(Vector3.up, _outward);

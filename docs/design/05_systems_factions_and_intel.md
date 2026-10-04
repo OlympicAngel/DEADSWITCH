@@ -93,7 +93,7 @@ The world changes even when the player is away:
 
 ## 8. Open tasks
 
-- Faction leaders, names, and visual identity.
+- ~~Faction leaders, names, and visual identity.~~ Done: leaders in doc 07 and `Story.cs`, attacker looks in `Props.Raider` (F-046).
 - Heat thresholds and the attack behavior at each threshold.
 - Trade goods and price model.
 - Spy double-agent rules.

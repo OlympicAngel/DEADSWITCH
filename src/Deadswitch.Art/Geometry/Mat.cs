@@ -37,5 +37,11 @@ namespace Deadswitch.Art.Geometry
 
         /// <summary>Glowing embers in burning wreckage (emissive).</summary>
         Ember = 29,
+
+        /// <summary>The Church of the Last Signal's magenta signal lamps (emissive).</summary>
+        LampMagenta = 30,
+
+        /// <summary>Halcyon Dynamics' cold white visors (emissive).</summary>
+        LampCold = 31,
     }
 }

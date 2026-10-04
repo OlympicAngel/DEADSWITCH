@@ -57,6 +57,9 @@ namespace Deadswitch.Host.Reports
         /// <summary>Signature of the attack (SPEC-015).</summary>
         public AttackKind Kind { get; private set; }
 
+        /// <summary>Who sent it (drives the attackers' look in the panels).</summary>
+        public Faction Faction { get; private set; }
+
         /// <summary>Facilities the attack downgraded: kind and level left.</summary>
         public List<(FacilityKind Kind, int Level)> Damage { get; } = new List<(FacilityKind, int)>();
 
@@ -139,6 +142,9 @@ namespace Deadswitch.Host.Reports
                         r.WarningTick = e.Tick;
                         r.Estimate = e.C;
                         r.Kind = (AttackKind)e.D;
+                        break;
+                    case EventKind.AttackerIdentified when e.A == raidId:
+                        r.Faction = (Faction)e.B;
                         break;
                     case EventKind.FacilityDamaged when e.A == raidId:
                         r.Damage.Add(((FacilityKind)e.C, e.D));

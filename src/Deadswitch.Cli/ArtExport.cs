@@ -23,7 +23,7 @@ namespace Deadswitch.Cli
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1, int wreckage = 0, bool burning = false)
+        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1, int wreckage = 0, bool burning = false, int factionOverride = -1)
         {
             var meshes = new List<MeshData>();
             var objects = new StringBuilder();
@@ -141,7 +141,7 @@ namespace Deadswitch.Cli
                     int n = 0;
                     foreach (RaiderSpec r in ReportScene.Raiders(gate, shot, report.Outcome, seed))
                     {
-                        AddModel("raider" + shot + "_" + n++, new Model { Static = Props.Raider(r.Seed) }, r.Position, r.Yaw, true, false);
+                        AddModel("raider" + shot + "_" + n++, new Model { Static = Props.Raider(r.Seed, factionOverride >= 0 ? factionOverride : (int)report.Faction) }, r.Position, r.Yaw, true, false);
                     }
                 }
 
