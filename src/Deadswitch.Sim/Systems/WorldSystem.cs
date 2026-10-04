@@ -238,13 +238,15 @@ namespace Deadswitch.Sim.Systems
                     continue;
                 }
 
-                s.Energy = System.Math.Max(s.Energy, System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + w.OutpostEnergyPerHour));
-                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(ctx.Config.Fuel.Cap, s.Fuel + w.OutpostFuelPerHour));
+                // conquer and hold (doc 04 s8): a seized faction outpost pays more and is wanted back sooner
+                bool held = CatalogArray[i].Kind == SiteKind.Outpost;
+                s.Energy = System.Math.Max(s.Energy, System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + (held ? w.HeldEnergyPerHour : w.OutpostEnergyPerHour)));
+                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(ctx.Config.Fuel.Cap, s.Fuel + (held ? w.HeldFuelPerHour : w.OutpostFuelPerHour)));
 
-                // a hunting faction takes its ground back
+                // a hunting faction takes its ground back (a held outpost's owner already at Watched)
                 Faction owner = CatalogArray[i].Owner;
-                if (Level(s.Heat[(int)owner]) >= HeatLevel.Hunted
-                    && SimMath.Hash((uint)(s.Tick / SimConfig.TicksPerHour) ^ (uint)(i * 104729), (uint)(s.Rng.State >> 32)) % 100 < (uint)w.OutpostLossPctPerHour)
+                if (Level(s.Heat[(int)owner]) >= (held ? HeatLevel.Watched : HeatLevel.Hunted)
+                    && SimMath.Hash((uint)(s.Tick / SimConfig.TicksPerHour) ^ (uint)(i * 104729), (uint)(s.Rng.State >> 32)) % 100 < (uint)(held ? w.HeldLossPctPerHour : w.OutpostLossPctPerHour))
                 {
                     site.Outpost = false;
                     site.Cleared = false;
@@ -349,18 +351,28 @@ namespace Deadswitch.Sim.Systems
             }
 
             SiteState st = s.Sites[site];
-            if (CatalogArray[site].Kind != SiteKind.Ruins || !st.Cleared || st.Outpost)
+            SiteDef d = CatalogArray[site];
+            bool seize = d.Kind == SiteKind.Outpost;
+            if ((d.Kind != SiteKind.Ruins && !seize) || !st.Cleared || st.Outpost)
             {
                 return CommandResult.Reject(RejectReason.NotClaimable);
             }
 
-            if (s.Energy < ctx.Config.World.OutpostClaimEnergy)
+            int cost = seize ? ctx.Config.World.SeizeEnergy : ctx.Config.World.OutpostClaimEnergy;
+            if (s.Energy < cost)
             {
                 return CommandResult.Reject(RejectReason.NotEnoughEnergy);
             }
 
-            s.Energy -= ctx.Config.World.OutpostClaimEnergy;
+            s.Energy -= cost;
             st.Outpost = true;
+            if (seize)
+            {
+                // taking their outpost is an act of war (doc 04 s8)
+                AddHeat(ctx, d.Owner, ctx.Config.World.SeizeHeat);
+                DiplomacySystem.Struck(ctx, d.Owner);
+            }
+
             ctx.Emit(EventKind.OutpostClaimed, site);
             return CommandResult.Ok;
         }
@@ -415,7 +427,8 @@ namespace Deadswitch.Sim.Systems
                     if (won)
                     {
                         st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
-                        st.Cleared = d.Kind == SiteKind.Ruins;
+                        // ruins can be claimed; a beaten faction outpost can be seized and held (doc 04 s8)
+                        st.Cleared = d.Kind == SiteKind.Ruins || d.Kind == SiteKind.Outpost;
                         Loot(ctx, op.Id, LossResource.Energy, d.Energy);
                         Loot(ctx, op.Id, LossResource.Fuel, d.Fuel);
                         Loot(ctx, op.Id, LossResource.Compute, d.Compute);

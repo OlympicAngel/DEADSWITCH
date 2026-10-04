@@ -674,6 +674,21 @@ outpost_fuel_per_hour = 6
 # Hourly chance a Hunted-or-worse faction takes an outpost back. [0..100]
 outpost_loss_pct_per_hour = 2
 
+# Conquer and hold: energy to garrison a raided faction outpost as ours. [0..100000]
+seize_energy = 600
+
+# Heat a seized outpost adds to its old owner. [0..100000]
+seize_heat = 20000
+
+# Energy a held (seized) outpost sends home per hour. [0..10000]
+held_energy_per_hour = 120
+
+# Fuel a held outpost sends home per hour. [0..10000]
+held_fuel_per_hour = 15
+
+# Hourly chance the old owner (Watched or worse) takes a held outpost back. [0..100]
+held_loss_pct_per_hour = 4
+
 # Base weight for the Rustborn as attacker (plus heat %). [0..1000]
 attacker_weight_rustborn = 40
 

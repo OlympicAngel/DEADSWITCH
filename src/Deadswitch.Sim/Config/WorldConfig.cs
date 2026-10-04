@@ -19,6 +19,11 @@ namespace Deadswitch.Sim.Config
         public int OutpostEnergyPerHour = 60;
         public int OutpostFuelPerHour = 6;
         public int OutpostLossPctPerHour = 2;
+        public int SeizeEnergy = 600;
+        public int SeizeHeat = 20_000;
+        public int HeldEnergyPerHour = 120;
+        public int HeldFuelPerHour = 15;
+        public int HeldLossPctPerHour = 4;
         public int AttackerWeightRustborn = 40;
         public int AttackerWeightVanguardTier2 = 40;
         public int AttackerWeightChurch = 10;
@@ -42,6 +47,11 @@ namespace Deadswitch.Sim.Config
             v.Int("outpost_energy_per_hour", ref OutpostEnergyPerHour, 0, 10_000, "Energy an outpost sends home per hour.");
             v.Int("outpost_fuel_per_hour", ref OutpostFuelPerHour, 0, 10_000, "Fuel an outpost sends home per hour.");
             v.Int("outpost_loss_pct_per_hour", ref OutpostLossPctPerHour, 0, 100, "Hourly chance a Hunted-or-worse faction takes an outpost back.");
+            v.Int("seize_energy", ref SeizeEnergy, 0, 100_000, "Conquer and hold: energy to garrison a raided faction outpost as ours.");
+            v.Int("seize_heat", ref SeizeHeat, 0, 100_000, "Heat a seized outpost adds to its old owner.");
+            v.Int("held_energy_per_hour", ref HeldEnergyPerHour, 0, 10_000, "Energy a held (seized) outpost sends home per hour.");
+            v.Int("held_fuel_per_hour", ref HeldFuelPerHour, 0, 10_000, "Fuel a held outpost sends home per hour.");
+            v.Int("held_loss_pct_per_hour", ref HeldLossPctPerHour, 0, 100, "Hourly chance the old owner (Watched or worse) takes a held outpost back.");
             v.Int("attacker_weight_rustborn", ref AttackerWeightRustborn, 0, 1_000, "Base weight for the Rustborn as attacker (plus heat %).");
             v.Int("attacker_weight_vanguard_tier2", ref AttackerWeightVanguardTier2, 0, 1_000, "Base weight for Vanguard Command from Tier 2 (plus heat %).");
             v.Int("attacker_weight_church", ref AttackerWeightChurch, 0, 1_000, "Base weight for the Church of the Last Signal after M1 (plus heat %).");

@@ -45,6 +45,7 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-039 | Ironman mode: chosen at a run start, no shield, shorter mercy, losing the core ends the run (SPEC-022 rule 7) | M6 | Done 2026-10-04 | doc 10 s1.2 |
 | F-040 | Tiers 3 and 4: Stronghold yard and outer wall, Sector flank terraces, staked lots for the next tier, memory lane, gates and pacing | M6 | Done 2026-10-04 | doc 06 s2-3, doc 10 s1.3 + s2 |
 | F-041 | Diplomacy: paid ceasefires, one at a time, broken by striking the faction (SPEC-023) | M6 | Done 2026-10-04 | doc 05 s3 |
+| F-042 | Conquer and hold: a faction outpost beaten in a raid can be seized (energy, heat, breaks a ceasefire); it pays more than claimed ruins and its owner wants it back from Watched on (`[world]` seize/held keys) | M6 | Done 2026-10-04 | doc 04 s8, doc 01 v1.x |
 | F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | In progress: balance pass, ambushes, corruption visuals, HUD heat done; Editor and phone checks need the owner (no Unity in cloud sessions) | SPEC-014 |
 | F-026 | Pacing retune: Tier 1 5-7 days, corruption from heavy compute use and proportional decay, launch max tier 2 (owner targets) | M1 | Done 2026-10-04 | SPEC-014, doc 10 corrections |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Done 2026-10-03 | fold into CLI |

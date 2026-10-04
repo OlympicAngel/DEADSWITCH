@@ -161,7 +161,7 @@ namespace Deadswitch.Game.UI.Screens
             {
                 case RejectReason.OpsBusy: return "Every team is already out. Wait for one to come back.";
                 case RejectReason.SiteCooldown: return "Nothing left there to take. Not yet.";
-                case RejectReason.NotClaimable: return "Only ruins we have cleared can hold an outpost.";
+                case RejectReason.NotClaimable: return "Only ground we have just beaten can be taken: cleared ruins, or a faction outpost after a won raid.";
                 case RejectReason.NotEnoughFuel: return "Not enough fuel.";
                 case RejectReason.SpyActive: return "We already have someone in that camp.";
                 case RejectReason.PactActive: return "One ceasefire at a time, and not so soon after the last.";
@@ -286,9 +286,10 @@ namespace Deadswitch.Game.UI.Screens
             bool cooling = _kind != OpKind.Scout && s.Tick < st.CooldownUntilTick;
             _ui.Q("op-launch").EnableInClassList("is-disabled", st.Outpost || cooling || s.Ops.Count >= WorldSystem.MaxOps(s, c));
 
-            bool claimable = d.Kind == SiteKind.Ruins && st.Cleared && !st.Outpost;
+            bool seize = d.Kind == SiteKind.Outpost;
+            bool claimable = (d.Kind == SiteKind.Ruins || seize) && st.Cleared && !st.Outpost;
             _ui.Q("site-claim").EnableInClassList("is-hidden", !claimable);
-            Kit.SetButtonText(_ui.Q("site-claim"), "CLAIM // " + c.World.OutpostClaimEnergy + " E");
+            Kit.SetButtonText(_ui.Q("site-claim"), seize ? "SEIZE AND HOLD // " + c.World.SeizeEnergy + " E" : "CLAIM // " + c.World.OutpostClaimEnergy + " E");
         }
 
         private void RefreshOps()
