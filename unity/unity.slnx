@@ -1,0 +1,10 @@
+﻿<Solution>
+  <Project Path="Deadswitch.Sim.csproj" />
+  <Project Path="Deadswitch.Art.csproj" />
+  <Project Path="Deadswitch.Game.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Deadswitch.Host.csproj" />
+  <Project Path="Deadswitch.Game.Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Deadswitch.Game.Rendering.csproj" />
+</Solution>
