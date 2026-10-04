@@ -26,7 +26,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _visible;
         private bool _showModules;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -39,7 +39,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
-            _modules = new ModulesView(_ui.Q("modules-view"));
+            _modules = new ModulesView(_ui.Q("modules-view"), openPremium);
             _ui.Q("view-status").RegisterCallback<ClickEvent>(_ => ShowModules(false));
             _ui.Q("view-modules").RegisterCallback<ClickEvent>(_ => ShowModules(true));
             _host.Ticked += () =>

@@ -114,8 +114,19 @@ namespace Deadswitch.Game.UI.Hud
             _report = new ReportScreen(Router);
             Router.Register(_report);
             Router.Register(new OpsScreen(OpenReport));
-            Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings")));
-            Router.Register(new SettingsScreen(Router));
+            var premium = new PremiumScreen(Router);
+            Router.Register(premium);
+            Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings"), () =>
+            {
+                premium.ReturnTo("core");
+                Router.Show("premium");
+            }));
+            Router.Register(new SettingsScreen(Router, () =>
+            {
+                premium.ReturnTo("settings");
+                Router.Show("premium");
+            }));
+            Store.Theme.Apply(UiRoot.Instance.Root);
             Router.Register(new WorkforceScreen(Router));
             Q<VisualElement>("people-cell").RegisterCallback<ClickEvent>(_ => Router.Show("workforce"));
             _reportChip = Q<VisualElement>("report-chip");

@@ -39,7 +39,7 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-033 | Player offense: raids and cyber warfare against factions | M5 | Done 2026-10-04 (in F-019) | doc 04 s8 |
 | F-034 | Living world: Warlord Ultimatum, dilemma events, trade, world events, faction wars (SPEC-017) | M5 | Done 2026-10-04 | doc 05 s3-4+s7, doc 10 s4 |
 | F-035 | Audio pass: ambient dread, glitchy AI voice, silence before purge (procedural synth, AudioDirector) | M4 | Done 2026-10-04 | ROADMAP M4 |
-| F-036 | Free demo (Tier 1) + premium unlock, rewarded ads (convenience only) | M5 | Ready | ADR-0006, doc 10 |
+| F-036 | Free demo (Tier 1) + premium unlock, rewarded ads (convenience only) (entitlements, tier gate, cosmetic themes) | M5 | Done 2026-10-04 | ADR-0006, doc 10 |
 | F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | Later | SPEC-014 |
 | F-026 | Pacing retune: Tier 1 5-7 days, corruption from heavy compute use and proportional decay, launch max tier 2 (owner targets) | M1 | Done 2026-10-04 | SPEC-014, doc 10 corrections |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Done 2026-10-03 | fold into CLI |

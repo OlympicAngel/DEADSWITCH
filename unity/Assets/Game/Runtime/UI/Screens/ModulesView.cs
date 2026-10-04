@@ -21,10 +21,12 @@ namespace Deadswitch.Game.UI.Screens
         private readonly Dictionary<ModuleNode, VisualElement> _nodes = new Dictionary<ModuleNode, VisualElement>();
         private ModuleNode _selected = ModuleNode.M1;
         private ModuleField _field = ModuleField.Logistics;
+        private readonly System.Action _openPremium;
 
-        public ModulesView(VisualElement mount)
+        public ModulesView(VisualElement mount, System.Action openPremium)
         {
             _host = GameHost.Instance;
+            _openPremium = openPremium;
             TemplateContainer tree = UiRoot.Load("Modules");
             mount.Add(tree);
             _ui = tree;
@@ -43,7 +45,17 @@ namespace Deadswitch.Game.UI.Screens
 
             BuildField();
             _ui.Q("detail-start").RegisterCallback<ClickEvent>(_ => StartOrCancel());
-            _ui.Q("tier-up").RegisterCallback<ClickEvent>(_ => Run(Command.TierUp()));
+            _ui.Q("tier-up").RegisterCallback<ClickEvent>(_ =>
+            {
+                // free demo (ADR-0006): Tier 1 is the demo; going further needs the one-time unlock
+                if (!Store.Entitlements.Instance.HasPremium)
+                {
+                    _openPremium();
+                    return;
+                }
+
+                Run(Command.TierUp());
+            });
         }
 
         public void Refresh()
@@ -68,7 +80,8 @@ namespace Deadswitch.Game.UI.Screens
             VisualElement up = _ui.Q("tier-up");
             up.EnableInClassList("is-disabled", !g.All);
             up.EnableInClassList("ds-btn--primary", g.All);
-            Kit.SetButtonText(up, "ADVANCE TO TIER " + (s.Tier + 1));
+            bool demo = !Store.Entitlements.Instance.HasPremium;
+            Kit.SetButtonText(up, demo && g.All ? "UNLOCK FULL GAME TO ADVANCE" : "ADVANCE TO TIER " + (s.Tier + 1));
 
             // research in progress
             bool busy = s.ResearchNode != 0;

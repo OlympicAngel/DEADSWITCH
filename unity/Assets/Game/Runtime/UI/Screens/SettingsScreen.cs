@@ -18,7 +18,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly GameSettings _settings;
         private readonly VisualElement _ui;
 
-        public SettingsScreen(ScreenRouter router)
+        public SettingsScreen(ScreenRouter router, System.Action openPremium)
         {
             _router = router;
             _settings = GameHost.Instance.Settings;
@@ -42,6 +42,7 @@ namespace Deadswitch.Game.UI.Screens
                 GameHost.Instance.NotifyTicked();
             });
             _ui.Q("dev").EnableInClassList("is-hidden", !Debug.isDebugBuild);
+            _ui.Q("open-premium").RegisterCallback<ClickEvent>(_ => openPremium());
         }
 
         public string Id => "settings";

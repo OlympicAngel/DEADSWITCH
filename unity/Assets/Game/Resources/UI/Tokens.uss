@@ -93,3 +93,22 @@
     --fs-hero: 114px;
     --touch: 144px;
 }
+
+/* HUD themes (F-036): cosmetic only, earned from optional ads. Signal meanings (amber, red, magenta) never change. */
+.ds-root.theme-cold {
+    --c-phosphor: #8CC8D8;
+    --c-phosphor-dim: rgba(140, 200, 216, 0.55);
+    --c-phosphor-glow: rgba(140, 200, 216, 0.35);
+    --c-line: rgba(140, 200, 216, 0.16);
+    --c-line-mid: rgba(140, 200, 216, 0.32);
+    --c-line-strong: rgba(140, 200, 216, 0.62);
+}
+
+.ds-root.theme-bone {
+    --c-phosphor: #D9D2BE;
+    --c-phosphor-dim: rgba(217, 210, 190, 0.55);
+    --c-phosphor-glow: rgba(217, 210, 190, 0.35);
+    --c-line: rgba(217, 210, 190, 0.16);
+    --c-line-mid: rgba(217, 210, 190, 0.32);
+    --c-line-strong: rgba(217, 210, 190, 0.62);
+}
