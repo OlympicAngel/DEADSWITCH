@@ -165,6 +165,17 @@ namespace Deadswitch.Sim.Systems
                 s.FalseIntel = false;
             }
 
+            // a spy in the attacker's camp (SPEC-019): loyal = exact and early, double agent = low
+            int spy = IntelSystem.AttackEstimate(s, c, s.RaidFaction, s.RaidStrength);
+            if (spy > 0 && s.RaidId != s.BetrayalRaidId)
+            {
+                s.RaidEstimate = spy;
+                if (IntelSystem.Loyal(s, s.RaidFaction) && warningMinutes > 1)
+                {
+                    s.RaidArriveTick += c.Intel.SpyWarningMinutes;
+                }
+            }
+
             if (ClimaxSystem.Silenced(s))
             {
                 // A silenced AI predicts nothing (SPEC-011 rule 3).

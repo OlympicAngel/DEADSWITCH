@@ -434,6 +434,18 @@ namespace Deadswitch.Host.Narrative
                 case EventKind.RepairDone:
                     Enqueue(new Pending("repair_done", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.B)));
                     break;
+                case EventKind.SpyPlanted:
+                    Enqueue(new Pending("spy_planted", Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
+                    break;
+                case EventKind.SpyRecalled:
+                    Enqueue(new Pending("spy_recalled", Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
+                    break;
+                case EventKind.SpyLost:
+                    Enqueue(new Pending(e.B == (int)SpyLoss.Exposed ? "spy_exposed" : "spy_caught", Priority.Urgent).With("faction", Names.Faction((Faction)e.A)));
+                    break;
+                case EventKind.SpyFramed:
+                    Enqueue(new Pending(e.B == 1 ? "spy_backfired" : "spy_framed", Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
+                    break;
                 case EventKind.WreckageCleared:
                     Enqueue(new Pending("wreckage_cleared", Priority.Normal).With("lost", e.B.ToString()));
                     break;

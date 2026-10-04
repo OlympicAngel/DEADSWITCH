@@ -138,6 +138,14 @@ namespace Deadswitch.Sim.Tests
             Assert.Empty(sim.State.Ops);
             Assert.True(sim.State.Heat[(int)Faction.Rustborn] > 0);
             Assert.Equal(1, back.B);
+
+            // spies (SPEC-019): a double agent talks sites down until a scout's report exposes it
+            sim.State.Spies[(int)Faction.Rustborn] = SpyState.Double;
+            Assert.True(WorldSystem.EstimatedDefense(sim.State, sim.Config, 2) < WorldSystem.Sites[2].Defense);
+            Assert.True(sim.Execute(Command.LaunchOp(2, OpKind.Scout, 6)).Accepted);
+            sim.Run(2 * WorldSystem.Sites[2].TravelHours * SimConfig.TicksPerHour);
+            SimEvent scout = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
+            Assert.Equal(scout.C == 1 ? SpyState.None : SpyState.Double, sim.State.Spies[(int)Faction.Rustborn]);
         }
 
         [Fact]

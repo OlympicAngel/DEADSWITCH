@@ -224,3 +224,14 @@ repair.done.2 | repair_done | bold | {kind} is whole again. Better than before, 
 wreckage.cleared.1 | wreckage_cleared | neutral | Yard cleared. {lost} energy. People will walk there again.
 ai.repair.1 | ai_repair | neutral | I started repairs on the {kind}. Routine.
 ai.repair.2 | ai_repair | cold | {kind} under repair. Damage is waste.
+
+# spies (SPEC-019)
+spy.planted.1 | spy_planted | neutral | Our agent is inside the {faction} camp. I will relay what they send.
+spy.planted.2 | spy_planted | cold | One of ours lives with {faction} now. Trust is a variable.
+spy.recalled.1 | spy_recalled | neutral | Our agent is home from {faction}. Debrief logged.
+spy.caught.1 | spy_caught | neutral | {faction} caught our agent. They know we were watching.
+spy.caught.2 | spy_caught | cold | Agent lost in the {faction} camp. They will be angrier now.
+spy.exposed.1 | spy_exposed | neutral | The scouts' report does not match our agent's. The agent in {faction} was turned. Everything they sent was a lie.
+spy.exposed.2 | spy_exposed | cold | Our {faction} agent was theirs all along. I relayed every word. I should have checked.
+spy.framed.1 | spy_framed | neutral | False trail laid. {faction} is looking at someone else now.
+spy.backfired.1 | spy_backfired | neutral | The frame came back on us. {faction} knows. Our agent was never ours.

@@ -11,8 +11,8 @@ namespace Deadswitch.Sim.Systems
         public static void Hourly(SimContext ctx)
         {
             GameState s = ctx.State;
-            // people away on operations still hold their place (F-019)
-            int cap = Economy.PopulationCap(s, ctx.Config) - WorldSystem.Away(s);
+            // people away on operations and in faction camps still hold their place (F-019, SPEC-019)
+            int cap = Economy.PopulationCap(s, ctx.Config) - WorldSystem.Away(s) - IntelSystem.Away(s, ctx.Config);
             if (!s.Blackout && s.People < cap)
             {
                 int gap = cap - s.People;

@@ -91,6 +91,7 @@ namespace Deadswitch.Sim
                 PeopleChoices.Hourly(ctx);
                 WorldSystem.Hourly(ctx);
                 LivingSystem.Hourly(ctx);
+                IntelSystem.Hourly(ctx);
             }
 
             ClimaxSystem.Tick(ctx);

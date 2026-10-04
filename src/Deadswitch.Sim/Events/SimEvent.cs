@@ -209,6 +209,18 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A: wrecks cleared, B: energy paid.</summary>
         WreckageCleared = 67,
+
+        /// <summary>Spy planted (SPEC-019). A: Faction, B: energy paid. Loyalty stays hidden.</summary>
+        SpyPlanted = 68,
+
+        /// <summary>A: Faction.</summary>
+        SpyRecalled = 69,
+
+        /// <summary>A: Faction, B: SpyLoss.</summary>
+        SpyLost = 70,
+
+        /// <summary>False intel planted. A: Faction, B: 1 if it backfired (double agent).</summary>
+        SpyFramed = 71,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

@@ -102,6 +102,15 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Clear the wrecks from the yard.</summary>
         ClearWreckage = 31,
+
+        /// <summary>Plant a spy in a faction camp. A: Faction.</summary>
+        PlantSpy = 32,
+
+        /// <summary>Bring a spy home. A: Faction.</summary>
+        RecallSpy = 33,
+
+        /// <summary>Have a spy plant false intel against its faction. A: Faction.</summary>
+        FrameFaction = 34,
     }
 
     /// <summary>
@@ -249,6 +258,21 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command PlantSpy(Faction faction)
+        {
+            return new Command(CommandKind.PlantSpy, (int)faction);
+        }
+
+        public static Command RecallSpy(Faction faction)
+        {
+            return new Command(CommandKind.RecallSpy, (int)faction);
+        }
+
+        public static Command FrameFaction(Faction faction)
+        {
+            return new Command(CommandKind.FrameFaction, (int)faction);
         }
 
         public static Command Repair(int slot)

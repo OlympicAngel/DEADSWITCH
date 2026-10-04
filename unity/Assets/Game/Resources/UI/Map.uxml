@@ -13,16 +13,31 @@
         <ui:Label text="RUSTBORN" class="map-heat__name" />
         <ui:Label name="heat-0-level" text="WATCHED 31" class="map-heat__level" />
         <ui:VisualElement name="heat-0-meter" class="ds-meter ds-meter--amber map-heat__meter" />
+        <ui:Label name="spy-0-state" text="NO AGENT" class="map-spy__state" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-0-a" class="map-spy__btn"><ui:Label name="spy-0-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-0-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-1" class="map-heat__cell map-heat__cell--vanguard">
         <ui:Label text="VANGUARD" class="map-heat__name" />
         <ui:Label name="heat-1-level" text="COLD 4" class="map-heat__level" />
         <ui:VisualElement name="heat-1-meter" class="ds-meter map-heat__meter" />
+        <ui:Label name="spy-1-state" text="AGENT INSIDE" class="map-spy__state is-on" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-1-a" class="map-spy__btn"><ui:Label name="spy-1-a-label" text="FRAME" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-1-b" class="map-spy__btn"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-2" class="map-heat__cell map-heat__cell--church">
         <ui:Label text="CHURCH" class="map-heat__name" />
         <ui:Label name="heat-2-level" text="COLD 0" class="map-heat__level" />
         <ui:VisualElement name="heat-2-meter" class="ds-meter ds-meter--magenta map-heat__meter" />
+        <ui:Label name="spy-2-state" text="NO AGENT" class="map-spy__state" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-2-a" class="map-spy__btn"><ui:Label name="spy-2-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-2-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
 

@@ -131,9 +131,15 @@ namespace Deadswitch.Sim.Systems
         public static int EstimatedDefense(GameState s, SimConfig c, int site)
         {
             SiteDef d = CatalogArray[site];
-            if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A))
+            if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A) || IntelSystem.Loyal(s, d.Owner))
             {
                 return d.Defense;
+            }
+
+            if (IntelSystem.Double(s, d.Owner))
+            {
+                // the double agent talks the site down (SPEC-019)
+                return System.Math.Max(1, SimMath.PctFloor(d.Defense, c.Intel.DoubleSiteDefensePct));
             }
 
             int span = (2 * c.World.EstimateErrorPct) + 1;
@@ -363,6 +369,7 @@ namespace Deadswitch.Sim.Systems
                     if (won)
                     {
                         st.Scouted = true;
+                        IntelSystem.CrossCheck(ctx, d.Owner);
                     }
                     else
                     {
@@ -376,6 +383,7 @@ namespace Deadswitch.Sim.Systems
                     {
                         st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
                         Loot(ctx, op.Id, LossResource.Compute, Modules.Has(s, ModuleNode.CY5A) ? SimMath.PctFloor(d.Compute, 100 + c.Modules.WormPct) : d.Compute);
+                        IntelSystem.CrossCheck(ctx, d.Owner);
                         if (d.CleanData > 0)
                         {
                             CorruptionSystem.Add(ctx, -d.CleanData);

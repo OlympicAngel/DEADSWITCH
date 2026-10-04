@@ -123,6 +123,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Nothing there is damaged (or it is already being repaired).</summary>
         NotDamaged = 40,
+
+        /// <summary>A spy already works that camp.</summary>
+        SpyActive = 41,
+
+        /// <summary>No spy in that camp.</summary>
+        NoSpy = 42,
     }
 
     public readonly struct CommandResult

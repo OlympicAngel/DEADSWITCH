@@ -282,7 +282,7 @@ namespace Deadswitch.Sim.Systems
                     return s.Energy < c.Living.TraderEnergy ? RejectReason.NotEnoughEnergy : Room(s, c, TradeGood.Fuel) <= 0 ? RejectReason.StorageFull : RejectReason.None;
                 case DilemmaKind.Refugees:
                 case DilemmaKind.Deserters:
-                    return Economy.PopulationCap(s, c) - s.People - WorldSystem.Away(s) <= 0 ? RejectReason.StorageFull : RejectReason.None;
+                    return Economy.PopulationCap(s, c) - s.People - WorldSystem.Away(s) - IntelSystem.Away(s, c) <= 0 ? RejectReason.StorageFull : RejectReason.None;
                 default:
                     return RejectReason.None;
             }
@@ -413,7 +413,7 @@ namespace Deadswitch.Sim.Systems
 
         private static void AddPeople(GameState s, SimConfig c, int amount)
         {
-            s.People += System.Math.Max(0, System.Math.Min(amount, Economy.PopulationCap(s, c) - s.People - WorldSystem.Away(s)));
+            s.People += System.Math.Max(0, System.Math.Min(amount, Economy.PopulationCap(s, c) - s.People - WorldSystem.Away(s) - IntelSystem.Away(s, c)));
         }
     }
 }

@@ -863,6 +863,46 @@ clear_energy_per_wreck = 20
 burn_hours = 6
 
 # --------------------------------------------------------------------------------------------------
+# Spies in faction camps: plant, recall, frame; hidden double agents exposed by scouts (doc 05, doc 10 s5). Heat is milli. All (tune).
+[intel]
+
+# Energy to plant a spy. [0..100000]
+spy_energy = 150
+
+# People a spy takes out of the Hub (they come back on recall). [1..10]
+spy_people = 1
+
+# Base chance a new spy is a double agent (doc 10: 10%). [0..100]
+double_base_pct = 10
+
+# Extra double-agent chance per point of that faction's heat %, in permille of a point. [0..10000]
+double_heat_permille = 300
+
+# Extra double-agent chance per point of the AI's Coldness %, in permille of a point. [0..10000]
+double_cold_permille = 200
+
+# A loyal spy warns of that faction's attacks this much earlier, with an exact estimate. [0..1000]
+spy_warning_minutes = 30
+
+# A double agent's attack estimate, as % of the true strength. [1..100]
+double_estimate_pct = 55
+
+# A double agent's site defense report, as % of the truth. [1..100]
+double_site_defense_pct = 60
+
+# Hourly chance a spy is caught while that faction hunts the Hub (Hunted or worse). [0..100]
+caught_pct_per_hour_hunted = 1
+
+# Heat a caught spy adds. [0..100000]
+caught_heat = 10000
+
+# Framing: heat moved off the spy's faction (half lands on a rival); a double agent's frame adds it instead. [0..100000]
+frame_heat = 20000
+
+# Chance the spy is caught while framing. [0..100]
+frame_catch_pct = 35
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

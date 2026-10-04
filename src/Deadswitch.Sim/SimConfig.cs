@@ -36,6 +36,7 @@ namespace Deadswitch.Sim
         public WorldConfig World = new WorldConfig();
         public LivingConfig Living = new LivingConfig();
         public ScarConfig Scars = new ScarConfig();
+        public IntelConfig Intel = new IntelConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -138,6 +139,7 @@ namespace Deadswitch.Sim
             World.Visit(visitor);
             Living.Visit(visitor);
             Scars.Visit(visitor);
+            Intel.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

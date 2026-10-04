@@ -39,6 +39,25 @@ namespace Deadswitch.Sim.State
         Hack = 2,
     }
 
+    /// <summary>A spy in a faction camp (SPEC-019). Loyalty is hidden from the player. Stored in saves: never renumber.</summary>
+    public enum SpyState
+    {
+        None = 0,
+        Loyal = 1,
+
+        /// <summary>Turned: feeds false intel until exposed.</summary>
+        Double = 2,
+    }
+
+    /// <summary>How a spy was lost. Stored in events.</summary>
+    public enum SpyLoss
+    {
+        Caught = 0,
+
+        /// <summary>Unmasked as a double agent (cross-check or a backfired frame).</summary>
+        Exposed = 1,
+    }
+
     /// <summary>What the Hub knows and holds at one map site.</summary>
     public sealed class SiteState
     {

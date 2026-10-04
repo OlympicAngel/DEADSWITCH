@@ -54,6 +54,13 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("op-plus").RegisterCallback<ClickEvent>(_ => Step(1));
             _ui.Q("op-launch").RegisterCallback<ClickEvent>(_ => Run(Command.LaunchOp(_selected, _kind, _kind == OpKind.Hack ? _compute : _squad)));
             _ui.Q("site-claim").RegisterCallback<ClickEvent>(_ => Run(Command.ClaimOutpost(_selected)));
+            for (int f = 0; f < WorldSystem.FactionCount; f++)
+            {
+                var faction = (Faction)f;
+                _ui.Q("spy-" + f + "-a").RegisterCallback<ClickEvent>(_ => Run(IntelSystem.Has(_host.Sim.State, faction) ? Command.FrameFaction(faction) : Command.PlantSpy(faction)));
+                _ui.Q("spy-" + f + "-b").RegisterCallback<ClickEvent>(_ => Run(Command.RecallSpy(faction)));
+            }
+
             for (int g = 0; g <= (int)TradeGood.Compute; g++)
             {
                 var good = (TradeGood)g;
@@ -155,6 +162,8 @@ namespace Deadswitch.Game.UI.Screens
                 case RejectReason.SiteCooldown: return "Nothing left there to take. Not yet.";
                 case RejectReason.NotClaimable: return "Only ruins we have cleared can hold an outpost.";
                 case RejectReason.NotEnoughFuel: return "Not enough fuel.";
+                case RejectReason.SpyActive: return "We already have someone in that camp.";
+                case RejectReason.NoSpy: return "Nobody of ours is in that camp.";
                 default: return Texts.Reason(reason);
             }
         }
@@ -171,6 +180,15 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("heat-" + f + "-level").text = level.ToString().ToUpperInvariant() + " " + WorldSystem.Percent(s.Heat[f]);
                 Kit.SetMeter(_ui.Q("heat-" + f + "-meter"), s.Heat[f] / 100_000f);
                 _ui.Q("heat-" + f).EnableInClassList("is-hot", level >= HeatLevel.Hunted);
+
+                // spies (SPEC-019): loyalty is hidden; only a scout's cross-check or a backfire reveals it
+                bool spy = IntelSystem.Has(s, (Faction)f);
+                Label spyState = _ui.Q<Label>("spy-" + f + "-state");
+                spyState.text = spy ? "AGENT INSIDE" : "NO AGENT";
+                spyState.EnableInClassList("is-on", spy);
+                _ui.Q<Label>("spy-" + f + "-a-label").text = spy ? "FRAME" : "PLANT " + Fmt.Num(c.Intel.SpyEnergy) + " E";
+                _ui.Q("spy-" + f + "-a").EnableInClassList("is-disabled", !spy && s.Energy < c.Intel.SpyEnergy);
+                _ui.Q("spy-" + f + "-b").EnableInClassList("is-hidden", !spy);
             }
 
             var busy = new HashSet<int>();
@@ -229,7 +247,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("site-owner").text = Names.Faction(d.Owner) + " // " + kinds[(int)d.Kind];
             _ui.Q<Label>("site-travel").text = d.TravelHours + " H";
             int estimate = WorldSystem.EstimatedDefense(s, c, _selected);
-            _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : "DEFENSE (AI EST)";
+            _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
             _ui.Q<Label>("site-def").text = (st.Scouted ? string.Empty : "~") + estimate + (d.Cyber > 0 ? "  CYBER " + d.Cyber : string.Empty);
             _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty);
 

@@ -64,6 +64,12 @@ namespace Deadswitch.Sim.Commands
                     return ScarSystem.Repair(ctx, command);
                 case CommandKind.ClearWreckage:
                     return ScarSystem.ClearWreckage(ctx, command);
+                case CommandKind.PlantSpy:
+                    return IntelSystem.Plant(ctx, command);
+                case CommandKind.RecallSpy:
+                    return IntelSystem.Recall(ctx, command);
+                case CommandKind.FrameFaction:
+                    return IntelSystem.Frame(ctx, command);
                 case CommandKind.ActivateShield:
                     return ThreatSystem.ActivateShield(ctx, command);
                 case CommandKind.SetTributeOrder:
