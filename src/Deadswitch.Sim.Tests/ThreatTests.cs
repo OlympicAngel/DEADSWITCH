@@ -144,6 +144,9 @@ namespace Deadswitch.Sim.Tests
             Assert.True(sim.State.Heat[(int)Faction.Rustborn] > 0);
             Assert.Equal(1, back.B);
 
+            // adaptive enemies (SPEC-027): a beaten faction fortifies its sites, so the next raid there meets more
+            Assert.Equal(back.C == 1 ? 1 : 0, sim.State.Fortified[(int)Faction.Rustborn]);
+
             // spies (SPEC-019): a double agent talks sites down until a scout's report exposes it
             sim.State.Spies[(int)Faction.Rustborn] = SpyState.Double;
             Assert.True(WorldSystem.EstimatedDefense(sim.State, sim.Config, 2) < WorldSystem.Sites[2].Defense);

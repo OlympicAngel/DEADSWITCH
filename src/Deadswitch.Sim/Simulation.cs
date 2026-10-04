@@ -95,6 +95,7 @@ namespace Deadswitch.Sim
                 GlitchSystem.Hourly(ctx);
                 DiplomacySystem.Hourly(ctx);
                 ChapterSystem.Hourly(ctx);
+                AdaptSystem.Hourly(ctx);
                 LegacySystem.Hourly(ctx);
             }
 

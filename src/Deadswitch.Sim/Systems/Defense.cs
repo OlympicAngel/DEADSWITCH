@@ -50,7 +50,9 @@ namespace Deadswitch.Sim.Systems
 
             if (posture == Posture.Turtle)
             {
-                total = SimMath.PctFloor(total, 100 + c.Defense.TurtleDefensePct + (Modules.Has(s, ModuleNode.WF2B) ? c.Modules.KillZonePts : 0));
+                // a faction that learned we turtle brings breaching charges (SPEC-027)
+                int turtle = c.Defense.TurtleDefensePct + (Modules.Has(s, ModuleNode.WF2B) ? c.Modules.KillZonePts : 0) - AdaptSystem.Counter(s, c, Posture.Turtle);
+                total = SimMath.PctFloor(total, 100 + System.Math.Max(0, turtle));
             }
 
             return total;

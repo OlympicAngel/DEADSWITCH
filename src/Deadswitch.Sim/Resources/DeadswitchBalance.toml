@@ -1169,6 +1169,34 @@ payoff_heat_drop = 20000
 payoff_corruption_drop = 3000
 
 # --------------------------------------------------------------------------------------------------
+# Adaptive enemies: each faction learns the postures the Hub leans on against it and counters them, and fortifies the sites the Hub keeps raiding. Both fade when tactics vary. All (tune).
+[adapt]
+
+# Highest counter level a faction can learn per posture. [0..10]
+learn_cap = 3
+
+# Every this many days each learned counter drops a level. [1..100]
+learn_decay_days = 4
+
+# Turtle defense bonus points lost per level against a faction that learned it (breaching charges). [0..100]
+turtle_counter_pts = 10
+
+# Go-dark miss chance points lost per level (they sweep for heat signatures). [0..100]
+dark_counter_pts = 8
+
+# Extra loot % per level when evacuating (they know where the caches go). [0..100]
+evacuate_counter_pts = 10
+
+# Highest fortification a faction builds against the Hub's raids. [0..10]
+fortify_cap = 3
+
+# Site defense % added per fortification level. [0..100]
+fortify_pct = 15
+
+# Every this many days each fortification drops a level. [1..100]
+fortify_decay_days = 3
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

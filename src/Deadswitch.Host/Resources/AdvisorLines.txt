@@ -285,6 +285,11 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+tactic.learned.1 | tactic_learned | neutral | {faction} has seen us {posture} before. Next time they will come ready for it. Change it up.
+tactic.learned.2 | tactic_learned | cold | {faction} is learning. Next time we {posture}, it will cost us more.
+tactic.learned.3 | tactic_learned | bold | They are studying the wall. Good. Let them study the wrong thing.
+site.fortified.1 | site_fortified | neutral | {faction} is digging in around their sites. Our next raid there meets more steel.
+site.fortified.2 | site_fortified | cold | {faction} fortified. Every raid teaches them where to build.
 op.sabotage.1 | op_sabotage | neutral | {people} going in quiet toward {site}. No radio until it is done.
 op.sabotage.2 | op_sabotage | cold | Small team, {site}. If they are caught, they were never ours.
 sabotage.clean.1 | sabotage_clean | neutral | Their depots are burning. {faction} will hit softer for {hours} hours, and they do not know who did it.

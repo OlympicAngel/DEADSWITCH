@@ -14,6 +14,8 @@
 .map-heat__cell--church { border-left-width: 6px; border-left-color: var(--c-magenta); }
 .map-heat__cell--holdout { border-left-width: 6px; border-left-color: var(--c-white); }
 .map-heat__cell.is-hot { border-color: var(--c-red-glow); }
+.map-adapt { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-amber); margin-top: var(--s-1); white-space: normal; }
+.map-adapt.is-hidden { display: none; }
 .map-spy__state { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: 16px; letter-spacing: 2px; color: var(--c-text-faint); margin-top: var(--s-2); }
 .map-spy__state.is-on { color: var(--c-phosphor); }
 .map-spy { margin-top: var(--s-1); }

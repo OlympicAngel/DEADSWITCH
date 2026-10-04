@@ -216,6 +216,19 @@ namespace Deadswitch.Game.UI.Screens
                 Kit.SetMeter(_ui.Q("heat-" + f + "-meter"), s.Heat[f] / 100_000f);
                 _ui.Q("heat-" + f).EnableInClassList("is-hot", level >= HeatLevel.Hunted);
 
+                // adaptive enemies (SPEC-027): what they learned about us, and how dug in their sites are
+                string learned = string.Empty;
+                foreach (Posture p in new[] { Posture.Turtle, Posture.Dark, Posture.Evacuate })
+                {
+                    int lv = AdaptSystem.Learned(s, (Faction)f, p);
+                    learned += lv > 0 ? (learned.Length > 0 ? " " : "KNOWS ") + Fmt.PostureName(p) + " " + lv : string.Empty;
+                }
+
+                int fort = s.Fortified[f];
+                string adapt = learned + (fort > 0 ? (learned.Length > 0 ? " // " : string.Empty) + "FORT " + fort : string.Empty);
+                _ui.Q<Label>("adapt-" + f).text = adapt;
+                _ui.Q("adapt-" + f).EnableInClassList("is-hidden", adapt.Length == 0);
+
                 // spies (SPEC-019): loyalty is hidden; only a scout's cross-check or a backfire reveals it
                 bool spy = IntelSystem.Has(s, (Faction)f);
                 Label spyState = _ui.Q<Label>("spy-" + f + "-state");

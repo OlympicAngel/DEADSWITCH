@@ -202,9 +202,16 @@ namespace Deadswitch.Game.UI.Screens
                 Q(PostureIds[i]).EnableInClassList("is-selected", s.Posture == Postures[i]);
             }
 
-            Q<Label>("posture-turtle-fx").text = "+" + c.Defense.TurtleDefensePct + "% DEFENSE";
-            Q<Label>("posture-dark-fx").text = c.Defense.DarkMissPct + "% MISS // -" + Fmt.Num(c.Defense.DarkUpkeepPerHour) + "/H ENERGY";
-            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + c.Defense.EvacuateLootPct + "%";
+            // adaptive enemies (SPEC-027): the incoming faction's learned counters, stated plainly
+            int ct = AdaptSystem.Counter(s, c, Posture.Turtle);
+            int cd = AdaptSystem.Counter(s, c, Posture.Dark);
+            int ce = AdaptSystem.Counter(s, c, Posture.Evacuate);
+            Q<Label>("posture-turtle-fx").text = "+" + System.Math.Max(0, c.Defense.TurtleDefensePct - ct) + "% DEFENSE" + (ct > 0 ? " // THEY BRING CHARGES" : string.Empty);
+            Q<Label>("posture-dark-fx").text = System.Math.Max(0, c.Defense.DarkMissPct - cd) + "% MISS // -" + Fmt.Num(c.Defense.DarkUpkeepPerHour) + "/H ENERGY" + (cd > 0 ? " // THEY SWEEP" : string.Empty);
+            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + System.Math.Min(100, c.Defense.EvacuateLootPct + ce) + "%" + (ce > 0 ? " // THEY HUNT CACHES" : string.Empty);
+            Q<Label>("posture-turtle-fx").EnableInClassList("t-amber", ct > 0);
+            Q<Label>("posture-dark-fx").EnableInClassList("t-amber", cd > 0);
+            Q<Label>("posture-evacuate-fx").EnableInClassList("t-amber", ce > 0);
 
             // garrison
             if (_sockets.childCount != c.Defense.GarrisonSlots)

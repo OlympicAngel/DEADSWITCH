@@ -278,6 +278,12 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A sabotage landed (SPEC-026). A: Faction crippled, B: hours, C: 1 if it was traced to the Hub.</summary>
         SabotageStruck = 90,
+
+        /// <summary>A faction learned a counter to a posture (SPEC-027). A: Faction, B: Posture, C: new level.</summary>
+        TacticLearned = 91,
+
+        /// <summary>A faction fortified its sites against the Hub's raids. A: Faction, B: new level.</summary>
+        SiteFortified = 92,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

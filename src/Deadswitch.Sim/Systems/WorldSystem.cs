@@ -133,20 +133,21 @@ namespace Deadswitch.Sim.Systems
         public static int EstimatedDefense(GameState s, SimConfig c, int site)
         {
             SiteDef d = CatalogArray[site];
+            int defense = AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner);
             if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A) || IntelSystem.Loyal(s, d.Owner))
             {
-                return d.Defense;
+                return defense;
             }
 
             if (IntelSystem.Double(s, d.Owner))
             {
                 // the double agent talks the site down (SPEC-019)
-                return System.Math.Max(1, SimMath.PctFloor(d.Defense, c.Intel.DoubleSiteDefensePct));
+                return System.Math.Max(1, SimMath.PctFloor(defense, c.Intel.DoubleSiteDefensePct));
             }
 
             int span = (2 * c.World.EstimateErrorPct) + 1;
             int err = (int)(SimMath.Hash((uint)site * 7919u, 0x5173u) % (uint)span) - c.World.EstimateErrorPct;
-            return System.Math.Max(1, SimMath.PctFloor(d.Defense, 100 + err));
+            return System.Math.Max(1, SimMath.PctFloor(defense, 100 + err));
         }
 
         /// <summary>Success chance in percent against a given defense (also used by the UI with the AI's estimate).</summary>
@@ -407,7 +408,7 @@ namespace Deadswitch.Sim.Systems
             WorldConfig w = c.World;
             SiteDef d = CatalogArray[op.Site];
             SiteState st = s.Sites[op.Site];
-            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, d.Defense);
+            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner));
             bool won = SimMath.Hash((uint)op.Id * 2654435761u, (uint)(s.Rng.State >> 32)) % 100 < (uint)odds;
             int casualties = 0;
             int heat;
@@ -473,6 +474,7 @@ namespace Deadswitch.Sim.Systems
                         Loot(ctx, op.Id, LossResource.Energy, d.Energy);
                         Loot(ctx, op.Id, LossResource.Fuel, d.Fuel);
                         Loot(ctx, op.Id, LossResource.Compute, d.Compute);
+                        AdaptSystem.Fortify(ctx, d.Owner);
                     }
 
                     break;

@@ -292,7 +292,7 @@ namespace Deadswitch.Sim.Systems
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
             int lies = s.RaidGateReported != RaidGate.None && s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 
-            if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct + (Modules.Has(s, ModuleNode.ST1) ? c.Modules.MaskingPts : 0))
+            if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct + (Modules.Has(s, ModuleNode.ST1) ? c.Modules.MaskingPts : 0) - AdaptSystem.Counter(s, c, Posture.Dark))
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Missed, strength, defense);
                 Survived(ctx);
@@ -318,7 +318,7 @@ namespace Deadswitch.Sim.Systems
 
             // Breach share in permille: how much of the raid got through.
             int breach = (int)(((long)(strength - defense) * 1000) / strength);
-            int lootPct = s.Posture == Posture.Evacuate ? c.Defense.EvacuateLootPct : 100;
+            int lootPct = s.Posture == Posture.Evacuate ? System.Math.Min(100, c.Defense.EvacuateLootPct + AdaptSystem.Counter(s, c, Posture.Evacuate)) : 100;
             if (s.RaidKind == AttackKind.Siege)
             {
                 lootPct = SimMath.PctFloor(lootPct, c.Threats.SiegeLootPct);
@@ -392,6 +392,7 @@ namespace Deadswitch.Sim.Systems
                 lies |= RaidRecord.SummaryEdit;
             }
 
+            AdaptSystem.Learn(ctx);
             Record(ctx, id, lies);
             ClearIncoming(s);
         }
@@ -405,6 +406,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             ChapterSystem.Survived(ctx);
+            AdaptSystem.Learn(ctx);
         }
 
         /// <summary>Keeps the report record of a resolved raid; only the most recent ones stay verifiable.</summary>

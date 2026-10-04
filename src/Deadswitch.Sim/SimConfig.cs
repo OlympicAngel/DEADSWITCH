@@ -42,6 +42,7 @@ namespace Deadswitch.Sim
         public LegacyConfig Legacy = new LegacyConfig();
         public DiplomacyConfig Diplomacy = new DiplomacyConfig();
         public ChapterConfig Chapters = new ChapterConfig();
+        public AdaptConfig Adapt = new AdaptConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -150,6 +151,7 @@ namespace Deadswitch.Sim
             Legacy.Visit(visitor);
             Diplomacy.Visit(visitor);
             Chapters.Visit(visitor);
+            Adapt.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);
