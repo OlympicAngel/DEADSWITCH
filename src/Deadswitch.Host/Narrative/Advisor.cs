@@ -34,7 +34,7 @@ namespace Deadswitch.Host.Narrative
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
             "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
-            "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
+            "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
             "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
             "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
             "facility_scarred", "forced_labor", "glitch_defected", "glitch_drain", "glitch_misfire", "glitch_stall", "heat_hunted", "heat_marked",
@@ -217,7 +217,7 @@ namespace Deadswitch.Host.Narrative
                     _warnKind = (AttackKind)e.D;
                     break;
                 case EventKind.RaidVector:
-                    Enqueue(new Pending(_warnKind == AttackKind.Siege ? "siege_warning" : _warnKind == AttackKind.Purge ? "purge_strike" : _warnKind == AttackKind.Warlord ? "warlord_wave" : "raid_warning", Priority.Urgent)
+                    Enqueue(new Pending(_warnMinutes <= 1 && _warnKind == AttackKind.Raid ? "ambush" : _warnKind == AttackKind.Siege ? "siege_warning" : _warnKind == AttackKind.Purge ? "purge_strike" : _warnKind == AttackKind.Warlord ? "warlord_wave" : "raid_warning", Priority.Urgent)
                         .With("gate", Names.Gate((RaidGate)e.B))
                         .With("est", _warnEstimate.ToString())
                         .With("min", _warnMinutes.ToString()));

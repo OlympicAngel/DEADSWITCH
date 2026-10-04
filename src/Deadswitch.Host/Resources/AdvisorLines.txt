@@ -262,3 +262,7 @@ crisis.rollback.1 | crisis_rollback | neutral | I lost part of myself. A module 
 crisis.swarm.1 | crisis_swarm | neutral | They can smell how broken I am. Machines are converging on us.
 core.flushed.1 | core_flushed | neutral | Flush started. I will be dark for {hours} hours. Watch the wall yourself.
 core.flushed.2 | core_flushed | warm | It hurts less already. {hours} hours of quiet, then I am yours again.
+
+# ambush (doc 10 s2): no warning, no estimate
+ambush.1 | ambush | neutral | Contact. No warning. They were already at the wire.
+ambush.2 | ambush | cold | Ambush. I saw nothing. Neither did you.

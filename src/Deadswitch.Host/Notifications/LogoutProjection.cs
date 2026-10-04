@@ -77,7 +77,8 @@ namespace Deadswitch.Host.Notifications
                         warnEstimate = e.C;
                         warnKind = (AttackKind)e.D;
                         break;
-                    case EventKind.RaidVector when (kinds & AlertKinds.Raids) != 0:
+                    case EventKind.RaidVector when (kinds & AlertKinds.Raids) != 0 && !(warnMinutes <= 1 && warnKind == AttackKind.Raid):
+                        // ambushes (doc 10 s2) show nothing until they hit, so they are never forecast
                         alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, Names.Attack(warnKind) + " INBOUND", "Hostiles at the " + Names.Gate((RaidGate)e.B) + ". My estimate: " + warnEstimate + ". Contact in " + warnMinutes + " min."));
                         break;
                     case EventKind.PurgeLadder when (kinds & AlertKinds.Raids) != 0 && e.A == (int)PurgeStage.Staging:

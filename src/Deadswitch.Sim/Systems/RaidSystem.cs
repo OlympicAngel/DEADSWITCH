@@ -189,7 +189,15 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
-            if (ClimaxSystem.Silenced(s) || GlitchSystem.Flushing(s))
+            // ambush (doc 10 s2): a hunting faction's raid shows nothing until it hits
+            bool ambush = kind == AttackKind.Raid && warningMinutes > 1 && !IntelSystem.Loyal(s, s.RaidFaction) && WorldSystem.Level(s.Heat[(int)s.RaidFaction]) >= HeatLevel.Hunted
+                && SimMath.Hash((uint)s.RaidId * 0xA3B1u, (uint)(s.Rng.State >> 32)) % 100 < (uint)c.Threats.AmbushPct;
+            if (ambush)
+            {
+                s.RaidArriveTick = s.Tick + 1;
+            }
+
+            if (ClimaxSystem.Silenced(s) || GlitchSystem.Flushing(s) || ambush)
             {
                 // A silenced (or flushed, SPEC-021) AI predicts nothing (SPEC-011 rule 3).
                 s.RaidEstimate = 0;
@@ -197,7 +205,7 @@ namespace Deadswitch.Sim.Systems
 
             ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate, (int)kind);
             ctx.Emit(EventKind.AttackerIdentified, s.RaidId, (int)s.RaidFaction);
-            ReportGate(ctx, gateRoll);
+            ReportGate(ctx, gateRoll, ambush);
             AiSystem.OnRaidWarning(ctx);
         }
 
@@ -205,12 +213,12 @@ namespace Deadswitch.Sim.Systems
         /// SPEC-004 rules 5-6: the raid's true gate comes from the spawn tick's otherwise unused miss draw; the AI
         /// reports it, except for the first warning of a run and for Boldness-scaled lies decided by a hash.
         /// </summary>
-        private static void ReportGate(SimContext ctx, int gateRoll)
+        private static void ReportGate(SimContext ctx, int gateRoll, bool ambush)
         {
             GameState s = ctx.State;
             var ai = ctx.Config.Ai;
             s.RaidGate = (RaidGate)(1 + (gateRoll % 4));
-            if (ClimaxSystem.Silenced(s))
+            if (ClimaxSystem.Silenced(s) || ambush)
             {
                 s.RaidGateReported = RaidGate.None;
                 ctx.Emit(EventKind.RaidVector, s.RaidId, (int)RaidGate.None);

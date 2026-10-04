@@ -580,6 +580,9 @@ rumor_false_pct = 30
 # Contact warning when the purge force moves in. [1..1000]
 purge_strike_warning_minutes = 30
 
+# Share of raids from a Hunted-or-worse faction that come as ambushes: no warning, no estimate (doc 10 s2). [0..100]
+ambush_pct = 15
+
 # Purge strength as a share of raid strength. [1..10000]
 purge_strength_pct = 220
 

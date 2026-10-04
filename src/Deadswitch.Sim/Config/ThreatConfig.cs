@@ -24,6 +24,7 @@ namespace Deadswitch.Sim.Config
         public int PurgeUltimatumHours = 6;
         public int RumorFalsePct = 30;
         public int PurgeStrikeWarningMinutes = 30;
+        public int AmbushPct = 15;
         public int PurgeStrengthPct = 220;
         public int PurgePopulationPct = 15;
         public int PurgeDowngrades = 2;
@@ -62,6 +63,7 @@ namespace Deadswitch.Sim.Config
             v.Int("purge_ultimatum_hours", ref PurgeUltimatumHours, 1, 1_000, "Ultimatum: final hours before the strike (doc 10: 6).");
             v.Int("rumor_false_pct", ref RumorFalsePct, 0, 100, "Chance a purge rumor is wrong and fizzles.");
             v.Int("purge_strike_warning_minutes", ref PurgeStrikeWarningMinutes, 1, 1_000, "Contact warning when the purge force moves in.");
+            v.Int("ambush_pct", ref AmbushPct, 0, 100, "Share of raids from a Hunted-or-worse faction that come as ambushes: no warning, no estimate (doc 10 s2).");
             v.Int("purge_strength_pct", ref PurgeStrengthPct, 1, 10_000, "Purge strength as a share of raid strength.");
             v.Int("purge_population_pct", ref PurgePopulationPct, 0, 100, "A full purge breach also kills this share of the population (scaled by breach).");
             v.Int("purge_downgrades", ref PurgeDowngrades, 0, 10, "Facilities downgraded by a breached purge.");
