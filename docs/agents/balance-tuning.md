@@ -6,7 +6,7 @@
 4. Change it, then run the headless harness over many seeds:
    `dotnet run --project src/Deadswitch.Cli -- <seed> <hours>`
 5. Check the **net rates** by hand. Example of a bug caught this way: +6 gen - 4 upkeep - 3 rack = -1/min.
-6. Add or update a guard test for the intended feel (blackout, cap, cadence).
+6. Update the existing guard test only if the change breaks a guarantee it asserts; do not add per-number tests.
 7. If the value differs from `docs/design/10_resolved_decisions.md`, add a row to its **Corrections log**.
 8. Never tune by weakening a test.
 

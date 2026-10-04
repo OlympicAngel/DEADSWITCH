@@ -41,11 +41,11 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 - Invariant: `Run(a); Run(b)` equals `Run(a+b)`. Keep the chunking test green.
 
 ## Workflow
-1. **Spec first** for anything bigger than a bug fix: `docs/specs/TEMPLATE.md`. Keep specs short.
-2. **Tests first or alongside.** Sim changes need tests. Determinism and cap/limit tests are mandatory for new mechanics.
+1. **Spec first** only for a new mechanic or system (`docs/specs/TEMPLATE.md`, under one page). Tweaks, fixes, and refactors need none.
+2. **Minimal tests only.** Add a test only for a rule that would break silently (determinism/chunking, a hard cap, a locked decision). No tests for getters, trivial math, or restating the implementation. Prefer extending an existing test over adding one. Run only the affected test project while iterating; the full gate once before finishing.
 3. **Small PRs.** One concern per branch. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. **Decisions get ADRs.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
-5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log, and `docs/agents/HANDOFF.md`.
+4. **ADRs only for hard-to-reverse decisions.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
+5. **Update docs in the same change** only where behavior or canon changed (spec, `docs/design/10_*.md` corrections log). Add a short `HANDOFF.md` entry only if work is left half-done or the next agent needs context.
 
 ## Design Quality
 - For game ideas and player-facing changes, identify the player value, the satisfying action/result, the feedback that makes it legible, and the next meaningful choice. Aim for earned "one more turn" momentum, not pressure to keep checking in.
@@ -55,9 +55,9 @@ Read `docs/agents/sim-determinism.md` before touching `src/Deadswitch.Sim`. Summ
 
 ## Definition of done
 - `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).
-- New behavior has tests; no existing test was weakened to make it pass.
+- Rules that could silently break are covered by a test; no existing test was weakened to make it pass.
 - No new warnings (warnings are errors).
-- Docs and HANDOFF updated.
+- Affected docs updated.
 
 ## Working with multiple agents
 Claude and Codex both work in this repo. To avoid collisions:
