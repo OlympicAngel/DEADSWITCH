@@ -56,11 +56,14 @@ void ds_salvage(float3 wp, float3 n, float3 masks, float3 baseCol, float3 bareCo
 
     // repainted parts: painted steel and markings (chip > 0.3) take one of five faded salvage paints per part,
     // so neighbouring panels and containers read apart and the base gets some colour life (doc 11: muted, not toy)
-    float repaint = step(0.3, chip) * step(0.45, masks.z);
-    float pick = frac(masks.z * 7.13);
-    float3 paint = pick < 0.2 ? float3(0.36, 0.14, 0.10) : pick < 0.4 ? float3(0.16, 0.30, 0.30)
-                 : pick < 0.6 ? float3(0.42, 0.30, 0.10) : pick < 0.8 ? float3(0.15, 0.21, 0.32) : float3(0.30, 0.32, 0.18);
-    albedo = lerp(albedo, paint * (0.72 + 0.56 * macro) * (0.82 + 0.36 * n2), repaint * 0.7);
+    float dsRepaint = step(0.3, chip) * step(0.45, saturate(masks.z));
+    float dsPick = frac(saturate(masks.z) * 7.13);
+    float3 dsPaint = float3(0.36, 0.14, 0.10);
+    dsPaint = lerp(dsPaint, float3(0.16, 0.30, 0.30), step(0.2, dsPick));
+    dsPaint = lerp(dsPaint, float3(0.42, 0.30, 0.10), step(0.4, dsPick));
+    dsPaint = lerp(dsPaint, float3(0.15, 0.21, 0.32), step(0.6, dsPick));
+    dsPaint = lerp(dsPaint, float3(0.30, 0.32, 0.18), step(0.8, dsPick));
+    albedo = lerp(albedo, dsPaint * (0.72 + 0.56 * macro) * (0.82 + 0.36 * n2), dsRepaint * 0.7);
 
     if (ground > 0.5)
     {

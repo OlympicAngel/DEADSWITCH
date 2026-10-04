@@ -25,16 +25,35 @@ namespace Deadswitch.Game.Rendering
             data.renderShadows = true;
             data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
 
-            var request = new RenderPipeline.StandardRequest { destination = target };
-            if (RenderPipeline.SupportsRenderRequest(cam, request))
+            // The mobile asset renders at 0.8 scale; into an off-screen target some passes then use the scaled size
+            // and others the full one, so additional lights land only in an 80% rectangle. Stills render at 1.
+            var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            float scale = urp != null ? urp.renderScale : 1f;
+            if (urp != null)
             {
-                RenderPipeline.SubmitRenderRequest(cam, request);
-                return;
+                urp.renderScale = 1f;
             }
 
-            cam.targetTexture = target;
-            cam.Render();
-            cam.targetTexture = null;
+            try
+            {
+                var request = new RenderPipeline.StandardRequest { destination = target };
+                if (RenderPipeline.SupportsRenderRequest(cam, request))
+                {
+                    RenderPipeline.SubmitRenderRequest(cam, request);
+                    return;
+                }
+
+                cam.targetTexture = target;
+                cam.Render();
+                cam.targetTexture = null;
+            }
+            finally
+            {
+                if (urp != null)
+                {
+                    urp.renderScale = scale;
+                }
+            }
         }
     }
 }
