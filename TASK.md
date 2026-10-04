@@ -1,31 +1,12 @@
-# TASK: F-057 2.5D sector map rework
+# TASK: F-056 The AI builds in secret
 
-- Status: In progress
-- Started: 2026-10-04   Branch: claude/confident-heisenberg-m3gwju
-- Pillar / milestone: Offense & world (presentation) / M6
-- Spec: docs/specs/SPEC-033-sector-map.md
-- Sources: owner brief (2026-10-04), doc 05 s6, doc 11 (Master art direction, Environment construction rules), ADR-0007, `docs/agents/environment-art.md`
-
-## Goal
-Replace the flat radar plot with a 2.5D map: fixed-tilt ruined terrain with kit landmarks per site and hazard ground
-treatments, an illustrated layer (territory, routes, fog of war, fallout haze), terminal UI on top, glitching AI
-estimates. Done = renders reviewed at day/dusk/night, Unity wired and compiling, docs updated.
-
-## Steps
-- [x] 1. Spec and task
-- [x] 2. Art: `SectorScene` terrain + fixed camera + projection; `art export --map`; preview reads the camera from the scene (verification: renders day/dusk/night)
-- [x] 3. Art: site landmarks per kind, the Hub, hazard ground treatments (verification: renders, close-ups)
-- [x] 4. Art: `SectorOverlay` from the game state (territory, routes, fog of war, fallout haze, marker anchors); preview draws it (verification: render with overlay)
-- [x] 5. Unity: `MapView` (map world on its own layer, map camera, render to texture on demand, fog/shadow overrides) (verification: Unity compile check)
-- [x] 6. Unity: map screen shows the render, draws the overlay (Painter2D) and projected markers, glitching estimates (verification: Unity compile check, UI preview)
-- [ ] 7. Docs (doc 11 map note, HANDOFF Editor checklist), finish
+- Status: Done (2026-10-04): hidden nodes from skimmed compute speed the project and drain energy off the books; the Audit exposes them, CORE can dismantle them (SPEC-034).
+- Branch: claude/confident-heisenberg-m3gwju
+- Next: F-099 (last; needs the owner for the Editor and phone checks). Editor checks for F-055..F-057 are listed in docs/agents/HANDOFF.md.
 
 ## Notes
-- Owner direction (2026-10-04): gameplay first in cloud sessions; F-057 was queued by the owner right after F-055.
-- F-056 (AI builds in secret) is next after this; F-099 stays last (phone and Editor checks need the owner).
-
-- Preview: `dotnet run --project src/Deadswitch.Cli -- art export --map [--aspect W/H] [--scouted 0,3] [--fallout SITE] [--op SITE] --out artifacts/basepreview/map.json` (overlay and markers included; `&bare=1` hides them), then `node tools/basepreview/render.mjs --scene artifacts/basepreview/map.json --hour 12` (also 18.6, 23). Close-ups: `--target x,y,z --dist 40`.
-- New palette slot `MapGround` (ground shader arid mode: wear `streak` = aridity; vertex G = ash, B > 0.5 = dust). The yard ground writes 0 / 0.5 there, so the base look is unchanged.
+- Owner direction (2026-10-04): gameplay first in cloud sessions; styling waits for F-099.
+- Balance: 40 seeds x 30 days unchanged against the previous build (casual and autopilot reached the climax before too).
 
 ## Blocked / questions
 - none

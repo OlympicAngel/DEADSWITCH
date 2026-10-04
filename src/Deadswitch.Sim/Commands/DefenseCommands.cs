@@ -172,6 +172,7 @@ namespace Deadswitch.Sim.Commands
 
             ctx.Emit(EventKind.AuditRun, (int)ProjectSystem.Stage(c, s.ProjectMilli), s.ColdnessMilli, s.BoldnessMilli, s.CorruptionMilli);
             ctx.Emit(EventKind.AuditDrain, s.SkimmedSinceAudit, unverified, c.Project.AuditComputeCost);
+            SecretSystem.Audited(ctx);
             s.SkimmedSinceAudit = 0;
             return CommandResult.Ok;
         }

@@ -31,8 +31,11 @@ namespace Deadswitch.Sim.Tests
         public void Audit_CostsCompute_CoolsDown_AndReportsTheTruth()
         {
             var sim = new Simulation(5UL);
+            sim.Config.Secrets.NodeCompute = 10;
+            sim.Config.Secrets.FromBoldnessPct = 0;
             sim.Execute(Command.SetDelegation(DelegationLevel.Autopilot));
             sim.Run(5L * SimConfig.TicksPerDay);
+            Assert.Equal(RejectReason.NothingPending, sim.Execute(Command.DismantleSecrets()).Reason);
             int compute = sim.State.Compute;
             int skimmed = sim.State.SkimmedSinceAudit;
 
@@ -46,6 +49,15 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(compute - sim.Config.Project.AuditComputeCost, sim.State.Compute);
             Assert.Equal(0, sim.State.SkimmedSinceAudit);
             Assert.Equal(RejectReason.OnCooldown, sim.Execute(Command.Audit()).Reason);
+
+            // SPEC-034: the Audit exposes the AI's hidden nodes; tearing them down sets its project back
+            int nodes = sim.State.SecretNodes;
+            Assert.True(nodes > 0);
+            Assert.Equal(nodes, sim.Log.Events.First(e => e.Kind == EventKind.SecretExposed).A);
+            int project = sim.State.ProjectMilli;
+            Assert.True(sim.Execute(Command.DismantleSecrets()).Accepted);
+            Assert.Equal(0, sim.State.SecretNodes);
+            Assert.Equal(System.Math.Max(0, project - (nodes * sim.Config.Secrets.DismantleProjectMilli)), sim.State.ProjectMilli);
         }
     }
 }

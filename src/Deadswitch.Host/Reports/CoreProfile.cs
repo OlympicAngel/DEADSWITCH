@@ -27,6 +27,9 @@ namespace Deadswitch.Host.Reports
         /// <summary>Unverified reports that hide a lie.</summary>
         public int UnverifiedLies { get; private set; }
 
+        /// <summary>Hidden nodes the AI had built (SPEC-034); 0 for logs from before they existed.</summary>
+        public int HiddenNodes { get; private set; }
+
         /// <summary>The most recent Audit, or null if the handler never ran one.</summary>
         public static CoreProfile? Latest(IReadOnlyList<SimEvent> log)
         {
@@ -53,6 +56,7 @@ namespace Deadswitch.Host.Reports
                     TrueCorruptionMilli = run.D,
                     Skimmed = drain.A,
                     UnverifiedLies = drain.B,
+                    HiddenNodes = i + 1 < log.Count && log[i + 1].Kind == EventKind.SecretExposed ? log[i + 1].A : 0,
                 };
             }
 

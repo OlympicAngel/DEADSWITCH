@@ -98,6 +98,11 @@
           <ui:VisualElement class="core-line"><ui:Label text="TRUE CORRUPTION" class="ds-label grow" /><ui:Label name="true-corruption" text="41% (SHOWN 29%)" class="core-line__value t-amber" /></ui:VisualElement>
           <ui:VisualElement class="core-line"><ui:Label text="SKIMMED COMPUTE" class="ds-label grow" /><ui:Label name="skimmed" text="128" class="core-line__value t-amber" /></ui:VisualElement>
           <ui:VisualElement class="core-line"><ui:Label text="UNVERIFIED REPORTS WITH LIES" class="ds-label grow" /><ui:Label name="lies" text="2" class="core-line__value" /></ui:VisualElement>
+          <!-- hidden nodes (SPEC-034): what the AI built with the compute it skimmed; the handler may tear them down -->
+          <ui:VisualElement class="core-line"><ui:Label text="HIDDEN NODES" class="ds-label grow" /><ui:Label name="secret-nodes" text="2 // DRAWING 24 E/H" class="core-line__value t-amber" /></ui:VisualElement>
+          <ui:VisualElement name="secret-dismantle" class="ds-btn ds-btn--warn core-audit__btn">
+            <ui:Label name="secret-dismantle-label" text="DISMANTLE 2 NODES // PROJECT -12%" class="ds-btn__label" />
+          </ui:VisualElement>
           <ui:VisualElement class="core-line core-line--project">
             <ui:Label text="UNKNOWN PROCESS" class="ds-label grow" />
             <ui:VisualElement name="stage-steps" class="row core-steps">

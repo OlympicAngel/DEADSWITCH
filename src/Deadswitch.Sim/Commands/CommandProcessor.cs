@@ -82,6 +82,8 @@ namespace Deadswitch.Sim.Commands
                     return DiplomacySystem.EndAlliance(ctx, command);
                 case CommandKind.RecallOp:
                     return InitiativeSystem.Recall(ctx, command);
+                case CommandKind.DismantleSecrets:
+                    return SecretSystem.Dismantle(ctx, command);
                 case CommandKind.SetIronman:
                     return LegacySystem.SetIronman(ctx, command);
                 case CommandKind.FlushCore:

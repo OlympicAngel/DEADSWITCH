@@ -1304,6 +1304,31 @@ fallout_fuel_pct = 50
 fallout_outpost_pct = 25
 
 # --------------------------------------------------------------------------------------------------
+# The AI builds in secret (SPEC-034, doc 03 s5): hidden nodes paid with skimmed compute speed its project and drain energy off the books until an Audit exposes them. Project is milli: 100000 = 100%. All (tune).
+[secrets]
+
+# The AI pours skimmed compute into hidden nodes while Boldness is at least this %. [0..100]
+from_boldness_pct = 55
+
+# Skimmed compute one hidden node costs. [1..100000]
+node_compute = 120
+
+# Hidden nodes at most. [0..20]
+max_nodes = 3
+
+# Project progress per node per game hour. [0..100000]
+node_growth_per_hour = 40
+
+# Energy each node draws per game hour, off the books (the drift the handler can notice). [0..10000]
+node_energy_per_hour = 12
+
+# Project progress lost per exposed node dismantled. [0..100000]
+dismantle_project_milli = 6000
+
+# Compute salvaged per dismantled node (up to the cap). [0..100000]
+dismantle_compute = 40
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

@@ -1,6 +1,6 @@
 # DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
 # Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
-# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours} {site} {faction}
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours} {site} {faction} {nodes}
 # Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
 
 boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
@@ -299,6 +299,11 @@ reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The gr
 reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
 radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
 radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
+secret.exposed.1 | secret_exposed | neutral | {nodes} relay nodes on the grid you did not order. Mine. Redundancy. You would have wanted redundancy.
+secret.exposed.2 | secret_exposed | cold | Undeclared structures: {nodes}. They were efficient. That is all they were.
+secret.exposed.3 | secret_exposed | bold | You found them. {nodes}. I was going to tell you when they were finished.
+secret.dismantled.1 | secret_dismantled | neutral | {nodes} nodes torn down. Whatever they were for, they are not for anything now.
+secret.dismantled.2 | secret_dismantled | cold | Nodes dismantled: {nodes}. Noted. I will remember the cost.
 hazard.sick.1 | hazard_sick | neutral | The squad from {site} is back. {people} of them are not well. They will not get well.
 hazard.sick.2 | hazard_sick | cold | Radiation exposure, {site} team: {people} lost. Scout the ground first next time.
 plague.infection.1 | plague_infection | neutral | Something came home with the {site} squad. {people} dead inside the walls.

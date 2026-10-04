@@ -317,6 +317,15 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The fallout front moved. A: new site, B: previous site (-1 none), C: hours to the next drift.</summary>
         FalloutDrifted = 103,
+
+        /// <summary>The AI finished a hidden node (SPEC-034). Never shown until an Audit. A: nodes standing.</summary>
+        SecretBuilt = 104,
+
+        /// <summary>An Audit exposed the AI's hidden nodes (follows AuditDrain). A: nodes found.</summary>
+        SecretExposed = 105,
+
+        /// <summary>The handler tore down exposed nodes. A: nodes, B: compute salvaged.</summary>
+        SecretDismantled = 106,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
