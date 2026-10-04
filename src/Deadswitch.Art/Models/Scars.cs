@@ -240,7 +240,7 @@ namespace Deadswitch.Art.Models
         }
 
         /// <summary>Burnt-out light truck: blackened, rusting body on its rims, doors and glass gone.</summary>
-        private static void Hulk(MeshBuilder b, ArtRandom rng, uint seed)
+        internal static void Hulk(MeshBuilder b, ArtRandom rng, uint seed)
         {
             float tilt = rng.Range(-4f, 4f);
             b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(tilt)) * Matrix4x4.CreateTranslation(new Vector3(0, 0.02f, 0)));

@@ -19,6 +19,9 @@ const P = new URLSearchParams(location.search);
 const W = +P.get('w') || 1080, H = +P.get('h') || 1920;
 const scene = await (await fetch('/scene.json')).json();
 const look = timeOfDay(await (await fetch('/look.json')).json(), P.get('hour') !== null ? +P.get('hour') : 12);
+// sector map (SPEC-033): thinner fog and a wider shadow frustum for the far recon camera (BaseLook.json "map")
+const mapLook = scene.map ? (look.map || {}) : null;
+if (mapLook) look.fogDensity *= mapLook.fogScale ?? 1;
 
 // Blends the lighting keyframes around the game hour into one flat look (same rule as BaseLook.cs).
 function timeOfDay(file, hour) {
@@ -62,10 +65,11 @@ const hemi = new THREE.HemisphereLight(new THREE.Color().setRGB(...look.skyColor
 world.add(hemi);
 const sun = new THREE.DirectionalLight(new THREE.Color().setRGB(...look.sunColor, THREE.SRGBColorSpace), look.sunIntensity);
 const az = THREE.MathUtils.degToRad(look.sunAzimuth), el = THREE.MathUtils.degToRad(look.sunElevation);
-sun.position.set(Math.cos(el) * Math.sin(az) * 60, Math.sin(el) * 60, Math.cos(el) * Math.cos(az) * 60);
+const sunDist = mapLook ? 160 : 60, shadowHalf = mapLook ? (mapLook.shadowExtent ?? 80) : 32;
+sun.position.set(Math.cos(el) * Math.sin(az) * sunDist, Math.sin(el) * sunDist, Math.cos(el) * Math.cos(az) * sunDist);
 sun.castShadow = true;
 sun.shadow.mapSize.set(4096, 4096);
-Object.assign(sun.shadow.camera, { left: -32, right: 32, top: 32, bottom: -32, near: 1, far: 160 });
+Object.assign(sun.shadow.camera, { left: -shadowHalf, right: shadowHalf, top: shadowHalf, bottom: -shadowHalf, near: 1, far: sunDist * 2.6 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
 if ((look.shadowSoftness ?? 0) > 0) { sun.shadow.radius = look.shadowSoftness; sun.shadow.blurSamples = 16; sun.shadow.bias = -0.0002; }
 world.add(sun);
@@ -189,6 +193,7 @@ const camAt = camTarget ? new THREE.Vector3(camTarget[0], camTarget[1], -camTarg
 const camFrom = camTarget ? camAt : new THREE.Vector3();
 cam.position.set(camFrom.x + Math.cos(ce) * Math.sin(ca) * camDist, camFrom.y + Math.sin(ce) * camDist, camFrom.z + Math.cos(ce) * Math.cos(ca) * camDist);
 cam.lookAt(camAt);
+if (scene.camera && !camTarget) { cam.fov = scene.camera.fov; cam.far = 600; cam.position.set(...scene.camera.pos); cam.lookAt(new THREE.Vector3(...scene.camera.target)); cam.updateProjectionMatrix(); }
 
 const composer = new EffectComposer(renderer);
 composer.setSize(W, H);

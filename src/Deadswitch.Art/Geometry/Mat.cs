@@ -49,5 +49,8 @@ namespace Deadswitch.Art.Geometry
 
         /// <summary>Dark recessed bunker portal; its phosphor glow reads only at night (emissive).</summary>
         Portal = 33,
+
+        /// <summary>Open wasteland ground of the sector map (SPEC-033): the ground shader in its arid mode.</summary>
+        MapGround = 34,
     }
 }

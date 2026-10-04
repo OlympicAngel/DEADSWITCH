@@ -131,6 +131,7 @@ namespace Deadswitch.Art.Geometry
             new MaterialDef("LampCold", 0x1E2428, 0f, 0.7f, Wear.None, 0xD8F0FF, 5f, true),
             new MaterialDef("NeonCyan", 0x16302E, 0f, 0.7f, Wear.None, 0x3FE6D8, 4.5f, true),
             new MaterialDef("Portal", 0x090C0A, 0.1f, 0.2f, Wear.None, 0x5FC48A, 0.5f, true),
+            new MaterialDef("MapGround", 0x564D3E, 0f, 0.08f, new Wear(0f, 0f, 0f, 1f, 0.5f, 0.3f, 0x2E2820, ground: true)),
         };
 
         public static MaterialDef Get(Mat m)

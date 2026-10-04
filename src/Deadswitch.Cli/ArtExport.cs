@@ -25,60 +25,8 @@ namespace Deadswitch.Cli
 
         public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1, int wreckage = 0, bool burning = false, int factionOverride = -1)
         {
-            var meshes = new List<MeshData>();
-            var objects = new StringBuilder();
-            int count = 0;
-
-            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null)
-            {
-                int meshIndex = meshes.Count;
-                meshes.Add(model.Static);
-                int coneIndex = -1;
-                if (!model.Cones.IsEmpty)
-                {
-                    coneIndex = meshes.Count;
-                    meshes.Add(model.Cones);
-                }
-
-                var parts = new StringBuilder();
-                foreach (AnimPart p in model.Parts)
-                {
-                    meshes.Add(p.Mesh);
-                    parts.Append(parts.Length > 0 ? "," : string.Empty)
-                        .Append("{\"mesh\":").Append(meshes.Count - 1)
-                        .Append(",\"pivot\":").Append(V(p.Pivot))
-                        .Append(",\"kind\":").Append((int)p.Kind)
-                        .Append(",\"speed\":").Append(F(p.Speed))
-                        .Append(",\"range\":").Append(F(p.Range)).Append('}');
-                }
-
-                var lights = new StringBuilder();
-                foreach (LightSpec l in model.Lights)
-                {
-                    lights.Append(lights.Length > 0 ? "," : string.Empty)
-                        .Append("{\"pos\":").Append(V(l.Position))
-                        .Append(",\"color\":[").Append(F(l.Color.X)).Append(',').Append(F(l.Color.Y)).Append(',').Append(F(l.Color.Z)).Append(']')
-                        .Append(",\"intensity\":").Append(F(l.Intensity))
-                        .Append(",\"range\":").Append(F(l.Range))
-                        .Append(",\"role\":").Append((int)l.Role).Append('}');
-                }
-
-                objects.Append(count++ > 0 ? ",\n" : string.Empty)
-                    .Append("{\"name\":\"").Append(name).Append("\",\"mesh\":").Append(meshIndex)
-                    .Append(",\"cones\":").Append(coneIndex)
-                    .Append(",\"position\":").Append(V(pos))
-                    .Append(",\"yaw\":").Append(F(-yaw))
-                    .Append(",\"powered\":").Append(powered ? "true" : "false")
-                    .Append(",\"unmanned\":").Append(unmanned ? "true" : "false")
-                    .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append(']');
-                if (fx != null)
-                {
-                    objects.Append(",\"fires\":[").Append(string.Join(",", fx.Fires.Select(V))).Append("],\"smokes\":[").Append(string.Join(",", fx.Smokes.Select(V)))
-                        .Append("],\"smokeLevel\":").Append(fx.SmokeLevel);
-                }
-
-                objects.Append('}');
-            }
+            var scene = new SceneBuilder();
+            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null) => scene.Add(name, model, pos, yaw, powered, unmanned, fx);
 
             int slots = layout?.Length ?? sim.State.Slots.Count;
             AddModel("terrain", new Model { Static = HubScene.Terrain(seed) }, Vector3.Zero, 0, true, false);
@@ -148,31 +96,114 @@ namespace Deadswitch.Cli
                 reportJson.Append("]}");
             }
 
-            var sb = new StringBuilder();
-            sb.Append("{\"palette\":[");
-            for (int i = 0; i < Palette.Count; i++)
+            File.WriteAllText(path, scene.Json(reportJson.ToString()));
+        }
+
+        /// <summary>
+        /// The sector map (SPEC-033) for the preview: terrain and landmarks, the fixed camera for a picture of
+        /// <paramref name="aspect"/>, and the look's map block (fog scale, shadow extent).
+        /// </summary>
+        public static void WriteMap(Simulation sim, string path, uint seed, float aspect)
+        {
+            var scene = new SceneBuilder();
+            foreach (SectorObject o in SectorScene.Build(seed))
             {
-                MaterialDef d = Palette.Get((Mat)i);
-                sb.Append(i > 0 ? "," : string.Empty)
-                    .Append("{\"name\":\"").Append(d.Name).Append("\",\"color\":").Append(V3(d.BaseColor))
-                    .Append(",\"metallic\":").Append(F(d.Metallic)).Append(",\"smoothness\":").Append(F(d.Smoothness))
-                    .Append(",\"emission\":").Append(V3(d.EmissionColor)).Append(",\"emissionIntensity\":").Append(F(d.EmissionIntensity))
-                    .Append(",\"lamp\":").Append(d.IsLamp ? "true" : "false")
-                    .Append(",\"wear\":{\"chip\":").Append(F(d.Wear.Chip)).Append(",\"rust\":").Append(F(d.Wear.Rust))
-                    .Append(",\"dirt\":").Append(F(d.Wear.Dirt)).Append(",\"streak\":").Append(F(d.Wear.Streak))
-                    .Append(",\"bump\":").Append(F(d.Wear.Bump)).Append(",\"scale\":").Append(F(d.Wear.Scale))
-                    .Append(",\"bare\":").Append(V3(d.Wear.Bare)).Append(",\"ground\":").Append(d.Wear.Ground ? "true" : "false").Append("}}");
+                scene.Add(o.Name.Replace(' ', '_'), o.Model, o.Position, 0, true, false);
             }
 
-            sb.Append("],\n\"objects\":[\n").Append(objects).Append("],\n\"meshes\":[\n");
-            for (int i = 0; i < meshes.Count; i++)
+            CameraPose cam = SectorScene.Camera(aspect);
+            var extra = new StringBuilder();
+            extra.Append(",\n\"camera\":{\"pos\":").Append(V(cam.Position)).Append(",\"target\":").Append(V(cam.Target)).Append(",\"fov\":").Append(F(cam.Fov)).Append('}')
+                .Append(",\n\"map\":true");
+            File.WriteAllText(path, scene.Json(extra.ToString()));
+        }
+
+        /// <summary>Collects objects and meshes, then writes the preview's scene JSON.</summary>
+        private sealed class SceneBuilder
+        {
+            private readonly List<MeshData> _meshes = new List<MeshData>();
+            private readonly StringBuilder _objects = new StringBuilder();
+            private int _count;
+
+            public void Add(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null)
             {
-                sb.Append(i > 0 ? ",\n" : string.Empty);
-                Mesh(sb, meshes[i]);
+                int meshIndex = _meshes.Count;
+                _meshes.Add(model.Static);
+                int coneIndex = -1;
+                if (!model.Cones.IsEmpty)
+                {
+                    coneIndex = _meshes.Count;
+                    _meshes.Add(model.Cones);
+                }
+
+                var parts = new StringBuilder();
+                foreach (AnimPart p in model.Parts)
+                {
+                    _meshes.Add(p.Mesh);
+                    parts.Append(parts.Length > 0 ? "," : string.Empty)
+                        .Append("{\"mesh\":").Append(_meshes.Count - 1)
+                        .Append(",\"pivot\":").Append(V(p.Pivot))
+                        .Append(",\"kind\":").Append((int)p.Kind)
+                        .Append(",\"speed\":").Append(F(p.Speed))
+                        .Append(",\"range\":").Append(F(p.Range)).Append('}');
+                }
+
+                var lights = new StringBuilder();
+                foreach (LightSpec l in model.Lights)
+                {
+                    lights.Append(lights.Length > 0 ? "," : string.Empty)
+                        .Append("{\"pos\":").Append(V(l.Position))
+                        .Append(",\"color\":[").Append(F(l.Color.X)).Append(',').Append(F(l.Color.Y)).Append(',').Append(F(l.Color.Z)).Append(']')
+                        .Append(",\"intensity\":").Append(F(l.Intensity))
+                        .Append(",\"range\":").Append(F(l.Range))
+                        .Append(",\"role\":").Append((int)l.Role).Append('}');
+                }
+
+                _objects.Append(_count++ > 0 ? ",\n" : string.Empty)
+                    .Append("{\"name\":\"").Append(name).Append("\",\"mesh\":").Append(meshIndex)
+                    .Append(",\"cones\":").Append(coneIndex)
+                    .Append(",\"position\":").Append(V(pos))
+                    .Append(",\"yaw\":").Append(F(-yaw))
+                    .Append(",\"powered\":").Append(powered ? "true" : "false")
+                    .Append(",\"unmanned\":").Append(unmanned ? "true" : "false")
+                    .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append(']');
+                if (fx != null)
+                {
+                    _objects.Append(",\"fires\":[").Append(string.Join(",", fx.Fires.Select(V))).Append("],\"smokes\":[").Append(string.Join(",", fx.Smokes.Select(V)))
+                        .Append("],\"smokeLevel\":").Append(fx.SmokeLevel);
+                }
+
+                _objects.Append('}');
             }
 
-            sb.Append(']').Append(reportJson).Append("}\n");
-            File.WriteAllText(path, sb.ToString());
+            public string Json(string extra)
+            {
+                var sb = new StringBuilder();
+                sb.Append("{\"palette\":[");
+                for (int i = 0; i < Palette.Count; i++)
+                {
+                    MaterialDef d = Palette.Get((Mat)i);
+                    sb.Append(i > 0 ? "," : string.Empty)
+                        .Append("{\"name\":\"").Append(d.Name).Append("\",\"color\":").Append(V3(d.BaseColor))
+                        .Append(",\"metallic\":").Append(F(d.Metallic)).Append(",\"smoothness\":").Append(F(d.Smoothness))
+                        .Append(",\"emission\":").Append(V3(d.EmissionColor)).Append(",\"emissionIntensity\":").Append(F(d.EmissionIntensity))
+                        .Append(",\"lamp\":").Append(d.IsLamp ? "true" : "false")
+                        .Append(",\"wear\":{\"chip\":").Append(F(d.Wear.Chip)).Append(",\"rust\":").Append(F(d.Wear.Rust))
+                        .Append(",\"dirt\":").Append(F(d.Wear.Dirt)).Append(",\"streak\":").Append(F(d.Wear.Streak))
+                        .Append(",\"bump\":").Append(F(d.Wear.Bump)).Append(",\"scale\":").Append(F(d.Wear.Scale))
+                        .Append(",\"bare\":").Append(V3(d.Wear.Bare)).Append(",\"ground\":").Append(d.Wear.Ground ? "true" : "false").Append("}}");
+                }
+
+                sb.Append("],\n\"objects\":[\n").Append(_objects).Append("],\n\"meshes\":[\n");
+                for (int i = 0; i < _meshes.Count; i++)
+                {
+                    sb.Append(i > 0 ? ",\n" : string.Empty);
+                    Mesh(sb, _meshes[i]);
+                }
+
+                sb.Append(']').Append(extra).Append("}\n");
+                return sb.ToString();
+            }
         }
 
         private static void Mesh(StringBuilder sb, MeshData m)

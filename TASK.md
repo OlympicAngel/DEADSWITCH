@@ -13,8 +13,8 @@ estimates. Done = renders reviewed at day/dusk/night, Unity wired and compiling,
 
 ## Steps
 - [x] 1. Spec and task
-- [ ] 2. Art: `SectorScene` terrain + fixed camera + projection; `art export --map`; preview reads the camera from the scene (verification: renders day/dusk/night)
-- [ ] 3. Art: site landmarks per kind, the Hub, hazard ground treatments (verification: renders, close-ups)
+- [x] 2. Art: `SectorScene` terrain + fixed camera + projection; `art export --map`; preview reads the camera from the scene (verification: renders day/dusk/night)
+- [x] 3. Art: site landmarks per kind, the Hub, hazard ground treatments (verification: renders, close-ups)
 - [ ] 4. Art: `SectorOverlay` from the game state (territory, routes, fog of war, fallout haze, marker anchors); preview draws it (verification: render with overlay)
 - [ ] 5. Unity: `MapView` (map world on its own layer, map camera, render to texture on demand, fog/shadow overrides) (verification: Unity compile check)
 - [ ] 6. Unity: map screen shows the render, draws the overlay (Painter2D) and projected markers, glitching estimates (verification: Unity compile check, UI preview)
@@ -23,6 +23,9 @@ estimates. Done = renders reviewed at day/dusk/night, Unity wired and compiling,
 ## Notes
 - Owner direction (2026-10-04): gameplay first in cloud sessions; F-057 was queued by the owner right after F-055.
 - F-056 (AI builds in secret) is next after this; F-099 stays last (phone and Editor checks need the owner).
+
+- Preview: `dotnet run --project src/Deadswitch.Cli -- art export --map [--aspect W/H] --out artifacts/basepreview/map.json`, then `node tools/basepreview/render.mjs --scene artifacts/basepreview/map.json --hour 12` (also 18.6, 23). Close-ups: `--target x,y,z --dist 40`.
+- New palette slot `MapGround` (ground shader arid mode: wear `streak` = aridity; vertex G = ash, B > 0.5 = dust). The yard ground writes 0 / 0.5 there, so the base look is unchanged.
 
 ## Blocked / questions
 - none

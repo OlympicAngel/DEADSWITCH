@@ -86,7 +86,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  verify --save PATH [--config PATH]   replay a save from its seed; exit 0 when it reproduces");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
-            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last] [--faction N]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last] [--faction N] [--map [--aspect W/H]]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -231,6 +231,14 @@ namespace Deadswitch.Cli
             int wreckage = int.Parse(ValueAfter(rest, "--wreckage") ?? sim.State.Wreckage.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
             bool burning = rest.Contains("--burning");
             int faction = int.Parse(ValueAfter(rest, "--faction") ?? "-1", CultureInfo.InvariantCulture);
+            if (rest.Contains("--map"))
+            {
+                float aspect = float.Parse(ValueAfter(rest, "--aspect") ?? "1", CultureInfo.InvariantCulture);
+                ArtExport.WriteMap(sim, outPath, (uint)seed, aspect);
+                Console.WriteLine("wrote " + outPath + " (sector map, day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
+                return 0;
+            }
+
             ArtExport.Write(sim, outPath, (uint)seed, layout, report, tier, wreckage, burning, faction);
             Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
             for (int i = 0; i < sim.State.Slots.Count; i++)
