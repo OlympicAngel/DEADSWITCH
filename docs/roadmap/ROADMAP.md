@@ -17,8 +17,8 @@ Spec: `docs/specs/SPEC-001-pressure-loop.md`
 - [x] Defense setup input (posture + garrison slots) affecting raid outcome
 - [x] Corruption bands 0-30 / 31-60 / 61-85 / 86-100 with effects hooks
 - [x] OVERRIDE charges + shared cooldown (no UI)
-- [ ] CLI scenario runner: scripted player behavior over N days, prints a loss ledger
-- [ ] Guard tests for intended feel (cadence, caps, no blackout, mercy window)
+- [x] CLI scenario runner: scripted player behavior over N days, prints a loss ledger
+- [x] Guard tests for intended feel (cadence, caps, no blackout, mercy window)
 - **Exit:** 30 simulated days across 100 seeds: no soft-locks, never wiped in one hit, raids feel like doc 10 section 4.
 
 ## M2 - AI relationship core (Phase 1, pillar 1)
@@ -26,27 +26,27 @@ Spec: `docs/specs/SPEC-001-pressure-loop.md`
 - [x] Advisor line system with lie rules (`docs/narrative/ADVISOR_VOICE.md`); the first lie
 - [x] Hidden project clock (Dormant / Active / Advanced / Imminent) + Audit tool
 - [x] Module trunk M1-M3 + one field (8 nodes)
-- [ ] Terminal HUD in Unity (text-first, always-visible essentials)
+- [x] Terminal HUD in Unity (text-first, always-visible essentials)
 - **Exit:** a tester catches the first lie via cross-checking and says "clever", not "bug".
 
 ## M3 - Offline pressure (Phase 2, pillar 3)
-- [ ] Logout/return flow, offline catch-up (ADR-0004), clock-cheat handling
-- [ ] All four signatures (raid, siege, virus, purge) + purge warning ladder
-- [ ] Mercy window, vacation shield, tribute standing orders
+- [x] Logout/return flow, offline catch-up (ADR-0004), clock-cheat handling
+- [x] All four signatures (raid, siege, virus, purge) + purge warning ladder
+- [x] Mercy window, vacation shield, tribute standing orders
 - [x] Battle report (4-6 panels + loss ledger + Verify)
-- [ ] Local notifications from projected attacks
+- [x] Local notifications from projected attacks
 - **Exit:** close the app prepared and feel slightly nervous; return and read exactly what was lost and why.
 
 ## M4 - Vertical slice (Phase 3)
-- [ ] Cinematic prologue, boot sequence, early protection, first hit
-- [ ] Living base view (diorama), battle scars, corruption visuals
-- [ ] Audio pass: ambient dread, glitchy AI voice, silence before purge
+- [x] Cinematic prologue, boot sequence, early protection, first hit
+- [x] Living base view (diorama), battle scars, corruption visuals
+- [x] Audio pass: ambient dread, glitchy AI voice, silence before purge
 - **Exit:** 30-minute opening playable end to end with art and audio.
 
 ## M5 - v1 content (Phase 4)
-- [ ] Tiers 1-2, four module fields (32 nodes), three factions (Scavengers, Military, Cultists teaser)
-- [ ] Raids + cyber offense, per-faction heat, scouts / AI prediction / spies
-- [ ] Free demo (Tier 1) + premium unlock (ADR-0006), colorblind-safe HUD, assists
+- [x] Tiers 1-2, four module fields (32 nodes), three factions (Scavengers, Military, Cultists teaser)
+- [x] Raids + cyber offense, per-faction heat, scouts / AI prediction / spies
+- [x] Free demo (Tier 1) + premium unlock (ADR-0006), colorblind-safe HUD, assists
 - **Exit:** closed beta build on Android and iOS.
 
 ## M6+ - Expansion and online

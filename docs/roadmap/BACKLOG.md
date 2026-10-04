@@ -58,6 +58,8 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-052 | Reactor: Tier 3 power plant with huge output for fuel; scrams when dry, draws raiders, leaks radiation when cracked; new 3D model (SPEC-029) | M6 | Done 2026-10-04 | doc 02 s3 + s6 |
 | F-053 | The AI acts without orders: a bold delegated AI launches its own raids at targets its estimate likes; the handler can recall them from the map (SPEC-030) | M6 | Done 2026-10-04 | doc 03 s5 |
 | F-054 | Starting regions: relocation picks Hollow, Ridge (turrets), River (fuel) or Ruins (compute) for the next cycle; a forced reboot lands wherever the core can flee (SPEC-031) | M6 | Done 2026-10-04 | doc 06 s4 |
+| F-055 | Hazard zones: radiation, plague and machine-graveyard zones with their own rewards and risks (scouting halves the risk); a fallout front drifts between sites (SPEC-032) | M6 | In progress | doc 05 s6-7 |
+| F-056 | The AI builds in secret: a bold AI diverts skimmed resources into hidden structures that feed the project clock; Audit and cross-checks expose them, the handler can dismantle them (doc 03 s5) | M6 | Ready | doc 03 s5, doc 10 s2 |
 | F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | In progress: balance pass, ambushes, corruption visuals, HUD heat done; Editor and phone checks need the owner (no Unity in cloud sessions) | SPEC-014 |
 | F-026 | Pacing retune: Tier 1 5-7 days, corruption from heavy compute use and proportional decay, launch max tier 2 (owner targets) | M1 | Done 2026-10-04 | SPEC-014, doc 10 corrections |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Done 2026-10-03 | fold into CLI |

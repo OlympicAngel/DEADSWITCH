@@ -1,8 +1,27 @@
-# TASK: F-099 polish and balance pass (last)
+# TASK: F-055 Hazard zones and drifting fallout
 
-- [x] Balance pass with the runner (doc 10 corrections log, SPEC-014 findings)
-- [x] Missing doc 10 rules: ambushes, highest heat on the HUD
-- [x] Corruption visuals on the base; crewed glitches; dilemmas wait for the handler
-- [x] Play in the Unity Editor (UI layout, lighting, damage FX, report stills fixed; open items in docs/agents/HANDOFF.md)
-- [ ] Android phone run (owner)
-- [ ] Fix whatever the phone run finds; open Editor items: night report stills, puddle reflections, ALLY/SABOTAGE/RECALL, reactor, themes
+- Status: In progress
+- Started: 2026-10-04   Branch: claude/confident-heisenberg-m3gwju
+- Pillar / milestone: Offense & world / M6
+- Spec: docs/specs/SPEC-032-hazard-zones.md
+- Sources: doc 05 s6-7, doc 07 (four kinds of damage), doc 10 s4 (heat, offline fairness)
+
+## Goal
+Three wild zones (radiation, plague, machine graveyard) give rewards the factions do not (survivors, repair parts,
+rich salvage) at a zone-specific risk that scouting halves; a fallout front drifts between sites and reshapes which
+routes are safe. Done = sim rules + config + saves, advisor lines, map UI wired, docs updated, gate green.
+
+## Steps
+- [x] 1. Spec, task, backlog and roadmap (stale boxes ticked)
+- [ ] 2. Sim: wild zones in the catalog, `[hazards]` config, zone rewards and risks, no faction effects (verification: test)
+- [ ] 3. Sim: fallout front (state, save v29, drift, fuel/sickness/outpost effects) (verification: test, chunking, CLI run)
+- [ ] 4. Host: advisor lines for the new events; balance file dump (verification: config check, advisor tests)
+- [ ] 5. Unity: map shows zones and the fallout front; site sheet states risk (verification: Unity compile check)
+- [ ] 6. Docs (doc 10 corrections log, doc 05 open task, HANDOFF), finish feature
+
+## Notes
+- Owner direction (2026-10-04): continue gameplay work in the cloud; visual styling waits for the end (F-099).
+- F-099 stays open (phone and Editor checks need the owner).
+
+## Blocked / questions
+- none
