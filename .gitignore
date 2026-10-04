@@ -44,3 +44,6 @@ local.settings.json
 # Preview tooling
 tools/basepreview/node_modules/
 tools/basepreview/package-lock.json
+
+# Unity phone builds (PhoneBuild.cs)
+unity/Builds/

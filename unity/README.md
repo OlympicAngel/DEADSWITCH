@@ -13,6 +13,11 @@ See [`../docs/design/11_visual_theme_and_motion.md`](../docs/design/11_visual_th
 - `git lfs install` is already configured on the setup workstation; `.gitattributes` is preconfigured for binary art/audio.
 - Commit generated `.meta` files. Never ignore them.
 
+## Try it on a phone (Android)
+1. Open `unity/` in Unity Hub (6000.3.25f1, Android Build Support installed) and press Play once in the Editor to check the Console.
+2. Plug the phone in over USB with Developer options > USB debugging on.
+3. Menu **DEADSWITCH > Build And Run on Android Phone (dev)** (or **Build Android APK (dev)** and copy `unity/Builds/Android/DEADSWITCH-dev.apk` to the phone). The first IL2CPP build takes several minutes.
+
 ## Layout to use inside Assets/
 ```
 Assets/
