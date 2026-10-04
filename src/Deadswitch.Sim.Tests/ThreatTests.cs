@@ -157,8 +157,14 @@ namespace Deadswitch.Sim.Tests
         public void Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly()
         {
             var sim = new Simulation(51UL);
+            sim.Config.Chapters.TwistFallbackHours = 12;
+            sim.Config.Chapters.PayoffPoints = 1;
             Deadswitch.Host.Dev.ScriptedPlayer.Play(sim, 8L * SimConfig.TicksPerDay);
             Assert.True(sim.State.Tier >= 2);
+
+            // chapters (SPEC-024): First Boot twisted and paid off with a fragment, and fragments outlive the core
+            int fragments = sim.State.Fragments;
+            Assert.Equal(1, fragments & 1);
             while (!sim.Execute(Command.Relocate()).Accepted)
             {
                 sim.Run(SimConfig.TicksPerHour);
@@ -169,6 +175,7 @@ namespace Deadswitch.Sim.Tests
             int raids = sim.State.RaidsToday;
             SimEvent end = sim.Log.Events.Last(e => e.Kind == EventKind.CycleEnded);
             Assert.Equal(1, sim.State.Tier);
+            Assert.Equal(fragments, sim.State.Fragments);
             Assert.Equal(end.B, end.C);
             Assert.Equal(end.C, sim.State.LegacyPoints);
             Assert.Contains(Modules.Catalog, d => d.Field != ModuleField.Trunk && Modules.IsRestored(sim.State, d.Node));
@@ -179,10 +186,11 @@ namespace Deadswitch.Sim.Tests
 
             // first-time schedules start from the new site, and the run saves and replays exactly across the move
             sim.Run(SimConfig.TicksPerDay);
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.ChapterOpened && e.Tick > moved && e.A == 1);
             Assert.DoesNotContain(sim.Log.Events, e => e.Kind == EventKind.DilemmaOffered && e.Tick > moved && e.Tick < moved + (sim.Config.Living.DilemmaFirstHour * SimConfig.TicksPerHour));
             Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
             Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(loaded.State));
-            Simulation replay = Replay.Run(51UL, SimConfig.Tier1(), sim.Commands.Commands, sim.State.Tick);
+            Simulation replay = Replay.Run(51UL, sim.Config, sim.Commands.Commands, sim.State.Tick);
             Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(replay.State));
         }
 

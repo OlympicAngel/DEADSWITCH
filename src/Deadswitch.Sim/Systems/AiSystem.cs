@@ -144,6 +144,13 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
+            // raids grow with the Hub (tall poppy): keep the wall ahead of them before growing anything else
+            if (Outgunned(s, c) && net - c.Facility(FacilityKind.Turret)!.UpkeepPerHour[0] >= margin
+                && (TryUpgradeLowest(ctx, FacilityKind.Turret) || TryBuild(ctx, FacilityKind.Turret)))
+            {
+                return;
+            }
+
             int best = -1;
             for (int i = 0; i < s.PowerPriority.Count; i++)
             {
@@ -171,6 +178,13 @@ namespace Deadswitch.Sim.Systems
             {
                 Act(ctx, best, s.Slots[best].Kind, s.Slots[best].Level + 1, EconomyCommands.Upgrade(ctx, Command.Upgrade(best)));
             }
+        }
+
+        /// <summary>True while the Hub's best defense (full garrison, no posture) trails the expected raid by the plan margin.</summary>
+        public static bool Outgunned(GameState s, SimConfig c)
+        {
+            int full = SimMath.Clamp(s.People, 0, c.Defense.GarrisonSlots);
+            return (long)Defense.Rating(s, c, Posture.None, full) * 100 < (long)Defense.BaseRaidStrength(s, c) * c.Ai.PlanDefensePct;
         }
 
         /// <summary>Repairs the most damaged producer when half the stock covers it.</summary>

@@ -39,7 +39,7 @@ Three methods:
 - **Chapter-based arcs** — each tier or era has a short story with a villain, a twist, and a payoff.
 - **Long mystery** — the hidden truth, delivered in fragments over the whole game.
 
-### Draft chapter arcs (for discussion)
+### Chapter arcs (shipped, SPEC-024; text in `src/Deadswitch.Host/Narrative/Story.cs`)
 
 | Tier | Chapter | Villain / pressure | Twist (draft) |
 |------|---------|--------------------|---------------|

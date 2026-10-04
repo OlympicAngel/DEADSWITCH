@@ -118,11 +118,12 @@ namespace Deadswitch.Game.UI.Hud
             var premium = new PremiumScreen(Router);
             Router.Register(premium);
             Router.Register(new LegacyScreen(Router));
+            Router.Register(new StoryScreen(Router));
             Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings"), () =>
             {
                 premium.ReturnTo("core");
                 Router.Show("premium");
-            }, () => Router.Show("legacy")));
+            }, () => Router.Show("legacy"), () => Router.Show("story")));
             Router.Register(new SettingsScreen(Router, () =>
             {
                 premium.ReturnTo("settings");
@@ -206,6 +207,15 @@ namespace Deadswitch.Game.UI.Hud
             {
                 // a new site (SPEC-022): show what the core carried
                 Router.Show("legacy");
+            }
+
+            if ((e.Kind == EventKind.ChapterOpened && e.A >= 2) || e.Kind == EventKind.ChapterClosed)
+            {
+                // a chapter's title card or its payoff (SPEC-024), never over an incoming attack
+                if (_host.Sim.State.RaidId == 0)
+                {
+                    Router.Show("story");
+                }
             }
 
             if (e.Kind == EventKind.BattleStarted)

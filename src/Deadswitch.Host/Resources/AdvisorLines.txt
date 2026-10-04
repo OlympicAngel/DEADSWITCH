@@ -284,3 +284,11 @@ ceasefire.2 | ceasefire | cold | Peace, purchased. {faction} for {hours} hours. 
 ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {faction} will remember it.
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
+
+chapter.open.1 | chapter_opened | neutral | Chapter {tier}: {site}. {faction} is the pressure now.
+chapter.open.2 | chapter_opened | cold | New chapter. {site}. {faction} will test the wall.
+chapter.twist.1 | chapter_twist | neutral | Something changed. The record is in the story log. Read it before you trust me again.
+chapter.twist.2 | chapter_twist | warm | There is something you should know. I would rather you heard it from the log.
+chapter.twist.3 | chapter_twist | cold | New information. It does not change the mission.
+chapter.closed.1 | chapter_closed | neutral | {site} is over. {faction} pulled back. A memory fragment came back with it.
+chapter.closed.2 | chapter_closed | bold | {faction} broke first. I recovered something from the wreck of my memory. You may not like it.

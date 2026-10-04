@@ -1,0 +1,36 @@
+/* STORY (SPEC-024). Tokens only. */
+
+.sty { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-world); }
+.sty-head { align-items: center; margin-bottom: var(--s-3); }
+.sty-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); }
+.sty-close__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+
+.sty-chapter { padding-top: var(--s-3); padding-bottom: var(--s-4); }
+.sty-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xl); letter-spacing: 6px; color: var(--c-text); margin-top: var(--s-2); }
+.sty-villain { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-red); margin-top: var(--s-1); }
+.sty-text { margin-top: var(--s-2); font-size: var(--fs-xs); white-space: normal; }
+
+.sty-beat { margin-top: var(--s-4); padding: var(--s-3); border-width: 1px; border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.sty-beat__head { align-items: center; }
+.sty-beat__pip { width: 14px; height: 14px; margin-right: var(--s-3); border-width: 2px; border-color: var(--c-line-mid); rotate: 45deg; }
+.sty-beat__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-dim); }
+.sty-beat__text { color: var(--c-text-dim); }
+.sty-beat.is-locked .sty-beat__text { color: var(--c-text-faint); }
+.sty-beat.is-live { border-color: var(--c-amber); }
+.sty-beat.is-live .sty-beat__pip { border-color: var(--c-amber); background-color: var(--c-amber); rotate: 0deg; }
+.sty-beat.is-live .sty-beat__label { color: var(--c-amber); }
+.sty-beat.is-live .sty-beat__text { color: var(--c-text); }
+.sty-beat.is-done { border-color: var(--c-phosphor-dim); }
+.sty-beat.is-done .sty-beat__pip { border-color: var(--c-phosphor); background-color: var(--c-phosphor); rotate: 0deg; }
+.sty-beat.is-done .sty-beat__label { color: var(--c-phosphor); }
+.sty-beat.is-done .sty-beat__text { color: var(--c-text); }
+.sty-meter { height: 10px; margin-top: var(--s-2); }
+
+.sty-section { margin-top: var(--s-5); align-items: center; }
+.sty-note { font-size: var(--fs-micro); margin-top: var(--s-1); margin-bottom: var(--s-2); }
+.sty-frag { padding: var(--s-2) var(--s-3); margin-bottom: var(--s-2); border-left-width: 4px; border-color: var(--c-line); background-color: var(--c-panel-sunken); }
+.sty-frag__id { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-faint); }
+.sty-frag__text { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-faint); margin-top: var(--s-1); white-space: normal; }
+.sty-frag.is-known { border-color: var(--c-phosphor); }
+.sty-frag.is-known > .sty-frag__id { color: var(--c-phosphor); }
+.sty-frag.is-known > .sty-frag__text { color: var(--c-text); }

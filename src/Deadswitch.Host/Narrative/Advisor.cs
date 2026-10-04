@@ -34,7 +34,7 @@ namespace Deadswitch.Host.Narrative
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
             "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
-            "ceasefire", "ceasefire_broken", "ceasefire_over", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
+            "ceasefire", "ceasefire_broken", "ceasefire_over", "chapter_opened", "chapter_twist", "chapter_closed", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
             "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
             "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
             "facility_scarred", "forced_labor", "glitch_defected", "glitch_drain", "glitch_misfire", "glitch_stall", "heat_hunted", "heat_marked",
@@ -452,6 +452,15 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.CeasefireEnded:
                     Enqueue(new Pending(e.B == 1 ? "ceasefire_broken" : "ceasefire_over", e.B == 1 ? Priority.Urgent : Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
+                    break;
+                case EventKind.ChapterOpened:
+                    Enqueue(new Pending("chapter_opened", Priority.Normal).With("tier", e.A.ToString()).With("site", Story.For(e.A).Title).With("faction", Names.Faction((Faction)e.B)));
+                    break;
+                case EventKind.ChapterTwist:
+                    Enqueue(new Pending("chapter_twist", Priority.Urgent));
+                    break;
+                case EventKind.ChapterClosed:
+                    Enqueue(new Pending("chapter_closed", Priority.Normal).With("site", Story.For(e.A).Title).With("faction", Names.Faction(ChapterSystem.Villain(e.A))));
                     break;
                 case EventKind.IronmanSet when e.A == 1:
                     Enqueue(new Pending("ironman_on", Priority.Normal));

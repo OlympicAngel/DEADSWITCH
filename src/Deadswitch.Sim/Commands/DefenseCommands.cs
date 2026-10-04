@@ -127,6 +127,7 @@ namespace Deadswitch.Sim.Commands
             if (record.LieFlags != 0)
             {
                 LegacySystem.Earn(ctx, Mastery.CatchLie);
+                ChapterSystem.LieCaught(ctx);
             }
 
             ctx.Emit(EventKind.ReportVerified, record.RaidId, record.LieFlags, cost);

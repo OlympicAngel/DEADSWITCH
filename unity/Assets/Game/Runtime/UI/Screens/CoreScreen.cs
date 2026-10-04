@@ -26,7 +26,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _visible;
         private bool _showModules;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium, System.Action openLegacy)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium, System.Action openLegacy, System.Action openStory)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -36,6 +36,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
             _ui.Q("open-legacy").RegisterCallback<ClickEvent>(_ => openLegacy());
+            _ui.Q("open-story").RegisterCallback<ClickEvent>(_ => openStory());
             _ui.Q("flush-run").RegisterCallback<ClickEvent>(_ =>
             {
                 CommandResult r = _host.Execute(Command.FlushCore());
@@ -107,6 +108,8 @@ namespace Deadswitch.Game.UI.Screens
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
 
+            Kit.SetButtonText(_ui.Q("open-story"), "STORY // CH " + System.Math.Max(1, s.ChapterTier) + " // " + ChapterSystem.FragmentsKnown(s) + "/" + ChapterSystem.FragmentCount);
+            _ui.Q("open-story").EnableInClassList("is-new", s.ChapterBeat == 1 && s.ChapterPoints == 0);
             Kit.SetButtonText(_ui.Q("open-legacy"), "LEGACY // CYCLE " + (s.Cycle + 1) + " // " + Fmt.Num(s.LegacyPoints) + " LP");
 
             // corruption effects (SPEC-021)

@@ -218,6 +218,9 @@ plan_every_minutes = 60
 # Delegated AI builds power first while net energy per hour is below this. [0..100000]
 plan_energy_margin = 150
 
+# Delegated AI builds turrets next while its best defense (full garrison) is below this % of the expected raid. [0..1000]
+plan_defense_pct = 100
+
 # Autopilot turtles with the full garrison when its estimate exceeds defense x this %. [1..10000]
 autopilot_turtle_pct = 100
 
@@ -1097,6 +1100,34 @@ break_heat = 30000
 
 # Trade with a faction under ceasefire is this much cheaper. [0..99]
 trade_discount_pct = 20
+
+# --------------------------------------------------------------------------------------------------
+# Chapter arcs: one per tier with a villain, a twist and a payoff; each payoff recovers a memory fragment that survives reboots (doc 07 s4). Heat and corruption are milli. All (tune).
+[chapters]
+
+# Hours after a chapter opens when its twist lands anyway. [1..10000]
+twist_fallback_hours = 96
+
+# Chapter 4 twists when the AI's project reaches this (or its final window opens). [0..100000]
+fork_project_milli = 75000
+
+# Payoff points for repelling the chapter villain's attack (any other attack: 1). [1..100]
+villain_points = 2
+
+# Points after the twist that close the chapter. [1..100]
+payoff_points = 4
+
+# Energy paid when a chapter closes, by tier (capped by storage). [4..4 items, each 0..100000]
+payoff_energy = [150, 300, 500, 800]
+
+# Compute paid when a chapter closes, by tier (capped by storage). [4..4 items, each 0..100000]
+payoff_compute = [20, 40, 80, 120]
+
+# The villain's heat taken off when its chapter closes. [0..100000]
+payoff_heat_drop = 20000
+
+# Corruption cleared by the recovered memory fragment. [0..100000]
+payoff_corruption_drop = 3000
 
 # --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.

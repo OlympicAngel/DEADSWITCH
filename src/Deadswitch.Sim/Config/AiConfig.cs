@@ -8,6 +8,7 @@ namespace Deadswitch.Sim.Config
         public int BoldnessDecayPerHourManual = 100;
         public int PlanEveryMinutes = 60;
         public int PlanEnergyMargin = 150;
+        public int PlanDefensePct = 100;
         public int AutopilotTurtlePct = 100;
         public int AutopilotEvacuatePct = 200;
         public int FirstLieRaid = 2;
@@ -21,6 +22,7 @@ namespace Deadswitch.Sim.Config
             v.Int("boldness_decay_per_hour_manual", ref BoldnessDecayPerHourManual, 0, 100_000, "Boldness lost per game hour while the handler runs everything (Manual).");
             v.Int("plan_every_minutes", ref PlanEveryMinutes, 1, 10_000, "How often the delegated AI looks at the build queue (game minutes).");
             v.Int("plan_energy_margin", ref PlanEnergyMargin, 0, 100_000, "Delegated AI builds power first while net energy per hour is below this.");
+            v.Int("plan_defense_pct", ref PlanDefensePct, 0, 1_000, "Delegated AI builds turrets next while its best defense (full garrison) is below this % of the expected raid.");
             v.Int("autopilot_turtle_pct", ref AutopilotTurtlePct, 1, 10_000, "Autopilot turtles with the full garrison when its estimate exceeds defense x this %.");
             v.Int("autopilot_evacuate_pct", ref AutopilotEvacuatePct, 1, 10_000, "Autopilot evacuates when its estimate exceeds defense x this %.");
             v.Int("first_lie_raid", ref FirstLieRaid, 0, 1_000, "Raid number whose warning reports the wrong gate: the first lie (doc 10 s7.4). 0 disables it.");

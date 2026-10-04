@@ -71,6 +71,13 @@ namespace Deadswitch.Host.Dev
                 }
             }
 
+            // raids grow with the Hub: keep the wall ahead of them
+            if (AiSystem.Outgunned(s, sim.Config) && f.NetEnergyPerHour > Upkeep(sim, FacilityKind.Turret) + 40
+                && (TryUpgrade(sim, FacilityKind.Turret) || (FreeSlot(s) >= 0 && sim.Execute(Command.Build(FreeSlot(s), FacilityKind.Turret)).Accepted)))
+            {
+                return;
+            }
+
             // plots beyond the first set (the district): alternate power and compute
             int free = FreeSlot(s);
             if (free >= 0 && f.NetEnergyPerHour > 300)

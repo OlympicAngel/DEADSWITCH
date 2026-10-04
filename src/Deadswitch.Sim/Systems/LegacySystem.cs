@@ -288,6 +288,7 @@ namespace Deadswitch.Sim.Systems
             long auditReady = s.AuditReadyTick;
             long surgeReady = s.SurgeReadyTick;
             int lies = s.LiesTold;
+            int fragments = s.Fragments;
 
             SaveGame.CopyInto(new GameState(0UL, c), s);
 
@@ -325,6 +326,7 @@ namespace Deadswitch.Sim.Systems
             s.AuditReadyTick = auditReady;
             s.SurgeReadyTick = surgeReady;
             s.LiesTold = lies;
+            s.Fragments = fragments;
             s.RebuildingSurge = forced && !ironmanEnd;
 
             // first-time schedules in a fresh state count from tick 0: start them from the new site

@@ -47,7 +47,10 @@
         </ui:VisualElement>
       </ui:VisualElement>
 
-      <ui:VisualElement name="open-legacy" class="ds-btn ds-btn--ghost core-audit"><ui:Label name="open-legacy-label" text="LEGACY // CYCLE 1" class="ds-btn__label" /></ui:VisualElement>
+      <ui:VisualElement class="row core-links">
+        <ui:VisualElement name="open-story" class="ds-btn ds-btn--ghost core-audit grow core-link"><ui:Label text="STORY // CH 2 // 4/12" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="open-legacy" class="ds-btn ds-btn--ghost core-audit grow"><ui:Label name="open-legacy-label" text="LEGACY // CYCLE 1 // 240 LP" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
 
       <!-- Corruption effects (SPEC-021): takeover banner and the core flush -->
       <ui:VisualElement name="core-crisis" class="ds-panel ds-panel--red core-crisis is-hidden">

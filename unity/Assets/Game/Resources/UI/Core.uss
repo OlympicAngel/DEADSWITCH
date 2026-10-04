@@ -27,6 +27,11 @@
 .core-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); margin-top: var(--s-1); }
 
 .core-audit { margin-top: var(--s-3); }
+.core-links { align-items: stretch; }
+.core-link { margin-right: var(--s-2); flex-basis: 0; }
+.core-links > .core-audit { flex-basis: 0; }
+.core-link.is-new { border-color: var(--c-amber); }
+.core-link.is-new > .ds-btn__label { color: var(--c-amber); }
 .core-crisis { margin-top: var(--s-3); }
 .core-crisis.is-hidden { display: none; }
 .core-audit__desc { margin-top: var(--s-1); font-size: var(--fs-xs); }
@@ -50,3 +55,4 @@
 .core-transcript__line:last-child { color: var(--c-phosphor); }
 
 .is-hidden { display: none; }
+.core-links .ds-btn__label { font-size: var(--fs-micro); letter-spacing: 2px; }

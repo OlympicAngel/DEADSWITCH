@@ -397,6 +397,8 @@ namespace Deadswitch.Sim.Systems
             {
                 LegacySystem.Earn(ctx, Mastery.PurgeNoAi);
             }
+
+            ChapterSystem.Survived(ctx);
         }
 
         /// <summary>Keeps the report record of a resolved raid; only the most recent ones stay verifiable.</summary>

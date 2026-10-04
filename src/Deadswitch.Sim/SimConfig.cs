@@ -41,6 +41,7 @@ namespace Deadswitch.Sim
         public GlitchConfig Glitch = new GlitchConfig();
         public LegacyConfig Legacy = new LegacyConfig();
         public DiplomacyConfig Diplomacy = new DiplomacyConfig();
+        public ChapterConfig Chapters = new ChapterConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -148,6 +149,7 @@ namespace Deadswitch.Sim
             Glitch.Visit(visitor);
             Legacy.Visit(visitor);
             Diplomacy.Visit(visitor);
+            Chapters.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

@@ -257,6 +257,15 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A: Faction, B: 1 if the Hub broke it.</summary>
         CeasefireEnded = 83,
+
+        /// <summary>A chapter opened (SPEC-024). A: tier (chapter), B: villain Faction.</summary>
+        ChapterOpened = 84,
+
+        /// <summary>The chapter's twist landed. A: tier, B: 1 if it came from the story trigger, 0 from the fallback clock.</summary>
+        ChapterTwist = 85,
+
+        /// <summary>The chapter closed. A: tier, B: fragment recovered (-1 = all three known), C: energy paid, D: compute paid.</summary>
+        ChapterClosed = 86,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
