@@ -236,6 +236,7 @@ namespace Deadswitch.Game.UI.Screens
                     i++;
                 }
 
+                Kit.MarkEnds(row);
                 _body.Add(row);
             }
         }

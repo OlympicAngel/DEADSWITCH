@@ -61,6 +61,8 @@ namespace Deadswitch.Game.UI
             Root.AddToClassList("ds-root");
             Root.styleSheets.Add(Resources.Load<StyleSheet>("UI/Tokens"));
             Root.styleSheets.Add(Resources.Load<StyleSheet>("UI/Components"));
+            // World labels and the slot sheet live outside the HUD template, so Base.uss must sit on the root.
+            Root.styleSheets.Add(Resources.Load<StyleSheet>("UI/Base"));
             Root.style.flexGrow = 1;
 
             World = Layer("ds-layer-world");

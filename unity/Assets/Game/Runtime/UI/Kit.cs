@@ -16,6 +16,31 @@ namespace Deadswitch.Game.UI
         {
             root.Query(className: "ds-panel").ForEach(AddCorners);
             root.Query(className: "ds-meter").ForEach(BuildMeter);
+            root.Query().ForEach(MarkEnds);
+        }
+
+        /// <summary>
+        /// Tags the first and last content children with <c>is-first</c> / <c>is-last</c>: USS has no
+        /// <c>:first-child</c>, <c>:last-child</c> or sibling combinators. Call again after rebuilding a list
+        /// in code. Corner brackets are skipped.
+        /// </summary>
+        public static void MarkEnds(VisualElement parent)
+        {
+            VisualElement first = null;
+            VisualElement last = null;
+            foreach (VisualElement child in parent.Children())
+            {
+                child.RemoveFromClassList("is-first");
+                child.RemoveFromClassList("is-last");
+                if (!child.ClassListContains("ds-corner"))
+                {
+                    first ??= child;
+                    last = child;
+                }
+            }
+
+            first?.AddToClassList("is-first");
+            last?.AddToClassList("is-last");
         }
 
         public static void AddCorners(VisualElement panel)

@@ -114,6 +114,7 @@ ${css}
 <script>
 // Mirrors of the C# element behaviors (Runtime/UI/Behaviors.cs).
 for (const p of document.querySelectorAll('.ds-panel')) for (const c of ['tl','tr','bl','br']) { const d = document.createElement('div'); d.className = 'ui-ve ds-corner ds-corner--' + c; p.appendChild(d); }
+for (const el of document.querySelectorAll('#preview-root, #preview-root *')) { const kids = [...el.children].filter(c => !c.classList.contains('ds-corner')); if (kids.length) { kids[0].classList.add('is-first'); kids[kids.length - 1].classList.add('is-last'); } }
 for (const m of document.querySelectorAll('.ds-meter')) {
   const n = 20, on = Math.round(n * parseFloat(m.dataset.fill || (m.id && m.id.includes('corruption') ? '0.23' : '0.62')));
   for (let i = 0; i < n; i++) { const s = document.createElement('div'); s.className = 'ui-ve ds-meter__seg' + (i < on ? ' is-on' : ''); m.appendChild(s); }

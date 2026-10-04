@@ -183,6 +183,8 @@ namespace Deadswitch.Game.UI.Screens
             {
                 transcript.Add(Kit.Label("> " + line, "core-transcript__line"));
             }
+
+            Kit.MarkEnds(transcript);
         }
 
         private void TickClimax()

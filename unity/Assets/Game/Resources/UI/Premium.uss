@@ -16,7 +16,7 @@
 .prm-section { margin-top: var(--s-6); margin-bottom: var(--s-2); }
 .prm-seg { flex-direction: row; }
 .prm-theme { flex-grow: 1; flex-basis: 0; min-height: 120px; margin-right: var(--s-2); align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
-.prm-theme:last-child { margin-right: 0; }
+.prm-theme.is-last { margin-right: 0; }
 .prm-theme.is-selected { border-color: var(--c-white); }
 .prm-theme.is-locked { opacity: 0.45; }
 .prm-theme__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); margin-top: var(--s-2); }

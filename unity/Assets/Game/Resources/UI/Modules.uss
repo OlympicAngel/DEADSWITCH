@@ -22,14 +22,14 @@
 .mod-col__title { margin-bottom: var(--s-2); }
 .mod-tabs { margin-bottom: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
 .mod-tab { flex-grow: 1; flex-basis: 0; min-height: 72px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
-.mod-tab:last-child { border-right-width: 0; }
+.mod-tab.is-last { border-right-width: 0; }
 .mod-tab.is-selected { background-color: rgba(168, 213, 138, 0.14); border-bottom-width: 3px; border-bottom-color: var(--c-phosphor); }
 .mod-tab__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 18px; letter-spacing: 2px; color: var(--c-text-dim); }
 .mod-tab.is-selected > .mod-tab__label { color: var(--c-phosphor); }
 .mod-tierlabel { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-faint); margin: var(--s-1) 0 var(--s-1) 0; }
 .mod-row { margin-bottom: var(--s-2); align-items: stretch; }
 .mod-row > .mod-node { flex-grow: 1; flex-basis: 0; margin-right: var(--s-2); }
-.mod-row > .mod-node:last-child { margin-right: 0; }
+.mod-row > .mod-node.is-last { margin-right: 0; }
 .mod-or { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); color: var(--c-amber); margin: 0 var(--s-2) 0 0; -unity-text-align: middle-center; }
 .mod-link { width: 2px; height: 14px; margin-left: 28px; background-color: var(--c-line-mid); }
 
