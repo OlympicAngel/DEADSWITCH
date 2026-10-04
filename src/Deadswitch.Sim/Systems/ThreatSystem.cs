@@ -350,7 +350,7 @@ namespace Deadswitch.Sim.Systems
                             break;
                         }
 
-                        bool protectedNow = ctx.Config.Opening.Enabled && s.Tick < (long)ctx.Config.Opening.ProtectionHours * hour;
+                        bool protectedNow = ctx.Config.Opening.Enabled && s.Tick - s.CycleStartTick < (long)ctx.Config.Opening.ProtectionHours * hour;
                         if (s.RaidId != 0 || s.Tick < s.MercyUntilTick || protectedNow || s.RaidsToday >= RaidSystem.MaxPerDay(s, ctx.Config))
                         {
                             // fairness first (doc 10 s4): the purge waits for the inbound attack, mercy and the daily cap

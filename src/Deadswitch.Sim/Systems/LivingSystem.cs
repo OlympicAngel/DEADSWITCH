@@ -210,7 +210,7 @@ namespace Deadswitch.Sim.Systems
                 return;
             }
 
-            bool protectedNow = c.Opening.Enabled && s.Tick < (long)c.Opening.ProtectionHours * hour;
+            bool protectedNow = c.Opening.Enabled && s.Tick - s.CycleStartTick < (long)c.Opening.ProtectionHours * hour;
             if (s.RaidId != 0 || s.Tick < s.MercyUntilTick || protectedNow || ThreatSystem.Shielded(s) || s.RaidsToday >= RaidSystem.MaxPerDay(s, c))
             {
                 // fairness first (doc 10 s4): the wave waits for the inbound attack, mercy, the shield and the daily cap

@@ -38,7 +38,7 @@ const extra = ['target', 'dist', 'az', 'report', 'hour'].filter(k => opt(k, null
 await page.goto(`http://127.0.0.1:${port}/?w=${w}&h=${h}&t=${t}${extra}`);
 await page.waitForFunction(() => window.__done, null, { timeout: 180000 });
 fs.mkdirSync(path.dirname(out), { recursive: true });
-await page.screenshot({ path: out });
+await page.screenshot({ path: out, timeout: 300000 });
 console.log('wrote ' + path.relative(ROOT, out), await page.evaluate(() => window.__done));
 await browser.close();
 server.close();

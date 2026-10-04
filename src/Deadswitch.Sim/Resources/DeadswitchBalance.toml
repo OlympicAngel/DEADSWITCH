@@ -291,7 +291,7 @@ research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900, 180,
 research_compute = [90, 100, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100]
 
 # Research time per node (game minutes). [35..35 items, each 1..100000]
-research_minutes = [1440, 600, 1440, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420]
+research_minutes = [1440, 20160, 28800, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420]
 
 # Share of the cost returned when research is cancelled. [0..100]
 cancel_refund_pct = 50
@@ -387,20 +387,20 @@ ghost_ops = 1
 # Hub tiers and tier-up gates (doc 06 s2, SPEC-008). All (tune).
 [tier]
 
-# Highest tier reachable in this build (doc 10: two tiers at launch, Bunker and District). [1..4]
-max_tier = 2
+# Highest tier reachable in this build (doc 10: Bunker, District; Stronghold and Sector in v1.x). [1..4]
+max_tier = 4
 
 # Base population cap bonus per tier over people.cap (doc 10: 20 / 45 / 100 / 220). [4..4 items, each 0..10000]
 pop_bonus = [0, 25, 80, 200]
 
 # Build gate: total facility levels needed to leave tier 1 / 2 / 3. [3..3 items, each 0..1000]
-levels_to_advance = [22, 40, 60]
+levels_to_advance = [22, 46, 68]
 
 # Build gate: net energy per hour needed to leave tier 1 / 2 / 3. [3..3 items, each -100000..100000]
-net_energy_to_advance = [100, 300, 600]
+net_energy_to_advance = [100, 500, 900]
 
 # Human cost: people who leave to expand, before the size term. [3..3 items, each 0..1000]
-people_cost_base = [4, 10, 20]
+people_cost_base = [4, 15, 30]
 
 # Human cost: one more person per this many total facility levels. [1..1000]
 people_cost_per_levels = 4
@@ -1045,6 +1045,9 @@ perk_heat_decay_pct = 25
 
 # Mastery: corruption kept under this for a full tier (doc 10: 40). [0..100000]
 mastery_corruption_milli = 40000
+
+# After a forced reboot, regrowth +% until the population reaches half the cap (doc 10 s2). [0..1000]
+rebuilding_surge_pct = 100
 
 # Ironman can be switched on only in the first hours of a run (doc 10 s1.2: chosen at start). [1..1000]
 ironman_choose_hours = 24

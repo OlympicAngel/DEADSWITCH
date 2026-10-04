@@ -123,16 +123,17 @@ namespace Deadswitch.Host.Dev
         private static void Research(Simulation sim)
         {
             GameState s = sim.State;
-            if (s.ResearchNode != 0 || s.Energy * 2 < Economy.Flows(s, sim.Config).EnergyCap || CorruptionSystem.Band(sim.Config, s.CorruptionMilli) >= CorruptionBand.Unstable)
+            if (s.Energy * 2 < Economy.Flows(s, sim.Config).EnergyCap || CorruptionSystem.Band(sim.Config, s.CorruptionMilli) >= CorruptionBand.Unstable)
             {
                 return;
             }
 
+            // one restoration per lane: the memory sector and a field module
             foreach (ModuleDef d in Modules.Catalog)
             {
-                if (Modules.Availability(s, d.Node) == RejectReason.None)
+                bool memory = d.Field == ModuleField.Trunk;
+                if ((memory ? s.MemoryNode : s.ResearchNode) == 0 && Modules.Availability(s, d.Node) == RejectReason.None && sim.Execute(Command.StartResearch(d.Node)).Accepted)
                 {
-                    sim.Execute(Command.StartResearch(d.Node));
                     return;
                 }
             }

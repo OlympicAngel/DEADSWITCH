@@ -218,6 +218,12 @@ namespace Deadswitch.Sim.Commands
             return new Command(CommandKind.StartResearch, (int)node);
         }
 
+        /// <summary>Cancels the memory-sector restoration (its own lane).</summary>
+        public static Command CancelMemory()
+        {
+            return new Command(CommandKind.CancelResearch, 1);
+        }
+
         public static Command CancelResearch()
         {
             return new Command(CommandKind.CancelResearch);

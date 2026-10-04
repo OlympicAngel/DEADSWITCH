@@ -20,7 +20,8 @@ namespace Deadswitch.Sim.Tests
             int upkeepBefore = Economy.UpkeepPerHour(sim.State, sim.Config, sim.State.Slots[1]);
 
             Assert.True(sim.Execute(Command.StartResearch(ModuleNode.LG1)).Accepted);
-            Assert.Equal(RejectReason.ResearchBusy, sim.Execute(Command.StartResearch(ModuleNode.M1)).Reason);
+            // memory sectors restore in their own lane (SPEC-008 rule 3): only money stops M1 now, not the busy field lane
+            Assert.Equal(RejectReason.NotEnoughEnergy, sim.Execute(Command.StartResearch(ModuleNode.M1)).Reason);
             sim.Run(sim.Config.Modules.ResearchMinutes[3]);
 
             Assert.True(Modules.Has(sim.State, ModuleNode.LG1));

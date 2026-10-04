@@ -14,9 +14,11 @@ namespace Deadswitch.Game.Base
     public sealed class DroneCamera : MonoBehaviour
     {
         private const float TapSlop = 18f;
-        private const float PanLimitX = 8f;
+        private const float BasePanX = 8f;
         private const float PanLimitZ = 7f;
         private const float DistrictPanZ = 15f;
+        private const float StrongholdPanZ = 25f;
+        private const float SectorPanX = 13f;
 
         private readonly Dictionary<int, Vector2> _pointers = new Dictionary<int, Vector2>();
         private BaseLook _look;
@@ -34,7 +36,12 @@ namespace Deadswitch.Game.Base
         public static DroneCamera Instance { get; private set; }
 
         /// <summary>How far south the drone may pan: the district outside the gate opens at Tier 2 (SPEC-013).</summary>
-        private static float SouthLimit => GameHost.Instance != null && GameHost.Instance.Sim.State.Tier >= 2 ? DistrictPanZ : PanLimitZ;
+        private static float SouthLimit => Tier >= 3 ? StrongholdPanZ : Tier >= 2 ? DistrictPanZ : PanLimitZ;
+
+        /// <summary>How far the drone may pan sideways: the Sector terraces open at Tier 4.</summary>
+        private static float PanLimitX => Tier >= 4 ? SectorPanX : BasePanX;
+
+        private static int Tier => GameHost.Instance != null && GameHost.Instance.Sim != null ? GameHost.Instance.Sim.State.Tier : 1;
 
         public Camera Camera => _cam;
 

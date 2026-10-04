@@ -17,7 +17,14 @@ namespace Deadswitch.Sim.Systems
             {
                 int gap = cap - s.People;
                 // wrecks in the yard slow regrowth (SPEC-018)
-                int pct = SimMath.PctFloor(ctx.Config.People.RegrowthPctOfGapPerHour, 100 + (s.Perks[(int)Perk.Regrowth] * ctx.Config.Legacy.PerkRegrowthPct));
+                // Rebuilding Surge (doc 10 s2): after a forced reboot, faster until half the cap is back
+                if (s.RebuildingSurge && s.People * 2 >= cap)
+                {
+                    s.RebuildingSurge = false;
+                }
+
+                int surge = s.RebuildingSurge ? ctx.Config.Legacy.RebuildingSurgePct : 0;
+                int pct = SimMath.PctFloor(ctx.Config.People.RegrowthPctOfGapPerHour, 100 + (s.Perks[(int)Perk.Regrowth] * ctx.Config.Legacy.PerkRegrowthPct) + surge);
                 int gain = (int)((((long)gap * pct * ScarSystem.RegrowthPct(s, ctx.Config)) + 9_999) / 10_000);
                 s.People = SimMath.Clamp(s.People + gain, 0, cap);
             }

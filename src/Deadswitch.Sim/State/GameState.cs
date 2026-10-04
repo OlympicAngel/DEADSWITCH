@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman.</summary>
-        public const int LayoutVersion = 16;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge.</summary>
+        public const int LayoutVersion = 17;
 
         public long Tick;
 
@@ -209,6 +209,23 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>Memory sector (trunk M1-M3) restoring in its own lane, beside field research (0 = none).</summary>
+        public int MemoryNode;
+
+        public long MemoryStartTick;
+
+        public long MemoryCompleteTick;
+
+        public int MemoryPaidEnergy;
+
+        public int MemoryPaidCompute;
+
+        /// <summary>Mastery earned in this cycle (bit per <see cref="State.Mastery"/>): only these score at the move.</summary>
+        public int CycleMastery;
+
+        /// <summary>After a forced reboot (doc 10 s2): regrowth is boosted until the population reaches half the cap.</summary>
+        public bool RebuildingSurge;
 
         /// <summary>Ironman run (doc 10 s1.2): no shield, shorter mercy, losing the core ends the run.</summary>
         public bool Ironman;
@@ -552,6 +569,17 @@ namespace Deadswitch.Sim.State
                 v.Long(ref ScarredAtTick);
             }
 
+            if (v.Version >= 17)
+            {
+                v.Int(ref CycleMastery);
+                v.Bool(ref RebuildingSurge);
+                v.Int(ref MemoryNode);
+                v.Long(ref MemoryStartTick);
+                v.Long(ref MemoryCompleteTick);
+                v.Int(ref MemoryPaidEnergy);
+                v.Int(ref MemoryPaidCompute);
+            }
+
             if (v.Version >= 16)
             {
                 v.Bool(ref Ironman);
@@ -577,6 +605,13 @@ namespace Deadswitch.Sim.State
                 v.Int(ref CollapseHours);
                 v.Int(ref CriticalHours);
                 v.Bool(ref HubFallen);
+            }
+            else if (v.IsReading)
+            {
+                // older saves: no tier history, so no tier mastery can be claimed for the tier in progress
+                HighestTier = Tier;
+                TierManual = false;
+                TierMaxCorruption = Systems.CorruptionSystem.MaxMilli;
             }
 
             if (v.Version >= 14)

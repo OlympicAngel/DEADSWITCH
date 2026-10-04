@@ -155,12 +155,13 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(why);
             }
 
-            if (s.ResearchNode != 0)
+            TryDef(node, out ModuleDef d);
+            bool memory = d.Field == ModuleField.Trunk;
+            if (memory ? s.MemoryNode != 0 : s.ResearchNode != 0)
             {
                 return CommandResult.Reject(RejectReason.ResearchBusy);
             }
 
-            TryDef(node, out ModuleDef d);
             int energy = ctx.Config.Modules.ResearchEnergy[d.Index];
             int compute = ctx.Config.Modules.ResearchCompute[d.Index];
             if (s.Energy < energy)
@@ -176,11 +177,24 @@ namespace Deadswitch.Sim.Systems
             int minutes = ctx.Config.Modules.ResearchMinutes[d.Index];
             s.Energy -= energy;
             s.Compute -= compute;
-            s.ResearchNode = (int)node;
-            s.ResearchStartTick = s.Tick;
-            s.ResearchCompleteTick = s.Tick + minutes;
-            s.ResearchPaidEnergy = energy;
-            s.ResearchPaidCompute = compute;
+            if (memory)
+            {
+                // memory sectors restore in their own lane, beside field research (SPEC-008 rule 3)
+                s.MemoryNode = (int)node;
+                s.MemoryStartTick = s.Tick;
+                s.MemoryCompleteTick = s.Tick + minutes;
+                s.MemoryPaidEnergy = energy;
+                s.MemoryPaidCompute = compute;
+            }
+            else
+            {
+                s.ResearchNode = (int)node;
+                s.ResearchStartTick = s.Tick;
+                s.ResearchCompleteTick = s.Tick + minutes;
+                s.ResearchPaidEnergy = energy;
+                s.ResearchPaidCompute = compute;
+            }
+
             ctx.Emit(EventKind.ResearchStarted, (int)node, minutes);
             CorruptionSystem.ComputeUse(ctx, compute);
             return CommandResult.Ok;
@@ -189,22 +203,32 @@ namespace Deadswitch.Sim.Systems
         public static CommandResult Cancel(SimContext ctx, Command cmd)
         {
             GameState s = ctx.State;
-            if (cmd.A != 0 || cmd.B != 0 || cmd.C != 0)
+            // A: 0 cancels field research, 1 the memory lane
+            if (cmd.A < 0 || cmd.A > 1 || cmd.B != 0 || cmd.C != 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
-            if (s.ResearchNode == 0)
+            bool memory = cmd.A == 1;
+            if ((memory ? s.MemoryNode : s.ResearchNode) == 0)
             {
                 return CommandResult.Reject(RejectReason.NoTarget);
             }
 
-            int energy = SimMath.PctFloor(s.ResearchPaidEnergy, ctx.Config.Modules.CancelRefundPct);
-            int compute = SimMath.PctFloor(s.ResearchPaidCompute, ctx.Config.Modules.CancelRefundPct);
+            int energy = SimMath.PctFloor(memory ? s.MemoryPaidEnergy : s.ResearchPaidEnergy, ctx.Config.Modules.CancelRefundPct);
+            int compute = SimMath.PctFloor(memory ? s.MemoryPaidCompute : s.ResearchPaidCompute, ctx.Config.Modules.CancelRefundPct);
             s.Energy = System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + energy);
             s.Compute = System.Math.Min(ctx.Config.Compute.Cap, s.Compute + compute);
-            ctx.Emit(EventKind.ResearchCancelled, s.ResearchNode, energy, compute);
-            ClearResearch(s);
+            ctx.Emit(EventKind.ResearchCancelled, memory ? s.MemoryNode : s.ResearchNode, energy, compute);
+            if (memory)
+            {
+                ClearMemory(s);
+            }
+            else
+            {
+                ClearResearch(s);
+            }
+
             return CommandResult.Ok;
         }
 
@@ -212,6 +236,14 @@ namespace Deadswitch.Sim.Systems
         public static void Tick(SimContext ctx)
         {
             GameState s = ctx.State;
+            if (s.MemoryNode != 0 && s.Tick >= s.MemoryCompleteTick)
+            {
+                int memory = s.MemoryNode;
+                s.Modules |= 1UL << memory;
+                ClearMemory(s);
+                ctx.Emit(EventKind.ResearchCompleted, memory);
+            }
+
             if (s.ResearchNode == 0 || s.Tick < s.ResearchCompleteTick)
             {
                 return;
@@ -284,6 +316,21 @@ namespace Deadswitch.Sim.Systems
             s.Tier++;
             ctx.Emit(EventKind.TierAdvanced, s.Tier, g.PeopleCost);
             return CommandResult.Ok;
+        }
+
+        /// <summary>True while the node restores in either lane.</summary>
+        public static bool Restoring(GameState s, ModuleNode node)
+        {
+            return node != ModuleNode.None && (s.ResearchNode == (int)node || s.MemoryNode == (int)node);
+        }
+
+        private static void ClearMemory(GameState s)
+        {
+            s.MemoryNode = 0;
+            s.MemoryStartTick = 0;
+            s.MemoryCompleteTick = 0;
+            s.MemoryPaidEnergy = 0;
+            s.MemoryPaidCompute = 0;
         }
 
         private static void ClearResearch(GameState s)

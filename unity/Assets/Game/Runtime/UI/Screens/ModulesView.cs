@@ -84,12 +84,14 @@ namespace Deadswitch.Game.UI.Screens
             Kit.SetButtonText(up, demo && g.All ? "UNLOCK FULL GAME TO ADVANCE" : "ADVANCE TO TIER " + (s.Tier + 1));
 
             // research in progress
-            bool busy = s.ResearchNode != 0;
+            // two lanes (memory sectors beside field research): the bar follows the field lane, else the memory lane
+            bool busy = s.ResearchNode != 0 || s.MemoryNode != 0;
             _ui.Q("research").EnableInClassList("is-hidden", !busy);
             if (busy)
             {
-                var node = (ModuleNode)s.ResearchNode;
-                _ui.Q<Label>("research-name").text = node + " " + ModuleTexts.Name(node);
+                var node = (ModuleNode)(s.ResearchNode != 0 ? s.ResearchNode : s.MemoryNode);
+                string memory = s.ResearchNode != 0 && s.MemoryNode != 0 ? "  +  " + (ModuleNode)s.MemoryNode : string.Empty;
+                _ui.Q<Label>("research-name").text = node + " " + ModuleTexts.Name(node) + memory;
             }
 
             Tick();
@@ -104,7 +106,7 @@ namespace Deadswitch.Game.UI.Screens
 
                 RejectReason why = Modules.Availability(s, d.Node);
                 bool restored = Modules.IsRestored(s, d.Node);
-                bool active = s.ResearchNode == (int)d.Node;
+                bool active = Modules.Restoring(s, d.Node);
                 el.EnableInClassList("is-restored", restored);
                 el.EnableInClassList("is-active", active);
                 el.EnableInClassList("is-available", !restored && !active && why == RejectReason.None);
@@ -123,7 +125,7 @@ namespace Deadswitch.Game.UI.Screens
             // detail
             Modules.TryDef(_selected, out ModuleDef sel);
             RejectReason state = Modules.Availability(s, _selected);
-            bool selActive = s.ResearchNode == (int)_selected;
+            bool selActive = Modules.Restoring(s, _selected);
             _ui.Q<Label>("detail-title").text = _selected + " // " + ModuleTexts.Name(_selected);
             _ui.Q<Label>("detail-state").text = Modules.IsRestored(s, _selected) ? (Modules.Has(s, _selected) ? "RESTORED" : "LOCKED // INTRUSION") : selActive ? "RESTORING" : state == RejectReason.None ? "AVAILABLE" : state.ToString().ToUpperInvariant();
             _ui.Q<Label>("detail-desc").text = ModuleTexts.Effect(_selected, c);
@@ -137,7 +139,8 @@ namespace Deadswitch.Game.UI.Screens
             cp.EnableInClassList("is-short", s.Compute < compute);
             _ui.Q<Label>("detail-time").text = Fmt.Countdown(c.Modules.ResearchMinutes[sel.Index] * 60.0 / _host.Settings.DevTimeScale);
             VisualElement start = _ui.Q("detail-start");
-            bool canStart = state == RejectReason.None && !busy;
+            bool laneBusy = sel.Field == ModuleField.Trunk ? s.MemoryNode != 0 : s.ResearchNode != 0;
+            bool canStart = state == RejectReason.None && !laneBusy;
             start.style.display = Modules.IsRestored(s, _selected) ? DisplayStyle.None : DisplayStyle.Flex;
             start.EnableInClassList("ds-btn--primary", canStart);
             start.EnableInClassList("ds-btn--ghost", selActive);
@@ -149,15 +152,18 @@ namespace Deadswitch.Game.UI.Screens
         public void Tick()
         {
             GameState s = _host.Sim.State;
-            if (s.ResearchNode == 0)
+            if (s.ResearchNode == 0 && s.MemoryNode == 0)
             {
                 return;
             }
 
-            float total = s.ResearchCompleteTick - s.ResearchStartTick;
-            float done = (s.Tick - s.ResearchStartTick) + _host.TickProgress;
+            bool field = s.ResearchNode != 0;
+            long start = field ? s.ResearchStartTick : s.MemoryStartTick;
+            long complete = field ? s.ResearchCompleteTick : s.MemoryCompleteTick;
+            float total = complete - start;
+            float done = (s.Tick - start) + _host.TickProgress;
             _ui.Q("research-fill").style.width = Length.Percent(UnityEngine.Mathf.Clamp01(done / UnityEngine.Mathf.Max(1f, total)) * 100f);
-            _ui.Q<Label>("research-eta").text = Fmt.Countdown(_host.SecondsUntilTick(s.ResearchCompleteTick));
+            _ui.Q<Label>("research-eta").text = Fmt.Countdown(_host.SecondsUntilTick(complete));
         }
 
         private void ShowField(ModuleField field)
@@ -266,7 +272,8 @@ namespace Deadswitch.Game.UI.Screens
 
         private void StartOrCancel()
         {
-            Run(_host.Sim.State.ResearchNode == (int)_selected ? Command.CancelResearch() : Command.StartResearch(_selected));
+            GameState s = _host.Sim.State;
+            Run(s.ResearchNode == (int)_selected ? Command.CancelResearch() : s.MemoryNode == (int)_selected ? Command.CancelMemory() : Command.StartResearch(_selected));
         }
 
         private void Run(Command command)

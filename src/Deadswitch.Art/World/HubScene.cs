@@ -59,11 +59,38 @@ namespace Deadswitch.Art.World
         public const float HalfWidth = 12.0f;
         public const float MinX = -40f;
         public const float MaxX = 40f;
-        public const float MinZ = -58f;
+        public const float MinZ = -68f;
         public const float MaxZ = 44f;
 
         /// <summary>Outer district wall line (SPEC-013), in front of the gate.</summary>
         public const float DistrictZ = -35.5f;
+
+        /// <summary>Outer Stronghold wall line (Tier 3), south of the district.</summary>
+        public const float StrongholdZ = -56f;
+
+        /// <summary>Flank wall line (Tier 4 Sector), outside the district's side palisades.</summary>
+        public const float SectorX = 27f;
+
+        /// <summary>Ground height of the Sector flank terraces cut into the side banks.</summary>
+        public const float SectorBase = 3f;
+
+        /// <summary>Plots 10..13 (Tier 3): the Stronghold yard south of the district wall.</summary>
+        private static readonly Vector3[] StrongholdPlots =
+        {
+            new Vector3(-9.4f, 0, -42.6f),
+            new Vector3(9.4f, 0, -42.6f),
+            new Vector3(-9.4f, 0, -50.0f),
+            new Vector3(9.4f, 0, -50.0f),
+        };
+
+        /// <summary>Plots 14..17 (Tier 4): terraces cut into the banks beside the district.</summary>
+        private static readonly Vector3[] SectorPlots =
+        {
+            new Vector3(-21.0f, SectorBase, -22.8f),
+            new Vector3(21.0f, SectorBase, -22.8f),
+            new Vector3(-21.0f, SectorBase, -30.2f),
+            new Vector3(21.0f, SectorBase, -30.2f),
+        };
 
         /// <summary>Plots 6..9: the district outside the gate, on cut-and-fill pads either side of the road.</summary>
         private static readonly Vector3[] DistrictPlots =
@@ -97,7 +124,18 @@ namespace Deadswitch.Art.World
                 return DistrictPlots[slot - Plots.Length];
             }
 
-            int k = slot - Plots.Length - DistrictPlots.Length;
+            int outer = slot - Plots.Length - DistrictPlots.Length;
+            if (outer < StrongholdPlots.Length)
+            {
+                return StrongholdPlots[outer];
+            }
+
+            if (outer < StrongholdPlots.Length + SectorPlots.Length)
+            {
+                return SectorPlots[outer - StrongholdPlots.Length];
+            }
+
+            int k = outer - StrongholdPlots.Length - SectorPlots.Length;
             return new Vector3((k % 2 == 0 ? -1 : 1) * 4.6f, 0, 3.2f - ((k / 2) * 7f));
         }
 
@@ -105,8 +143,11 @@ namespace Deadswitch.Art.World
         public static float SlotYaw(int slot, int slotCount)
         {
             Vector3 p = SlotPosition(slot, slotCount);
-            bool district = slot >= Plots.Length && slot < Plots.Length + DistrictPlots.Length;
-            Vector3 f = (district ? new Vector3(0, 0, p.Z - 5f) : new Vector3(0, 0, -34f)) - p;
+            int roadSide = Plots.Length + DistrictPlots.Length + StrongholdPlots.Length;
+            bool district = slot >= Plots.Length && slot < roadSide;
+            bool sector = slot >= roadSide && slot < roadSide + SectorPlots.Length;
+            Vector3 f = (sector ? new Vector3(0, p.Y, p.Z) : district ? new Vector3(0, 0, p.Z - 5f) : new Vector3(0, 0, -34f)) - p;
+            f.Y = 0;
             return (float)(Math.Atan2(-f.X, -f.Z) * 180.0 / Math.PI);
         }
 
@@ -124,7 +165,7 @@ namespace Deadswitch.Art.World
                 pts.Add(p + (Vector3.Normalize(new Vector3(-p.X, 0, -p.Z * 0.2f)) * 3.9f));
             }
 
-            for (int i = Plots.Length; i < Math.Min(slotCount, Plots.Length + DistrictPlots.Length); i++)
+            for (int i = Plots.Length; i < Math.Min(slotCount, Plots.Length + DistrictPlots.Length + StrongholdPlots.Length); i++)
             {
                 Vector3 p = SlotPosition(i, slotCount);
                 pts.Add(new Vector3(p.X * 0.42f, 0, p.Z + 1.5f));
@@ -136,18 +177,32 @@ namespace Deadswitch.Art.World
         /// <summary>Terrain height: flat courtyard, hill rising behind the bunker, banks on the sides, road out front, district pads cut flat.</summary>
         public static float Height(float x, float z, uint seed)
         {
-            float pad = PadMask(x, z);
-            return pad <= 0f ? RawHeight(x, z, seed) : RawHeight(x, z, seed) * (1f - pad);
+            float pad = PadMask(x, z, out float level);
+            float raw = RawHeight(x, z, seed);
+            return pad <= 0f ? raw : raw + ((level - raw) * pad);
         }
 
-        /// <summary>0..1: how much the district pads flatten the ground here (pads sit at y = 0).</summary>
+        /// <summary>0..1: how much the outer pads (district, stronghold, sector) flatten the ground here, and their level.</summary>
         public static float PadMask(float x, float z)
         {
+            return PadMask(x, z, out _);
+        }
+
+        private static float PadMask(float x, float z, out float level)
+        {
             float m = 0f;
-            foreach (Vector3 p in DistrictPlots)
+            level = 0f;
+            foreach (Vector3[] set in new[] { DistrictPlots, StrongholdPlots, SectorPlots })
             {
-                float k = (1f - Smooth(3.4f, 4.6f, Math.Abs(x - p.X))) * (1f - Smooth(3.4f, 4.6f, Math.Abs(z - p.Z)));
-                m = Math.Max(m, k);
+                foreach (Vector3 p in set)
+                {
+                    float k = (1f - Smooth(3.4f, 4.6f, Math.Abs(x - p.X))) * (1f - Smooth(3.4f, 4.6f, Math.Abs(z - p.Z)));
+                    if (k > m)
+                    {
+                        m = k;
+                        level = p.Y;
+                    }
+                }
             }
 
             return m;
@@ -223,7 +278,7 @@ namespace Deadswitch.Art.World
             SideStacks(b, m, rng);
             Courtyard(b, m, rng, seed);
             Utilities(b, m, slotCount);
-            Hill(b, rng, seed);
+            Hill(b, rng, seed, tier);
             Road(b, rng, seed);
             District(b, m, new ArtRandom(seed + 71), seed, tier);
 
@@ -467,15 +522,18 @@ namespace Deadswitch.Art.World
         }
 
         /// <summary>Boulders at the foot of the slopes and pines climbing the hill and the flanks.</summary>
-        private static void Hill(MeshBuilder b, ArtRandom rng, uint seed)
+        private static void Hill(MeshBuilder b, ArtRandom rng, uint seed, int tier)
         {
+            // walled ground of the higher tiers stays clear of boulders and trees
+            bool Walled(float x, float z) => (tier >= 3 && Math.Abs(x) < 15.5f && z > StrongholdZ - 3f && z < FenceZ) || (tier >= 4 && Math.Abs(x) < SectorX + 2.5f && z > DistrictZ - 2f && z < -14.5f);
+
             for (int i = 0; i < 40; i++)
             {
                 float x = rng.Range(MinX + 2f, MaxX - 2f);
                 float z = rng.Range(MinZ + 2f, MaxZ - 2f);
                 bool inYard = Math.Abs(x) < HalfWidth + 1f && z > FenceZ - 5f && z < Core.FacadeZ + 12f;
                 inYard |= Math.Abs(x) < 15.5f && z > DistrictZ - 3f && z < FenceZ;
-                if (inYard)
+                if (inYard || Walled(x, z))
                 {
                     continue;
                 }
@@ -500,7 +558,13 @@ namespace Deadswitch.Art.World
             {
                 float x = (rng.Next() < 0.5f ? -1 : 1) * rng.Range(HalfWidth + 4f, MaxX - 1f);
                 float z = rng.Range(MinZ + 4f, Core.FacadeZ + 8f);
-                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), rng.Range(4f, 8f), seed + 800 + (uint)i);
+                float height = rng.Range(4f, 8f);
+                if (Walled(x, z))
+                {
+                    continue;
+                }
+
+                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), height, seed + 800 + (uint)i);
             }
         }
 
@@ -533,30 +597,124 @@ namespace Deadswitch.Art.World
         /// </summary>
         private static void District(MeshBuilder b, Model m, ArtRandom rng, uint seed, int tier)
         {
-            // the tree line south of the district closes the view (every tier)
+            // the tree line closes the view south of the outermost wall, and on the banks outside the flanks
             var trees = new ArtRandom(seed + 77);
-            for (int i = 0; i < 44; i++)
+            float wallZ = tier >= 3 ? StrongholdZ : DistrictZ;
+            for (int i = 0; i < 60; i++)
             {
                 float x = (trees.Next() < 0.5f ? -1 : 1) * trees.Range(5.5f, MaxX - 1f);
                 float z = trees.Range(MinZ + 1f, DistrictZ - 8f);
-                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), trees.Range(4.5f, 8.5f), seed + 1500 + (uint)i);
-            }
-
-            foreach (Vector3 p in DistrictPlots)
-            {
-                // cut-and-fill: retaining wall on the low (front) edge
-                float drop = -RawHeight(p.X, p.Z - 4.3f, seed);
-                if (drop > 0.35f)
-                {
-                    KitModules.RetainingWall(b, new Vector3(p.X, -drop, p.Z - 3.9f), 7.4f, drop + 0.15f, rng);
-                }
-
-                if (tier >= 2)
+                bool inside = z > wallZ - 6f && Math.Abs(x) < (tier >= 4 ? SectorX + 2f : 15.8f);
+                if (inside)
                 {
                     continue;
                 }
 
-                // staked lot: corner stakes with hazard tape, rubble, a survey flag
+                Props.Pine(b, new Vector3(x, Height(x, z, seed) - 0.2f, z), trees.Range(4.5f, 8.5f), seed + 1500 + (uint)i);
+            }
+
+            // pads: built tiers get retaining walls; the next expansion shows as staked lots
+            Lots(b, rng, seed, DistrictPlots, tier >= 2, tier >= 1);
+            Lots(b, rng, seed, StrongholdPlots, tier >= 3, tier >= 2);
+            Lots(b, rng, seed, SectorPlots, tier >= 4, tier >= 3);
+
+            if (tier < 2)
+            {
+                return;
+            }
+
+            const float side = 13.8f;
+            Vector3 G(float x, float z) => new Vector3(x, Height(x, z, seed), z);
+
+            // side palisades from the old fence to the outermost wall, sandbags at the foot on the inside
+            foreach (int s in new[] { -1, 1 })
+            {
+                Palisade(b, G(s * side, FenceZ - 0.4f), G(s * side, wallZ), s < 0, rng, seed);
+                Shapes.SandbagWall(b, G(s * (side - 0.8f), -19.5f), G(s * (side - 0.8f), -26.5f), 2);
+                Vector3 mast = G(s * (side - 0.4f), -17.8f);
+                KitParts.Mast(b, m, mast, 8.5f, true);
+                KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 8.2f, -0.3f), s * 140f);
+                KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 7.8f, 0.3f), s * 110f);
+            }
+
+            GateWall(b, m, rng, seed, DistrictZ, "DISTRICT", tier < 3);
+            if (tier >= 3)
+            {
+                GateWall(b, m, rng, seed, StrongholdZ, "STRONGHOLD", true);
+                foreach (int s in new[] { -1, 1 })
+                {
+                    KitModules.Watchtower(b, m, G(s * 4.2f, DistrictZ - 2.2f), 6.4f);
+                }
+            }
+
+            if (tier >= 4)
+            {
+                // the Sector: flank walls around the terraces, joined to the district palisades
+                foreach (int s in new[] { -1, 1 })
+                {
+                    Palisade(b, G(s * SectorX, -16.5f), G(s * SectorX, DistrictZ), s < 0, rng, seed);
+                    Palisade(b, G(s * side, -16.5f), G(s * SectorX, -16.5f), s > 0, rng, seed);
+                    Palisade(b, G(s * side, DistrictZ), G(s * SectorX, DistrictZ), s < 0, rng, seed);
+                    KitModules.Watchtower(b, m, G(s * (SectorX - 1.6f), DistrictZ + 1.9f), 6.0f);
+                    KitModules.Watchtower(b, m, G(s * (SectorX - 1.6f), -18.4f), 6.0f);
+                    Vector3 mast = G(s * (SectorX - 0.6f), -26.5f);
+                    KitParts.Mast(b, m, mast, 9f, true);
+                    KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 8.7f, 0), s * 90f);
+                }
+            }
+
+            // power from the road poles into every built pad
+            foreach (Vector3[] set in new[] { DistrictPlots, tier >= 3 ? StrongholdPlots : new Vector3[0] })
+            {
+                foreach (Vector3 p in set)
+                {
+                    Vector3 box = new Vector3(p.X - (Math.Sign(p.X) * 3.5f), 0, p.Z + 2.2f);
+                    KitParts.UtilityBox(b, box + new Vector3(0, 0.6f, 0));
+                    b.Strut(box + new Vector3(0, 0.05f, 0), new Vector3(Math.Sign(p.X) * 1.6f, 0.05f, p.Z + 2.2f), 0.04f, Mat.Rubber);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Outer pads: built ones get a retaining wall where the ground falls away; a pad of the next tier is a staked
+        /// lot with hazard tape, rubble and a survey flag (the visible promise of the next expansion, SPEC-013).
+        /// </summary>
+        private static void Lots(MeshBuilder b, ArtRandom rng, uint seed, Vector3[] plots, bool built, bool show)
+        {
+            if (!show)
+            {
+                return;
+            }
+
+            foreach (Vector3 p in plots)
+            {
+                bool flank = p.Y > 0.5f;
+                if (flank)
+                {
+                    // terrace cut into the bank: a retaining wall on the inner (lower) edge
+                    float drop = p.Y - RawHeight(p.X - (Math.Sign(p.X) * 4.3f), p.Z, seed);
+                    if (drop > 0.35f)
+                    {
+                        b.Push(Matrix4x4.CreateRotationY(MeshBuilder.Deg(90f)) * Matrix4x4.CreateTranslation(new Vector3(p.X - (Math.Sign(p.X) * 3.9f), p.Y - drop, p.Z)));
+                        KitModules.RetainingWall(b, Vector3.Zero, 7.4f, drop + 0.15f, rng);
+                        b.Pop();
+                    }
+                }
+                else
+                {
+                    // cut-and-fill: retaining wall on the low (front) edge
+                    float drop = -RawHeight(p.X, p.Z - 4.3f, seed);
+                    if (drop > 0.35f)
+                    {
+                        KitModules.RetainingWall(b, new Vector3(p.X, -drop, p.Z - 3.9f), 7.4f, drop + 0.15f, rng);
+                    }
+                }
+
+                if (built)
+                {
+                    continue;
+                }
+
                 var corners = new[]
                 {
                     p + new Vector3(-2.9f, 0, -2.9f), p + new Vector3(2.9f, 0, -2.9f), p + new Vector3(2.9f, 0, 2.9f), p + new Vector3(-2.9f, 0, 2.9f),
@@ -579,74 +737,56 @@ namespace Deadswitch.Art.World
                 b.Strut(flag, flag + new Vector3(0, 1.7f, 0), 0.03f, Mat.DarkSteel);
                 b.Box(flag + new Vector3(0.18f, 1.55f, 0), new Vector3(0.34f, 0.22f, 0.01f), Mat.PaintRed, 0f);
             }
+        }
 
-            if (tier < 2)
-            {
-                return;
-            }
-
+        /// <summary>
+        /// A front wall across the road at <paramref name="z"/>: palisade behind hazard-striped jerseys, gate pillars with
+        /// lamps and leaves, corner towers, a sign gantry. <paramref name="outermost"/> adds the MG nest and tank traps
+        /// beyond it (an inner wall keeps its yard clear).
+        /// </summary>
+        private static void GateWall(MeshBuilder b, Model m, ArtRandom rng, uint seed, float z, string label, bool outermost)
+        {
             const float side = 13.8f;
-            Vector3 G(float x, float z) => new Vector3(x, Height(x, z, seed), z);
-
-            // side palisades from the old fence to the outer wall, sandbags at the foot on the inside
+            Vector3 G(float x, float zz) => new Vector3(x, Height(x, zz, seed), zz);
             foreach (int s in new[] { -1, 1 })
             {
-                Palisade(b, G(s * side, FenceZ - 0.4f), G(s * side, DistrictZ), s < 0, rng, seed);
-                Shapes.SandbagWall(b, G(s * (side - 0.8f), -19.5f), G(s * (side - 0.8f), -26.5f), 2);
-            }
-
-            // front wall: palisade behind a line of hazard-striped jerseys, open at the road
-            foreach (int s in new[] { -1, 1 })
-            {
-                Palisade(b, G(s * 3.4f, DistrictZ), G(s * side, DistrictZ), s > 0, rng, seed);
+                Palisade(b, G(s * 3.4f, z), G(s * side, z), s > 0, rng, seed);
                 for (float x = 4.6f; x < side - 0.6f; x += 2.1f)
                 {
-                    StripedBarrier(b, G(s * x, DistrictZ - 0.8f), rng.Range(-4f, 4f));
+                    StripedBarrier(b, G(s * x, z - 0.8f), rng.Range(-4f, 4f));
                 }
 
                 // gate pillars: stacked concrete blocks with lamps and hazard paint
                 float gx = s * 3.0f;
-                Vector3 gp = G(gx, DistrictZ);
+                Vector3 gp = G(gx, z);
                 b.BoxOn(gp.X, gp.Y, gp.Z, 1.0f, 2.4f, 1.0f, Mat.Concrete, 0.08f);
                 b.BoxOn(gp.X, gp.Y + 2.4f, gp.Z, 0.8f, 2.6f, 0.8f, Mat.ConcreteDark, 0.06f);
                 b.BoxOn(gp.X, gp.Y + 5.0f, gp.Z, 0.9f, 0.14f, 0.9f, Mat.DarkSteel, 0.02f);
                 Shapes.Hazard(b, gp.X - 0.5f, gp.X + 0.5f, gp.Y + 0.3f, gp.Y + 1.6f, gp.Z - 0.51f, 4);
                 Props.Lamp(b, m, gp + new Vector3(0, 3.6f, -0.6f), true, 1.8f);
                 GateLeaf(b, gp + new Vector3(-s * 0.5f, 0, 0.1f), s < 0 ? 100f : 72f);
-
-                // corner tower and floodlight mast aimed into the district
-                KitModules.Watchtower(b, m, G(s * (side - 1.6f), DistrictZ + 1.9f), 5.6f);
-                Vector3 mast = G(s * (side - 0.4f), -17.8f);
-                KitParts.Mast(b, m, mast, 8.5f, true);
-                KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 8.2f, -0.3f), s * 140f);
-                KitParts.Spotlight(b, m, mast + new Vector3(-s * 0.4f, 7.8f, 0.3f), s * 110f);
+                KitModules.Watchtower(b, m, G(s * (side - 1.6f), z + 1.9f), 5.6f);
             }
 
-            // sign gantry over the outer gate
-            float gy = Height(0, DistrictZ, seed);
-            KitParts.Truss(b, new Vector3(-3.0f, gy + 5.2f, DistrictZ), new Vector3(3.0f, gy + 5.2f, DistrictZ), 0.5f, 0.05f, Mat.DarkSteel);
-            b.Box(new Vector3(0, gy + 4.85f, DistrictZ - 0.12f), new Vector3(3.4f, 0.62f, 0.05f), Mat.OliveSteel, 0.02f);
-            Props.Stencil(b, "DISTRICT", new Vector3(-1.48f, gy + 4.66f, DistrictZ - 0.16f), 0.066f, Mat.PaintWhite);
-            KitParts.Spotlight(b, m, new Vector3(-2.2f, gy + 5.8f, DistrictZ - 0.2f), 180f);
+            float gy = Height(0, z, seed);
+            KitParts.Truss(b, new Vector3(-3.0f, gy + 5.2f, z), new Vector3(3.0f, gy + 5.2f, z), 0.5f, 0.05f, Mat.DarkSteel);
+            b.Box(new Vector3(0, gy + 4.85f, z - 0.12f), new Vector3(3.4f + (Math.Max(0, label.Length - 8) * 0.38f), 0.62f, 0.05f), Mat.OliveSteel, 0.02f);
+            Props.Stencil(b, label, new Vector3(-label.Length * 0.185f, gy + 4.66f, z - 0.16f), 0.066f, Mat.PaintWhite);
+            KitParts.Spotlight(b, m, new Vector3(-2.2f, gy + 5.8f, z - 0.2f), 180f);
 
-            // MG nest beside the road and tank traps beyond the wall
-            Vector3 nest = G(-5.6f, DistrictZ - 3.2f);
+            if (!outermost)
+            {
+                return;
+            }
+
+            Vector3 nest = G(-5.6f, z - 3.2f);
             Shapes.SandbagRing(b, nest, 1.3f, 14, 3, 20f, 70f);
             b.Strut(nest + new Vector3(0, 0.9f, 0), nest + new Vector3(0.2f, 1.0f, -1.2f), 0.06f, Mat.DarkSteel);
             for (int i = 0; i < 5; i++)
             {
                 float x = (i % 2 == 0 ? -1 : 1) * rng.Range(5.5f, 12f);
-                float z = DistrictZ - rng.Range(3.5f, 6f);
-                KitModules.Hedgehog(b, G(x, z), rng.Range(0f, 90f));
-            }
-
-            // power from the road poles into the district
-            for (int i = 0; i < DistrictPlots.Length; i++)
-            {
-                Vector3 p = DistrictPlots[i];
-                Vector3 box = new Vector3(p.X - (Math.Sign(p.X) * 3.5f), 0, p.Z + 2.2f);
-                KitParts.UtilityBox(b, box + new Vector3(0, 0.6f, 0));
-                b.Strut(box + new Vector3(0, 0.05f, 0), new Vector3(Math.Sign(p.X) * 1.6f, 0.05f, p.Z + 2.2f), 0.04f, Mat.Rubber);
+                float zz = z - rng.Range(3.5f, 6f);
+                KitModules.Hedgehog(b, G(x, zz), rng.Range(0f, 90f));
             }
         }
 

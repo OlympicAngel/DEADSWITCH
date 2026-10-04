@@ -59,7 +59,7 @@ namespace Deadswitch.Host.Narrative
                 return new GuideObjective(GuideStep.Generator, "UPGRADE THE GENERATOR", "Power is the problem. More of it makes everything else possible.", "generator");
             }
 
-            if (s.Modules == 0 && s.ResearchNode == 0)
+            if (s.Modules == 0 && s.ResearchNode == 0 && s.MemoryNode == 0)
             {
                 return new GuideObjective(GuideStep.Research, "RESTORE A MODULE", "Open CORE, then MODULES. Load Balancing cuts upkeep.", "tab-core");
             }

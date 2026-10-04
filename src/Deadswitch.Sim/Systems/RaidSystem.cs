@@ -43,7 +43,7 @@ namespace Deadswitch.Sim.Systems
 
             // SPEC-009: the opening raid comes on cue; nothing else before the protection window ends.
             bool opening = c.Opening.Enabled && c.Raid.MaxPerDay > 0 && s.NextRaidId == 1 && s.Tick == c.Opening.RaidAtMinute;
-            bool protectedNow = c.Opening.Enabled && s.Tick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
+            bool protectedNow = c.Opening.Enabled && s.Tick - s.CycleStartTick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
             if ((opening && !ThreatSystem.Shielded(s)) || (spawnRoll && !protectedNow && !ThreatSystem.Shielded(s) && s.RaidsToday < MaxPerDay(s, c) && s.Tick >= s.MercyUntilTick))
             {
                 if (!opening && ThreatSystem.SiegeDue(s))

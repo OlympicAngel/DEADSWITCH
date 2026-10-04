@@ -23,22 +23,29 @@ namespace Deadswitch.Sim.Systems
             return System.Math.Max(0, l.BaseVeterans + s.Perks[(int)Perk.Veterans] + (s.People / l.VeteranPerPeople));
         }
 
+        /// <summary>Mastery earned in this cycle (each challenge scores once per cycle, so it cannot be farmed).</summary>
         public static int MasteryDone(GameState s)
         {
             int n = 0;
             for (int i = 0; i < MasteryCount; i++)
             {
-                n += (s.Mastery & (1 << i)) != 0 ? 1 : 0;
+                n += (s.CycleMastery & (1 << i)) != 0 ? 1 : 0;
             }
 
             return n;
+        }
+
+        public static int HighestTier(GameState s)
+        {
+            return System.Math.Max(s.HighestTier, s.Tier);
         }
 
         /// <summary>Legacy score of this cycle so far (doc 10 s6).</summary>
         public static int Score(GameState s, SimConfig c)
         {
             LegacyConfig l = c.Legacy;
-            return (s.HighestTier * l.ScorePerTier) + (s.PeakPower / l.PowerDivisor) + (Veterans(s, c) * l.ScorePerVeteran) + (MasteryDone(s) * l.ScorePerMastery);
+            int power = System.Math.Max(s.PeakPower, Defense.PowerRating(s));
+            return (HighestTier(s) * l.ScorePerTier) + (power / l.PowerDivisor) + (Veterans(s, c) * l.ScorePerVeteran) + (MasteryDone(s) * l.ScorePerMastery);
         }
 
         public static int PerkPrice(GameState s, SimConfig c, Perk p)
@@ -50,11 +57,12 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             int bit = 1 << (int)m;
-            if ((s.Mastery & bit) != 0)
+            if ((s.CycleMastery & bit) != 0)
             {
                 return;
             }
 
+            s.CycleMastery |= bit;
             s.Mastery |= bit;
             ctx.Emit(EventKind.MasteryEarned, (int)m);
         }
@@ -124,12 +132,13 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
-            if (s.HighestTier < ctx.Config.Legacy.RelocateMinTier)
+            if (HighestTier(s) < ctx.Config.Legacy.RelocateMinTier)
             {
                 return CommandResult.Reject(RejectReason.Locked);
             }
 
-            if (s.RaidId != 0)
+            // no running from a threat already in motion: an attack, the purge ladder, the Warlord's terms, the climax
+            if (s.RaidId != 0 || s.PurgeStage != PurgeStage.None || s.Ultimatum == UltimatumStage.Issued || s.ClimaxAtTick != 0)
             {
                 return CommandResult.Reject(RejectReason.ThreatActive);
             }
@@ -177,15 +186,16 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
-            if (s.Tick - s.CycleStartTick >= (long)ctx.Config.Legacy.IronmanChooseHours * SimConfig.TicksPerHour)
-            {
-                return CommandResult.Reject(RejectReason.Locked);
-            }
-
             bool on = cmd.A == 1;
             if (s.Ironman == on)
             {
                 return CommandResult.Reject(RejectReason.NoChange);
+            }
+
+            // chosen at the start of a site, and never switched off once on (there is no way out of Ironman)
+            if (!on || s.Tick - s.CycleStartTick >= (long)ctx.Config.Legacy.IronmanChooseHours * SimConfig.TicksPerHour)
+            {
+                return CommandResult.Reject(RejectReason.Locked);
             }
 
             s.Ironman = on;
@@ -194,7 +204,7 @@ namespace Deadswitch.Sim.Systems
                 // no shield in Ironman: an armed one drops and its charge comes back
                 if (s.ShieldUntilTick > s.Tick)
                 {
-                    s.ShieldCharges++;
+                    s.ShieldCharges = System.Math.Min(ctx.Config.Threats.ShieldMaxCharges, s.ShieldCharges + 1);
                 }
 
                 s.ShieldFromTick = 0;
@@ -262,6 +272,23 @@ namespace Deadswitch.Sim.Systems
             int boldness = s.BoldnessMilli;
             DelegationLevel delegation = s.Delegation;
 
+            // the handler, the day and the slow clocks do not reset with the site
+            bool away = s.Away;
+            bool tribute = s.TributeOrder;
+            int raidsToday = s.RaidsToday;
+            int[] tradesToday = (int[])s.TradesToday.Clone();
+            int shieldCharges = s.ShieldCharges;
+            long shieldFrom = s.ShieldFromTick;
+            long shieldUntil = s.ShieldUntilTick;
+            long shieldNext = s.ShieldNextChargeTick;
+            int charges = s.OverrideCharges;
+            long overrideNext = s.OverrideNextChargeTick;
+            long overrideCooldown = s.OverrideCooldownUntil;
+            int overridePenalty = s.OverrideMaxPenalty;
+            long auditReady = s.AuditReadyTick;
+            long surgeReady = s.SurgeReadyTick;
+            int lies = s.LiesTold;
+
             SaveGame.CopyInto(new GameState(0UL, c), s);
 
             s.Tick = tick;
@@ -283,15 +310,30 @@ namespace Deadswitch.Sim.Systems
             s.HighestTier = 1;
             s.TierManual = true;
             s.Ironman = ironman;
+            s.Away = away;
+            s.TributeOrder = tribute;
+            s.RaidsToday = raidsToday;
+            s.TradesToday = tradesToday;
+            s.ShieldCharges = ironman ? 0 : shieldCharges;
+            s.ShieldFromTick = ironman ? 0 : shieldFrom;
+            s.ShieldUntilTick = ironman ? 0 : shieldUntil;
+            s.ShieldNextChargeTick = shieldNext;
+            s.OverrideMaxPenalty = overridePenalty;
+            s.OverrideCharges = System.Math.Min(charges, OverrideSystem.MaxCharges(s, c));
+            s.OverrideNextChargeTick = overrideNext;
+            s.OverrideCooldownUntil = overrideCooldown;
+            s.AuditReadyTick = auditReady;
+            s.SurgeReadyTick = surgeReady;
+            s.LiesTold = lies;
+            s.RebuildingSurge = forced && !ironmanEnd;
 
-            // absolute schedules in a fresh state count from tick 0: move them to now
-            s.OverrideNextChargeTick += tick;
-            s.ShieldNextChargeTick += tick;
+            // first-time schedules in a fresh state count from tick 0: start them from the new site
+            s.NextDilemmaTick = tick + ((long)c.Living.DilemmaFirstHour * SimConfig.TicksPerHour);
+            s.NextWorldEventTick = tick + ((long)c.Living.WorldEventFirstDay * SimConfig.TicksPerDay);
             s.Energy += perks[(int)Perk.StartResources] * l.PerkStartEnergy;
             s.Fuel = System.Math.Min(c.Fuel.Cap, s.Fuel + (perks[(int)Perk.StartResources] * l.PerkStartFuel));
             s.People = System.Math.Min(Economy.PopulationCap(s, c), s.People + veterans);
             s.Energy = System.Math.Min(Economy.EnergyCap(s, c), s.Energy);
-            s.OverrideCharges = OverrideSystem.MaxCharges(s, c);
 
             // a fair start at the new site: the mercy window covers the first hours
             s.MercyUntilTick = tick + ((long)c.Raid.MercyHours * SimConfig.TicksPerHour);
