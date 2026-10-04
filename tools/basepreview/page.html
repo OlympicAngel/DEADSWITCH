@@ -29,6 +29,10 @@ function timeOfDay(file, hour) {
   const mix = (x, y) => Array.isArray(x) ? x.map((v, j) => v + (y[j] - v) * f) : x + (y - x) * f;
   const out = { ...file };
   for (const key of Object.keys(a)) if (key !== 'hour') out[key] = mix(a[key], b[key]);
+  // moonlight of this night (?night=N cycles moonPhases; same rule as BaseLook.WithMoon)
+  const ph = file.moonPhases || [1], n = +(P.get('night') ?? 3), lvl = ph[((n % ph.length) + ph.length) % ph.length], m = out.moon || 0;
+  out.sunIntensity *= 1 + (lvl - 1) * m;
+  out.ambient *= 1 + (0.6 + 0.4 * lvl - 1) * m;
   return out;
 }
 

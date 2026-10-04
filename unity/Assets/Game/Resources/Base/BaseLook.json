@@ -1,5 +1,5 @@
 {
-  "_doc": "Single source for the base look: Unity (Runtime/Base/BaseLook.cs) and tools/basepreview both read this file. 'times' are lighting keyframes by game hour (0-24), blended linearly; overcast day is the reference look (doc 11).",
+  "_doc": "Single source for the base look: Unity (Runtime/Base/BaseLook.cs) and tools/basepreview both read this file. 'times' are lighting keyframes by game hour (0-24), blended linearly; 'moonPhases' sets each night's moonlight (cycled by night, applied by a key's 'moon' weight); overcast day is the reference look (doc 11).",
   "fov": 30,
   "camElevation": 43,
   "camAzimuth": 0,
@@ -11,70 +11,71 @@
   "aoIntensity": 1.5,
   "shadowSoftness": 4,
   "rangeScale": 1.6,
+  "moonPhases": [1.0, 0.85, 0.65, 0.45, 0.35, 0.5, 0.7, 0.9],
   "times": [
     {
       "hour": 0, "exposure": 1.25,
-      "skyColor": [0.16, 0.20, 0.27], "groundColor": [0.10, 0.09, 0.08], "ambient": 0.55,
-      "fogColor": [0.07, 0.09, 0.11], "fogDensity": 0.011,
-      "sunColor": [0.55, 0.65, 0.85], "sunIntensity": 0.35, "sunAzimuth": -38, "sunElevation": 48,
-      "pointScale": 7.0, "emissionScale": 1.0, "envIntensity": 0.35, "coneIntensity": 0.12,
-      "bloomStrength": 0.45, "bloomRadius": 0.5, "bloomThreshold": 0.82
+      "skyColor": [0.19, 0.24, 0.33], "groundColor": [0.11, 0.10, 0.09], "ambient": 0.85,
+      "fogColor": [0.08, 0.10, 0.13], "fogDensity": 0.010,
+      "sunColor": [0.62, 0.72, 0.92], "sunIntensity": 1.1, "sunAzimuth": -38, "sunElevation": 48,
+      "pointScale": 8.5, "emissionScale": 1.15, "envIntensity": 0.4, "coneIntensity": 0.14,
+      "bloomStrength": 0.5, "bloomRadius": 0.5, "bloomThreshold": 0.8, "moon": 1
     },
     {
       "hour": 5.5, "exposure": 1.25,
-      "skyColor": [0.16, 0.20, 0.27], "groundColor": [0.10, 0.09, 0.08], "ambient": 0.55,
-      "fogColor": [0.07, 0.09, 0.11], "fogDensity": 0.011,
-      "sunColor": [0.55, 0.65, 0.85], "sunIntensity": 0.35, "sunAzimuth": -38, "sunElevation": 48,
-      "pointScale": 7.0, "emissionScale": 1.0, "envIntensity": 0.35, "coneIntensity": 0.12,
-      "bloomStrength": 0.45, "bloomRadius": 0.5, "bloomThreshold": 0.82
+      "skyColor": [0.19, 0.24, 0.33], "groundColor": [0.11, 0.10, 0.09], "ambient": 0.85,
+      "fogColor": [0.08, 0.10, 0.13], "fogDensity": 0.010,
+      "sunColor": [0.62, 0.72, 0.92], "sunIntensity": 1.1, "sunAzimuth": -38, "sunElevation": 48,
+      "pointScale": 8.5, "emissionScale": 1.15, "envIntensity": 0.4, "coneIntensity": 0.14,
+      "bloomStrength": 0.5, "bloomRadius": 0.5, "bloomThreshold": 0.8, "moon": 1
     },
     {
       "hour": 7.0, "exposure": 1.1,
-      "skyColor": [0.47, 0.50, 0.55], "groundColor": [0.24, 0.22, 0.19], "ambient": 1.4,
+      "skyColor": [0.47, 0.50, 0.55], "groundColor": [0.24, 0.22, 0.19], "ambient": 1.5,
       "fogColor": [0.42, 0.44, 0.47], "fogDensity": 0.009,
-      "sunColor": [0.95, 0.80, 0.66], "sunIntensity": 0.9, "sunAzimuth": -70, "sunElevation": 22,
-      "pointScale": 3.0, "emissionScale": 0.7, "envIntensity": 0.8, "coneIntensity": 0.04,
-      "bloomStrength": 0.3, "bloomRadius": 0.45, "bloomThreshold": 0.88
+      "sunColor": [0.95, 0.80, 0.66], "sunIntensity": 1.0, "sunAzimuth": -70, "sunElevation": 22,
+      "pointScale": 3.6, "emissionScale": 0.75, "envIntensity": 0.8, "coneIntensity": 0.04,
+      "bloomStrength": 0.3, "bloomRadius": 0.45, "bloomThreshold": 0.88, "moon": 0.3
     },
     {
       "hour": 9.0, "exposure": 0.95,
-      "skyColor": [0.62, 0.64, 0.66], "groundColor": [0.22, 0.20, 0.17], "ambient": 1.1,
-      "fogColor": [0.57, 0.58, 0.59], "fogDensity": 0.0045,
-      "sunColor": [0.96, 0.93, 0.87], "sunIntensity": 2.5, "sunAzimuth": -38, "sunElevation": 50,
-      "pointScale": 0.6, "emissionScale": 0.12, "envIntensity": 0.8, "coneIntensity": 0.0,
+      "skyColor": [0.64, 0.66, 0.68], "groundColor": [0.24, 0.22, 0.18], "ambient": 1.25,
+      "fogColor": [0.58, 0.59, 0.60], "fogDensity": 0.0042,
+      "sunColor": [0.97, 0.94, 0.87], "sunIntensity": 2.85, "sunAzimuth": -38, "sunElevation": 50,
+      "pointScale": 0.8, "emissionScale": 0.15, "envIntensity": 0.9, "coneIntensity": 0.0,
       "bloomStrength": 0.2, "bloomRadius": 0.4, "bloomThreshold": 0.92
     },
     {
       "hour": 16.5, "exposure": 0.95,
-      "skyColor": [0.62, 0.64, 0.66], "groundColor": [0.22, 0.20, 0.17], "ambient": 1.1,
-      "fogColor": [0.57, 0.58, 0.59], "fogDensity": 0.0045,
-      "sunColor": [0.96, 0.93, 0.87], "sunIntensity": 2.5, "sunAzimuth": -38, "sunElevation": 50,
-      "pointScale": 0.6, "emissionScale": 0.12, "envIntensity": 0.8, "coneIntensity": 0.0,
+      "skyColor": [0.64, 0.66, 0.68], "groundColor": [0.24, 0.22, 0.18], "ambient": 1.25,
+      "fogColor": [0.58, 0.59, 0.60], "fogDensity": 0.0042,
+      "sunColor": [0.97, 0.94, 0.87], "sunIntensity": 2.85, "sunAzimuth": -38, "sunElevation": 50,
+      "pointScale": 0.8, "emissionScale": 0.15, "envIntensity": 0.9, "coneIntensity": 0.0,
       "bloomStrength": 0.2, "bloomRadius": 0.4, "bloomThreshold": 0.92
     },
     {
       "hour": 19.0, "exposure": 1.15,
       "skyColor": [0.36, 0.38, 0.45], "groundColor": [0.20, 0.18, 0.16], "ambient": 1.1,
       "fogColor": [0.30, 0.31, 0.35], "fogDensity": 0.009,
-      "sunColor": [0.98, 0.72, 0.52], "sunIntensity": 0.7, "sunAzimuth": 60, "sunElevation": 14,
-      "pointScale": 4.5, "emissionScale": 0.85, "envIntensity": 0.6, "coneIntensity": 0.07,
-      "bloomStrength": 0.35, "bloomRadius": 0.5, "bloomThreshold": 0.85
+      "sunColor": [0.98, 0.72, 0.52], "sunIntensity": 0.8, "sunAzimuth": 60, "sunElevation": 14,
+      "pointScale": 5.5, "emissionScale": 0.95, "envIntensity": 0.6, "coneIntensity": 0.07,
+      "bloomStrength": 0.38, "bloomRadius": 0.5, "bloomThreshold": 0.84, "moon": 0.3
     },
     {
       "hour": 21.0, "exposure": 1.25,
-      "skyColor": [0.16, 0.20, 0.27], "groundColor": [0.10, 0.09, 0.08], "ambient": 0.55,
-      "fogColor": [0.07, 0.09, 0.11], "fogDensity": 0.011,
-      "sunColor": [0.55, 0.65, 0.85], "sunIntensity": 0.35, "sunAzimuth": -38, "sunElevation": 48,
-      "pointScale": 7.0, "emissionScale": 1.0, "envIntensity": 0.35, "coneIntensity": 0.12,
-      "bloomStrength": 0.45, "bloomRadius": 0.5, "bloomThreshold": 0.82
+      "skyColor": [0.19, 0.24, 0.33], "groundColor": [0.11, 0.10, 0.09], "ambient": 0.85,
+      "fogColor": [0.08, 0.10, 0.13], "fogDensity": 0.010,
+      "sunColor": [0.62, 0.72, 0.92], "sunIntensity": 1.1, "sunAzimuth": -38, "sunElevation": 48,
+      "pointScale": 8.5, "emissionScale": 1.15, "envIntensity": 0.4, "coneIntensity": 0.14,
+      "bloomStrength": 0.5, "bloomRadius": 0.5, "bloomThreshold": 0.8, "moon": 1
     },
     {
       "hour": 24, "exposure": 1.25,
-      "skyColor": [0.16, 0.20, 0.27], "groundColor": [0.10, 0.09, 0.08], "ambient": 0.55,
-      "fogColor": [0.07, 0.09, 0.11], "fogDensity": 0.011,
-      "sunColor": [0.55, 0.65, 0.85], "sunIntensity": 0.35, "sunAzimuth": -38, "sunElevation": 48,
-      "pointScale": 7.0, "emissionScale": 1.0, "envIntensity": 0.35, "coneIntensity": 0.12,
-      "bloomStrength": 0.45, "bloomRadius": 0.5, "bloomThreshold": 0.82
+      "skyColor": [0.19, 0.24, 0.33], "groundColor": [0.11, 0.10, 0.09], "ambient": 0.85,
+      "fogColor": [0.08, 0.10, 0.13], "fogDensity": 0.010,
+      "sunColor": [0.62, 0.72, 0.92], "sunIntensity": 1.1, "sunAzimuth": -38, "sunElevation": 48,
+      "pointScale": 8.5, "emissionScale": 1.15, "envIntensity": 0.4, "coneIntensity": 0.14,
+      "bloomStrength": 0.5, "bloomRadius": 0.5, "bloomThreshold": 0.8, "moon": 1
     }
   ]
 }

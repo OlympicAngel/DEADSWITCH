@@ -156,7 +156,18 @@ namespace Deadswitch.Art.Models
         {
             const float z = FacadeZ;
             b.BoxOn(0, 0, z - 0.9f, 7.4f, 6.2f, 1.6f, Mat.Concrete, 0.2f);
-            b.BoxOn(0, 0.2f, z - 1.75f, 4.6f, 4.4f, 0.2f, Mat.Screen, 0.02f);
+            // dark recessed portal: stepped reveals give depth; the phosphor glow only carries at night
+            b.BoxOn(0, 0.2f, z - 1.75f, 4.6f, 4.4f, 0.2f, Mat.Portal, 0.02f);
+            b.BoxOn(-2.2f, 0.2f, z - 1.95f, 0.22f, 4.4f, 0.22f, Mat.ConcreteDark, 0.03f);
+            b.BoxOn(2.2f, 0.2f, z - 1.95f, 0.22f, 4.4f, 0.22f, Mat.ConcreteDark, 0.03f);
+            b.BoxOn(0, 4.38f, z - 1.95f, 4.6f, 0.22f, 0.22f, Mat.ConcreteDark, 0.03f);
+            for (int i = 0; i < 3; i++)
+            {
+                b.Box(new Vector3(1.0f, 1.1f + (i * 1.3f), z - 1.88f), new Vector3(1.6f, 0.04f, 0.03f), Mat.LampPhosphor, 0f);
+            }
+
+            // a neon cyan frame line on the portal: the base's one bit of pre-war signage still lit
+            b.Box(new Vector3(0, 4.52f, z - 2.08f), new Vector3(4.2f, 0.04f, 0.04f), Mat.NeonCyan, 0f);
             b.BoxOn(0, 4.6f, z - 1.8f, 5.0f, 0.5f, 0.3f, Mat.DarkSteel, 0.05f);
             b.BoxOn(-2.45f, 0, z - 1.8f, 0.3f, 4.6f, 0.3f, Mat.DarkSteel, 0.05f);
             b.BoxOn(2.45f, 0, z - 1.8f, 0.3f, 4.6f, 0.3f, Mat.DarkSteel, 0.05f);

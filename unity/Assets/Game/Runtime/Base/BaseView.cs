@@ -180,7 +180,8 @@ namespace Deadswitch.Game.Base
             var toSun = new Vector3(Mathf.Cos(el) * Mathf.Sin(az), Mathf.Sin(el), -Mathf.Cos(el) * Mathf.Cos(az));
             _sun.transform.rotation = Quaternion.LookRotation(-toSun);
 
-            float a = k.ambient * _look.unityAmbientScale;
+            // three.js: hemisphere light / pi plus the sky env map's diffuse at envIntensity (no pi)
+            float a = ((k.ambient / Mathf.PI) + k.envIntensity) * _look.unityAmbientScale;
             RenderSettings.ambientSkyColor = BaseLook.Srgb(k.skyColor, a);
             RenderSettings.ambientEquatorColor = Color.Lerp(BaseLook.Srgb(k.skyColor), BaseLook.Srgb(k.groundColor), 0.5f) * a;
             RenderSettings.ambientGroundColor = BaseLook.Srgb(k.groundColor, a);
@@ -414,7 +415,8 @@ namespace Deadswitch.Game.Base
             _time += dt;
             if (_host != null && _host.IsReady)
             {
-                Lighting = _look.At(BaseLook.Hour(_host.Sim.State.Tick, _host.TickProgress));
+                long tick = _host.Sim.State.Tick;
+                Lighting = _look.WithMoon(_look.At(BaseLook.Hour(tick, _host.TickProgress)), BaseLook.Night(tick));
                 ApplyLight(Lighting);
                 CorruptionFlicker();
             }

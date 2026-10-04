@@ -52,6 +52,28 @@ namespace Deadswitch.Art.Models
 
             KitParts.UtilityBox(b, new Vector3(baseCenter.X + (length * 0.42f), baseCenter.Y + 1.3f, z - 0.12f));
 
+            // about a third of containers carry a small salvaged neon accent: a tube under the roof edge or a
+            // vertical sign by the door (position-hashed so the art seed sequence stays unchanged)
+            float neon = MeshBuilder.PartVariation(b.TransformPoint(baseCenter) + new Vector3(0.37f, 0f, 0f));
+            if (neon < 0.34f)
+            {
+                Mat tube = neon < 0.2f ? Mat.NeonCyan : neon < 0.28f ? Mat.LampRed : Mat.LampAmber;
+                Vector3 color = neon < 0.2f ? Model.Neon : neon < 0.28f ? Model.Red : Model.Amber;
+                if (neon < 0.17f)
+                {
+                    float x0 = baseCenter.X - (length * 0.3f);
+                    b.Box(new Vector3(x0 + (length * 0.2f), baseCenter.Y + h - 0.22f, z - 0.05f), new Vector3(length * 0.4f, 0.035f, 0.035f), tube, 0f);
+                    m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(x0 + (length * 0.2f), baseCenter.Y + h - 0.4f, z - 0.4f)), color, 0.55f, 3.2f, LightRole.Status));
+                }
+                else
+                {
+                    float x = baseCenter.X - (length * 0.5f) + 0.35f;
+                    b.Box(new Vector3(x, baseCenter.Y + 1.7f, z - 0.08f), new Vector3(0.16f, 0.7f, 0.06f), Mat.DarkSteel, 0.01f);
+                    b.Box(new Vector3(x, baseCenter.Y + 1.7f, z - 0.12f), new Vector3(0.05f, 0.58f, 0.02f), tube, 0f);
+                    m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(x, baseCenter.Y + 1.7f, z - 0.45f)), color, 0.45f, 2.6f, LightRole.Status));
+                }
+            }
+
             if (roofClutter)
             {
                 RoofClutter(b, m, new Vector3(baseCenter.X, baseCenter.Y + h, baseCenter.Z), length - 0.6f, d - 0.5f, rng, 2 + rng.Range(0, 3));

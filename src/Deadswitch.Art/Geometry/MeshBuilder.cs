@@ -463,7 +463,7 @@ namespace Deadswitch.Art.Geometry
         }
 
         /// <summary>Stable 0..1 value from a primitive's center (quantized to 5 cm), so all its faces share it.</summary>
-        private static float PartVariation(Vector3 center)
+        public static float PartVariation(Vector3 center)
         {
             unchecked
             {

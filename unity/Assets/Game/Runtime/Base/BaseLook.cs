@@ -29,6 +29,9 @@ namespace Deadswitch.Game.Base
         public float bloomRadius = 0.4f;
         public float bloomThreshold = 0.92f;
 
+        /// <summary>How much this key is moonlit night (0 = day, 1 = night): scales sun and ambient by the moon level.</summary>
+        public float moon;
+
         /// <summary>Linear blend of two keys (t = 0..1); colors blend per channel.</summary>
         public static LightKey Lerp(LightKey a, LightKey b, float t)
         {
@@ -52,6 +55,7 @@ namespace Deadswitch.Game.Base
                 bloomStrength = Mathf.Lerp(a.bloomStrength, b.bloomStrength, t),
                 bloomRadius = Mathf.Lerp(a.bloomRadius, b.bloomRadius, t),
                 bloomThreshold = Mathf.Lerp(a.bloomThreshold, b.bloomThreshold, t),
+                moon = Mathf.Lerp(a.moon, b.moon, t),
             };
         }
 
@@ -82,9 +86,14 @@ namespace Deadswitch.Game.Base
         public float rangeScale = 1.6f;
         public LightKey[] times = { new LightKey { hour = 0f }, new LightKey { hour = 24f } };
 
-        // Unity-only conversion factors (three.js uses physical light units). Tune on device.
-        public float unitySunScale = 0.6f;
-        public float unityPointScale = 0.3f;
+        /// <summary>Moonlight level per night (cycled by night index), so each night has its own light.</summary>
+        public float[] moonPhases = { 1f };
+
+        // Unity-only conversion factors. three.js divides direct and hemisphere light by pi (Lambert BRDF); URP does
+        // not, so the sun is 1/pi. Points were matched by eye in the Editor (URP's range falloff is softer). The
+        // ambient also takes three.js's sky env-map diffuse (envIntensity), see BaseView.ApplyLight. Tune on device.
+        public float unitySunScale = 0.32f;
+        public float unityPointScale = 0.6f;
         public float unityAmbientScale = 1f;
 
         private static BaseLook _cached;
@@ -124,6 +133,23 @@ namespace Deadswitch.Game.Base
             LightKey a = times[i];
             LightKey b = times[Mathf.Min(i + 1, times.Length - 1)];
             return LightKey.Lerp(a, b, Mathf.Clamp01((hour - a.hour) / Mathf.Max(0.0001f, b.hour - a.hour)));
+        }
+
+        /// <summary>Night index of a tick: a night runs noon to noon, so the hours after midnight keep the evening's moon.</summary>
+        public static long Night(long tick)
+        {
+            long t = tick - 720;
+            return t >= 0 ? t / 1440 : ((t + 1) / 1440) - 1;
+        }
+
+        /// <summary>Applies the moon level of a night to a blended key (same rule as tools/basepreview).</summary>
+        public LightKey WithMoon(LightKey k, long night)
+        {
+            int n = moonPhases.Length;
+            float level = n == 0 ? 1f : moonPhases[(int)(((night % n) + n) % n)];
+            k.sunIntensity *= Mathf.Lerp(1f, level, k.moon);
+            k.ambient *= Mathf.Lerp(1f, 0.6f + (0.4f * level), k.moon);
+            return k;
         }
 
         /// <summary>

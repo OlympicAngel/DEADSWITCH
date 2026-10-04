@@ -63,7 +63,7 @@ This brief is the style source for every 3D asset, render and preview. Read it a
 - **Value contrast over color:** separate forms by light, AO and material (wet dark mud, light dry gravel, dark rust, mid concrete), not by hue.
 
 ### Lighting and time of day (owner, 2026-10-04)
-- The base follows the game clock: **overcast day is the reference look** (soft sky light, soft shadows, cool desaturated world, warm practicals barely on); dusk and night are variants where tungsten lamps, emissive windows and light cones take over.
+- The base follows the game clock: **overcast day is the reference look** (soft sky light, soft shadows, cool desaturated world, warm practicals barely on); dusk and night are variants where tungsten lamps, emissive windows and light cones take over. Nights are moonlit, never black: each night's moon level comes from `moonPhases` (cycled per night). Lamps mix warm tungsten with some sodium, cold LED and small cyan neon accents; painted parts carry faded repaint colours for life and readability.
 - Lighting keyframes by game hour live in `unity/Assets/Game/Resources/Base/BaseLook.json` (shared by Unity and the preview). Review every visual change at day, dusk and night.
 
 **How we build it (owner, 2026-10-04: procedural only, no imported assets):** procedural geometry (`src/Deadswitch.Art`) with real-world proportions and bevelled medium forms; a procedural PBR "salvage" material (world-space noise layers for macro variation, rust, chipped paint, dirt rising from the ground, soot, rain and rust run-off, wetness, edge wear and bump; gravel / soil / wet-mud ground) shared by Unity and the headless preview; soft shadows, AO, fog and warm practical lights. How-to: `docs/agents/environment-art.md`.

@@ -96,5 +96,8 @@ namespace Deadswitch.Art.Models
         public static readonly Vector3 Phosphor = new Vector3(0.62f, 0.9f, 0.55f);
         public static readonly Vector3 Red = new Vector3(1f, 0.35f, 0.28f);
         public static readonly Vector3 FireColor = new Vector3(1f, 0.52f, 0.2f);
+        public static readonly Vector3 Sodium = new Vector3(1f, 0.56f, 0.2f);
+        public static readonly Vector3 ColdWhite = new Vector3(0.82f, 0.92f, 1f);
+        public static readonly Vector3 Neon = new Vector3(0.25f, 0.9f, 0.85f);
     }
 }

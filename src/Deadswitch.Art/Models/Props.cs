@@ -85,13 +85,17 @@ namespace Deadswitch.Art.Models
         public static void Lamp(MeshBuilder b, Model m, Vector3 p, bool cone, float intensity = 1.8f, LightRole role = LightRole.Ambient)
         {
             b.Box(p + new Vector3(0, 0.08f, 0), new Vector3(0.34f, 0.12f, 0.26f), Mat.DarkSteel, 0.03f);
-            b.Box(p, new Vector3(0.26f, 0.05f, 0.18f), Mat.LampAmber, 0.01f);
+            // salvaged fittings: mostly warm tungsten, some sodium orange, a few cold LED and neon retrofits
+            float v = MeshBuilder.PartVariation(b.TransformPoint(p));
+            Mat glow = v < 0.55f ? Mat.LampAmber : v < 0.75f ? Mat.LampAmber : v < 0.9f ? Mat.LampCold : Mat.NeonCyan;
+            Vector3 color = v < 0.55f ? Model.Amber : v < 0.75f ? Model.Sodium : v < 0.9f ? Model.ColdWhite : Model.Neon;
+            b.Box(p, new Vector3(0.26f, 0.05f, 0.18f), glow, 0.01f);
             if (cone)
             {
                 b.LightCone(p - new Vector3(0, 0.04f, 0), Math.Min(3.4f, b.TransformPoint(p).Y), 1.1f);
             }
 
-            m.Lights.Add(new LightSpec(b.TransformPoint(p - new Vector3(0, 0.3f, 0)), Model.Amber, intensity, 7.5f, role));
+            m.Lights.Add(new LightSpec(b.TransformPoint(p - new Vector3(0, 0.3f, 0)), color, intensity * (0.85f + (0.3f * v)), 7.5f, role));
         }
 
         public static void Stairs(MeshBuilder b, Vector3 bottom, float rise, float yawDeg, float width = 0.8f)

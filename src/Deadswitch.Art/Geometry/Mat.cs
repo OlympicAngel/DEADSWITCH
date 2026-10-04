@@ -43,5 +43,11 @@ namespace Deadswitch.Art.Geometry
 
         /// <summary>Halcyon Dynamics' cold white visors (emissive).</summary>
         LampCold = 31,
+
+        /// <summary>Thin salvaged neon tubes and signs on the base (emissive, cool cyan accent).</summary>
+        NeonCyan = 32,
+
+        /// <summary>Dark recessed bunker portal; its phosphor glow reads only at night (emissive).</summary>
+        Portal = 33,
     }
 }
