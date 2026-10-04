@@ -15,3 +15,9 @@ The sim writes an **append-only event log** (`EventLog`, `SimEvent`). The player
 
 ## Alternatives considered
 - State-only saves: smaller, but no reports, no audit, no verification.
+
+## Amendment (2026-10-03, F-003): commands and replay
+- All player input is a `Command` (kind + three int args) executed between ticks via `Simulation.Execute`. Validation reads state only; a rejected command changes nothing (no state, RNG draws or events) and is not recorded.
+- Accepted commands go to the `CommandLog` as `(tick, command)`, meaning "applied after tick `tick` completed". `Replay.Run(seed, config, commands, toTick)` must reproduce the live state hash and event log exactly; a command that fails on replay raises `ReplayDivergenceException`.
+- Events carry `Seq` (unique, increasing), `Tick`, `Kind` and four int payloads documented per kind. `EventKind`, `CommandKind`, `RejectReason` and enum values in state are persisted: never renumber or reuse. `EventLog.SchemaVersion` is bumped when a payload meaning changes.
+- Systems live in `src/Deadswitch.Sim/Systems/` and run in the fixed order in `Simulation.Step`; the order is part of the rules.

@@ -1,0 +1,31 @@
+/* FULL GAME (F-036). Tokens only. */
+
+.prm { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-world); }
+.prm-head { align-items: center; margin-bottom: var(--s-3); }
+.prm-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); }
+.prm-close__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+
+.prm-card { padding-top: var(--s-4); padding-bottom: var(--s-4); }
+.prm-card__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: 3px; color: var(--c-text); margin-top: var(--s-2); }
+.prm-list { margin-top: var(--s-3); }
+.prm-list__item { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-phosphor); margin-top: var(--s-1); }
+.prm-card__note { margin-top: var(--s-3); font-size: var(--fs-micro); }
+.prm-actions { margin-top: var(--s-4); }
+.prm-gap { margin-left: var(--s-3); }
+
+.prm-section { margin-top: var(--s-6); margin-bottom: var(--s-2); }
+.prm-seg { flex-direction: row; }
+.prm-theme { flex-grow: 1; flex-basis: 0; min-height: 120px; margin-right: var(--s-2); align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.prm-theme:last-child { margin-right: 0; }
+.prm-theme.is-selected { border-color: var(--c-white); }
+.prm-theme.is-locked { opacity: 0.45; }
+.prm-theme__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); margin-top: var(--s-2); }
+.prm-swatch { width: 56px; height: 16px; }
+.prm-swatch--phosphor { background-color: #A8D58A; }
+.prm-swatch--cold { background-color: #8CC8D8; }
+.prm-swatch--bone { background-color: #D9D2BE; }
+.prm-swatch--verdigris { background-color: #7CC2AE; }
+.prm-swatch--ash { background-color: #B9BEC6; }
+.prm-season { margin-top: var(--s-4); }
+.prm-note { margin-top: var(--s-2); font-size: var(--fs-micro); }
+.prm-reason { margin-top: var(--s-3); min-height: 40px; }

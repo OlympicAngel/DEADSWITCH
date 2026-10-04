@@ -1,0 +1,233 @@
+/* Terminal HUD over the drone feed (owner reference, 2026-10-03). Kit classes + tokens only. */
+
+.hud { flex-grow: 1; }
+
+/* ---------- Resource bar ---------- */
+.hud-top {
+    flex-direction: row;
+    background-color: rgba(10, 13, 12, 0.88);
+    border-bottom-width: 1px;
+    border-color: var(--c-line-mid);
+    padding: var(--s-4) var(--s-4) var(--s-3) var(--s-4);
+}
+
+.hud-cell { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; padding: 0 var(--s-2); }
+.hud-cell + .hud-cell { border-left-width: 1px; border-color: var(--c-line); }
+.hud-cell__icon { width: 46px; height: 46px; margin-right: var(--s-2); --icon-color: var(--c-phosphor); }
+.hud-cell__gauge { width: 54px; height: 54px; margin-right: var(--s-2); }
+.hud-cell__body { flex-shrink: 1; }
+
+.hud-cell__value {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-md);
+    color: var(--c-text);
+}
+
+.hud-cell__cap {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-micro);
+    color: var(--c-text-dim);
+    padding-bottom: 3px;
+}
+
+.hud-cell__rate {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-micro);
+    letter-spacing: 1px;
+}
+
+/* ---------- Drone frame ---------- */
+.hud-frame {
+    position: absolute;
+    left: var(--s-6);
+    right: var(--s-6);
+    top: 136px;
+    bottom: 236px;
+}
+
+.hud-bracket { position: absolute; width: 56px; height: 56px; border-color: var(--c-phosphor-dim); }
+.hud-bracket--tl { left: 0; top: 0; border-left-width: 3px; border-top-width: 3px; }
+.hud-bracket--tr { right: 0; top: 0; border-right-width: 3px; border-top-width: 3px; }
+.hud-bracket--bl { left: 0; bottom: 0; border-left-width: 3px; border-bottom-width: 3px; }
+.hud-bracket--br { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; }
+
+.hud-frame__top { flex-direction: row; align-items: flex-start; padding: var(--s-5) var(--s-5) 0 var(--s-6); }
+
+.hud-feed { flex-shrink: 0; }
+
+.hud-feed__line {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-micro);
+    letter-spacing: 2px;
+    color: var(--c-phosphor-dim);
+}
+
+.hud-right { align-items: flex-end; }
+
+.hud-alert {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-2) var(--s-4);
+    border-width: 2px;
+    border-color: var(--c-amber);
+    background-color: rgba(48, 34, 12, 0.88);
+}
+
+.hud-alert.is-hidden { display: none; }
+.hud-alert--red { border-color: var(--c-red); background-color: rgba(52, 16, 14, 0.9); }
+.hud-alert--red .hud-alert__title, .hud-alert--red .hud-alert__time { color: var(--c-red); text-shadow: 0 0 10px var(--c-red-glow); }
+.hud-alert__pip { width: 18px; height: 18px; margin-right: var(--s-3); }
+.hud-alert__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
+.hud-alert__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); color: var(--c-amber); text-shadow: 0 0 10px var(--c-amber-glow); }
+
+.hud-next {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-2) var(--s-3);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    background-color: rgba(10, 13, 12, 0.72);
+    margin-top: var(--s-2);
+}
+
+.hud-next .ds-pip { width: 10px; height: 10px; }
+.hud-next__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
+.hud-next__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); -unity-text-align: middle-right; }
+
+.hud-guide {
+    flex-direction: row;
+    align-items: center;
+    margin: 0 var(--s-5) var(--s-2) var(--s-5);
+    padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+    border-width: 1px;
+    border-left-width: 4px;
+    border-color: var(--c-amber-dim);
+    border-left-color: var(--c-amber);
+    background-color: rgba(20, 16, 8, 0.88);
+}
+.hud-guide.is-hidden { display: none; }
+.hud-guide__pip { width: 14px; height: 14px; margin-right: var(--s-3); background-color: var(--c-amber); rotate: 45deg; }
+.hud-guide__body { flex-grow: 1; flex-shrink: 1; }
+.hud-guide__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
+.hud-guide__reason { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: 2px; }
+.hud-guide__close { width: 88px; height: 88px; align-items: center; justify-content: center; }
+.hud-guide__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); color: var(--c-text-dim); }
+
+/* A control the guide points at */
+.is-guide { border-color: var(--c-amber); border-width: 3px; }
+
+.hud-report {
+    flex-direction: row;
+    align-items: center;
+    min-height: 88px;
+    margin-top: var(--s-2);
+    padding: 0 var(--s-4);
+    border-width: 2px;
+    border-color: var(--c-phosphor-dim);
+    background-color: rgba(18, 28, 16, 0.88);
+}
+
+.hud-report.is-hidden { display: none; }
+
+/* Highest faction heat, always visible (doc 10 s1.5): level word + pip shape + color */
+.hud-heat { align-items: center; margin-top: var(--s-1); min-height: 40px; }
+.hud-heat__pip { width: 12px; height: 12px; margin-right: var(--s-2); border-width: 2px; border-color: var(--c-text-dim); }
+.hud-heat__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 18px; letter-spacing: 2px; color: var(--c-text-dim); }
+.hud-heat--watched > .hud-heat__pip { border-color: var(--c-amber); }
+.hud-heat--watched > .hud-heat__text { color: var(--c-amber); }
+.hud-heat--hunted > .hud-heat__pip { border-color: var(--c-red); background-color: var(--c-red-glow); rotate: 45deg; }
+.hud-heat--hunted > .hud-heat__text { color: var(--c-red); }
+.hud-heat--marked > .hud-heat__pip { border-color: var(--c-red); background-color: var(--c-red); rotate: 45deg; }
+.hud-heat--marked > .hud-heat__text { color: var(--c-red); }
+.hud-raidrow__cmd { margin-right: var(--s-2); }
+.hud-raidrow__cmd.is-hidden { display: none; }
+.hud-raidrow__cmd.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+
+/* Dispatch chip (F-034): an ultimatum (red) or a dilemma (amber) waiting; tap opens DISPATCH */
+.hud-dispatch {
+    flex-direction: row;
+    align-items: center;
+    min-height: 88px;
+    margin-top: var(--s-2);
+    padding: 0 var(--s-4);
+    border-width: 2px;
+    border-color: var(--c-amber);
+    background-color: rgba(40, 30, 12, 0.88);
+}
+.hud-dispatch.is-hidden { display: none; }
+.hud-dispatch--red { border-color: var(--c-red); background-color: rgba(44, 16, 14, 0.9); }
+.hud-dispatch__pip { margin-right: var(--s-3); }
+.hud-dispatch__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); }
+.hud-dispatch--red .hud-dispatch__title { color: var(--c-red); }
+.hud-dispatch__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); }
+.hud-report__pip { width: 12px; height: 12px; margin-right: var(--s-3); background-color: var(--c-phosphor); }
+.hud-report__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-phosphor); }
+
+.hud-override { flex-direction: row; align-items: center; margin-top: var(--s-3); }
+.hud-override__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text-dim); margin-right: var(--s-1); }
+.hud-opip { width: 18px; height: 18px; margin-left: var(--s-3); border-width: var(--bw); border-color: var(--c-amber-dim); rotate: 45deg; }
+.hud-opip.is-on { background-color: var(--c-amber); border-color: var(--c-amber); }
+.hud-opip.is-cooldown { border-color: var(--c-text-faint); background-color: rgba(232, 180, 92, 0.25); }
+
+.hud-raidrow {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin: var(--s-3) var(--s-5) 0 0;
+}
+
+.hud-raidrow.is-hidden { display: none; }
+.hud-raidrow__text { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-amber); margin-right: var(--s-3); }
+.hud-raidrow__btn { min-height: 88px; padding: 0 var(--s-5); }
+
+.hud-screen { flex-grow: 1; }
+
+/* ---------- Advisor ---------- */
+.hud-advisor {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: var(--s-3) var(--s-6);
+    background-color: rgba(8, 11, 10, 0.78);
+    border-top-width: 1px;
+    border-color: var(--c-line);
+    min-height: 72px;
+}
+
+.hud-advisor__caret { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-phosphor); margin-right: var(--s-3); }
+.hud-advisor__text { flex-grow: 1; flex-shrink: 1; white-space: normal; font-size: var(--fs-xs); color: var(--c-phosphor); text-shadow: 0 0 8px var(--c-phosphor-glow); }
+
+/* ---------- Command bar (boxed tabs) ---------- */
+.hud-tabs {
+    flex-direction: row;
+    background-color: rgba(10, 13, 12, 0.94);
+    padding: var(--s-3) var(--s-3) var(--s-5) var(--s-3);
+}
+
+.hud-tab {
+    flex-grow: 1;
+    flex-basis: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 128px;
+    margin: 0 var(--s-1);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    background-color: rgba(28, 34, 31, 0.6);
+    transition-property: background-color, border-color;
+    transition-duration: 0.2s;
+}
+
+.hud-tab__icon { width: 48px; height: 48px; margin-bottom: var(--s-2); --icon-color: var(--c-text-dim); }
+.hud-tab__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 4px; color: var(--c-text-dim); }
+.hud-tab.is-active { border-color: var(--c-phosphor); border-top-width: 4px; background-color: rgba(168, 213, 138, 0.1); }
+.hud-tab.is-active > .hud-tab__label { color: var(--c-phosphor); }
+.hud-tab.is-active > .hud-tab__icon { --icon-color: var(--c-phosphor); }
+.hud-tab__dot { position: absolute; top: var(--s-3); right: var(--s-4); width: 14px; height: 14px; border-radius: 7px; background-color: var(--c-amber); }
+.hud-tab__dot.is-hidden { display: none; }
+
+/* Locked destination (systems offline in this run) */
+.screen-locked { justify-content: center; padding: 0 var(--s-8); }
+.screen-locked__panel { padding: var(--s-8) var(--s-6); background-color: var(--c-panel-solid); }
+.screen-locked__state { margin-top: var(--s-2); margin-bottom: var(--s-5); letter-spacing: 6px; }
+.screen-locked__line { margin-bottom: var(--s-6); }
+.screen-locked__req { align-self: flex-start; min-height: 56px; }

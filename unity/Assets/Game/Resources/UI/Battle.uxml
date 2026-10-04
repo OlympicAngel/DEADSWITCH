@@ -1,0 +1,41 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Battle.uss" />
+  <!-- LIVE BATTLE (F-037, SPEC-020): command the fight at the wall. The 3D fight shows through the middle.
+       Every ability states its cost and effect; each is spent once. Sample values are for the preview. -->
+  <ui:VisualElement name="battle" class="bat">
+    <ui:VisualElement class="ds-panel ds-panel--amber bat-top">
+      <ui:VisualElement class="row">
+        <ui:VisualElement name="bat-pip" class="ds-pip ds-pip--amber ds-pip--diamond bat-pip" />
+        <ui:Label name="bat-title" text="CONTACT // SIEGE // NORTH RIDGE" class="ds-label t-amber grow" />
+        <ui:Label name="bat-time" text="0:42" class="ds-value t-amber bat-time" />
+      </ui:VisualElement>
+      <ui:VisualElement class="row bat-forces">
+        <ui:VisualElement class="bat-side"><ui:Label text="OUR DEFENSE" class="ds-label" /><ui:Label name="bat-def" text="48" class="bat-num t-phosphor" /></ui:VisualElement>
+        <ui:VisualElement class="grow bat-bar">
+          <ui:VisualElement name="bat-bar-def" class="bat-bar__def" />
+          <ui:VisualElement name="bat-bar-att" class="bat-bar__att" />
+        </ui:VisualElement>
+        <ui:VisualElement class="bat-side bat-side--right"><ui:Label name="bat-att-label" text="THEIR STRENGTH (AI EST)" class="ds-label" /><ui:Label name="bat-att" text="~61" class="bat-num t-red" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:Label name="bat-read" text="AI: We are outgunned. Spend what you have." class="ds-body t-dim bat-read" />
+    </ui:VisualElement>
+
+    <ui:VisualElement class="grow" />
+
+    <ui:VisualElement class="ds-panel bat-bottom">
+      <ui:VisualElement class="row bat-abilities">
+        <ui:VisualElement name="ab-0" class="bat-ab"><ui:Label text="FOCUS FIRE" class="bat-ab__name" /><ui:Label name="ab-0-fx" text="DEF +25%" class="bat-ab__fx" /><ui:Label name="ab-0-cost" text="20 C" class="bat-ab__cost" /></ui:VisualElement>
+        <ui:VisualElement name="ab-1" class="bat-ab"><ui:Label text="MORTAR BARRAGE" class="bat-ab__name" /><ui:Label name="ab-1-fx" text="THEM -20%" class="bat-ab__fx" /><ui:Label name="ab-1-cost" text="120 E" class="bat-ab__cost" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="row bat-abilities">
+        <ui:VisualElement name="ab-2" class="bat-ab bat-ab--override"><ui:Label text="MANUAL TAKEOVER" class="bat-ab__name" /><ui:Label name="ab-2-fx" text="DEF +40%" class="bat-ab__fx" /><ui:Label name="ab-2-cost" text="OVERRIDE 2/3" class="bat-ab__cost" /></ui:VisualElement>
+        <ui:VisualElement name="ab-3" class="bat-ab bat-ab--override"><ui:Label text="MACHINE SEIZURE" class="bat-ab__name" /><ui:Label name="ab-3-fx" text="THEM -35% // CORRUPTS ME" class="bat-ab__fx" /><ui:Label name="ab-3-cost" text="OVERRIDE 2/3" class="bat-ab__cost" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="row bat-foot">
+        <ui:VisualElement name="bat-slow" class="bat-toggle"><ui:Label name="bat-slow-label" text="SLOW-MO OFF" class="bat-toggle__label" /></ui:VisualElement>
+        <ui:VisualElement name="bat-posture" class="ds-btn ds-btn--ghost grow bat-gap"><ui:Label text="POSTURE AND GARRISON" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:Label name="bat-reason" text="" class="ds-body t-amber bat-reason" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

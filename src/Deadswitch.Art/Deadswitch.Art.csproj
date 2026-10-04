@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Procedural, engine-agnostic art (SPEC-003): meshes, materials, scene composition for the 3D base.
+       Floats are fine here (presentation only, never game rules). No UnityEngine: Unity converts the
+       data to Meshes; tools/basepreview renders the same data with three.js for headless review. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Deadswitch.Sim\Deadswitch.Sim.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Deadswitch.Art</AssemblyName>
+  </PropertyGroup>
+</Project>

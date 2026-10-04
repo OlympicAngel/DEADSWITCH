@@ -39,7 +39,7 @@ Three methods:
 - **Chapter-based arcs** — each tier or era has a short story with a villain, a twist, and a payoff.
 - **Long mystery** — the hidden truth, delivered in fragments over the whole game.
 
-### Draft chapter arcs (for discussion)
+### Chapter arcs (shipped, SPEC-024; text in `src/Deadswitch.Host/Narrative/Story.cs`)
 
 | Tier | Chapter | Villain / pressure | Twist (draft) |
 |------|---------|--------------------|---------------|
@@ -53,7 +53,7 @@ Three methods:
 - **Remnant Military** — still follow orders from a chain of command that no longer exists. Some orders came from the war AI.
 - **Scavenger Clans** — survivors who learned to read the ruins. They distrust all machines.
 - **AI Cultists** — believe the war AI is divine and your fragment is its heart.
-- **Corporate Holdouts** — built the systems that failed, and want the data back.
+- **Corporate Holdouts (Halcyon Dynamics)** — built the systems that failed, and want the data back. They raid from Tier 3; a ghost CEO known only by voice.
 
 ## 6. Tone
 
@@ -61,8 +61,8 @@ Gritty, tense, and cold, with dark humor from the AI. The world is hostile but n
 
 ## 7. Art direction
 
-- **Stylized 3D realism** — real-time 3D with physically based materials (rust, concrete, mud, tarp, dust) and slightly chunky, simplified, semi-cartoonish forms and proportions. Grounded and tactile, never photoreal or cartoon-flat. See [ADR-0007](../adr/0007-art-direction-stylized-3d.md).
-- **Drone-feed camera** — the world is seen through the AI's recon sensors: a high three-quarter view, a light miniature (tilt-shift) feel, and very subtle sensor effects.
+- **Heroic realism** — stylized realistic real-time 3D: believable proportions, layered PBR wear (rust, chipped paint, soot, mud, rain streaks), post-war industrial salvage architecture, a lived-in settlement. Never cartoon or toy-like. Full brief: [doc 11, Master art direction](./11_visual_theme_and_motion.md#master-art-direction-owner-brief-locked-2026-10-03); [ADR-0007](../adr/0007-art-direction-stylized-3d.md).
+- **Drone-feed camera** — the world is seen through the AI's recon sensors: a high three-quarter view over a real place (atmospheric haze for scale, no miniature blur), and very subtle sensor effects.
 - **Military terminal / CRT HUD** — green and amber glow, scanlines, glitches. This is the AI's interface, and the only flat 2D layer.
 - **Battle reports** — high-contrast stills rendered from the same 3D world, framed as dark graphic-novel panels.
 

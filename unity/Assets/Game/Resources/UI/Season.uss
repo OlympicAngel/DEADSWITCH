@@ -1,0 +1,29 @@
+/* SEASON (F-048). Tokens only. */
+
+.ssn { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-world); }
+.ssn-head { align-items: center; margin-bottom: var(--s-3); }
+.ssn-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); }
+.ssn-close__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+
+.ssn-card { padding-top: var(--s-3); padding-bottom: var(--s-3); margin-bottom: var(--s-3); }
+.ssn-rank { margin-top: var(--s-2); }
+.ssn-rank__of { margin-left: var(--s-3); }
+.ssn-meter { height: 10px; margin-top: var(--s-2); }
+.ssn-xp { margin-top: var(--s-2); }
+.ssn-note { font-size: var(--fs-micro); margin-top: var(--s-1); white-space: normal; }
+.ssn-pass { margin-top: var(--s-3); padding-top: var(--s-3); border-top-width: 1px; border-color: var(--c-line); align-items: center; }
+.ssn-buy { min-width: 240px; margin-left: var(--s-3); }
+
+.ssn-r { align-items: center; padding: var(--s-2) var(--s-3); margin-bottom: var(--s-2); border-width: 1px; border-color: var(--c-line); background-color: var(--c-panel-sunken); }
+.ssn-r__rank { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text-faint); width: 72px; -unity-text-align: middle-center; }
+.ssn-r__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
+.ssn-r__state { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-faint); margin-top: var(--s-1); }
+.ssn-r__codex { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text); margin-top: var(--s-2); white-space: normal; }
+.ssn-r__btn { min-width: 160px; margin-left: var(--s-3); }
+.ssn-r.is-premium { border-left-width: 4px; border-left-color: var(--c-line-mid); }
+.ssn-r.is-unlocked { border-color: var(--c-phosphor-dim); }
+.ssn-r.is-unlocked > .ssn-r__rank { color: var(--c-phosphor); }
+.ssn-r.is-unlocked .ssn-r__name { color: var(--c-text); }
+.ssn-r.is-unlocked .ssn-r__state { color: var(--c-phosphor); }
+.ssn-r.is-equipped { background-color: rgba(168, 213, 138, 0.10); }
+.ssn-reason { margin-top: var(--s-2); min-height: 40px; }

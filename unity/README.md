@@ -13,6 +13,11 @@ See [`../docs/design/11_visual_theme_and_motion.md`](../docs/design/11_visual_th
 - `git lfs install` is already configured on the setup workstation; `.gitattributes` is preconfigured for binary art/audio.
 - Commit generated `.meta` files. Never ignore them.
 
+## Try it on a phone (Android)
+1. Open `unity/` in Unity Hub (6000.3.25f1, Android Build Support installed) and press Play once in the Editor to check the Console.
+2. Plug the phone in over USB with Developer options > USB debugging on.
+3. Menu **DEADSWITCH > Build And Run on Android Phone (dev)** (or **Build Android APK (dev)** and copy `unity/Builds/Android/DEADSWITCH-dev.apk` to the phone). The first IL2CPP build takes several minutes.
+
 ## Layout to use inside Assets/
 ```
 Assets/
@@ -29,3 +34,10 @@ Assets/
 - UI reads sim state and sends **commands** into the sim. It never mutates `GameState` directly.
 - No game rule in a MonoBehaviour.
 - Effect-intensity and colorblind-safe (shape plus color) settings from day one.
+
+## Runtime architecture (F-007)
+- **No scene wiring.** `Assets/Game/Runtime/Core/Bootstrap.cs` runs after the first scene loads and builds the persistent `DEADSWITCH` root (host, then presentation systems in explicit order).
+- **`GameHost`** owns the `Simulation`: loads `DeadswitchBalance.toml` from the sim package's `Resources` (imported by `Editor/TomlImporter.cs`), restores the save from `Application.persistentDataPath` (crash-safe `.tmp`/`.bak`), catches up offline time (`OfflineClock`, capped by `[host] max_catch_up_hours`, backwards clock = time desync), ticks in real time (1 tick = 1 real minute; `GameSettings.DevTimeScale` speeds this up in development builds), autosaves, and sends `SetPresence` on pause/resume. All player input goes through `GameHost.Execute(Command)`.
+- **Assemblies:** `Deadswitch.Game` (runtime, `Assets/Game/Runtime`), `Deadswitch.Game.Editor` (editor-only).
+- **Headless compile check:** `dotnet build tools/UnityCompileCheck` compiles `Assets/Game/**` (except `Editor/`) against Unity reference assemblies (2021.3 API set). Runs in `tools/check.sh` / `check.ps1`.
+- After adding files, run `python3 tools/gen_meta.py` so `.meta` GUIDs are committed once.

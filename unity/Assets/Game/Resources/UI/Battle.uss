@@ -1,0 +1,46 @@
+/* LIVE BATTLE (F-037). Tokens only. The middle stays clear so the fight shows through. */
+
+.bat { flex-grow: 1; padding: var(--s-3) var(--s-6) var(--s-2) var(--s-6); }
+.bat-top { padding-top: var(--s-3); padding-bottom: var(--s-3); background-color: var(--c-panel); }
+.bat-pip { margin-right: var(--s-3); }
+.bat-time { font-size: var(--fs-lg); }
+.bat-forces { align-items: center; margin-top: var(--s-3); }
+.bat-side { width: 200px; }
+.bat-side--right { align-items: flex-end; }
+.bat-num { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); margin-top: var(--s-1); }
+.bat-bar { flex-direction: row; height: 18px; margin: 0 var(--s-3); background-color: var(--c-panel-sunken); border-width: 1px; border-color: var(--c-line-mid); }
+.bat-bar__def { height: 100%; width: 45%; background-color: var(--c-phosphor); }
+.bat-bar__att { height: 100%; flex-grow: 1; background-color: var(--c-red-glow); }
+.bat-read { margin-top: var(--s-2); font-size: var(--fs-micro); }
+
+.bat-bottom { padding-top: var(--s-3); padding-bottom: var(--s-3); background-color: var(--c-panel); }
+.bat-abilities { margin-bottom: var(--s-2); }
+.bat-ab {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-height: 132px;
+    margin-right: var(--s-2);
+    padding: var(--s-2) var(--s-3);
+    justify-content: center;
+    border-width: var(--bw);
+    border-color: var(--c-phosphor);
+    background-color: rgba(168, 213, 138, 0.08);
+    transition-property: scale, opacity;
+    transition-duration: 0.12s;
+}
+.bat-ab:last-child { margin-right: 0; }
+.bat-ab:active { scale: 0.97 0.97; }
+.bat-ab--override { border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.08); }
+.bat-ab.is-used { opacity: 0.32; }
+.bat-ab.is-disabled { opacity: 0.45; }
+.bat-ab__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text); }
+.bat-ab__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-phosphor); margin-top: var(--s-1); }
+.bat-ab--override .bat-ab__fx { color: var(--c-amber); }
+.bat-ab__cost { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.bat-foot { margin-top: var(--s-1); align-items: center; }
+.bat-toggle { width: 240px; min-height: 88px; align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); }
+.bat-toggle.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+.bat-toggle__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
+.bat-toggle.is-on > .bat-toggle__label { color: var(--c-phosphor); }
+.bat-gap { margin-left: var(--s-3); }
+.bat-reason { margin-top: var(--s-1); min-height: 32px; font-size: var(--fs-micro); }

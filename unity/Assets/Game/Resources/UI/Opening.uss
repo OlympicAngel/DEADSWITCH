@@ -1,0 +1,25 @@
+/* Prologue overlay (SPEC-009). Tokens only. */
+
+.pro {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    justify-content: center;
+    padding: var(--s-12) var(--s-10);
+    background-color: rgba(4, 6, 5, 0.86);
+}
+.pro__head { position: absolute; top: 140px; left: var(--s-10); color: var(--c-text-faint); }
+.pro__text {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-lg);
+    color: var(--c-text);
+    white-space: normal;
+    min-height: 300px;
+    -unity-text-align: middle-left;
+}
+.pro__pips { margin-top: var(--s-8); }
+.pro__pip { width: 40px; height: 6px; margin-right: var(--s-2); background-color: rgba(216, 209, 188, 0.18); }
+.pro__pip.is-on { background-color: var(--c-text); }
+.pro__skip { position: absolute; right: var(--s-10); bottom: 160px; min-width: 220px; }

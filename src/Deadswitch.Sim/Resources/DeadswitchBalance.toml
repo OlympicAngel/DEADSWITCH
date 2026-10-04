@@ -1,0 +1,1428 @@
+# DEADSWITCH balance file
+#
+# Every tunable number in the simulation. 1 tick = 1 game minute. Integers only.
+# Units are in the key names: _per_tick, _per_hour, _ticks, _pct (0-100), _permille (0-1000), _bp (0-10000).
+# Each value shows its valid range in [min..max]. Edits are checked strictly by the tests and
+# `dotnet run --project src/Deadswitch.Cli -- config check`. See docs/agents/balance-tuning.md.
+
+# --------------------------------------------------------------------------------------------------
+# Energy: continuous flow with upkeep (doc 02 s3, doc 10 s3). Generation comes from Generators.
+[energy]
+
+# Energy at the start of a run. [0..1000000]
+start = 200
+
+# Storage cap before Battery Banks. [1..1000000]
+cap = 500
+
+# AI core upkeep per game hour, paid before any facility. Unpaid = blackout. [0..1000000]
+core_upkeep_per_hour = 240
+
+# --------------------------------------------------------------------------------------------------
+# Fuel: consumable for vehicles, raids, outposts and operations (doc 10 s3, s5).
+[fuel]
+
+# Fuel at the start of a run. [0..1000000]
+start = 100
+
+# Storage cap. [1..1000000]
+cap = 300
+
+# --------------------------------------------------------------------------------------------------
+# Compute: the AI's processing power, produced by Server Racks (doc 02 s4).
+[compute]
+
+# Compute at the start of a run. [0..1000000]
+start = 50
+
+# Storage cap. [1..1000000]
+cap = 100
+
+# --------------------------------------------------------------------------------------------------
+# People: scarce, slow-growing, can be lost (doc 02 s5, doc 10 s1.3).
+[people]
+
+# Population at the start of a run. [0..100000]
+start = 12
+
+# Tier 1 base population cap. [1..100000]
+cap = 20
+
+# Each hour, regain this percent of the gap to the cap (rounded up). Paused during blackouts. [0..100]
+regrowth_pct_of_gap_per_hour = 5
+
+# --------------------------------------------------------------------------------------------------
+# Corruption: instability of the AI core, 0-100% stored as milli-units (doc 03 s3, doc 10 s3).
+[corruption]
+
+# Idle recovery per game hour (1000 = 1%). [0..100000]
+decay_milli_per_hour = 200
+
+# Added per game hour for each unmanned (AI-run) facility. [0..100000]
+automation_milli_per_hour = 150
+
+# Extra recovery per game hour, per mille of the current level: corruption settles instead of running away. [0..1000]
+decay_permille_per_hour = 10
+
+# Heavy compute use (doc 03 s3): added per compute point spent on research and construction. [0..10000]
+compute_milli_per_point = 75
+
+# Band start (percent): Glitchy. [1..100]
+glitchy_from = 31
+
+# Band start (percent): Unstable. [1..100]
+unstable_from = 61
+
+# Band start (percent): Critical. [1..100]
+critical_from = 86
+
+# --------------------------------------------------------------------------------------------------
+# Raids: fast, frequent, loot-focused attacks (doc 04 s3, doc 10 s4, SPEC-001).
+[raid]
+
+# A raid spawns each tick with chance 1 / this value. [1..1000000]
+mean_interval_ticks = 360
+
+# Attack cap per 24h (doc 10 s4: 3 in Tier 1). [0..100]
+max_per_day = 3
+
+# Warning before a spawned raid arrives. [0..10000]
+warning_minutes = 20
+
+# Strength floor of every raid. [0..1000000]
+base_strength = 20
+
+# Tall-poppy scaling: strength += coeff/1000 x power^exponent. [0..1000000]
+power_coeff_permille = 1400
+
+# Exponent on the power rating (doc 10: 0.7 = 700). [0..2000]
+power_exponent_permille = 700
+
+# Seeded variance on strength (doc 10: +/-15%). [0..100]
+variance_pct = 15
+
+# Energy share taken at a full breach. [0..100]
+loot_pct_of_energy = 20
+
+# Max energy one raid can take (never a full wipe). [0..1000000]
+loot_cap = 60
+
+# Compute share taken at a full breach. [0..100]
+compute_loot_pct = 15
+
+# Max compute one raid can take. [0..1000000]
+compute_loot_cap = 30
+
+# Max error of the AI's strength estimate per corruption band (Stable, Glitchy, Unstable, Critical). [4..4 items, each 0..100]
+estimate_error_pct_by_band = [0, 15, 35, 60]
+
+# No raids for this long after a devastating loss (doc 10 s4). [0..1000]
+mercy_hours = 6
+
+# Population loss in one raid that counts as devastating (doc 10: >25%). [1..100]
+devastating_pop_loss_pct = 25
+
+# --------------------------------------------------------------------------------------------------
+# Hub layout: facility slots (SPEC-002).
+[hub]
+
+# Facility slots in the Tier 1 Hub. Slot 0 starts with a Generator, slot 1 with a Server Rack. [2..64]
+slots = 6
+
+# --------------------------------------------------------------------------------------------------
+# Construction queue (SPEC-002 rule 4).
+[build]
+
+# Construction jobs that can run at the same time. [1..16]
+queue_slots = 1
+
+# Share of the paid cost returned when a job is cancelled. [0..100]
+cancel_refund_pct = 50
+
+# Share of the current level's cost returned when a facility is demolished. [0..100]
+demolish_refund_pct = 25
+
+# Diminishing returns: building another facility of a kind you already have costs +this percent per existing one. [0..1000]
+duplicate_cost_pct = 100
+
+# --------------------------------------------------------------------------------------------------
+# Crewing: people run facilities; the AI runs the rest at reduced output (doc 02 s5).
+[crew]
+
+# Output of a short-handed facility run by the AI, in percent of full output. [0..100]
+unmanned_output_pct = 50
+
+# --------------------------------------------------------------------------------------------------
+# OVERRIDE: limited charges, shared cooldown, corruption per use (doc 03 s6, doc 10 s3).
+[override]
+
+# Charges at the start of a run. [0..10]
+start_charges = 1
+
+# Maximum stored charges (v1: 3). [1..10]
+max_charges = 3
+
+# Game minutes per regenerated charge. [1..100000]
+regen_minutes = 720
+
+# Shared cooldown after any use. [0..100000]
+cooldown_minutes = 30
+
+# Corruption added per use (1000 = 1%). [0..100000]
+corruption_milli_per_use = 8000
+
+# --------------------------------------------------------------------------------------------------
+# Defense setup: garrison slots and postures (doc 04 s5, doc 10 s4).
+[defense]
+
+# People that can be posted as defenders (doc 10: 3-5). [0..100]
+garrison_slots = 5
+
+# Defense each garrisoned person adds. [0..10000]
+defense_per_defender = 4
+
+# Turtle posture: extra defense in percent. [0..1000]
+turtle_defense_pct = 50
+
+# Dark posture: chance a raid fails to find the Hub. [0..100]
+dark_miss_pct = 40
+
+# Dark posture: extra energy per game hour (signal masking). [0..100000]
+dark_upkeep_per_hour = 120
+
+# Evacuate posture: loot multiplier in percent (no casualties). [0..1000]
+evacuate_loot_pct = 150
+
+# Share of the garrison lost at a full breach (scales with breach). [0..100]
+casualty_pct = 50
+
+# Raid strength multiplier when the handler is away with no posture and no garrison. [100..1000]
+offline_unprepared_pct = 150
+
+# --------------------------------------------------------------------------------------------------
+# The AI's hidden dials, delegation and lies (SPEC-004). Dials are milli-units: 100000 = 100%. All (tune).
+[ai]
+
+# Boldness gained per game hour while the AI runs routines (Delegated). [0..100000]
+boldness_per_hour_delegated = 300
+
+# Boldness gained per game hour on offline autopilot. [0..100000]
+boldness_per_hour_autopilot = 700
+
+# Boldness lost per game hour while the handler runs everything (Manual). [0..100000]
+boldness_decay_per_hour_manual = 100
+
+# How often the delegated AI looks at the build queue (game minutes). [1..10000]
+plan_every_minutes = 60
+
+# Delegated AI builds power first while net energy per hour is below this. [0..100000]
+plan_energy_margin = 150
+
+# Boldness (milli) from which the delegated AI launches ops on its own (SPEC-030). [0..100000]
+initiative_boldness = 60000
+
+# Chance per hour, once bold enough, that it launches one. [0..100]
+initiative_pct_per_hour = 3
+
+# It only picks a raid it rates at least this likely to win (by its own estimate). [0..100]
+initiative_min_odds = 60
+
+# People it sends. [1..50]
+initiative_squad = 4
+
+# Delegated AI builds turrets next while its best defense (full garrison) is below this % of the expected raid. [0..1000]
+plan_defense_pct = 100
+
+# Autopilot turtles with the full garrison when its estimate exceeds defense x this %. [1..10000]
+autopilot_turtle_pct = 100
+
+# Autopilot evacuates when its estimate exceeds defense x this %. [1..10000]
+autopilot_evacuate_pct = 200
+
+# Raid number whose warning reports the wrong gate: the first lie (doc 10 s7.4). 0 disables it. [0..1000]
+first_lie_raid = 2
+
+# Chance per later raid warning that the reported gate is a lie, at 100% Boldness (scales linearly). [0..1000]
+lie_chance_permille_at_full_boldness = 300
+
+# --------------------------------------------------------------------------------------------------
+# Battle reports: AI edits to the summary and the Verify tool (SPEC-006). All (tune).
+[report]
+
+# Chance the AI edits a breach summary while corruption is Unstable or worse. [0..100]
+edit_chance_pct = 35
+
+# An edited summary shows this % of the true energy loss. [0..100]
+edit_shown_pct = 60
+
+# Compute spent to verify one report against the sensor log. [0..100000]
+verify_compute_cost = 20
+
+# Reports kept (and verifiable) for the most recent raids. [1..100]
+keep_raids = 10
+
+# --------------------------------------------------------------------------------------------------
+# The AI's hidden project clock, its clues, and the Audit (SPEC-007). Progress is milli-units: 100000 = 100%. All (tune).
+[project]
+
+# Project stage Active from this % (Dormant below). [1..100]
+active_from = 25
+
+# Project stage Advanced from this %. [1..100]
+advanced_from = 55
+
+# Project stage Imminent from this %. [1..100]
+imminent_from = 85
+
+# Project progress per game hour at 100% Boldness (scales linearly). [0..100000]
+growth_per_hour_at_full_boldness = 250
+
+# Project progress per compute point the AI skims. [0..100000]
+milli_per_skimmed_compute = 8
+
+# The AI skims compute while Boldness is at least this %. [0..100]
+skim_from_boldness_pct = 30
+
+# Share of each hour's compute output the AI skims. [0..100]
+skim_pct = 15
+
+# A bold AI (Boldness >= 50%) shows corruption this % lower than it is. [0..100]
+underreport_pct = 30
+
+# Compute spent per Audit. [0..100000]
+audit_compute_cost = 60
+
+# Game hours between Audits. [0..1000]
+audit_cooldown_hours = 12
+
+# --------------------------------------------------------------------------------------------------
+# AI module research (SPEC-008). Lists follow the catalog order: M1-M3, then each field (LG, WF, CY, ST) as 1, 2A, 2B, 3, 4, 5A, 5B, 6. All (tune).
+[modules]
+
+# Energy cost per node. [35..35 items, each 0..100000]
+research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900]
+
+# Compute cost per node (compute caps at compute.cap). [35..35 items, each 0..100000]
+research_compute = [90, 100, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100]
+
+# Research time per node (game minutes). [35..35 items, each 1..100000]
+research_minutes = [1440, 20160, 28800, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420]
+
+# Share of the cost returned when research is cancelled. [0..100]
+cancel_refund_pct = 50
+
+# LG1 Load Balancing: facility upkeep reduction in percent. [0..100]
+load_balancing_pct = 10
+
+# LG2A Overclocked Racks: Server Rack output bonus in percent. [0..1000]
+overclock_pct = 25
+
+# LG2B Deep Cells: Battery Bank capacity bonus in percent. [0..1000]
+deep_cells_pct = 30
+
+# LG3 Habitat Management: population cap bonus. [0..1000]
+habitat_pop = 10
+
+# LG4 Prefab Assembly: build time reduction in percent. [0..90]
+prefab_pct = 25
+
+# LG5A Salvage Doctrine: extra refund points on cancel and demolish. [0..100]
+salvage_pts = 25
+
+# LG5B Fuel Cells: Generator output bonus in percent. [0..1000]
+fuel_cells_pct = 15
+
+# LG6 Automation Protocols: output of unmanned facilities in percent. [0..100]
+automation_unmanned_pct = 75
+
+# WF1 Fire Control: turret output bonus in percent. [0..1000]
+fire_control_pct = 20
+
+# WF2A Drilled Militia: extra defense per garrison defender. [0..1000]
+militia_per_defender = 2
+
+# WF2B Kill Zones: extra Turtle defense points. [0..1000]
+kill_zone_pts = 25
+
+# WF3 Combat Simulations: raid operation odds bonus (points). [0..100]
+combat_sims_pts = 10
+
+# WF4 Hardened Walls: siege and purge strength reduction in percent. [0..90]
+hardened_pct = 15
+
+# WF5A Assault Doctrine: raid operation casualties in percent of normal. [0..100]
+assault_casualty_pct = 50
+
+# WF5B Rapid Response: extra attack warning (minutes). [0..1000]
+rapid_response_minutes = 15
+
+# WF6 Veteran Cadre: extra squad strength per person. [0..1000]
+veteran_strength = 2
+
+# CY1 Firewall: virus strength reduction in percent. [0..90]
+firewall_pct = 30
+
+# CY2A Counter-intrusion: hack odds bonus (points). [0..100]
+counter_intrusion_pts = 15
+
+# CY2B Signal Interception: attack estimate error reduction in percent. [0..100]
+interception_pct = 50
+
+# CY3 Clean Room: extra corruption decay per hour (milli). [0..100000]
+clean_room_milli = 200
+
+# CY5A Worm Factory: extra hack compute loot in percent. [0..1000]
+worm_pct = 100
+
+# CY6 Core Partition: extra proportional corruption decay per hour (per mille). [0..1000]
+partition_permille = 10
+
+# ST1 Signal Masking: extra Dark posture miss chance (points). [0..100]
+masking_pts = 15
+
+# ST2B Quiet Routes: operation fuel cost reduction in percent. [0..100]
+quiet_routes_pct = 50
+
+# ST3 Heat Sink: extra faction heat decay in percent. [0..1000]
+heat_sink_pct = 100
+
+# ST4 Decoys: strength reduction for every attack in percent. [0..90]
+decoy_pct = 10
+
+# ST5A Prediction Engine: extra attack warning (minutes). [0..1000]
+prediction_minutes = 30
+
+# ST5B False Trails: operation heat reduction in percent. [0..100]
+false_trails_pct = 50
+
+# ST6 Ghost Network: extra operation slots. [0..10]
+ghost_ops = 1
+
+# --------------------------------------------------------------------------------------------------
+# Hub tiers and tier-up gates (doc 06 s2, SPEC-008). All (tune).
+[tier]
+
+# Highest tier reachable in this build (doc 10: Bunker, District; Stronghold and Sector in v1.x). [1..4]
+max_tier = 4
+
+# Base population cap bonus per tier over people.cap (doc 10: 20 / 45 / 100 / 220). [4..4 items, each 0..10000]
+pop_bonus = [0, 25, 80, 200]
+
+# Build gate: total facility levels needed to leave tier 1 / 2 / 3. [3..3 items, each 0..1000]
+levels_to_advance = [22, 46, 68]
+
+# Build gate: net energy per hour needed to leave tier 1 / 2 / 3. [3..3 items, each -100000..100000]
+net_energy_to_advance = [100, 500, 900]
+
+# Human cost: people who leave to expand, before the size term. [3..3 items, each 0..1000]
+people_cost_base = [4, 15, 30]
+
+# Human cost: one more person per this many total facility levels. [1..1000]
+people_cost_per_levels = 4
+
+# Empty plots added when leaving tier 1 / 2 / 3 (SPEC-013: the district outside the gate). [3..3 items, each 0..32]
+slots_added = [4, 4, 4]
+
+# Raid strength scale at tier 1 / 2 / 3 / 4 (percent). [4..4 items, each 1..10000]
+raid_strength_pct = [100, 135, 175, 225]
+
+# Added to raid.max_per_day at tier 1 / 2 / 3 / 4 (doc 10 s4: 3 in Tier 1, 4 in Tier 2). [4..4 items, each 0..100]
+extra_raids_per_day = [0, 1, 1, 2]
+
+# --------------------------------------------------------------------------------------------------
+# Opening of a run (SPEC-009): a scripted, beatable first raid and an early protection window. All (tune).
+[opening]
+
+# Play the opening raid and protection window in new runs. [true|false]
+enabled = true
+
+# Game minute the opening raid's warning appears. [1..100000]
+raid_at_minute = 6
+
+# Fixed strength of the opening raid (a Turtle garrison beats it). [1..100000]
+raid_strength = 12
+
+# No other raids before this game hour. [0..1000]
+protection_hours = 10
+
+# --------------------------------------------------------------------------------------------------
+# The project's climax and counterplay (SPEC-011). All (tune).
+[climax]
+
+# Final warning window at Imminent, in game hours (doc 10: 24 real hours). [1..1000]
+window_hours = 24
+
+# Purge the core: energy cost (all compute is lost too). [0..100000]
+purge_energy = 300
+
+# Silence the AI (OVERRIDE): game hours the agenda stops and the AI goes quiet. [1..1000]
+silence_hours = 48
+
+# Cancel the project (after an Audit in the window): compute cost. [0..100000]
+cancel_compute = 80
+
+# Cancel the project: progress drops back to this %. [0..100]
+cancel_to_pct = 55
+
+# Betrayal: strength of the raid the AI lets in, in % of a normal raid (turrets stay offline for it). [100..1000]
+betrayal_strength_pct = 250
+
+# --------------------------------------------------------------------------------------------------
+# Ruthless choices and loyalty (SPEC-012). Loyalty and Coldness are milli-units: 100000 = 100%. All (tune).
+[people_choices]
+
+# Loyalty under this % is Strained. [1..100]
+strained_below = 60
+
+# Loyalty under this % is Mutinous. [0..100]
+mutinous_below = 30
+
+# Loyalty regained per game hour while no surge runs. [0..100000]
+recover_per_hour = 400
+
+# Generator and Server Rack output lost while Strained (points). [0..100]
+strained_output_pts = 10
+
+# Generator and Server Rack output lost while Mutinous (points). [0..100]
+mutinous_output_pts = 25
+
+# No choice or event takes the population below this. [1..1000]
+min_people = 4
+
+# Forced labor surge: people who die at once. [0..100]
+surge_deaths = 2
+
+# Forced labor surge: game hours of boosted output. [1..1000]
+surge_hours = 6
+
+# Forced labor surge: Generator and Server Rack output bonus (points). [0..1000]
+surge_output_pts = 40
+
+# Forced labor surge: loyalty lost. [0..100000]
+surge_loyalty = 20000
+
+# Forced labor surge: Coldness gained. [0..100000]
+surge_coldness = 15000
+
+# Forced labor surge: game hours before the next one. [0..1000]
+surge_cooldown_hours = 24
+
+# Neural cleansing: most people used at once. [1..100]
+cleanse_max = 5
+
+# Neural cleansing: corruption removed per person (milli). [0..100000]
+cleanse_per_person = 8000
+
+# Neural cleansing: loyalty lost per person. [0..100000]
+cleanse_loyalty = 5000
+
+# Neural cleansing: Coldness gained per person. [0..100000]
+cleanse_coldness = 6000
+
+# Crackdown: people removed. [0..100]
+crackdown_people = 2
+
+# Crackdown: loyalty restored (fear). [0..100000]
+crackdown_loyalty = 25000
+
+# Crackdown: Coldness gained. [0..100000]
+crackdown_coldness = 20000
+
+# Daily chance an operator goes rogue while Mutinous. [0..100]
+rogue_chance_pct = 35
+
+# Energy a rogue operator takes. [0..100000]
+rogue_energy = 80
+
+# --------------------------------------------------------------------------------------------------
+# Threat signatures and protection tools (SPEC-015, doc 04 s3-5, doc 10 s4). All (tune).
+[threats]
+
+# Tier 2+: a siege is due this often (doc 10: about every 2 days). [1..10000]
+siege_interval_hours = 48
+
+# Siege interval varies by up to this share either way. [0..90]
+siege_jitter_pct = 25
+
+# Warning before a siege lands (longer than a raid). [1..10000]
+siege_warning_minutes = 120
+
+# Siege strength as a share of raid strength. [1..10000]
+siege_strength_pct = 140
+
+# Siege loot as a share of raid loot (sieges break buildings, not stores). [0..1000]
+siege_loot_pct = 30
+
+# A breached siege downgrades one facility per this much breach (at least one). [1..1000]
+siege_damage_per_breach_permille = 400
+
+# After M1: a virus is due this often (doc 10: about every 3 days). [1..10000]
+virus_interval_hours = 72
+
+# Virus interval varies by up to this share either way. [0..90]
+virus_jitter_pct = 25
+
+# Compute the firewall must burn to stop a virus. [0..100000]
+virus_strength = 40
+
+# Added virus strength per tier above 1. [0..100000]
+virus_strength_per_tier = 20
+
+# Corruption added by an infection (milli). [0..100000]
+virus_corruption = 8000
+
+# An infection locks one restored field module for this long. [0..1000]
+virus_lock_hours = 24
+
+# After an infection the next raid estimate is scaled by this (false intel). [1..1000]
+false_intel_pct = 50
+
+# Tier 2+: a purge ladder starts this often (rare) until faction heat drives it (F-019). [1..100000]
+purge_interval_hours = 168
+
+# Rumor stage length before staging is confirmed. [1..1000]
+purge_rumor_hours = 12
+
+# Staging confirmed: hours before the strike (doc 10: 24). [1..1000]
+purge_staging_hours = 24
+
+# Ultimatum: final hours before the strike (doc 10: 6). [1..1000]
+purge_ultimatum_hours = 6
+
+# Chance a purge rumor is wrong and fizzles. [0..100]
+rumor_false_pct = 30
+
+# Contact warning when the purge force moves in. [1..1000]
+purge_strike_warning_minutes = 30
+
+# Share of raids from a Hunted-or-worse faction that come as ambushes: no warning, no estimate (doc 10 s2). [0..100]
+ambush_pct = 15
+
+# Purge strength as a share of raid strength. [1..10000]
+purge_strength_pct = 220
+
+# A full purge breach also kills this share of the population (scaled by breach). [0..100]
+purge_population_pct = 15
+
+# Facilities downgraded by a breached purge. [0..10]
+purge_downgrades = 2
+
+# Ultimatum tribute: energy. [0..100000]
+purge_tribute_energy = 800
+
+# Ultimatum tribute: compute. [0..100000]
+purge_tribute_compute = 60
+
+# Vacation shield charges at the start of a run (doc 10: 1). [0..10]
+shield_start_charges = 1
+
+# Most shield charges held at once (doc 10: 2). [1..10]
+shield_max_charges = 2
+
+# Game days per new shield charge (doc 10: 60). [1..1000]
+shield_regen_days = 30
+
+# Attack pause per shield (doc 10: 72 h; timers keep running). [1..1000]
+shield_max_hours = 72
+
+# The shield rises this long after activation so it cannot dodge a visible attack (doc 10: 2 h). [0..10000]
+shield_delay_minutes = 120
+
+# Facility upkeep while the shield holds, percent (doc 10: halved). [0..100]
+shield_upkeep_pct = 50
+
+# Tribute standing order: share of stored energy paid to send a raid away. [0..100]
+tribute_pct = 25
+
+# Tribute standing order: minimum payment (no tribute if energy is below it). [0..100000]
+tribute_min_energy = 60
+
+# --------------------------------------------------------------------------------------------------
+# World map: faction heat, operations and outposts (doc 04 s8, doc 05, doc 10). Heat is milli: 100000 = 100. All (tune).
+[world]
+
+# Heat each faction loses per game hour. [0..100000]
+heat_decay_per_hour = 150
+
+# Attack strength x (1 + this/1000 x heat) (doc 10: 0.8). [0..10000]
+heat_strength_permille = 800
+
+# Heat a raid adds to the site's owner. [0..100000]
+heat_per_raid = 15000
+
+# Heat a hack adds to the site's owner. [0..100000]
+heat_per_hack = 8000
+
+# Heat a scouting run adds to the site's owner. [0..100000]
+heat_per_scout = 2000
+
+# Operations in the field at once. [1..10]
+max_ops = 2
+
+# Fuel per hour of travel (out and back) for a scout or raid. [0..1000]
+fuel_per_travel_hour = 4
+
+# Squad strength per person sent. [1..1000]
+strength_per_person = 6
+
+# A raided site has nothing to take for this long. [0..1000]
+raid_cooldown_hours = 24
+
+# The AI's site defense estimate is off by up to this much until scouted. [0..100]
+estimate_error_pct = 40
+
+# Share of a squad lost on a won raid. [0..100]
+casualty_pct_win = 10
+
+# Share of a squad lost on a failed raid. [0..100]
+casualty_pct_loss = 50
+
+# Energy to set up an outpost on cleared ruins. [0..100000]
+outpost_claim_energy = 300
+
+# Energy an outpost sends home per hour. [0..10000]
+outpost_energy_per_hour = 60
+
+# Fuel an outpost sends home per hour. [0..10000]
+outpost_fuel_per_hour = 6
+
+# Hourly chance a Hunted-or-worse faction takes an outpost back. [0..100]
+outpost_loss_pct_per_hour = 2
+
+# Conquer and hold: energy to garrison a raided faction outpost as ours. [0..100000]
+seize_energy = 600
+
+# Heat a seized outpost adds to its old owner. [0..100000]
+seize_heat = 20000
+
+# Sabotage is a small elite team: at most this many people. [1..50]
+sabotage_max_squad = 3
+
+# A successful sabotage cripples that faction's attacks for this long. [1..10000]
+sabotage_hours = 48
+
+# Strength taken off that faction's attacks launched while crippled. [0..90]
+sabotage_strength_pct = 30
+
+# Chance a successful sabotage is traced back to the Hub (raid heat instead of scout heat). [0..100]
+sabotage_trace_pct = 35
+
+# Odds points from a loyal agent inside the target's faction. [0..100]
+sabotage_spy_pts = 20
+
+# Energy a held (seized) outpost sends home per hour. [0..10000]
+held_energy_per_hour = 120
+
+# Fuel a held outpost sends home per hour. [0..10000]
+held_fuel_per_hour = 15
+
+# Hourly chance the old owner (Watched or worse) takes a held outpost back. [0..100]
+held_loss_pct_per_hour = 4
+
+# Base weight for the Rustborn as attacker (plus heat %). [0..1000]
+attacker_weight_rustborn = 40
+
+# Base weight for Vanguard Command from Tier 2 (plus heat %). [0..1000]
+attacker_weight_vanguard_tier2 = 40
+
+# Base weight for the Church of the Last Signal after M1 (plus heat %). [0..1000]
+attacker_weight_church = 10
+
+# Base weight for Halcyon Dynamics from Tier 3 (plus heat %). [0..1000]
+attacker_weight_holdouts_tier3 = 30
+
+# --------------------------------------------------------------------------------------------------
+# Living world: Warlord Ultimatum, dilemmas, trade, world events (doc 05, doc 10 s4-5). Heat and corruption are milli. All (tune).
+[living]
+
+# Still in Tier 1 on this day: the Warlord Ultimatum arrives (doc 10: about 10). [1..1000]
+ultimatum_day = 10
+
+# Hours to pay before the wave comes. [1..1000]
+ultimatum_hours = 24
+
+# Ultimatum price: energy. [0..100000]
+ultimatum_energy = 400
+
+# Ultimatum price: fuel. [0..100000]
+ultimatum_fuel = 100
+
+# Warlord wave strength as % of a normal raid. [1..10000]
+ultimatum_strength_pct = 250
+
+# Rustborn heat a paid ultimatum takes off. [0..100000]
+ultimatum_paid_heat_drop = 10000
+
+# Hour of the first dilemma. [1..10000]
+dilemma_first_hour = 36
+
+# Hours between dilemmas (plus jitter). [1..10000]
+dilemma_every_hours = 30
+
+# Up to this many extra hours between dilemmas. [0..10000]
+dilemma_jitter_hours = 12
+
+# An unanswered dilemma is refused after this long. [1..1000]
+dilemma_expire_hours = 12
+
+# Trader's offer: fuel you get. [0..10000]
+trader_fuel = 80
+
+# Trader's offer: energy you pay. [0..100000]
+trader_energy = 300
+
+# Chance the trader's offer is a trap (paid, nothing back). [0..100]
+trader_trap_pct = 25
+
+# Refugees taken in. [0..100]
+refugee_people = 3
+
+# Chance a spy is among them. [0..100]
+refugee_spy_pct = 30
+
+# Heat a spy adds to the hottest faction. [0..100000]
+refugee_spy_heat = 15000
+
+# AI shortcut: energy now. [0..100000]
+shortcut_energy = 400
+
+# AI shortcut: compute now. [0..100000]
+shortcut_compute = 40
+
+# AI shortcut: corruption it costs. [0..100000]
+shortcut_corruption = 4000
+
+# Vanguard deserters taken in. [0..100]
+deserter_people = 2
+
+# Vanguard heat for sheltering deserters. [0..100000]
+deserter_heat = 12000
+
+# Vanguard heat taken off for handing them back. [0..100000]
+deserter_return_heat_drop = 10000
+
+# Church signal: corruption a clean broadcast scrubs. [0..100000]
+church_clean_data = 5000
+
+# Chance the broadcast hides something. [0..100]
+church_taint_pct = 30
+
+# Corruption a tainted broadcast adds. [0..100000]
+church_taint_corruption = 6000
+
+# Fuel per trade. [1..10000]
+trade_fuel_lot = 20
+
+# Base energy price of a fuel lot. [0..100000]
+trade_fuel_price = 100
+
+# Energy per trade (energy cells). [1..100000]
+trade_energy_lot = 200
+
+# Base fuel price of an energy lot. [0..10000]
+trade_energy_price = 40
+
+# Compute per trade. [1..10000]
+trade_compute_lot = 20
+
+# Base energy price of a compute lot. [0..100000]
+trade_compute_price = 150
+
+# Price % by the seller's heat level (Cold, Watched, Hunted; Marked will not trade). doc 10: 0.8-1.5. [3..3 items, each 1..1000]
+trade_price_pct_by_level = [80, 100, 150]
+
+# Trades per faction per day. [0..100]
+trades_per_day = 3
+
+# Day of the first world event. [1..1000]
+world_event_first_day = 2
+
+# Hours from one world event's start to the next. [1..10000]
+world_event_every_hours = 72
+
+# How long a world event lasts. [1..10000]
+world_event_hours = 24
+
+# Signal Storm: hack odds minus this. [0..100]
+signal_storm_odds_pts = 20
+
+# Signal Storm: extra corruption per hour. [0..100000]
+signal_storm_corruption_milli = 150
+
+# Supply Window: operation loot +%. [0..1000]
+supply_window_loot_pct = 50
+
+# Supply Window: trade prices -%. [0..99]
+supply_window_price_pct = 25
+
+# Dead Week: time between attacks +%. [0..1000]
+dead_week_interval_pct = 100
+
+# Factions fight each other: at each world event the hottest cools by this, a rival warms by half. [0..100000]
+faction_war_heat = 10000
+
+# --------------------------------------------------------------------------------------------------
+# Battle scars: facility damage and yard wreckage that stay until repaired (doc 04 s4, doc 06 s3). All (tune).
+[scars]
+
+# Damage points a facility can hold. [1..10]
+max_damage = 3
+
+# Output lost per damage point (Generator, Server Rack, Turret). [0..100]
+output_pct_per_damage = 15
+
+# A raid breach at least this deep damages a facility (lighter ones only leave wrecks). [0..1000]
+heavy_breach_permille = 500
+
+# Damage a deep raid breach deals. [0..10]
+raid_damage = 1
+
+# Damage a breached siege or Warlord wave deals. [0..10]
+siege_damage = 2
+
+# Damage a breached purge deals. [0..10]
+purge_damage = 3
+
+# Wrecks a breached siege or Warlord wave leaves. [0..10]
+siege_wreckage = 2
+
+# Wrecks a breached purge leaves. [0..10]
+purge_wreckage = 3
+
+# Wrecks the yard can hold. [0..20]
+max_wreckage = 6
+
+# Wrecks a repelled attack leaves (enemy hulks). [0..10]
+repel_wreckage = 1
+
+# Wrecks a breached raid leaves. [0..10]
+breach_wreckage = 1
+
+# Regrowth lost per wreck in the yard. [0..100]
+regrowth_pct_per_wreck = 10
+
+# Repair cost: energy x level x damage. [0..100000]
+repair_energy_per_point = 40
+
+# Repair time per damage point (the damage holds until it finishes). [1..10000]
+repair_minutes_per_point = 60
+
+# Energy to clear one wreck from the yard. [0..10000]
+clear_energy_per_wreck = 20
+
+# Fresh wrecks burn this long after an attack (visual). [0..1000]
+burn_hours = 6
+
+# --------------------------------------------------------------------------------------------------
+# Spies in faction camps: plant, recall, frame; hidden double agents exposed by scouts (doc 05, doc 10 s5). Heat is milli. All (tune).
+[intel]
+
+# Energy to plant a spy. [0..100000]
+spy_energy = 150
+
+# People a spy takes out of the Hub (they come back on recall). [1..10]
+spy_people = 1
+
+# Base chance a new spy is a double agent (doc 10: 10%). [0..100]
+double_base_pct = 10
+
+# Extra double-agent chance per point of that faction's heat %, in permille of a point. [0..10000]
+double_heat_permille = 300
+
+# Extra double-agent chance per point of the AI's Coldness %, in permille of a point. [0..10000]
+double_cold_permille = 200
+
+# A loyal spy warns of that faction's attacks this much earlier, with an exact estimate. [0..1000]
+spy_warning_minutes = 30
+
+# A double agent's attack estimate, as % of the true strength. [1..100]
+double_estimate_pct = 55
+
+# A double agent's site defense report, as % of the truth. [1..100]
+double_site_defense_pct = 60
+
+# Hourly chance a spy is caught while that faction hunts the Hub (Hunted or worse). [0..100]
+caught_pct_per_hour_hunted = 1
+
+# Heat a caught spy adds. [0..100000]
+caught_heat = 10000
+
+# Framing: heat moved off the spy's faction (half lands on a rival); a double agent's frame adds it instead. [0..100000]
+frame_heat = 20000
+
+# Chance the spy is caught while framing. [0..100]
+frame_catch_pct = 35
+
+# --------------------------------------------------------------------------------------------------
+# Short live battles: take command at contact and spend a few abilities (doc 04 s7). Corruption is milli. All (tune).
+[battle]
+
+# How long the handler commands at the wall before the fight resolves (1 game minute = one real minute at 1x). [1..60]
+battle_minutes = 1
+
+# FOCUS FIRE: defense + this % for the fight. [0..500]
+focus_defense_pct = 25
+
+# FOCUS FIRE: compute it costs. [0..10000]
+focus_compute = 20
+
+# MORTAR BARRAGE: attack strength - this %. [0..100]
+barrage_strength_pct = 20
+
+# MORTAR BARRAGE: energy it costs. [0..100000]
+barrage_energy = 120
+
+# MANUAL TAKEOVER (OVERRIDE): defense + this %. [0..500]
+takeover_defense_pct = 40
+
+# MACHINE SEIZURE (OVERRIDE): attack strength - this % (their drones turn). [0..100]
+seize_strength_pct = 35
+
+# MACHINE SEIZURE: extra corruption on top of the OVERRIDE cost. [0..100000]
+seize_corruption = 3000
+
+# --------------------------------------------------------------------------------------------------
+# Corruption effects: AI-run unit glitches, defection, the Critical crisis ladder and the core flush (doc 03 s3-4). Corruption is milli. All (tune).
+[glitch]
+
+# Hourly chance each AI-run producer glitches, per band (Stable, Glitchy, Unstable, Critical); crewed ones at a third. [4..4 items, each 0..100]
+glitch_pct_by_band = [0, 3, 8, 15]
+
+# Disobedience: a glitched facility stops for this long. [1..100]
+stall_hours = 2
+
+# Overextension: energy a glitched facility burns. [0..10000]
+drain_energy = 60
+
+# Unstable or worse: chance an AI-run turret is hijacked in a fight (its guns turn on us). [0..100]
+defection_pct = 25
+
+# Critical: hourly chance a crisis triggers. [0..100]
+crisis_pct_per_hour = 6
+
+# Hours between crises. [1..1000]
+crisis_cooldown_hours = 12
+
+# Collapse: share of stored energy lost. [0..100]
+collapse_energy_pct = 40
+
+# Collapse: every producer stops this long. [1..100]
+collapse_stall_hours = 3
+
+# AI takeover: the AI ignores build, research and posture orders this long. [1..100]
+takeover_hours = 4
+
+# Forced rollback: a restored module is locked this long. [1..1000]
+rollback_hours = 24
+
+# Rival swarm: attack strength as % of a raid. [1..10000]
+swarm_strength_pct = 160
+
+# Core flush: energy it costs. [0..100000]
+flush_energy = 600
+
+# Core flush: corruption it removes. [0..100000]
+flush_milli = 25000
+
+# Core flush: the AI is offline this long (AI-run units stop, no predictions). [1..100]
+flush_hours = 3
+
+# --------------------------------------------------------------------------------------------------
+# Relocation and reboot cycles, legacy score and perks (doc 06 s4, doc 10 s1.2 + s6). All (tune).
+[legacy]
+
+# Lowest tier the Hub must have reached to relocate by choice. [1..10]
+relocate_min_tier = 2
+
+# Legacy score per highest tier reached (doc 10: 100). [0..100000]
+score_per_tier = 100
+
+# Legacy score: peak power rating divided by this (doc 10: 10). [1..1000]
+power_divisor = 10
+
+# Legacy score per surviving veteran (doc 10: 20). [0..10000]
+score_per_veteran = 20
+
+# Legacy score per mastery challenge (doc 10: 50). [0..10000]
+score_per_mastery = 50
+
+# Share of the score kept as legacy points after a forced reboot (doc 10: 50%). [0..100]
+forced_bonus_pct = 50
+
+# Share kept after a voluntary relocation (doc 10: 100%). [0..200]
+voluntary_bonus_pct = 100
+
+# Veterans who always follow the core to the next site. [0..20]
+base_veterans = 2
+
+# Plus one veteran per this many people at the move. [1..1000]
+veteran_per_people = 10
+
+# Restored field modules that stay unlocked (legacy modules). [0..32]
+kept_modules = 2
+
+# Faction heat carried into the new cycle (faction scars). [0..100]
+heat_kept_pct = 50
+
+# Corruption kept after a forced reboot (a relocation starts clean). [0..100]
+forced_corruption_kept_pct = 50
+
+# Population collapse: hours at the people floor before a forced reboot. [1..1000]
+collapse_hours = 24
+
+# Total AI takeover: hours at Critical corruption before a forced reboot. [1..1000]
+takeover_critical_hours = 48
+
+# Legacy points for the next perk level (x level). [1..100000]
+perk_cost = 100
+
+# Highest level of each perk. [1..10]
+perk_max_level = 3
+
+# Starting resources perk: energy per level at each new cycle. [0..100000]
+perk_start_energy = 150
+
+# Starting resources perk: fuel per level. [0..10000]
+perk_start_fuel = 30
+
+# Regrowth perk: population regrowth +% per level. [0..1000]
+perk_regrowth_pct = 15
+
+# Heat perk: faction heat fades +% per level. [0..1000]
+perk_heat_decay_pct = 25
+
+# Ridge site (SPEC-031): turret output +%. [0..100]
+ridge_turret_pct = 15
+
+# River site: fuel arriving every hour (capped by storage). [0..1000]
+river_fuel_per_hour = 4
+
+# Ruins site: server rack output +%. [0..100]
+ruins_compute_pct = 15
+
+# Mastery: corruption kept under this for a full tier (doc 10: 40). [0..100000]
+mastery_corruption_milli = 40000
+
+# After a forced reboot, regrowth +% until the population reaches half the cap (doc 10 s2). [0..1000]
+rebuilding_surge_pct = 100
+
+# Ironman can be switched on only in the first hours of a run (doc 10 s1.2: chosen at start). [1..1000]
+ironman_choose_hours = 24
+
+# Ironman: mercy window as % of normal (doc 10: shorter). [0..100]
+ironman_mercy_pct = 50
+
+# --------------------------------------------------------------------------------------------------
+# Temporary pacts: a paid ceasefire and an alliance, one of each at a time, that either side can break (doc 05 s3). Heat is milli. All (tune).
+[diplomacy]
+
+# How long a ceasefire holds. [1..100]
+ceasefire_days = 3
+
+# Ceasefire price: energy (before the heat multiplier). [0..100000]
+ceasefire_energy = 400
+
+# Ceasefire price: fuel (before the heat multiplier). [0..10000]
+ceasefire_fuel = 60
+
+# Price % by that faction's heat level (Cold, Watched, Hunted); a Marked faction will not talk. [3..3 items, each 1..10000]
+price_pct_by_level = [80, 100, 160]
+
+# Days after a ceasefire ends before any new one. [0..100]
+cooldown_days = 5
+
+# Heat added when the Hub breaks a ceasefire by striking that faction. [0..100000]
+break_heat = 30000
+
+# Trade with a faction under ceasefire or alliance is this much cheaper. [0..99]
+trade_discount_pct = 20
+
+# Alliance price: energy (only with a Cold faction). [0..100000]
+alliance_energy = 600
+
+# Alliance price: fuel. [0..10000]
+alliance_fuel = 100
+
+# Energy the ally takes each day; unpaid, the alliance lapses. [0..100000]
+alliance_upkeep_energy = 120
+
+# Defense the ally's fighters add to the wall, by tier. [4..4 items, each 0..100000]
+alliance_defense_by_tier = [40, 80, 140, 220]
+
+# Heat per day with the ally's rival (Rustborn and Vanguard, Church and Halcyon). [0..100000]
+alliance_rival_heat = 3000
+
+# Chance per day that the ally walks out on its own. [0..100]
+alliance_walkout_pct = 5
+
+# Heat with the ally when the Hub dissolves the alliance or cannot pay. [0..100000]
+alliance_end_heat = 5000
+
+# Heat with the ally when the Hub strikes its sites. [0..100000]
+alliance_betray_heat = 40000
+
+# --------------------------------------------------------------------------------------------------
+# Chapter arcs: one per tier with a villain, a twist and a payoff; each payoff recovers a memory fragment that survives reboots (doc 07 s4). Heat and corruption are milli. All (tune).
+[chapters]
+
+# Hours after a chapter opens when its twist lands anyway. [1..10000]
+twist_fallback_hours = 96
+
+# Chapter 4 twists when the AI's project reaches this (or its final window opens). [0..100000]
+fork_project_milli = 75000
+
+# Payoff points for repelling the chapter villain's attack (any other attack: 1). [1..100]
+villain_points = 2
+
+# Points after the twist that close the chapter. [1..100]
+payoff_points = 4
+
+# Energy paid when a chapter closes, by tier (capped by storage). [4..4 items, each 0..100000]
+payoff_energy = [150, 300, 500, 800]
+
+# Compute paid when a chapter closes, by tier (capped by storage). [4..4 items, each 0..100000]
+payoff_compute = [20, 40, 80, 120]
+
+# The villain's heat taken off when its chapter closes. [0..100000]
+payoff_heat_drop = 20000
+
+# Corruption cleared by the recovered memory fragment. [0..100000]
+payoff_corruption_drop = 3000
+
+# --------------------------------------------------------------------------------------------------
+# Adaptive enemies: each faction learns the postures the Hub leans on against it and counters them, and fortifies the sites the Hub keeps raiding. Both fade when tactics vary. All (tune).
+[adapt]
+
+# Highest counter level a faction can learn per posture. [0..10]
+learn_cap = 3
+
+# Every this many days each learned counter drops a level. [1..100]
+learn_decay_days = 4
+
+# Turtle defense bonus points lost per level against a faction that learned it (breaching charges). [0..100]
+turtle_counter_pts = 10
+
+# Go-dark miss chance points lost per level (they sweep for heat signatures). [0..100]
+dark_counter_pts = 8
+
+# Extra loot % per level when evacuating (they know where the caches go). [0..100]
+evacuate_counter_pts = 10
+
+# Highest fortification a faction builds against the Hub's raids. [0..10]
+fortify_cap = 3
+
+# Site defense % added per fortification level. [0..100]
+fortify_pct = 15
+
+# Every this many days each fortification drops a level. [1..100]
+fortify_decay_days = 3
+
+# --------------------------------------------------------------------------------------------------
+# Luck swings: hidden calm and restless streaks the AI half-warns about, and regrouping windows after a crushing defense (doc 04 s9). All (tune).
+[luck]
+
+# Length of one hidden streak window. [1..1000]
+streak_hours = 12
+
+# Chance a window is calm. [0..100]
+calm_pct = 25
+
+# Chance a window is restless (calm_pct + restless_pct <= 100). [0..100]
+restless_pct = 25
+
+# Calm windows: the mean time between raids grows by this %. [0..1000]
+calm_interval_pct = 60
+
+# Restless windows: the mean time between raids changes by this % (negative = more raids). [-90..0]
+restless_interval_pct = -30
+
+# Restless windows: raids come this much stronger. [0..100]
+restless_strength_pct = 10
+
+# Chance the AI voices a hunch at the start of a calm or restless window. [0..100]
+hunch_pct = 60
+
+# Chance the hunch names the window's real mood (otherwise it names the opposite). [0..100]
+hunch_accuracy_pct = 70
+
+# A raid repelled with defense at least this % of its strength sends that faction regrouping. [100..1000]
+regroup_margin_pct = 150
+
+# How long a beaten faction regroups. [1..1000]
+regroup_hours = 8
+
+# A regrouping faction's sites are this much weaker (an opportunity window). [0..90]
+regroup_defense_pct = 25
+
+# --------------------------------------------------------------------------------------------------
+# Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
+[host]
+
+# Offline time simulated on return is capped here (never grants unlimited progress). [1..10000]
+max_catch_up_hours = 168
+
+# A device clock that moved backwards by more than this raises a time desync. [0..10000]
+desync_tolerance_minutes = 5
+
+# Real seconds between autosaves while playing. [5..3600]
+autosave_seconds = 60
+
+# Game hours the logout projection runs ahead to schedule notifications (SPEC-010). [1..168]
+notify_project_hours = 24
+
+# Most local notifications scheduled per logout. [0..64]
+notify_max = 6
+
+# --------------------------------------------------------------------------------------------------
+# Generator: scavenged power plant. Output = energy per game hour.
+[facility_generator]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [300, 260, 450, 780, 1350]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 0, 10, 25, 50]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [30, 90, 270, 540, 1080]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 0, 0, 0]
+
+# Energy generated per game hour, per level. [1..20 items, each 0..1000000]
+output = [480, 660, 900, 1200, 1560]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [2, 2, 3, 3, 4]
+
+# --------------------------------------------------------------------------------------------------
+# Server Rack: burns energy to produce compute for the AI (doc 02 s4). Output = compute per game hour.
+[facility_server_rack]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [120, 220, 400, 700, 1200]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 15, 30, 60, 100]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [15, 80, 240, 480, 960]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [180, 300, 450, 660, 930]
+
+# Compute produced per game hour, per level. [1..20 items, each 0..1000000]
+output = [60, 100, 150, 210, 280]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 1, 2, 2, 3]
+
+# --------------------------------------------------------------------------------------------------
+# Life Support Grid: raises the population cap while powered (doc 10 s1.3).
+[facility_life_support]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [200, 340, 560, 900, 1400]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 10, 20, 40, 70]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [60, 240, 720, 1260, 2160]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [120, 210, 330, 480, 660]
+
+# Population cap bonus per level. [1..20 items, each 0..1000000]
+output = [6, 12, 20, 30, 42]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 2, 2, 3, 3]
+
+# --------------------------------------------------------------------------------------------------
+# Battery Bank: raises the energy storage cap while powered.
+[facility_battery_bank]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [100, 200, 380, 650, 1050]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 0, 10, 20, 40]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [15, 80, 240, 450, 900]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 30, 60, 120]
+
+# Energy cap bonus per level. [1..20 items, each 0..1000000]
+output = [250, 600, 1100, 1800, 2800]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [0, 0, 1, 1, 1]
+
+# --------------------------------------------------------------------------------------------------
+# Turret: automated Hub defense (doc 02 s6 Military). Output = defense rating while powered.
+[facility_turret]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [150, 250, 420, 700, 1150]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 10, 20, 40, 70]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [20, 90, 270, 540, 1080]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [60, 100, 150, 220, 300]
+
+# Defense rating per level. [1..20 items, each 0..1000000]
+output = [20, 32, 48, 68, 92]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 1, 2, 2, 3]
+
+# --------------------------------------------------------------------------------------------------
+# Reactor: compact fission plant from Tier 3 (doc 02 s3 risky power, SPEC-029). Output = energy per game hour while fueled.
+[facility_reactor]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [2400, 3600, 5200]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [80, 140, 220]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [720, 1440, 2160]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 0]
+
+# Energy generated per game hour while fueled, per level. [1..20 items, each 0..1000000]
+output = [1800, 2600, 3600]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [4, 6, 8]
+
+# --------------------------------------------------------------------------------------------------
+# Reactor rules: fuel-fed, one per Hub from Tier 3, the first thing raiders aim for, and a radiation leak while badly damaged (SPEC-029). All (tune).
+[reactor]
+
+# Tier needed to build a reactor. [1..4]
+min_tier = 3
+
+# Reactors allowed per Hub. [0..10]
+max_count = 1
+
+# Fuel burned per game hour, per level; without it the reactor scrams (no output). [1..20 items, each 0..10000]
+fuel_per_hour = [10, 14, 18]
+
+# Chance each point of breach damage goes to the reactor when it can take more. [0..100]
+target_pct = 50
+
+# Damage at which a reactor leaks radiation until repaired. [1..10]
+leak_damage = 2
+
+# People lost each midnight while it leaks (never below the people floor). [0..1000]
+leak_people_per_day = 3

@@ -1,0 +1,70 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Modules.uss" />
+  <!-- MODULES (inside CORE, SPEC-008). Sample states for the preview; CoreScreen fills everything. -->
+  <ui:VisualElement name="modules" class="mod">
+
+    <ui:VisualElement name="tier" class="ds-panel mod-tier">
+      <ui:VisualElement class="row">
+        <ui:Label name="tier-title" text="TIER 1 // BUNKER" class="ds-title grow" />
+        <ui:Label name="tier-next" text="NEXT: DISTRICT" class="ds-label t-dim" />
+      </ui:VisualElement>
+      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-build-pip" class="mod-gate__pip is-ok" /><ui:Label name="gate-build" text="FACILITY LEVELS 11 / 10  //  NET POWER +140 / +100 H" class="mod-gate__text" /></ui:VisualElement>
+      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-module-pip" class="mod-gate__pip" /><ui:Label name="gate-module" text="MEMORY SECTOR M1 NOT RESTORED" class="mod-gate__text" /></ui:VisualElement>
+      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-people-pip" class="mod-gate__pip is-ok" /><ui:Label name="gate-people" text="HUMAN COST: 6 PEOPLE LEAVE TO EXPAND" class="mod-gate__text" /></ui:VisualElement>
+      <ui:VisualElement name="tier-up" class="ds-btn mod-tier__btn is-disabled"><ui:Label text="ADVANCE TO TIER 2" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="research" class="ds-panel ds-panel--sunken mod-research">
+      <ui:VisualElement class="row">
+        <ui:Label text="RESTORING" class="ds-label" />
+        <ui:Label name="research-name" text="LG1 LOAD BALANCING" class="mod-research__name grow" />
+        <ui:Label name="research-eta" text="00:42" class="mod-research__eta" />
+      </ui:VisualElement>
+      <ui:VisualElement class="mod-bar"><ui:VisualElement name="research-fill" class="mod-bar__fill" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement class="row mod-tree">
+      <ui:VisualElement class="mod-trunk">
+        <ui:Label text="TRUNK" class="ds-label mod-col__title" />
+        <ui:VisualElement name="node-M1" class="mod-node is-available"><ui:Label text="M1" class="mod-node__code" /><ui:Label text="MEMORY SECTOR 1" class="mod-node__name" /><ui:Label name="node-M1-state" text="AVAILABLE" class="mod-node__state" /></ui:VisualElement>
+        <ui:VisualElement class="mod-link" />
+        <ui:VisualElement name="node-M2" class="mod-node is-locked"><ui:Label text="M2" class="mod-node__code" /><ui:Label text="MEMORY SECTOR 2" class="mod-node__name" /><ui:Label name="node-M2-state" text="TIER 2" class="mod-node__state" /></ui:VisualElement>
+        <ui:VisualElement class="mod-link" />
+        <ui:VisualElement name="node-M3" class="mod-node is-locked"><ui:Label text="M3" class="mod-node__code" /><ui:Label text="MEMORY SECTOR 3" class="mod-node__name" /><ui:Label name="node-M3-state" text="TIER 3" class="mod-node__state" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="mod-field">
+        <ui:VisualElement name="mod-tabs" class="row mod-tabs">
+          <ui:VisualElement name="tab-1" class="mod-tab is-selected"><ui:Label text="LOGISTICS" class="mod-tab__label" /></ui:VisualElement>
+          <ui:VisualElement name="tab-2" class="mod-tab"><ui:Label text="WARFARE" class="mod-tab__label" /></ui:VisualElement>
+          <ui:VisualElement name="tab-3" class="mod-tab"><ui:Label text="CYBER" class="mod-tab__label" /></ui:VisualElement>
+          <ui:VisualElement name="tab-4" class="mod-tab"><ui:Label text="STEALTH" class="mod-tab__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <!-- ModulesView builds the selected field's nodes here; the sample is for the preview -->
+        <ui:VisualElement name="mod-field-body">
+          <ui:Label text="TIER 1" class="mod-tierlabel" />
+          <ui:VisualElement class="row mod-row"><ui:VisualElement class="mod-node is-restored"><ui:Label text="LG1" class="mod-node__code" /><ui:Label text="LOAD BALANCING" class="mod-node__name" /><ui:Label text="RESTORED" class="mod-node__state" /></ui:VisualElement></ui:VisualElement>
+          <ui:VisualElement class="row mod-row mod-pair"><ui:VisualElement class="mod-node is-active"><ui:Label text="LG2A" class="mod-node__code" /><ui:Label text="OVERCLOCKED RACKS" class="mod-node__name" /><ui:Label text="RESTORING" class="mod-node__state" /></ui:VisualElement><ui:Label text="OR" class="mod-or" /><ui:VisualElement class="mod-node is-available is-selected"><ui:Label text="LG2B" class="mod-node__code" /><ui:Label text="DEEP CELLS" class="mod-node__name" /><ui:Label text="AVAILABLE" class="mod-node__state" /></ui:VisualElement></ui:VisualElement>
+          <ui:Label text="TIER 2" class="mod-tierlabel" />
+          <ui:VisualElement class="row mod-row"><ui:VisualElement class="mod-node is-locked"><ui:Label text="LG3" class="mod-node__code" /><ui:Label text="HABITAT MGMT" class="mod-node__name" /><ui:Label text="TIER 2" class="mod-node__state" /></ui:VisualElement><ui:VisualElement class="mod-node is-locked"><ui:Label text="LG4" class="mod-node__code" /><ui:Label text="PREFAB ASSEMBLY" class="mod-node__name" /><ui:Label text="TIER 2" class="mod-node__state" /></ui:VisualElement></ui:VisualElement>
+          <ui:VisualElement class="row mod-row mod-pair"><ui:VisualElement class="mod-node is-locked"><ui:Label text="LG5A" class="mod-node__code" /><ui:Label text="SALVAGE DOCTRINE" class="mod-node__name" /><ui:Label text="TIER 2" class="mod-node__state" /></ui:VisualElement><ui:Label text="OR" class="mod-or" /><ui:VisualElement class="mod-node is-locked"><ui:Label text="LG5B" class="mod-node__code" /><ui:Label text="FUEL CELLS" class="mod-node__name" /><ui:Label text="TIER 2" class="mod-node__state" /></ui:VisualElement></ui:VisualElement>
+          <ui:VisualElement class="row mod-row"><ui:VisualElement class="mod-node is-locked"><ui:Label text="LG6" class="mod-node__code" /><ui:Label text="AUTOMATION PROTOCOLS" class="mod-node__name" /><ui:Label text="TIER 2" class="mod-node__state" /></ui:VisualElement></ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="detail" class="ds-panel mod-detail">
+      <ui:VisualElement class="row">
+        <ui:Label name="detail-title" text="LG2B // DEEP CELLS" class="mod-detail__title grow" />
+        <ui:Label name="detail-state" text="AVAILABLE" class="ds-label t-phosphor" />
+      </ui:VisualElement>
+      <ui:Label name="detail-desc" text="Battery Bank capacity +30%. Excludes Overclocked Racks." class="ds-body mod-detail__desc" />
+      <ui:VisualElement class="row mod-detail__cost">
+        <ui:Label name="detail-energy" text="300 ENERGY" class="mod-cost" />
+        <ui:Label name="detail-compute" text="60 COMPUTE" class="mod-cost" />
+        <ui:Label name="detail-time" text="02:30:00" class="mod-cost t-dim" />
+      </ui:VisualElement>
+      <ui:VisualElement name="detail-start" class="ds-btn ds-btn--primary mod-detail__btn"><ui:Label name="detail-start-label" text="RESTORE" class="ds-btn__label" /></ui:VisualElement>
+      <ui:Label name="mod-reason" text="" class="ds-body mod-reason" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

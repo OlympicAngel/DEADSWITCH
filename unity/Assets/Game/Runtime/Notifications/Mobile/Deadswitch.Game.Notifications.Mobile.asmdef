@@ -1,0 +1,26 @@
+{
+  "name": "Deadswitch.Game.Notifications.Mobile",
+  "rootNamespace": "Deadswitch.Game.Notifications",
+  "references": [
+    "Deadswitch.Game",
+    "Deadswitch.Host",
+    "Unity.Notifications.Android",
+    "Unity.Notifications.iOS"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "autoReferenced": true,
+  "defineConstraints": [
+    "DS_MOBILE_NOTIFICATIONS"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.mobile.notifications",
+      "expression": "2.0.0",
+      "define": "DS_MOBILE_NOTIFICATIONS"
+    }
+  ],
+  "noEngineReferences": false
+}

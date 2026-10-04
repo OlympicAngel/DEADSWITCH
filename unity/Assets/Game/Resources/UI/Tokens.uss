@@ -1,0 +1,133 @@
+/* DEADSWITCH design tokens (doc 11 palette, provisional - tune).
+   Reference resolution 1080 x 1920 (portrait): 1 UI px is roughly 1 device px on a phone.
+   Feature styles use only these variables: no raw hex or magic numbers elsewhere. */
+
+.ds-root {
+    /* Surfaces */
+    --c-world: #171B19;            /* world charcoal: deep background */
+    --c-panel: rgba(20, 25, 22, 0.86);
+    --c-panel-solid: #1C221F;
+    --c-panel-raised: #252B27;     /* panel graphite */
+    --c-panel-sunken: rgba(8, 11, 9, 0.72);
+    --c-scrim: rgba(6, 8, 7, 0.62);
+
+    /* Lines */
+    --c-line: rgba(168, 213, 138, 0.16);
+    --c-line-mid: rgba(168, 213, 138, 0.32);
+    --c-line-strong: rgba(168, 213, 138, 0.62);
+
+    /* Text */
+    --c-text: #D8D1BC;             /* field paper */
+    --c-text-dim: #9DA197;         /* dust grey */
+    --c-text-faint: rgba(157, 161, 151, 0.55);
+
+    /* Signals (meaning locked by doc 10; swatches provisional) */
+    --c-phosphor: #A8D58A;
+    --c-phosphor-dim: rgba(168, 213, 138, 0.55);
+    --c-phosphor-glow: rgba(168, 213, 138, 0.35);
+    --c-amber: #E8B45C;
+    --c-amber-dim: rgba(232, 180, 92, 0.5);
+    --c-amber-glow: rgba(232, 180, 92, 0.35);
+    --c-red: #D85B52;
+    --c-red-glow: rgba(216, 91, 82, 0.4);
+    --c-magenta: #C176B4;
+    --c-white: #F0EBDD;
+    --c-blue: #82AEB6;
+
+    /* Spacing: 4 px grid */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-8: 32px;
+    --s-10: 40px;
+    --s-12: 48px;
+
+    /* Type scale */
+    --fs-micro: 20px;
+    --fs-xs: 24px;
+    --fs-sm: 28px;
+    --fs-md: 34px;
+    --fs-lg: 44px;
+    --fs-xl: 60px;
+    --fs-hero: 88px;
+
+    /* Shape */
+    --r-sm: 2px;
+    --r-md: 4px;
+    --bw: 2px;
+    --corner: 18px;
+    --touch: 112px;               /* >= 44pt on a typical phone at the reference scale */
+
+    /* Motion (seconds) */
+    --t-fast: 0.12s;
+    --t-med: 0.24s;
+    --t-slow: 0.42s;
+
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Regular");
+    color: var(--c-text);
+    font-size: var(--fs-sm);
+}
+
+/* Text size assist (doc 10): type and touch targets scale together. */
+.ds-root.ds-scale-115 {
+    --fs-micro: 23px;
+    --fs-xs: 28px;
+    --fs-sm: 32px;
+    --fs-md: 39px;
+    --fs-lg: 50px;
+    --fs-xl: 68px;
+    --fs-hero: 100px;
+    --touch: 128px;
+}
+
+.ds-root.ds-scale-130 {
+    --fs-micro: 26px;
+    --fs-xs: 31px;
+    --fs-sm: 36px;
+    --fs-md: 44px;
+    --fs-lg: 57px;
+    --fs-xl: 78px;
+    --fs-hero: 114px;
+    --touch: 144px;
+}
+
+/* HUD themes (F-036): cosmetic only, earned from optional ads. Signal meanings (amber, red, magenta) never change. */
+.ds-root.theme-cold {
+    --c-phosphor: #8CC8D8;
+    --c-phosphor-dim: rgba(140, 200, 216, 0.55);
+    --c-phosphor-glow: rgba(140, 200, 216, 0.35);
+    --c-line: rgba(140, 200, 216, 0.16);
+    --c-line-mid: rgba(140, 200, 216, 0.32);
+    --c-line-strong: rgba(140, 200, 216, 0.62);
+}
+
+.ds-root.theme-bone {
+    --c-phosphor: #D9D2BE;
+    --c-phosphor-dim: rgba(217, 210, 190, 0.55);
+    --c-phosphor-glow: rgba(217, 210, 190, 0.35);
+    --c-line: rgba(217, 210, 190, 0.16);
+    --c-line-mid: rgba(217, 210, 190, 0.32);
+    --c-line-strong: rgba(217, 210, 190, 0.62);
+}
+
+/* Season track themes (F-048): cosmetic, earned by play (verdigris) or on the premium track (ash). */
+.ds-root.theme-verdigris {
+    --c-phosphor: #7CC2AE;
+    --c-phosphor-dim: rgba(124, 194, 174, 0.55);
+    --c-phosphor-glow: rgba(124, 194, 174, 0.35);
+    --c-line: rgba(124, 194, 174, 0.16);
+    --c-line-mid: rgba(124, 194, 174, 0.32);
+    --c-line-strong: rgba(124, 194, 174, 0.62);
+}
+
+.ds-root.theme-ash {
+    --c-phosphor: #B9BEC6;
+    --c-phosphor-dim: rgba(185, 190, 198, 0.55);
+    --c-phosphor-glow: rgba(185, 190, 198, 0.35);
+    --c-line: rgba(185, 190, 198, 0.16);
+    --c-line-mid: rgba(185, 190, 198, 0.32);
+    --c-line-strong: rgba(185, 190, 198, 0.62);
+}

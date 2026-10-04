@@ -1,27 +1,63 @@
+using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 
 namespace Deadswitch.Sim
 {
     /// <summary>
-    /// Deterministic tick loop (1 tick = 1 game minute). This is the paper-prototype "pressure loop":
-    /// energy, compute, people, corruption and one raid type. Grow it per docs/specs/SPEC-001-pressure-loop.md.
+    /// Deterministic tick loop (1 tick = 1 game minute) orchestrating the systems in a fixed order.
     /// Invariant: Run(a) then Run(b) must equal Run(a + b) (offline catch-up relies on it).
     /// </summary>
     public sealed class Simulation
     {
         public Simulation(ulong seed, SimConfig? config = null)
         {
+            Seed = seed;
             Config = config ?? SimConfig.Tier1();
             State = new GameState(seed, Config);
             Log = new EventLog();
+            Context = new SimContext(State, Config, Log);
+            Commands = new CommandLog();
         }
+
+        /// <summary>Restores a run from a save (see <c>SaveGame.Load</c>).</summary>
+        internal Simulation(ulong seed, SimConfig config, GameState state, EventLog log, CommandLog commands)
+        {
+            Seed = seed;
+            Config = config;
+            State = state;
+            Log = log;
+            Context = new SimContext(State, Config, Log);
+            Commands = commands;
+        }
+
+        public ulong Seed { get; }
 
         public SimConfig Config { get; }
 
         public GameState State { get; }
 
         public EventLog Log { get; }
+
+        public SimContext Context { get; }
+
+        public CommandLog Commands { get; }
+
+        /// <summary>
+        /// Validates and applies a player command at the current tick boundary (after tick <c>State.Tick</c>).
+        /// Accepted commands are recorded for saves and replays; rejected ones change nothing.
+        /// </summary>
+        public CommandResult Execute(Command command)
+        {
+            CommandResult result = CommandProcessor.Execute(Context, command);
+            if (result.Accepted)
+            {
+                Commands.Add(new RecordedCommand(State.Tick, command));
+            }
+
+            return result;
+        }
 
         public void Run(long ticks)
         {
@@ -31,81 +67,47 @@ namespace Deadswitch.Sim
             }
         }
 
+        /// <summary>Advances one tick. System order is part of the rules: changing it changes outcomes.</summary>
         public void Step()
         {
-            GameState s = State;
-            SimConfig c = Config;
-            s.Tick++;
+            SimContext ctx = Context;
+            ctx.State.Tick++;
 
-            if (s.Tick % SimConfig.TicksPerDay == 0)
+            RaidSystem.StartOfTick(ctx);
+            ConstructionSystem.Tick(ctx);
+            ScarSystem.Tick(ctx);
+            Modules.Tick(ctx);
+            CrewSystem.Tick(ctx);
+            ReactorSystem.Tick(ctx);
+            EnergySystem.Tick(ctx);
+            ProductionSystem.Tick(ctx);
+            OverrideSystem.Tick(ctx);
+
+            if (ctx.State.Tick % SimConfig.TicksPerHour == 0)
             {
-                s.RaidsToday = 0;
+                CorruptionSystem.Hourly(ctx);
+                PeopleSystem.Hourly(ctx);
+                AiSystem.Hourly(ctx);
+                ProjectSystem.Hourly(ctx);
+                PeopleChoices.Hourly(ctx);
+                WorldSystem.Hourly(ctx);
+                LivingSystem.Hourly(ctx);
+                IntelSystem.Hourly(ctx);
+                GlitchSystem.Hourly(ctx);
+                DiplomacySystem.Hourly(ctx);
+                ChapterSystem.Hourly(ctx);
+                AdaptSystem.Hourly(ctx);
+                LuckSystem.Hourly(ctx);
+                ReactorSystem.Hourly(ctx);
+                InitiativeSystem.Hourly(ctx);
+                LegacySystem.Hourly(ctx);
             }
 
-            bool hadEnergy = s.Energy > 0;
-            s.Energy = Clamp(s.Energy + c.EnergyGenPerTick - c.EnergyUpkeepPerTick, 0, c.EnergyCap);
-
-            if (s.Energy >= c.RackEnergyCostPerTick)
-            {
-                s.Energy -= c.RackEnergyCostPerTick;
-                s.Compute = Clamp(s.Compute + c.ComputePerTick, 0, c.ComputeCap);
-            }
-
-            if (hadEnergy && s.Energy == 0)
-            {
-                Log.Append(new SimEvent(s.Tick, EventKind.BlackoutStarted, 0, 0));
-            }
-
-            if (s.Tick % SimConfig.TicksPerHour == 0)
-            {
-                HourlyUpdate();
-            }
-
-            TryRaid();
-        }
-
-        private void HourlyUpdate()
-        {
-            GameState s = State;
-            SimConfig c = Config;
-
-            s.Corruption = Clamp(s.Corruption - c.CorruptionDecayPerHour, 0, c.CorruptionCap);
-
-            // Regrowth pauses during blackouts (Energy == 0).
-            if (s.Energy > 0 && s.People < c.PeopleCap)
-            {
-                int gap = c.PeopleCap - s.People;
-                int gain = ((gap * c.PeopleRegrowthPercentOfGapPerHour) + 99) / 100;
-                s.People = Clamp(s.People + gain, 0, c.PeopleCap);
-            }
-        }
-
-        private void TryRaid()
-        {
-            GameState s = State;
-            SimConfig c = Config;
-
-            // Always consume exactly one RNG draw per tick so cap checks never desync the stream.
-            bool roll = s.Rng.NextBelow(c.RaidMeanIntervalTicks) == 0;
-            if (!roll || s.RaidsToday >= c.MaxRaidsPerDay)
-            {
-                return;
-            }
-
-            int loot = (s.Energy * c.RaidLootPercentOfEnergy) / 100;
-            if (loot > c.RaidLootCap)
-            {
-                loot = c.RaidLootCap;
-            }
-
-            s.Energy -= loot;
-            s.RaidsToday++;
-            Log.Append(new SimEvent(s.Tick, EventKind.RaidStarted, loot, 0));
-        }
-
-        private static int Clamp(int v, int lo, int hi)
-        {
-            return v < lo ? lo : (v > hi ? hi : v);
+            ClimaxSystem.Tick(ctx);
+            ThreatSystem.Tick(ctx);
+            WorldSystem.Tick(ctx);
+            RaidSystem.Tick(ctx);
+            AiSystem.Tick(ctx);
         }
     }
 }

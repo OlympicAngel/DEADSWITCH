@@ -1,6 +1,7 @@
 using System.Linq;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 using Xunit;
 
 namespace Deadswitch.Sim.Tests
@@ -24,26 +25,34 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(StateHasher.Hash(whole.State), StateHasher.Hash(chunked.State));
         }
 
-        [Fact]
-        public void Tier1Defaults_HoldCoreGuarantees()
+        [Theory]
+        [InlineData(TestConfigs.Defaults)]
+        [InlineData(TestConfigs.Shipped)]
+        public void Tier1Defaults_HoldCoreGuarantees(string config)
         {
             // Resource caps, raid cadence cap, loot cap, and no blackout at default economy numbers.
-            var sim = new Simulation(123UL);
+            var sim = new Simulation(123UL, TestConfigs.Get(config));
+            SimConfig c = sim.Config;
             for (long i = 0; i < Month; i++)
             {
                 sim.Step();
                 GameState s = sim.State;
-                Assert.InRange(s.Energy, 0, sim.Config.EnergyCap);
-                Assert.InRange(s.Compute, 0, sim.Config.ComputeCap);
-                Assert.InRange(s.People, 0, sim.Config.PeopleCap);
-                Assert.InRange(s.Corruption, 0, sim.Config.CorruptionCap);
+                Assert.InRange(s.Energy, 0, Economy.EnergyCap(s, c));
+                Assert.InRange(s.Compute, 0, c.Compute.Cap);
+                Assert.InRange(s.People, 0, Economy.PopulationCap(s, c));
+                Assert.InRange(s.CorruptionMilli, 0, CorruptionSystem.MaxMilli);
+                Assert.InRange(s.Wreckage, 0, c.Scars.MaxWreckage);
+                Assert.All(s.Slots, f => Assert.InRange(f.Damage, 0, c.Scars.MaxDamage));
+                Assert.All(s.Learned, l => Assert.InRange(l, 0, c.Adapt.LearnCap));
+                Assert.All(s.Fortified, f => Assert.InRange(f, 0, c.Adapt.FortifyCap));
             }
 
-            var raids = sim.Log.Events.Where(e => e.Kind == EventKind.RaidStarted).ToList();
-            Assert.All(raids, e => Assert.InRange(e.A, 0, sim.Config.RaidLootCap));
             Assert.All(
-                raids.GroupBy(e => e.Tick / SimConfig.TicksPerDay),
-                day => Assert.True(day.Count() <= sim.Config.MaxRaidsPerDay));
+                sim.Log.Events.Where(e => e.Kind == EventKind.LossLine && e.B == (int)LossResource.Energy),
+                e => Assert.InRange(e.C, 1, c.Raid.LootCap));
+            Assert.All(
+                sim.Log.Events.Where(e => e.Kind == EventKind.RaidWarning).GroupBy(e => e.Tick / SimConfig.TicksPerDay),
+                day => Assert.True(day.Count() <= RaidSystem.MaxPerDay(sim.State, c)));
             Assert.DoesNotContain(sim.Log.Events, e => e.Kind == EventKind.BlackoutStarted);
         }
     }

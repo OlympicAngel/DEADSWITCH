@@ -1,0 +1,49 @@
+/* After-action report (SPEC-006): graphic-novel panels framed by the terminal. Tokens only. */
+
+.rep { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-world); }
+
+.rep-head { align-items: flex-start; margin-bottom: var(--s-3); }
+.rep-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: 4px; color: var(--c-text); }
+.rep-vector { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.rep-vector.is-mismatch { color: var(--c-amber); }
+.rep-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); margin-top: -8px; margin-right: -8px; }
+.rep-close__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+
+.rep-grid { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+.rep-panel {
+    margin-bottom: var(--s-3);
+    border-width: 5px;
+    border-color: #0B0D0C;
+    background-color: #000000;
+    -unity-background-scale-mode: scale-and-crop;
+    outline-width: 2px;
+}
+.rep-panel--wide { width: 100%; height: 400px; }
+.rep-panel--tall { width: 49%; height: 500px; }
+.rep-cap {
+    position: absolute;
+    left: var(--s-3);
+    top: var(--s-3);
+    max-width: 78%;
+    padding: var(--s-2) var(--s-3);
+    background-color: var(--c-text);
+    color: #111111;
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-micro);
+    white-space: normal;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    border-color: #0B0D0C;
+}
+.rep-cap--bottom { top: auto; bottom: var(--s-3); }
+
+.rep-box { margin-top: var(--s-3); padding: var(--s-3) var(--s-4); border-width: 1px; border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.rep-say { color: var(--c-phosphor); font-size: var(--fs-sm); margin-top: var(--s-2); white-space: normal; }
+.rep-ledger { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); margin-top: var(--s-2); }
+.rep-findings { margin-top: var(--s-2); }
+.rep-finding { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
+.rep-finding.is-bad { color: var(--c-amber); }
+.rep-verify { margin-top: var(--s-3); }
+.rep-reason { margin-top: var(--s-1); color: var(--c-amber); }
+
+.is-hidden { display: none; }

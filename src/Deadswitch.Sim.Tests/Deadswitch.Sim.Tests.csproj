@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Deadswitch.Sim\Deadswitch.Sim.csproj" />
+    <ProjectReference Include="..\Deadswitch.Host\Deadswitch.Host.csproj" />
   </ItemGroup>
 </Project>

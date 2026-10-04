@@ -4,7 +4,7 @@ This guide makes the art direction in [07_world_and_story_bible.md](./07_world_a
 
 ## Status
 
-- **Locked direction:** stylized 3D realism seen through a subtle drone-feed camera ([ADR-0007](../adr/0007-art-direction-stylized-3d.md)); a restrained military terminal/CRT interface; battle reports as graphic-novel panels of rendered stills; a living base diorama; persistent scars; corruption that affects presentation.
+- **Locked direction:** heroic realism (stylized realistic 3D, PBR) seen through a subtle drone-feed camera ([ADR-0007](../adr/0007-art-direction-stylized-3d.md), master brief below); a restrained military terminal/CRT interface; battle reports as graphic-novel panels of rendered stills; a living base diorama; persistent scars; corruption that affects presentation.
 - **Locked alert semantics:** signature colors and sound/haptic cues are defined by [10_resolved_decisions.md](./10_resolved_decisions.md). Pair color with shape and a readable label.
 - **Prototype proposals:** palette swatches, typography roles, material detail, and motion guidance below are starting points, not production locks. Validate them on devices and against accessibility needs before locking.
 
@@ -12,12 +12,61 @@ The world should feel worn and physical; the interface should feel precise, purp
 
 ## Visual language
 
-- **World:** real-time 3D (Unity URP) with physically based materials: dust, smoke, faded paint, patched metal, wet mud, and localized warm light under a cold, desaturated grade. Forms are slightly chunky and simplified (semi-cartoonish proportions, bevelled edges, readable shapes) so silhouettes and interactable objects stay legible at phone scale. Not photoreal, not cel-shaded.
-- **Camera:** the AI's recon-drone view. High three-quarter angle, light tilt-shift so the base reads as a real miniature. Sensor effects (noise, edge chromatic aberration, faint scanline interference) are **barely noticeable** at default intensity, never cover gameplay, and scale with corruption and the effect-intensity setting.
+- **World:** follows the master art direction below. Real-time 3D (Unity URP) with believable proportions and layered PBR material detail under a cold desaturated grade with warm practical lights.
+- **Camera:** the AI's recon-drone view. High-angle isometric-style framing, narrow FOV, no depth-of-field blur (it reads as a miniature). Sensor effects (noise, edge chromatic aberration, faint scanline interference) are **barely noticeable** at default intensity, never cover gameplay, and scale with corruption and the effect-intensity setting.
 - **Machine:** restrained field-terminal surfaces, phosphor accents, telemetry, grids, and controlled scanline texture. Avoid generic neon cyberpunk.
 - **Base:** present it as a living diorama. Show power, population, damage, activity, and tier identity through landmarks; repairs visibly change persistent scars.
 - **Screens:** give each screen one primary focal area, a clear action hierarchy, and stable critical status. Keep touch targets clear and put secondary detail behind deliberate inspection.
 - **Texture:** keep grime and distress off small text, icons, controls, maps, and important values.
+
+## Master art direction (owner brief, locked 2026-10-03, restated 2026-10-04)
+
+This brief is the style source for every 3D asset, render and preview. Read it as written; the rules after it say how we apply it.
+
+> Create modular game-ready 3D assets for a post-apocalyptic survivor strategy game in a stylized realistic ("heroic realism") art style. Assets should prioritize strong silhouettes, believable proportions, and physically based materials over excessive polygon counts. Every asset must feel handcrafted from scavenged industrial parts after a global war.
+>
+> Architecture is improvised from cracked reinforced concrete, rusted corrugated steel, weathered shipping containers, sandbags, scaffolding, exposed rebar, patched sheet metal, salvaged machinery, cables, pipes and welded scrap. Nothing looks pristine or factory-new.
+>
+> Materials should feature realistic PBR detail: chipped paint, oxidation, dirt accumulation, mud splashes, edge wear, scratches, soot, oil stains, rain streaks, dust buildup, faded warning markings and subtle decals. Surfaces tell a story through age and use.
+>
+> The environment uses a cold desaturated palette of grey, concrete, olive, charcoal and faded military green, with warm tungsten work lights providing contrast. Bright colours are reserved only for gameplay-significant elements such as AI technology, alarms and interactable objects.
+>
+> The world should feel inhabited. Scatter believable environmental storytelling throughout: stacked supply crates, fuel barrels, cable reels, pallets, discarded tools, tarps, makeshift workstations, generators, vents, antennas, pipes, barricades, damaged vehicles and maintenance equipment.
+>
+> Lighting is cinematic but grounded. Overcast skies, soft global illumination, volumetric dust, subtle fog, warm practical lights, emissive windows, wet surfaces and realistic reflections. Avoid dramatic fantasy lighting.
+>
+> Scale everything for an isometric mobile strategy game viewed from high above. Prioritize readability over tiny details. Buildings should have bold shapes with medium-frequency detail that remains visible at gameplay distance.
+>
+> The overall feeling is tense, militarized and functional. A fragile survivor settlement that has endured years of conflict.
+>
+> **Design assets specifically for a high-angle isometric mobile strategy camera. Detail should be concentrated in large and medium forms rather than tiny surface details so the environment remains readable at gameplay zoom levels.** (Applies to every asset and every prompt.)
+
+**Keywords (use consistently):** stylized realism, physically based rendering (PBR), Unreal Engine 5 quality, modular environment assets, believable proportions, grounded military aesthetic, environmental storytelling, production-quality game assets, cinematic lighting, realistic material definition, high readability from isometric camera, lived-in environment, layered detail, post-war industrial salvage, atmospheric perspective, volumetric lighting, physically accurate materials.
+
+**Avoid (negative prompt, each one is a defect):** cartoon, mobile casual, toy-like, simplistic, clean surfaces, flat colors, plastic materials, exaggerated proportions, cel shading, fantasy architecture, sci-fi neon, cyberpunk, saturated colors, glossy metal, unused pristine assets, empty environment, low-detail textures, random clutter, noisy composition.
+
+### Environment construction rules (owner, 2026-10-03)
+- **Rebuild, don't decorate.** No simple boxes. Buildings are layered structures assembled from modules, overhangs, extensions, welded plates, support beams, pipes, vents, antennas, scaffolding, balconies, ladders and machinery (3-5x the geometric complexity of the first pass).
+- **Break every silhouette.** No straight rectangular outlines: asymmetry, repairs, damage, additions and a believable construction history.
+- **Verticality:** catwalks, elevated platforms, stacked containers, retaining walls, staircases, cables suspended between poles, rooftop equipment.
+- **Flat surfaces get construction detail:** exposed rebar, concrete seams, metal panel joints, ventilation, utility boxes, fuel tanks, generators, transformers, industrial machinery.
+- **Crowded, organically expanded over decades,** not intentionally designed. Dense, purposeful dressing: supply crates, pallets, tarps, barrels, fences, sandbags, debris piles, maintenance equipment, work areas, abandoned vehicles.
+- **Distinct silhouettes with recognizable functions,** readable from the isometric camera. Large and medium forms over tiny texture details.
+
+### Anti-toy rules (owner, 2026-10-04: "toy / miniature feel" is the main defect)
+- **No miniature cues:** no tilt-shift or depth-of-field blur, no saturated "painted model" colors, no strong vignette. The camera is a drone over a real place: atmospheric perspective (haze with distance) gives scale.
+- **Real-world thickness and scale:** sheet metal, railings, pipes, cables and tarps are thin; doors 2.1 m, people 1.75 m, barrels 0.9 m. Thick slabs and oversized bevels read as plastic toys.
+- **Round things are round:** cylinders of about 0.25 m radius or more get at least 16 segments; barrels have rims and ribs; tanks have caps, bands and fittings.
+- **Soft goods drape:** tarps and covers are folded sheets with sag, tie-downs and ropes, never smooth blobs or ellipsoids.
+- **Lit openings are recessed:** doors are steel or wood leaves; light comes from small windows, door gaps and practical lamps. No flat glowing slabs.
+- **Markings are faded and small:** stencils, hazard stripes and signs are worn, partial and low-contrast, never bold pixel letters.
+- **Value contrast over color:** separate forms by light, AO and material (wet dark mud, light dry gravel, dark rust, mid concrete), not by hue.
+
+### Lighting and time of day (owner, 2026-10-04)
+- The base follows the game clock: **overcast day is the reference look** (soft sky light, soft shadows, cool desaturated world, warm practicals barely on); dusk and night are variants where tungsten lamps, emissive windows and light cones take over.
+- Lighting keyframes by game hour live in `unity/Assets/Game/Resources/Base/BaseLook.json` (shared by Unity and the preview). Review every visual change at day, dusk and night.
+
+**How we build it (owner, 2026-10-04: procedural only, no imported assets):** procedural geometry (`src/Deadswitch.Art`) with real-world proportions and bevelled medium forms; a procedural PBR "salvage" material (world-space noise layers for macro variation, rust, chipped paint, dirt rising from the ground, soot, rain and rust run-off, wetness, edge wear and bump; gravel / soil / wet-mud ground) shared by Unity and the headless preview; soft shadows, AO, fog and warm practical lights. How-to: `docs/agents/environment-art.md`.
 
 ## Prototype palette
 

@@ -1,0 +1,101 @@
+/* 3D base overlays (F-010): floating facility labels and the slot sheet. Tokens + kit only. */
+
+/* ---------- Floating labels (reference: bracketed tags above facilities) ---------- */
+.lbl {
+    position: absolute;
+    padding: var(--s-1) var(--s-3) var(--s-1) var(--s-3);
+    background-color: rgba(8, 12, 10, 0.72);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    translate: -50% -100%;
+    min-width: 150px;
+    transition-property: opacity, scale;
+    transition-duration: 0.18s;
+}
+
+.lbl > .ds-corner { width: 12px; height: 12px; border-color: var(--c-phosphor); }
+
+.lbl__name {
+    -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
+    font-size: var(--fs-xs);
+    letter-spacing: 3px;
+    color: var(--c-text);
+}
+
+.lbl__sub {
+    flex-direction: row;
+    align-items: center;
+}
+
+.lbl__level {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-micro);
+    color: var(--c-phosphor);
+    letter-spacing: 2px;
+}
+
+.lbl__state {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-Medium");
+    font-size: var(--fs-micro);
+    color: var(--c-text-dim);
+    margin-left: var(--s-3);
+}
+
+.lbl .ds-pip { width: 10px; height: 10px; margin-right: var(--s-2); }
+
+.lbl--empty { border-color: var(--c-line); background-color: rgba(8, 12, 10, 0.45); }
+.lbl--empty > .ds-corner { border-color: var(--c-text-faint); }
+.lbl--empty .lbl__name { color: var(--c-text-dim); }
+.lbl--warn > .ds-corner { border-color: var(--c-amber); }
+.lbl--warn .lbl__level { color: var(--c-amber); }
+.lbl--off > .ds-corner { border-color: var(--c-red); }
+.lbl--off .lbl__level { color: var(--c-red); }
+.lbl--core > .ds-corner { border-color: var(--c-phosphor); }
+.lbl--core .lbl__name { color: var(--c-phosphor); text-shadow: 0 0 8px var(--c-phosphor-glow); }
+.lbl.is-selected { border-color: var(--c-phosphor); scale: 1.08 1.08; }
+.lbl.is-faded { opacity: 0.25; }
+
+/* ---------- Slot sheet ---------- */
+.sheet { padding-bottom: 180px; }
+.sheet__head { flex-direction: row; align-items: center; margin-bottom: var(--s-2); }
+.sheet__title { flex-grow: 1; }
+.sheet__close { width: 88px; height: 88px; align-items: center; justify-content: center; }
+.sheet__close-x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); color: var(--c-text-dim); }
+.sheet__chips { flex-direction: row; flex-wrap: wrap; margin-bottom: var(--s-4); }
+.sheet__chips > .ds-chip { margin-right: var(--s-2); margin-bottom: var(--s-2); }
+.sheet__blurb { margin-bottom: var(--s-4); color: var(--c-phosphor); }
+.sheet__stats { margin-bottom: var(--s-5); }
+.sheet__actions { flex-direction: row; flex-wrap: wrap; }
+.sheet__actions > .ds-btn { flex-grow: 1; margin-right: var(--s-3); margin-bottom: var(--s-3); }
+.sheet__primary { min-width: 520px; }
+.sheet__reason { margin-top: var(--s-2); color: var(--c-amber); white-space: normal; }
+
+.sheet__progress { height: 14px; background-color: rgba(168, 213, 138, 0.1); margin: var(--s-2) 0 var(--s-4) 0; }
+.sheet__progress-fill { height: 100%; width: 0; background-color: var(--c-amber); }
+
+.cost { flex-direction: row; align-items: center; margin-top: var(--s-1); }
+.cost__item { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text); margin-right: var(--s-4); }
+.cost__item.is-short { color: var(--c-red); }
+
+/* Build options for an empty plot */
+.opt {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-3) var(--s-4);
+    margin-bottom: var(--s-3);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    background-color: var(--c-panel-sunken);
+    min-height: 132px;
+    transition-property: background-color, border-color;
+    transition-duration: 0.12s;
+}
+
+.opt:hover { border-color: var(--c-phosphor-dim); }
+.opt:active { background-color: rgba(168, 213, 138, 0.12); }
+.opt.is-disabled { opacity: 0.45; }
+.opt__icon { width: 72px; height: 72px; margin-right: var(--s-4); --icon-color: var(--c-phosphor); }
+.opt__body { flex-grow: 1; flex-shrink: 1; }
+.opt__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-text); }
+.opt__desc { font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
+.opt__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text-dim); margin-left: var(--s-3); }

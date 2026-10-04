@@ -1,0 +1,57 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Legacy.uss" />
+  <!-- LEGACY (SPEC-022): the cycle. Score so far, mastery, perks bought with legacy points, and the choice to relocate
+       at a peak. Sample values are for the preview; LegacyScreen fills everything. -->
+  <ui:VisualElement name="legacy" class="lgc">
+    <ui:VisualElement class="row lgc-head">
+      <ui:Label text="LEGACY" class="ds-title grow" />
+      <ui:VisualElement name="lgc-close" class="lgc-close"><ui:Label text="X" class="lgc-close__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement class="ds-panel lgc-score">
+      <ui:VisualElement class="row">
+        <ui:Label name="lgc-cycle" text="CYCLE 1 // SITE S-17" class="ds-label grow" />
+        <ui:Label name="lgc-points" text="240 LP" class="ds-label t-phosphor" />
+      </ui:VisualElement>
+      <ui:VisualElement class="row--baseline lgc-score__value">
+        <ui:Label name="lgc-score" text="486" class="ds-value ds-value--hero" />
+        <ui:Label text="LEGACY SCORE" class="ds-label lgc-score__unit" />
+      </ui:VisualElement>
+      <ui:Label name="lgc-best" text="PERSONAL BEST // 1,240 // TIER 3 // 2 CYCLES" class="lgc-breakdown lgc-best" />
+      <ui:Label name="lgc-breakdown" text="TIER 2 x100  +  PEAK POWER 412 / 10  +  4 VETERANS x20  +  3 MASTERY x50" class="lgc-breakdown" />
+    </ui:VisualElement>
+
+    <ui:Label text="MASTERY" class="ds-label lgc-section" />
+    <ui:VisualElement name="lgc-mastery" class="lgc-mastery">
+      <ui:VisualElement class="row lgc-m is-done"><ui:VisualElement class="lgc-m__pip" /><ui:Label text="SURVIVE A PURGE WITHOUT THE AI" class="lgc-m__label" /></ui:VisualElement>
+      <ui:VisualElement class="row lgc-m"><ui:VisualElement class="lgc-m__pip" /><ui:Label text="REACH TIER 2 WITHOUT LOSING AN OUTPOST" class="lgc-m__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:Label text="PERKS // CARRIED TO EVERY NEW SITE" class="ds-label lgc-section" />
+    <ui:VisualElement name="lgc-perks" class="lgc-perks">
+      <ui:VisualElement class="lgc-perk"><ui:VisualElement class="lgc-perk__body"><ui:Label text="STARTING CACHE" class="lgc-perk__name" /><ui:Label text="+150 energy and +30 fuel per level at each new site.  LEVEL 1/3" class="lgc-perk__fx" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label text="BUY // 200 LP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
+      <ui:VisualElement class="lgc-perk"><ui:VisualElement class="lgc-perk__body"><ui:Label text="SPARE OVERRIDE" class="lgc-perk__name" /><ui:Label text="+1 OVERRIDE charge per level.  LEVEL 0/3" class="lgc-perk__fx" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label text="BUY // 100 LP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="lgc-iron" class="row ds-panel lgc-iron">
+      <ui:VisualElement class="grow">
+        <ui:Label name="lgc-iron-title" text="IRONMAN // CHOOSE IN THE FIRST 24 H" class="ds-label" />
+        <ui:Label text="No vacation shield, a shorter mercy window. If the Hub is lost, the core dies with it: the run ends and only its legacy is recorded." class="ds-body t-dim lgc-move__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement name="lgc-iron-btn" class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label name="lgc-iron-label" text="OFF" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement class="ds-panel ds-panel--amber lgc-move">
+      <ui:Label text="RELOCATE THE CORE" class="lgc-move__title" />
+      <ui:Label name="lgc-move-desc" text="Leave this Hub at its peak. The core keeps 2 modules, half of every grudge, 4 veterans and the full score as legacy points. Everything else stays behind." class="ds-body t-dim lgc-move__desc" />
+      <ui:VisualElement class="row lgc-regions">
+        <ui:VisualElement name="lgc-region-0" class="lgc-region is-selected"><ui:Label text="HOLLOW" class="lgc-region__name" /><ui:Label text="NO BONUS" class="lgc-region__fx" /></ui:VisualElement>
+        <ui:VisualElement name="lgc-region-1" class="lgc-region"><ui:Label text="RIDGE" class="lgc-region__name" /><ui:Label name="lgc-region-1-fx" text="TURRETS +15%" class="lgc-region__fx" /></ui:VisualElement>
+        <ui:VisualElement name="lgc-region-2" class="lgc-region"><ui:Label text="RIVER" class="lgc-region__name" /><ui:Label name="lgc-region-2-fx" text="+4 FUEL/H" class="lgc-region__fx" /></ui:VisualElement>
+        <ui:VisualElement name="lgc-region-3" class="lgc-region"><ui:Label text="RUINS" class="lgc-region__name" /><ui:Label name="lgc-region-3-fx" text="COMPUTE +15%" class="lgc-region__fx" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="lgc-move-btn" class="ds-btn ds-btn--warn lgc-move__btn"><ui:Label name="lgc-move-label" text="RELOCATE // +486 LP" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Label name="lgc-reason" text="" class="ds-body t-amber lgc-reason" />
+  </ui:VisualElement>
+</ui:UXML>

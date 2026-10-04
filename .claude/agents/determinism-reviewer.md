@@ -9,7 +9,7 @@ Flag, with file and line:
 - any float, double, decimal, or Math.* use
 - System.Random, Guid.NewGuid, DateTime, Stopwatch, UnityEngine, file or network I/O, static mutable state
 - iteration over Dictionary or HashSet that can affect state; OrderBy without a unique tiebreaker
-- new GameState fields missing from StateHasher
+- new GameState fields missing from GameState.Visit (hash + save), or save layout changes without a SaveGame.FormatVersion bump
 - RNG draws that are conditional (the stream must not shift based on caps or branches)
 - missing tests: determinism, chunking, caps
 

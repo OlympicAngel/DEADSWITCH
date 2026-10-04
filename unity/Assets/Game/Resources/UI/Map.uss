@@ -1,0 +1,126 @@
+/* SECTOR MAP (F-019). Tokens only. */
+
+.map { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-scrim); }
+.map-head { align-items: flex-end; margin-bottom: var(--s-3); }
+.map-head__sub { margin-left: var(--s-4); padding-bottom: var(--s-1); }
+
+.map-heat { justify-content: space-between; margin-bottom: var(--s-3); }
+.map-heat__cell { width: 24.2%; padding: var(--s-2) var(--s-3); border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.map-heat__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text); }
+.map-heat__level { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text-dim); margin-top: var(--s-1); }
+.map-heat__meter { height: 10px; }
+.map-heat__cell--rust { border-left-width: 6px; border-left-color: var(--c-amber); }
+.map-heat__cell--vanguard { border-left-width: 6px; border-left-color: var(--c-blue); }
+.map-heat__cell--church { border-left-width: 6px; border-left-color: var(--c-magenta); }
+.map-heat__cell--holdout { border-left-width: 6px; border-left-color: var(--c-white); }
+.map-heat__cell.is-hot { border-color: var(--c-red-glow); }
+.map-op--ai { border-left-width: 4px; border-left-color: var(--c-amber); padding-left: var(--s-2); }
+.map-op__recall { min-width: 150px; min-height: 56px; margin-left: var(--s-2); }
+.map-adapt { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-amber); margin-top: var(--s-1); white-space: normal; }
+.map-adapt.is-hidden { display: none; }
+.map-spy__state { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: 16px; letter-spacing: 2px; color: var(--c-text-faint); margin-top: var(--s-2); }
+.map-spy__state.is-on { color: var(--c-phosphor); }
+.map-spy { margin-top: var(--s-1); }
+.map-spy__btn { flex-grow: 1; flex-basis: 0; min-height: 56px; align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); margin-right: var(--s-1); }
+.map-spy__btn:last-child { margin-right: 0; }
+.map-spy__btn:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-spy__btn.is-disabled { opacity: 0.38; }
+.map-spy__btn.is-hidden { display: none; }
+.map-pact { margin-top: var(--s-1); flex-grow: 0; }
+.map-pact.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+.map-ally.is-on { border-color: var(--c-blue); background-color: rgba(130, 174, 182, 0.16); }
+.map-ally.is-armed { border-color: var(--c-red); background-color: rgba(216, 91, 82, 0.18); }
+.map-heat__cell.is-allied { border-color: var(--c-blue); }
+.map-spy__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 16px; letter-spacing: 1px; color: var(--c-text-dim); }
+.map-heat__cell.is-hot .map-heat__level { color: var(--c-red); }
+
+/* plot: square, Hub at the center */
+.map-plot { height: 860px; border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); overflow: hidden; }
+.map-ring { position: absolute; border-width: 1px; border-color: var(--c-line); border-radius: 50%; }
+.map-ring--1 { left: 37.5%; top: 37.5%; width: 25%; height: 25%; }
+.map-ring--2 { left: 25%; top: 25%; width: 50%; height: 50%; }
+.map-ring--3 { left: 12.5%; top: 12.5%; width: 75%; height: 75%; }
+.map-axis { position: absolute; background-color: var(--c-line); }
+.map-axis--h { left: 0; right: 0; top: 50%; height: 1px; }
+.map-axis--v { top: 0; bottom: 0; left: 50%; width: 1px; }
+.map-hub { position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; margin-left: -18px; margin-top: -18px; border-width: var(--bw); border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.18); rotate: 45deg; }
+.map-hub__label { position: absolute; left: 44px; top: -8px; rotate: -45deg; -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-phosphor); }
+.map-sites { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+.map-site { position: absolute; flex-direction: row; align-items: center; margin-left: -16px; margin-top: -16px; }
+.map-site__mark { width: 32px; height: 32px; border-width: var(--bw); border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.18); }
+.map-site--vanguard > .map-site__mark { border-color: var(--c-blue); background-color: rgba(130, 174, 182, 0.18); rotate: 45deg; }
+.map-site--holdout > .map-site__mark { border-color: var(--c-white); background-color: rgba(240, 235, 221, 0.14); border-radius: 10px; rotate: 45deg; width: 26px; height: 26px; }
+.map-site--church > .map-site__mark { border-color: var(--c-magenta); background-color: rgba(193, 118, 180, 0.18); border-radius: 50%; }
+.map-site--outpost > .map-site__mark { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.4); }
+.map-site--cooldown > .map-site__mark { opacity: 0.45; }
+.map-site__name { margin-left: var(--s-2); -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
+.map-site.is-selected > .map-site__mark { border-width: 4px; scale: 1.25 1.25; }
+.map-site.is-selected > .map-site__name { color: var(--c-text); }
+.map-site--op > .map-site__name { color: var(--c-amber); }
+
+.map-ops { margin-top: var(--s-2); }
+.map-op { padding: var(--s-1) 0; border-bottom-width: 1px; border-color: var(--c-line); }
+.map-op__text { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); }
+.map-op__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-amber); }
+
+.map-sheet { margin-top: var(--s-3); padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.map-sheet.map-event { align-items: center; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3); border-left-width: 6px; border-left-color: var(--c-amber); background-color: var(--c-panel-sunken); }
+.map-event__pip { margin-right: var(--s-3); }
+.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-amber); }
+
+.map-trade { margin-top: var(--s-3); }
+.map-trade__row { margin-top: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-trade__item:last-child { border-right-width: 0; }
+.map-trade__item:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-trade__item.is-disabled { opacity: 0.38; }
+.map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.is-hidden { display: none; }
+.map-sheet__facts { margin-top: var(--s-2); }
+.map-kv { margin-right: var(--s-6); }
+.map-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); margin-top: var(--s-1); }
+.map-seg { flex-direction: row; margin-top: var(--s-3); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-seg__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-seg__item:last-child { border-right-width: 0; }
+.map-seg__item.is-selected { background-color: rgba(168, 213, 138, 0.14); }
+.map-seg__item.is-disabled { opacity: 0.38; }
+.map-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
+.map-seg__item.is-selected > .map-seg__label { color: var(--c-phosphor); }
+.map-launch { align-items: center; margin-top: var(--s-3); }
+.map-step { width: 88px; height: 88px; align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-step__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+.map-amount { width: 140px; align-items: center; }
+.map-amount__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); color: var(--c-text); }
+.map-odds { margin-left: var(--s-4); align-items: flex-end; }
+.map-odds__value { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-actions { margin-top: var(--s-3); }
+.map-claim { margin-left: var(--s-3); }
+.map-claim.map-event { align-items: center; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3); border-left-width: 6px; border-left-color: var(--c-amber); background-color: var(--c-panel-sunken); }
+.map-event__pip { margin-right: var(--s-3); }
+.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-amber); }
+
+.map-trade { margin-top: var(--s-3); }
+.map-trade__row { margin-top: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-trade__item:last-child { border-right-width: 0; }
+.map-trade__item:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-trade__item.is-disabled { opacity: 0.38; }
+.map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.is-hidden { display: none; }
+.map-reason { margin-top: var(--s-2); }
+.map-event { align-items: center; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3); border-left-width: 6px; border-left-color: var(--c-amber); background-color: var(--c-panel-sunken); }
+.map-event__pip { margin-right: var(--s-3); }
+.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-amber); }
+
+.map-trade { margin-top: var(--s-3); }
+.map-trade__row { margin-top: var(--s-2); border-width: var(--bw); border-color: var(--c-line-mid); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: 88px; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
+.map-trade__item:last-child { border-right-width: 0; }
+.map-trade__item:active { background-color: rgba(168, 213, 138, 0.14); }
+.map-trade__item.is-disabled { opacity: 0.38; }
+.map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-phosphor); }
+.map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.is-hidden { display: none; }

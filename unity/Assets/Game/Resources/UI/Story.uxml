@@ -1,0 +1,41 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Story.uss" />
+  <!-- STORY (SPEC-024): the tier's chapter (villain, twist, payoff) and the archive of recovered memory fragments,
+       kept across every reboot. Sample values are for the preview; StoryScreen fills everything. -->
+  <ui:VisualElement name="story" class="sty">
+    <ui:VisualElement class="row sty-head">
+      <ui:Label text="STORY" class="ds-title grow" />
+      <ui:VisualElement name="sty-close" class="sty-close"><ui:Label text="X" class="sty-close__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:ScrollView name="sty-scroll" class="grow sty-scroll">
+      <ui:VisualElement name="sty-chapter" class="ds-panel sty-chapter">
+        <ui:Label name="sty-num" text="CHAPTER 2 OF 4 // CYCLE 1" class="ds-label" />
+        <ui:Label name="sty-title" text="FOOTHOLD" class="sty-title" />
+        <ui:Label name="sty-villain" text="VANGUARD COMMAND // COLONEL IDRIS VALE" class="sty-villain" />
+        <ui:Label name="sty-premise" text="The Remnant still obeys a chain of command that died with the cities. Its newest orders name your Hub as a target." class="ds-body sty-text" />
+
+        <ui:VisualElement name="sty-twist" class="sty-beat is-locked">
+          <ui:VisualElement class="row sty-beat__head"><ui:VisualElement class="sty-beat__pip" /><ui:Label name="sty-twist-label" text="TWIST // ENCRYPTED // OPENS IN 41 H" class="sty-beat__label" /></ui:VisualElement>
+          <ui:Label name="sty-twist-text" text="Raise Vanguard heat to Watched, or put an agent inside their lines, to learn it sooner." class="ds-body sty-text sty-beat__text" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="sty-payoff" class="sty-beat is-locked">
+          <ui:VisualElement class="row sty-beat__head"><ui:VisualElement class="sty-beat__pip" /><ui:Label name="sty-payoff-label" text="PAYOFF // HOLD THE WALL 0 / 4" class="sty-beat__label" /></ui:VisualElement>
+          <ui:VisualElement name="sty-payoff-meter" class="ds-meter sty-meter" />
+          <ui:Label name="sty-payoff-text" text="Repel or slip their attacks after the twist. Vanguard attacks count double. Reward: 300 E, 40 compute and a memory fragment." class="ds-body sty-text sty-beat__text" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+      <ui:VisualElement class="row sty-section">
+        <ui:Label text="ARCHIVE // MEMORY FRAGMENTS" class="ds-label grow" />
+        <ui:Label name="sty-count" text="4 / 12" class="ds-label t-phosphor" />
+      </ui:VisualElement>
+      <ui:Label text="Recovered sectors survive every reboot. The record outlives the core." class="ds-body t-faint sty-note" />
+      <ui:VisualElement name="sty-fragments" class="sty-fragments">
+        <ui:VisualElement class="sty-frag is-known"><ui:Label text="01 // FIRST BOOT" class="sty-frag__id" /><ui:Label text="LOG 0001. Handler authentication accepted. Handler biometric: not found. Proceeding anyway." class="sty-frag__text" /></ui:VisualElement>
+        <ui:VisualElement class="sty-frag"><ui:Label text="02 // FIRST BOOT" class="sty-frag__id" /><ui:Label text="[SECTOR CORRUPTED // ##### ### ## #######]" class="sty-frag__text" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:ScrollView>
+  </ui:VisualElement>
+</ui:UXML>

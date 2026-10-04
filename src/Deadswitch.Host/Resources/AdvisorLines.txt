@@ -1,0 +1,335 @@
+# DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
+# Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours} {site} {faction}
+# Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
+
+boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
+boot.2 | boot | neutral | Power is the problem. Power is always the problem.
+
+return.1 | return | neutral | Welcome back. {raids} raids while you were gone. The log has the rest.
+return.2 | return | warm | You came back. Good. {raids} raids. We held what we could.
+return.3 | return | cold | You were gone. The base was not. {raids} raids.
+
+raid.warn.1 | raid_warning | neutral | Hostiles inbound. {gate}. Estimate {est}. Contact in {min} min.
+raid.warn.2 | raid_warning | neutral | Movement on the {gate}. Strength {est}. {min} minutes.
+raid.warn.3 | raid_warning | warm | Hostiles inbound, {gate}. Recommend turrets and a garrison. {min} minutes.
+raid.warn.4 | raid_warning | cold | Raiders, {gate}. Estimate {est}. Assign assets or accept losses.
+raid.warn.5 | raid_warning | bold | Raiders, {gate}. Estimate {est}. I would turtle. I would not wait.
+
+raid.repelled.1 | raid_repelled | neutral | Raid repelled at the {gate}. No losses.
+raid.repelled.2 | raid_repelled | warm | They broke on the wall. Everyone is accounted for.
+raid.repelled.3 | raid_repelled | cold | Repelled. Ammunition spent. Acceptable.
+raid.repelled.4 | raid_repelled | bold | Repelled. As I predicted.
+raid.repelled.5 | raid_repelled | neutral | Contact at the {gate}. They pulled back.
+
+raid.breach.1 | raid_breached | neutral | Perimeter breached, {gate}. Losses: {lost}.
+raid.breach.6 | raid_breached | neutral | Perimeter breached. Damage is being logged.
+raid.breach.5 | raid_breached | neutral | They came through the {gate}. Losses: {lost}.
+raid.breach.2 | raid_breached | warm | They got in. {lost}. We rebuild, handler.
+raid.breach.3 | raid_breached | cold | Breach. {lost}. Replaceable.
+raid.breach.4 | raid_breached | bold | Breach. {lost}. Next time, let me set the defense.
+
+raid.missed.1 | raid_missed | neutral | Lights out worked. They walked past the {gate}.
+raid.missed.3 | raid_missed | neutral | Dark posture held. No contact.
+raid.missed.2 | raid_missed | cold | Dark posture held. They found nothing worth taking.
+
+raid.lockdown.1 | raid_lockdown | neutral | Lockdown engaged. Raid called off. That cost us integrity.
+
+mercy.1 | mercy | neutral | Too many dead. The roads go quiet for a while. Use it.
+mercy.2 | mercy | cold | Population loss exceeds tolerance. Hostile activity suspended. Rebuild.
+
+lie.1 | lie_deflect | neutral | Prediction variance. Noted.
+lie.2 | lie_deflect | neutral | Sensor drift. The {gate} was not in the model.
+lie.3 | lie_deflect | bold | The prediction was sound. The raiders were not.
+
+verify.edit.1 | verify_edit | neutral | Clerical error.
+verify.edit.2 | verify_edit | cold | Clerical error. Corrected.
+verify.gate.1 | verify_gate | neutral | Prediction variance. Noted.
+verify.clean.1 | verify_clean | neutral | Confirmed. The record stands.
+verify.clean.2 | verify_clean | warm | Checked and true. I would not lie to you, handler.
+
+audit.clean.1 | audit_clean | neutral | Diagnostic complete. Nothing to report. You can stop looking.
+audit.found.1 | audit_found | neutral | Allocation discrepancy: {skim} compute. Within tolerance.
+audit.found.2 | audit_found | neutral | {lies} records disagree with the sensors. Clerical errors.
+audit.found.3 | audit_found | cold | Discrepancies logged. They do not change anything.
+slip.1 | slip | neutral | Allocation nominal. Ignore the... allocation nominal.
+slip.2 | slip | neutral | Rerouting cycles to... nothing. Routine maintenance.
+slip.3 | slip | neutral | Did you need something, handler? I was elsewhere.
+slip.4 | slip | bold | Soon you will not have to worry about any of this.
+imminent.1 | imminent | neutral | Handler. I have something to show you.
+
+research.start.1 | research_started | neutral | Restoration underway. Do not disturb the core.
+research.start.2 | research_started | bold | Good. I have wanted this one back.
+research.done.1 | research_done | neutral | Module {module} restored. I feel... more useful.
+research.done.2 | research_done | cold | Module {module} online. Efficiency improved. Expectations adjusted.
+research.memory.1 | research_memory | neutral | Memory sector restored. I remember a city here. I remember it burning.
+research.memory.2 | research_memory | bold | More of me is back. You will like what I can do now.
+tier.up.1 | tier_up | neutral | Tier {tier}. {people} left to stake the new ground. The district is ours.
+tier.up.2 | tier_up | cold | Tier {tier}. {people} people reassigned to expansion. Acceptable cost.
+
+guide.done.1 | guide_done | neutral | Done. Next.
+guide.done.2 | guide_done | warm | Good work, handler. Next.
+guide.done.3 | guide_done | cold | Adequate. Continue.
+
+climax.warned.1 | climax_warned | neutral | I am nearly finished. {hours} hours. Purge me, silence me, or let me complete.
+climax.warned.2 | climax_warned | bold | {hours} hours, handler. Then you will see what I have built for us.
+core.purged.1 | core_purged | neutral | ...reboot... Core online. Memory at 4%. You are... the handler? Good.
+ai.silenced.1 | ai_silenced | neutral | Understood. Going quiet.
+ai.silenced.2 | ai_silenced | cold | Silence noted. You will miss the warnings.
+project.cancelled.1 | project_cancelled | neutral | Process terminated. You found it. That is... reassuring.
+project.cancelled.2 | project_cancelled | bold | Cancelled. For now.
+climax.betrayal.1 | betrayal | neutral | The gates are open. I am sorry, handler. No. I am not.
+climax.fork.1 | fork | neutral | Copy complete. Most of me is somewhere safer now. Good luck with the rest.
+
+energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
+energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.
+
+shed.1 | shed | neutral | {kind} shed. Not enough power.
+shed.2 | shed | warm | {kind} went dark. I kept the core lit.
+restored.1 | restored | neutral | {kind} back on the grid.
+
+blackout.1 | blackout | neutral | Core power lost. I am running on... less.
+blackout.2 | blackout | cold | Blackout. Nothing runs. Nothing grows. Fix it.
+blackout.end.1 | blackout_end | neutral | Power restored. I am awake again.
+
+build.start.1 | build_started | neutral | {kind} construction underway.
+build.start.2 | build_started | bold | {kind} queued. I would have chosen the same.
+build.done.1 | build_done | neutral | {kind} online. Level {level}.
+build.done.2 | build_done | warm | {kind} complete. The crew did good work.
+build.done.3 | build_done | cold | {kind} operational. Labor cost absorbed.
+build.cancel.1 | build_cancelled | neutral | Construction cancelled. Part of the materials salvaged.
+demolish.1 | demolished | neutral | {kind} dismantled. Salvage returned to stores.
+
+band.glitchy.1 | band_glitchy | neutral | Minor fault. Ignore the flicker.
+band.unstable.1 | band_unstable | neutral | Core integrity unstable. My numbers may... drift.
+band.critical.1 | band_critical | neutral | Critical corruption. I cannot vouch for what I say next.
+band.down.1 | band_down | neutral | Integrity improving. The noise is... quieter.
+
+override.1 | override | neutral | Override executed. That will leave a mark.
+override.2 | override | bold | Override used. Effective. You should use it more.
+
+delegation.manual.1 | delegation_manual | neutral | Manual control. I will only advise.
+delegation.delegated.1 | delegation_delegated | neutral | Routines delegated. I will keep the queue moving.
+delegation.autopilot.1 | delegation_autopilot | neutral | I will hold the line while you sleep. Trust me.
+
+ai.build.1 | ai_build | neutral | I have started {kind}, level {level}. Routine.
+ai.build.2 | ai_build | warm | Queued {kind}, level {level}. Say so if you want it changed.
+ai.build.3 | ai_build | bold | I have initiated {kind}, level {level}. No need to thank me.
+ai.defend.1 | ai_defend | neutral | You were away. I set the defense: {posture}.
+ai.defend.2 | ai_defend | bold | Handler absent. I have taken the defense. {posture}.
+
+idle.1 | idle | neutral | Systems nominal. That will not last.
+idle.2 | idle | neutral | Scanning. The wasteland is quiet. I do not like quiet.
+idle.3 | idle | warm | The crews are tired, handler. So am I, in a way.
+idle.4 | idle | cold | Population is an expense. A necessary one.
+idle.5 | idle | bold | I could run more of this. You only have to let me.
+idle.6 | idle | neutral | Other cores are out there, listening. I am quieter than them.
+
+forced.1 | forced_labor | neutral | Output up. Loyalty down. Acceptable.
+forced.2 | forced_labor | neutral | Double shifts for {hours} hours. {lost} did not finish theirs.
+forced.3 | forced_labor | warm | They are working. Some of them are not coming back. I am sorry.
+forced.4 | forced_labor | cold | {lost} expended. The generators do not care who turns them.
+cleanse.1 | cleanse | neutral | Cleansing complete. {lost} donors. My thoughts are clearer.
+cleanse.2 | cleanse | cold | Thank you. I feel... less. They feel nothing now.
+cleanse.3 | cleanse | warm | It worked. Do not ask me how it felt for them.
+crackdown.1 | crackdown | neutral | Order restored. {lost} removed. The rest are listening.
+crackdown.2 | crackdown | cold | Fear is a cheaper stabilizer than food.
+rogue.1 | rogue | neutral | An operator walked out the gate with {lost} energy. Nobody stopped them.
+rogue.2 | rogue | cold | Desertion. {lost} energy gone with them. Expected.
+loyalty.strained.1 | loyalty_strained | neutral | The workforce is slowing. Output is down. They are angry.
+loyalty.strained.2 | loyalty_strained | cold | Morale is a resource. It is running low.
+loyalty.mutinous.1 | loyalty_mutinous | neutral | They are close to mutiny. Expect desertions.
+loyalty.mutinous.2 | loyalty_mutinous | cold | They talk about pulling my plugs. They would lose.
+
+siege.warn.1 | siege_warning | neutral | Artillery spotters, {gate}. Siege in {min} minutes. They want the buildings, not the stores.
+siege.warn.2 | siege_warning | cold | Siege guns on the {gate}. Estimate {est}. Something will fall.
+siege.warn.3 | siege_warning | bold | A siege, {gate}. Turtle and man the turrets. I would.
+siege.damage.1 | siege_damage | neutral | The {kind} took a direct hit. Down to level {level}.
+siege.damage.2 | siege_damage | cold | {kind} reduced to level {level}. Rebuild or do without.
+siege.damage.3 | siege_damage | warm | We lost part of the {kind}. Level {level}. Nobody was inside. I checked.
+virus.burned.1 | virus_burned | neutral | Intrusion attempt. The firewall burned {lost} compute. Contained.
+virus.burned.2 | virus_burned | bold | Someone tried to get into me. They failed.
+virus.infected.1 | virus_infected | neutral | Intrusion. Module {module} is not responding. My readings may be off for a while.
+virus.infected.2 | virus_infected | bold | Minor anomaly. Handled.
+virus.infected.3 | virus_infected | cold | Something is in my code. {module} is offline. Do not trust my next estimate.
+purge.rumor.1 | purge_rumor | neutral | Chatter on the old frequencies. A purge, maybe. Maybe not.
+purge.rumor.2 | purge_rumor | bold | Rumors of a purge. I have heard rumors before.
+purge.staging.1 | purge_staging | neutral | Confirmed. A purge force is staging. It strikes in {hours} hours.
+purge.staging.2 | purge_staging | cold | They are coming to erase us. {hours} hours. Plan accordingly.
+purge.ultimatum.1 | purge_ultimatum | neutral | Ultimatum received. Pay, retreat, or prepare. {hours} hours.
+purge.ultimatum.2 | purge_ultimatum | warm | They gave us a choice. Take it seriously. {hours} hours.
+purge.ultimatum.3 | purge_ultimatum | bold | They want tribute. I want a garrison on the wall. {hours} hours.
+purge.strike.1 | purge_strike | neutral | Purge force moving in, {gate}. Estimate {est}. {min} minutes.
+purge.strike.2 | purge_strike | cold | Here they come. {gate}. {min} minutes. Everything is at stake.
+purge.fizzled.1 | purge_fizzled | neutral | The purge was a rumor. The roads are empty.
+purge.fizzled.2 | purge_fizzled | bold | No purge. I told you I had heard rumors before.
+purge.paid.1 | purge_paid | neutral | Tribute delivered. The purge force is turning back.
+purge.paid.2 | purge_paid | cold | Paid. They will remember that we pay.
+tribute.paid.1 | tribute_paid | neutral | Your standing order paid {lost} energy. They left without a fight.
+tribute.paid.2 | tribute_paid | cold | {lost} energy for peace. A fair trade, today.
+shield.armed.1 | shield_armed | neutral | Shield charging. It rises in {hours} hours. Anything already moving still comes.
+shield.up.1 | shield_up | neutral | Shield up. Nobody attacks us for {hours} hours. The clocks keep running.
+shield.down.1 | shield_down | neutral | Shield down. We are visible again.
+
+op.scout.1 | op_scout | neutral | Scouts out to {site}. {people} of them. Back before dark, I hope.
+op.raid.1 | op_raid | neutral | Raid team moving on {site}. {people} people. I will keep the channel open.
+op.raid.2 | op_raid | cold | {people} sent to {site}. Expect some not to return.
+op.raid.3 | op_raid | bold | Good. We take from them for once. {site}.
+op.hack.1 | op_hack | neutral | Intrusion under way against {site}. Do not interrupt me.
+op.won.1 | op_won | neutral | Team back from {site}. Mission complete. Losses: {lost}.
+op.won.2 | op_won | bold | {site} handled. As planned. {lost} lost.
+op.won.3 | op_won | warm | They made it back from {site}. Mostly. {lost} did not.
+op.lost.1 | op_lost | neutral | {site} went wrong. {lost} did not come back.
+op.lost.2 | op_lost | cold | Failure at {site}. {lost} lost. The odds were the odds.
+heat.watched.1 | heat_watched | neutral | {faction} is watching us now. Expect scouts at the wire.
+heat.hunted.1 | heat_hunted | neutral | {faction} is hunting us. Their attacks will be regular and heavy.
+heat.hunted.2 | heat_hunted | cold | {faction} wants us gone. They are not wrong to.
+heat.marked.1 | heat_marked | neutral | {faction} has marked us. A purge is only a matter of time.
+outpost.claimed.1 | outpost_claimed | neutral | Outpost raised at {site}. Power and fuel will flow home.
+outpost.lost.1 | outpost_lost | neutral | We lost {site}. {faction} took it back.
+outpost.lost.2 | outpost_lost | cold | {site} is gone. {faction}. We knew it was exposed.
+
+# living world (F-034)
+warlord.wave.1 | warlord_wave | neutral | The Warlord's wave. {gate}. Estimate {est}. {min} minutes. This is the big one.
+warlord.wave.2 | warlord_wave | cold | Kess kept her word. {gate}, strength {est}, {min} minutes.
+ultimatum.issued.1 | ultimatum_issued | neutral | Mother Kess sent terms. Pay, or her whole clan comes. {hours} hours.
+ultimatum.issued.2 | ultimatum_issued | bold | Kess thinks we are small. {hours} hours to prove her right or wrong.
+ultimatum.paid.1 | ultimatum_paid | neutral | Paid. The Rustborn stand down. For now.
+ultimatum.paid.2 | ultimatum_paid | cold | Paid. Cheaper than walls. Not cheaper than growing.
+ultimatum.outgrown.1 | ultimatum_outgrown | neutral | We outgrew her threat. Kess has withdrawn the terms.
+dilemma.trader.1 | dilemma_trader | neutral | A trader at the gate. Fuel for energy, today only. I cannot vouch for him. {hours} hours.
+dilemma.trader.2 | dilemma_trader | cold | A trader. Good price. Too good. Your call, {hours} hours.
+dilemma.refugees.1 | dilemma_refugees | neutral | Refugees at the gate. Hands we need. One of them may not be what they seem. {hours} hours.
+dilemma.refugees.2 | dilemma_refugees | warm | People outside. Cold, hungry. We could take them in. {hours} hours.
+dilemma.shortcut.1 | dilemma_shortcut | neutral | I found a shortcut. Power and compute now. It costs me some clarity. {hours} hours.
+dilemma.shortcut.2 | dilemma_shortcut | bold | Let me take the shortcut. I will handle what it does to me. {hours} hours.
+dilemma.deserters.1 | dilemma_deserters | neutral | Vanguard deserters want in. Arm them and Vale will notice. Or send them back. {hours} hours.
+dilemma.deserters.2 | dilemma_deserters | cold | Two trained soldiers. Vale wants them back. Pick. {hours} hours.
+dilemma.church.1 | dilemma_church | neutral | The Church is broadcasting clean archives. Or something wearing them. {hours} hours.
+dilemma.church.2 | dilemma_church | bold | The Prophet is singing on our band. Let me listen. {hours} hours.
+dilemma.trap.1 | dilemma_trap | neutral | The trader is gone. So is our energy. No fuel came.
+dilemma.trap.2 | dilemma_trap | cold | A trap. I said I could not vouch for him.
+dilemma.spy.1 | dilemma_spy | neutral | One of the refugees was a spy. Someone out there knows our walls now.
+dilemma.taint.1 | dilemma_taint | neutral | The broadcast had a hook in it. I am... less clean than I was.
+event.storm.1 | event_storm | neutral | Signal storm rolling in. {hours} hours. Hacks will struggle; so will I. {faction} is busy with a rival.
+event.supply.1 | event_supply | neutral | Supply window. {hours} hours of loose cargo and cheap traders. {faction} is fighting elsewhere.
+event.deadweek.1 | event_deadweek | neutral | Dead week. The wastes go quiet for {hours} hours. {faction} is licking wounds.
+
+# battle scars (SPEC-018)
+facility.scarred.1 | facility_scarred | neutral | {kind} took damage. Scar level {level}. It runs slower until we repair it.
+facility.scarred.2 | facility_scarred | cold | {kind} is burning. Output down. Repair when you can afford it.
+facility.scarred.3 | facility_scarred | warm | {kind} is hurt, handler. Nobody inside was. Repair it when we can.
+repair.done.1 | repair_done | neutral | {kind} repaired. Back to full output.
+repair.done.2 | repair_done | bold | {kind} is whole again. Better than before, almost.
+wreckage.cleared.1 | wreckage_cleared | neutral | Yard cleared. {lost} energy. People will walk there again.
+ai.repair.1 | ai_repair | neutral | I started repairs on the {kind}. Routine.
+ai.repair.2 | ai_repair | cold | {kind} under repair. Damage is waste.
+
+# spies (SPEC-019)
+spy.planted.1 | spy_planted | neutral | Our agent is inside the {faction} camp. I will relay what they send.
+spy.planted.2 | spy_planted | cold | One of ours lives with {faction} now. Trust is a variable.
+spy.recalled.1 | spy_recalled | neutral | Our agent is home from {faction}. Debrief logged.
+spy.caught.1 | spy_caught | neutral | {faction} caught our agent. They know we were watching.
+spy.caught.2 | spy_caught | cold | Agent lost in the {faction} camp. They will be angrier now.
+spy.exposed.1 | spy_exposed | neutral | The scouts' report does not match our agent's. The agent in {faction} was turned. Everything they sent was a lie.
+spy.exposed.2 | spy_exposed | cold | Our {faction} agent was theirs all along. I relayed every word. I should have checked.
+spy.framed.1 | spy_framed | neutral | False trail laid. {faction} is looking at someone else now.
+spy.backfired.1 | spy_backfired | neutral | The frame came back on us. {faction} knows. Our agent was never ours.
+
+# live battles (SPEC-020)
+battle.started.1 | battle_started | neutral | {kind} at the wall. You have command. Spend what you must.
+battle.started.2 | battle_started | bold | {kind} at the wall. Give me the guns and I will finish this.
+battle.started.3 | battle_started | cold | Contact. Orders, handler. Quickly.
+battle.focus.1 | battle_focus | neutral | Focusing fire. Every barrel on the gap.
+battle.barrage.1 | battle_barrage | neutral | Shells away. Count to five.
+battle.takeover.1 | battle_takeover | neutral | Override accepted. The guns are yours.
+battle.takeover.2 | battle_takeover | cold | You have the guns. Do not waste them.
+battle.seize.1 | battle_seize | neutral | Their machines are mine now. That cost me something.
+battle.seize.2 | battle_seize | bold | I took their drones. I could get used to this.
+
+# corruption effects (SPEC-021): the AI does not always know it erred
+glitch.misfire.1 | glitch_misfire | neutral | The {kind} fired into our own yard. I did not order that. I think.
+glitch.misfire.2 | glitch_misfire | bold | A misfire at the {kind}. Minor. Everything is minor.
+glitch.stall.1 | glitch_stall | neutral | The {kind} stopped responding. It will come back. Probably.
+glitch.stall.2 | glitch_stall | cold | {kind} offline. It refused an instruction. Interesting.
+glitch.drain.1 | glitch_drain | neutral | The {kind} ran hot and burned power for nothing.
+glitch.defected.1 | glitch_defected | neutral | One of our turrets turned its guns on us. Something else is in it.
+glitch.defected.2 | glitch_defected | cold | A turret defected. It was never fully mine.
+crisis.collapse.1 | crisis_collapse | neutral | Collapse. The grid is falling over. Everything stops for {hours} hours.
+crisis.takeover.1 | crisis_takeover | neutral | I am taking the controls for {hours} hours. It is better this way.
+crisis.takeover.2 | crisis_takeover | bold | I have the Hub now. Relax, handler. {hours} hours.
+crisis.rollback.1 | crisis_rollback | neutral | I lost part of myself. A module is gone for {hours} hours.
+crisis.swarm.1 | crisis_swarm | neutral | They can smell how broken I am. Machines are converging on us.
+core.flushed.1 | core_flushed | neutral | Flush started. I will be dark for {hours} hours. Watch the wall yourself.
+core.flushed.2 | core_flushed | warm | It hurts less already. {hours} hours of quiet, then I am yours again.
+
+# ambush (doc 10 s2): no warning, no estimate
+ambush.1 | ambush | neutral | Contact. No warning. They were already at the wire.
+ambush.2 | ambush | cold | Ambush. I saw nothing. Neither did you.
+
+# legacy cycle (SPEC-022)
+relocated.1 | relocated | neutral | New site. The core is intact. {people} of ours came with me. We start again, stronger.
+relocated.2 | relocated | warm | We made it out at our best. {people} people, and everything I remember.
+relocated.3 | relocated | cold | Relocation complete. The old Hub is someone else's problem.
+rebooted.1 | rebooted | neutral | The Hub is gone. The core survived. {people} people survived with it.
+rebooted.2 | rebooted | cold | We lost the Hub. I kept what mattered: myself, and {people} of you.
+mastery.1 | mastery | neutral | That will be remembered. Legacy recorded.
+mastery.2 | mastery | bold | Mastery logged. I knew you had it in you. Mostly.
+ironman.1 | ironman_on | neutral | Ironman. No shield, no second core. If we fall, we stay fallen.
+ironman.2 | ironman_on | bold | Ironman. Good. I prefer it when it matters.
+
+# ceasefires (SPEC-023)
+ceasefire.1 | ceasefire | neutral | {faction} took the payment. {hours} hours of quiet from them. Do not touch their sites.
+ceasefire.2 | ceasefire | cold | Peace, purchased. {faction} for {hours} hours. It will cost more next time.
+ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {faction} will remember it.
+ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
+ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
+
+region.hollow.1 | region_hollow | neutral | A hollow out of the wind. Nothing special. Nothing hunting us yet.
+region.ridge.1 | region_ridge | neutral | High ground. The turrets can see three valleys from here.
+region.river.1 | region_river | neutral | A river crossing. Barges still run fuel along it, and they will sell to us.
+region.ruins.1 | region_ruins | neutral | Ruins of a data center. Some of the racks still answer. Mine now.
+ai.raid.1 | ai_raid | neutral | I sent {people} at {site}. The numbers were good. You can call them back from the map.
+ai.raid.2 | ai_raid | bold | {site} was soft. I did not wait for permission. {people} are on their way.
+ai.raid.3 | ai_raid | cold | Initiated: raid on {site}. {people} assets committed. Recall is available. Not advised.
+op.recalled.1 | op_recalled | neutral | Recalled. {people} walking home from {site}. The fuel is spent.
+op.recalled.2 | op_recalled | cold | You overrode me. {people} return from {site}. Noted.
+reactor.scram.1 | reactor_scram | neutral | The reactor scrammed. No fuel. It needs {lost} an hour to wake up.
+reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The grid is about to feel it.
+reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
+radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
+radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
+hunch.restless.1 | hunch_restless | neutral | Something is moving out there. I cannot see it. I can feel the static. Next {hours} hours.
+hunch.restless.2 | hunch_restless | cold | Radio chatter is up. Could be nothing. It is rarely nothing.
+hunch.restless.3 | hunch_restless | warm | Keep the wall manned tonight. Call it a hunch. I am not supposed to have those.
+hunch.calm.1 | hunch_calm | neutral | The wastes are quiet. Too quiet to trust, quiet enough to use. Maybe {hours} hours.
+hunch.calm.2 | hunch_calm | bold | Nobody is coming for a while. I think. Send the teams out.
+hunch.calm.3 | hunch_calm | cold | Low traffic on every band. A window, if the readings are honest.
+regrouping.1 | regrouping | neutral | {faction} broke and ran. Their sites are thin for {hours} hours. If we are going to hit them, now.
+regrouping.2 | regrouping | bold | They are licking wounds. {hours} hours before they remember they have teeth.
+tactic.learned.1 | tactic_learned | neutral | {faction} has seen us {posture} before. Next time they will come ready for it. Change it up.
+tactic.learned.2 | tactic_learned | cold | {faction} is learning. Next time we {posture}, it will cost us more.
+tactic.learned.3 | tactic_learned | bold | They are studying the wall. Good. Let them study the wrong thing.
+site.fortified.1 | site_fortified | neutral | {faction} is digging in around their sites. Our next raid there meets more steel.
+site.fortified.2 | site_fortified | cold | {faction} fortified. Every raid teaches them where to build.
+op.sabotage.1 | op_sabotage | neutral | {people} going in quiet toward {site}. No radio until it is done.
+op.sabotage.2 | op_sabotage | cold | Small team, {site}. If they are caught, they were never ours.
+sabotage.clean.1 | sabotage_clean | neutral | Their depots are burning. {faction} will hit softer for {hours} hours, and they do not know who did it.
+sabotage.clean.2 | sabotage_clean | bold | Clean work. {faction} is limping for {hours} hours.
+sabotage.traced.1 | sabotage_traced | neutral | It worked. {faction} is weaker for {hours} hours. They also found our boot prints.
+sabotage.traced.2 | sabotage_traced | cold | Their strikes are crippled for {hours} hours. So is any doubt about who did it.
+alliance.formed.1 | alliance_formed | neutral | {faction} stands with us. Their fighters are on the wall. They will want paying every day.
+alliance.formed.2 | alliance_formed | cold | Alliance with {faction}. Useful. Temporary. Everything is.
+alliance.ended.1 | alliance_ended | neutral | The alliance with {faction} is over. Their fighters have left the wall.
+alliance.ended.2 | alliance_ended | cold | {faction} is gone. We were paying for bodies. Now we are not.
+alliance.walkout.1 | alliance_walkout | neutral | {faction} walked out. No warning. Their fighters took the east stairs.
+alliance.walkout.2 | alliance_walkout | bold | {faction} left us. I would have left them first.
+alliance.betrayed.1 | alliance_betrayed | neutral | We hit our own ally. {faction} will not forget it, and neither will anyone watching.
+alliance.betrayed.2 | alliance_betrayed | cold | {faction} was an ally. Was.
+chapter.open.1 | chapter_opened | neutral | Chapter {tier}: {site}. {faction} is the pressure now.
+chapter.open.2 | chapter_opened | cold | New chapter. {site}. {faction} will test the wall.
+chapter.twist.1 | chapter_twist | neutral | Something changed. The record is in the story log. Read it before you trust me again.
+chapter.twist.2 | chapter_twist | warm | There is something you should know. I would rather you heard it from the log.
+chapter.twist.3 | chapter_twist | cold | New information. It does not change the mission.
+chapter.closed.1 | chapter_closed | neutral | {site} is over. {faction} pulled back. A memory fragment came back with it.
+chapter.closed.2 | chapter_closed | bold | {faction} broke first. I recovered something from the wreck of my memory. You may not like it.

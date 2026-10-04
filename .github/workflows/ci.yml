@@ -12,9 +12,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - run: python3 tools/gen_meta.py --check
       - run: dotnet restore DEADSWITCH.sln
-      # Non-blocking until the codebase has been formatted once; then remove continue-on-error.
       - run: dotnet format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore
-        continue-on-error: true
       - run: dotnet build DEADSWITCH.sln -c Release --no-restore -warnaserror
+      - run: dotnet build tools/UnityCompileCheck -c Release -warnaserror
       - run: dotnet test DEADSWITCH.sln -c Release --no-build

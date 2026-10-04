@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Headless compile check for unity/Assets/Game runtime code against Unity reference assemblies.
+       Not part of the game build; catches API mistakes without the Unity Editor (docs/agents/quality-bar.md).
+       The reference set is UnityEngine 2021.3: code must also compile on Unity 6, so avoid APIs removed since. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Deadswitch.Game.CompileCheck</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <Nullable>disable</Nullable>
+    <DefineConstants>$(DefineConstants);UNITY_COMPILE_CHECK</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/Assets/Game/**/*.cs" Exclude="../../unity/Assets/Game/**/Editor/**;../../unity/Assets/Game/Runtime/Rendering/**;../../unity/Assets/Game/Runtime/Notifications/Mobile/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Deadswitch.Sim/Deadswitch.Sim.csproj" />
+    <ProjectReference Include="../../src/Deadswitch.Host/Deadswitch.Host.csproj" />
+    <ProjectReference Include="../../src/Deadswitch.Art/Deadswitch.Art.csproj" />
+  </ItemGroup>
+</Project>

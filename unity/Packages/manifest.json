@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "com.deadswitch.sim": "file:../../src/Deadswitch.Sim",
+    "com.deadswitch.host": "file:../../src/Deadswitch.Host",
+    "com.deadswitch.art": "file:../../src/Deadswitch.Art",
     "com.unity.ai.navigation": "2.0.14",
     "com.unity.collab-proxy": "2.13.6",
     "com.unity.ide.rider": "3.0.40",

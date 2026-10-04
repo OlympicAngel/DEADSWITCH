@@ -1,0 +1,156 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Map.uss" />
+  <!-- SECTOR MAP (F-019): faction heat, sites, operations. Sample markers are for the preview; MapScreen rebuilds them. -->
+  <ui:VisualElement name="map" class="map">
+    <ui:VisualElement class="row map-head">
+      <ui:Label text="SECTOR MAP" class="ds-title" />
+      <ui:Label name="map-ops-count" text="OPS 1/2 // FUEL 64" class="ds-label map-head__sub" />
+    </ui:VisualElement>
+
+    <!-- heat per faction: name + level word + meter (never color alone) -->
+    <ui:VisualElement class="row map-heat">
+      <ui:VisualElement name="heat-0" class="map-heat__cell map-heat__cell--rust">
+        <ui:Label text="RUSTBORN" class="map-heat__name" />
+        <ui:Label name="heat-0-level" text="WATCHED 31" class="map-heat__level" />
+        <ui:VisualElement name="heat-0-meter" class="ds-meter ds-meter--amber map-heat__meter" />
+        <ui:Label name="adapt-0" text="KNOWS TURTLE 2 // FORT 1" class="map-adapt" />
+        <ui:Label name="spy-0-state" text="NO AGENT" class="map-spy__state" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-0-a" class="map-spy__btn"><ui:Label name="spy-0-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-0-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:Label name="pact-0-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-0" class="map-spy__btn map-pact map-ally is-disabled"><ui:Label name="ally-0-label" text="ALLY // NEEDS COLD" class="map-spy__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="heat-1" class="map-heat__cell map-heat__cell--vanguard">
+        <ui:Label text="VANGUARD" class="map-heat__name" />
+        <ui:Label name="heat-1-level" text="COLD 4" class="map-heat__level" />
+        <ui:VisualElement name="heat-1-meter" class="ds-meter map-heat__meter" />
+        <ui:Label name="adapt-1" text="" class="map-adapt is-hidden" />
+        <ui:Label name="spy-1-state" text="AGENT INSIDE" class="map-spy__state is-on" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-1-a" class="map-spy__btn"><ui:Label name="spy-1-a-label" text="FRAME" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-1-b" class="map-spy__btn"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:Label name="pact-1-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-1" class="map-spy__btn map-pact map-ally is-on"><ui:Label name="ally-1-label" text="ALLIED // END" class="map-spy__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="heat-2" class="map-heat__cell map-heat__cell--church">
+        <ui:Label text="CHURCH" class="map-heat__name" />
+        <ui:Label name="heat-2-level" text="COLD 0" class="map-heat__level" />
+        <ui:VisualElement name="heat-2-meter" class="ds-meter ds-meter--magenta map-heat__meter" />
+        <ui:Label name="adapt-2" text="" class="map-adapt is-hidden" />
+        <ui:Label name="spy-2-state" text="NO AGENT" class="map-spy__state" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-2-a" class="map-spy__btn"><ui:Label name="spy-2-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-2-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:Label name="pact-2-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-2" class="map-spy__btn map-pact map-ally"><ui:Label name="ally-2-label" text="ALLY // 600 E 100 F" class="map-spy__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="heat-3" class="map-heat__cell map-heat__cell--holdout">
+        <ui:Label text="HALCYON" class="map-heat__name" />
+        <ui:Label name="heat-3-level" text="COLD 0" class="map-heat__level" />
+        <ui:VisualElement name="heat-3-meter" class="ds-meter ds-meter--white map-heat__meter" />
+        <ui:Label name="adapt-3" text="" class="map-adapt is-hidden" />
+        <ui:Label name="spy-3-state" text="NO AGENT" class="map-spy__state" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-3-a" class="map-spy__btn"><ui:Label name="spy-3-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-3-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pact-3" class="map-spy__btn map-pact"><ui:Label name="pact-3-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="ally-3" class="map-spy__btn map-pact map-ally"><ui:Label name="ally-3-label" text="ALLY // 600 E 100 F" class="map-spy__label" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- world event (F-034): what the wastes are doing right now -->
+    <ui:VisualElement name="map-event" class="row map-event">
+      <ui:VisualElement class="ds-pip ds-pip--amber map-event__pip" />
+      <ui:Label name="map-event-text" text="SUPPLY WINDOW // LOOT +50% // TRADERS -25%" class="map-event__text grow" />
+    </ui:VisualElement>
+
+    <!-- tactical plot: Hub at center, range rings, sites -->
+    <ui:VisualElement name="map-plot" class="map-plot">
+      <ui:VisualElement class="map-ring map-ring--1" />
+      <ui:VisualElement class="map-ring map-ring--2" />
+      <ui:VisualElement class="map-ring map-ring--3" />
+      <ui:VisualElement class="map-axis map-axis--h" />
+      <ui:VisualElement class="map-axis map-axis--v" />
+      <ui:VisualElement class="map-hub"><ui:Label text="S-17" class="map-hub__label" /></ui:VisualElement>
+      <ui:VisualElement name="map-sites" class="map-sites">
+        <ui:VisualElement class="map-site map-site--rust is-selected" style="left: 30%; top: 35%;">
+          <ui:VisualElement class="map-site__mark" />
+          <ui:Label text="RUST MARKET" class="map-site__name" />
+        </ui:VisualElement>
+        <ui:VisualElement class="map-site map-site--vanguard" style="left: 65%; top: 80%;">
+          <ui:VisualElement class="map-site__mark" />
+          <ui:Label text="RELAY 9" class="map-site__name" />
+        </ui:VisualElement>
+        <ui:VisualElement class="map-site map-site--church" style="left: 7%; top: 15%;">
+          <ui:VisualElement class="map-site__mark" />
+          <ui:Label text="CATHEDRAL ARRAY" class="map-site__name" />
+        </ui:VisualElement>
+        <ui:VisualElement class="map-site map-site--rust map-site--outpost" style="left: 60%; top: 20%;">
+          <ui:VisualElement class="map-site__mark" />
+          <ui:Label text="COLLAPSED MALL // OUTPOST" class="map-site__name" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- operations in the field -->
+    <ui:VisualElement name="map-ops" class="map-ops">
+      <ui:VisualElement class="row map-op">
+        <ui:Label text="RAID // SCRAP CONVOY ROUTE // 4 SENT" class="map-op__text grow" />
+        <ui:Label text="1:12:40" class="map-op__time" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- selected site -->
+    <ui:VisualElement name="site-sheet" class="ds-panel map-sheet">
+      <ui:VisualElement class="row">
+        <ui:Label name="site-name" text="RUST MARKET" class="ds-title grow" />
+        <ui:Label name="site-owner" text="RUSTBORN // OUTPOST" class="ds-label t-amber" />
+      </ui:VisualElement>
+      <ui:VisualElement class="row map-sheet__facts">
+        <ui:VisualElement class="map-kv"><ui:Label text="TRAVEL" class="ds-label" /><ui:Label name="site-travel" text="2 H" class="map-kv__value" /></ui:VisualElement>
+        <ui:VisualElement class="map-kv"><ui:Label name="site-def-label" text="DEFENSE (AI EST)" class="ds-label" /><ui:Label name="site-def" text="~34" class="map-kv__value" /></ui:VisualElement>
+        <ui:VisualElement class="map-kv"><ui:Label text="HOLDS" class="ds-label" /><ui:Label name="site-loot" text="200 E  40 F  20 C" class="map-kv__value" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="op-kinds" class="map-seg">
+        <ui:VisualElement name="op-scout" class="map-seg__item"><ui:Label text="SCOUT" class="map-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="op-raid" class="map-seg__item is-selected"><ui:Label text="RAID" class="map-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="op-hack" class="map-seg__item"><ui:Label text="HACK" class="map-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="op-sabotage" class="map-seg__item"><ui:Label text="SABOTAGE" class="map-seg__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="row map-launch">
+        <ui:VisualElement name="op-minus" class="map-step"><ui:Label text="-" class="map-step__label" /></ui:VisualElement>
+        <ui:VisualElement class="map-amount">
+          <ui:Label name="op-amount" text="6" class="map-amount__value" />
+          <ui:Label name="op-amount-unit" text="PEOPLE" class="ds-label" />
+        </ui:VisualElement>
+        <ui:VisualElement name="op-plus" class="map-step"><ui:Label text="+" class="map-step__label" /></ui:VisualElement>
+        <ui:VisualElement class="grow map-odds">
+          <ui:Label name="op-odds" text="AI ODDS 62%" class="map-odds__value" />
+          <ui:Label name="op-cost" text="FUEL 16 // BACK IN 4 H" class="ds-label t-dim" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <!-- trade with the site's owner (F-034, doc 10 s5): price by their heat; Marked factions refuse -->
+      <ui:VisualElement name="map-trade" class="map-trade">
+        <ui:VisualElement class="row">
+          <ui:Label text="TRADE" class="ds-label grow" />
+          <ui:Label name="trade-left" text="3/3 TODAY // COLD x0.8" class="ds-label t-dim" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row map-trade__row">
+          <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 E" class="map-trade__pay" /></ui:VisualElement>
+          <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 F" class="map-trade__pay" /></ui:VisualElement>
+          <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 E" class="map-trade__pay" /></ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="row map-actions">
+        <ui:VisualElement name="op-launch" class="ds-btn ds-btn--warn grow"><ui:Label name="op-launch-label" text="LAUNCH RAID" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="site-claim" class="ds-btn ds-btn--primary map-claim"><ui:Label name="site-claim-label" text="CLAIM // 300 E" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:Label name="map-reason" text="" class="ds-body t-amber map-reason" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

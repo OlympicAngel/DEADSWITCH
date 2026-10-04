@@ -11,6 +11,8 @@ powershell -ExecutionPolicy Bypass -File tools\check.ps1      # restore, format,
 & "$env:DOTNET_ROOT\dotnet.exe" run --project src\Deadswitch.Cli -- 42 24  # headless sim: seed 42, 24 hours
 ```
 
+Linux/macOS: `tools/check.sh` runs the same gate.
+
 The check script prefers the SDK in `DOTNET_ROOT`. For direct .NET CLI commands, use that SDK explicitly so a machine-wide .NET installation earlier on `PATH` does not select a different SDK.
 Unity: see [`unity/README.md`](unity/README.md).
 
@@ -24,6 +26,8 @@ Unity: see [`unity/README.md`](unity/README.md).
 | AI advisor writing | [`docs/narrative/ADVISOR_VOICE.md`](docs/narrative/ADVISOR_VOICE.md) |
 | Agent instructions | [`AGENTS.md`](AGENTS.md) (Codex and humans), [`CLAUDE.md`](CLAUDE.md) (Claude Code) |
 | Session handoff log | [`docs/agents/HANDOFF.md`](docs/agents/HANDOFF.md) |
+| Balance numbers | [`src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`](src/Deadswitch.Sim/Resources/DeadswitchBalance.toml) (ADR-0008) |
+| Active feature / queue | [`TASK.md`](TASK.md), [`docs/roadmap/BACKLOG.md`](docs/roadmap/BACKLOG.md) |
 
 ## Design pillars (ranked)
 1. AI relationship  2. Base & economy  3. Defense & offline attacks  4. Offense & diplomacy

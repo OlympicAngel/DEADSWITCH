@@ -1,0 +1,40 @@
+/* LEGACY (SPEC-022). Tokens only. */
+
+.lgc { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-world); }
+.lgc-head { align-items: center; margin-bottom: var(--s-3); }
+.lgc-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); }
+.lgc-close__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+
+.lgc-score { padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.lgc-score__value { margin-top: var(--s-2); }
+.lgc-score__unit { margin-left: var(--s-3); }
+.lgc-breakdown { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-2); white-space: normal; }
+
+.lgc-best { color: var(--c-phosphor); margin-top: var(--s-1); }
+.lgc-section { margin-top: var(--s-5); margin-bottom: var(--s-2); }
+.lgc-m { align-items: center; min-height: 48px; }
+.lgc-m__pip { width: 14px; height: 14px; margin-right: var(--s-3); border-width: 2px; border-color: var(--c-line-mid); rotate: 45deg; }
+.lgc-m__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-faint); }
+.lgc-m.is-done > .lgc-m__pip { border-color: var(--c-phosphor); background-color: var(--c-phosphor); rotate: 0deg; }
+.lgc-m.is-done > .lgc-m__label { color: var(--c-text); }
+
+.lgc-perk { flex-direction: row; align-items: center; margin-bottom: var(--s-2); padding: var(--s-2) var(--s-3); border-width: 1px; border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.lgc-perk__body { flex-grow: 1; flex-shrink: 1; }
+.lgc-perk__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-text); }
+.lgc-perk__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
+.lgc-perk__btn { min-width: 220px; margin-left: var(--s-3); }
+
+.lgc-iron { margin-top: var(--s-5); padding-top: var(--s-3); padding-bottom: var(--s-3); align-items: center; }
+.lgc-iron.is-on { border-color: var(--c-red-glow); }
+.lgc-move { margin-top: var(--s-5); padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.lgc-move__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-amber); }
+.lgc-move__desc { margin-top: var(--s-2); font-size: var(--fs-micro); }
+.lgc-regions { margin-top: var(--s-3); }
+.lgc-region { flex-grow: 1; flex-basis: 0; min-height: 88px; margin-right: var(--s-2); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.lgc-region:last-child { margin-right: 0; }
+.lgc-region.is-selected { border-color: var(--c-amber); background-color: rgba(255, 179, 71, 0.10); }
+.lgc-region__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text); }
+.lgc-region__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+.lgc-move__btn { margin-top: var(--s-3); }
+.lgc-move__btn.is-armed { border-color: var(--c-red); background-color: rgba(216, 91, 82, 0.18); }
+.lgc-reason { margin-top: var(--s-2); min-height: 40px; }

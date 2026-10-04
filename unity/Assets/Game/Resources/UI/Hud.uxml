@@ -1,0 +1,135 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Hud.uss" />
+  <Style src="Base.uss" />
+  <ui:VisualElement name="hud" class="hud">
+
+    <!-- Resource bar: always-visible essentials (doc 08 s4) -->
+    <ui:VisualElement name="topbar" class="hud-top">
+      <ui:VisualElement name="energy-cell" class="hud-cell">
+        <ui:VisualElement class="ds-icon ds-icon--bolt hud-cell__icon" />
+        <ui:VisualElement class="hud-cell__body">
+          <ui:VisualElement class="row--baseline">
+            <ui:Label name="energy-value" text="262" class="hud-cell__value" />
+            <ui:Label name="energy-cap" text="/500" class="hud-cell__cap" />
+          </ui:VisualElement>
+          <ui:Label name="energy-net" text="+60/h" class="hud-cell__rate t-phosphor" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="compute-cell" class="hud-cell">
+        <ui:VisualElement class="ds-icon ds-icon--chip hud-cell__icon" />
+        <ui:VisualElement class="hud-cell__body">
+          <ui:VisualElement class="row--baseline">
+            <ui:Label name="compute-value" text="100" class="hud-cell__value" />
+            <ui:Label name="compute-cap" text="/100" class="hud-cell__cap" />
+          </ui:VisualElement>
+          <ui:Label name="compute-rate" text="+60/h" class="hud-cell__rate t-dim" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="people-cell" class="hud-cell">
+        <ui:VisualElement class="ds-icon ds-icon--people hud-cell__icon" />
+        <ui:VisualElement class="hud-cell__body">
+          <ui:VisualElement class="row--baseline">
+            <ui:Label name="people-value" text="20" class="hud-cell__value" />
+            <ui:Label name="people-cap" text="/20" class="hud-cell__cap" />
+          </ui:VisualElement>
+          <ui:Label name="people-crew" text="CREW 3/3" class="hud-cell__rate t-dim" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="core-cell" class="hud-cell hud-cell--core">
+        <ui:VisualElement name="core-gauge" class="ds-gauge hud-cell__gauge" />
+        <ui:VisualElement class="hud-cell__body">
+          <ui:VisualElement class="row--baseline">
+            <ui:Label name="core-value" text="23" class="hud-cell__value t-phosphor" />
+            <ui:Label text="%" class="hud-cell__cap" />
+          </ui:VisualElement>
+          <ui:Label name="core-band" text="STABLE" class="hud-cell__rate t-phosphor" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- Drone-feed frame over the 3D view -->
+    <ui:VisualElement name="frame" class="hud-frame">
+      <ui:VisualElement class="hud-bracket hud-bracket--tl" />
+      <ui:VisualElement class="hud-bracket hud-bracket--tr" />
+      <ui:VisualElement class="hud-bracket hud-bracket--bl" />
+      <ui:VisualElement class="hud-bracket hud-bracket--br" />
+      <ui:VisualElement class="hud-frame__top">
+        <ui:VisualElement class="hud-feed">
+          <ui:Label name="feed-id" text="DRONE_RECON_07" class="hud-feed__line" />
+          <ui:Label name="clock" text="DAY 03  14:22" class="hud-feed__line t-dim" />
+          <ui:VisualElement name="heat-chip" class="row hud-heat">
+            <ui:VisualElement name="heat-pip" class="hud-heat__pip" />
+            <ui:Label name="heat-text" text="HEAT // WATCHED // RUSTBORN" class="hud-heat__text" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="spacer" />
+        <ui:VisualElement class="hud-right">
+          <ui:VisualElement name="raid-banner" class="hud-alert">
+            <ui:VisualElement name="raid-pip" class="ds-pip ds-pip--amber ds-pip--diamond hud-alert__pip" />
+            <ui:VisualElement>
+              <ui:Label name="raid-title" text="RAID INCOMING" class="hud-alert__title" />
+              <ui:Label name="raid-time" text="17:42" class="hud-alert__time" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement name="next-timer" class="hud-next">
+            <ui:VisualElement name="next-pip" class="ds-pip" />
+            <ui:VisualElement>
+              <ui:Label name="next-label" text="BATTERY BANK L1" class="hud-next__label" />
+              <ui:Label name="next-time" text="12:30" class="hud-next__time" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement name="dispatch-chip" class="hud-dispatch is-hidden">
+            <ui:VisualElement name="dispatch-pip" class="ds-pip ds-pip--amber hud-dispatch__pip" />
+            <ui:VisualElement>
+              <ui:Label name="dispatch-title" text="DILEMMA // REFUGEES" class="hud-dispatch__title" />
+              <ui:Label name="dispatch-time" text="11:02:40" class="hud-dispatch__time" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement name="report-chip" class="hud-report is-hidden">
+            <ui:VisualElement class="ds-pip hud-report__pip" />
+            <ui:Label name="report-chip-label" text="AFTER-ACTION // RAID 3" class="hud-report__label" />
+          </ui:VisualElement>
+          <ui:VisualElement class="hud-override">
+            <ui:Label text="OVR" class="hud-override__label" />
+            <ui:VisualElement name="override-pips" class="row">
+              <ui:VisualElement class="hud-opip is-on" />
+              <ui:VisualElement class="hud-opip" />
+              <ui:VisualElement class="hud-opip" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="raid-detail" class="hud-raidrow">
+        <ui:Label name="raid-estimate" text="NORTH RIDGE // EST 34 // DEF 12 // TURTLE" class="hud-raidrow__text" />
+        <ui:VisualElement name="raid-command" class="ds-btn ds-btn--ghost hud-raidrow__btn hud-raidrow__cmd"><ui:Label name="raid-command-label" text="TAKE COMMAND" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="raid-defend" class="ds-btn ds-btn--warn hud-raidrow__btn"><ui:Label text="DEFEND" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- Screen area: the 3D base shows through; screens mount here -->
+    <ui:VisualElement name="screen" class="hud-screen" />
+
+    <!-- Opening guide (SPEC-009 rule 6): one objective at a time -->
+    <ui:VisualElement name="guide" class="hud-guide is-hidden">
+      <ui:VisualElement class="hud-guide__pip" />
+      <ui:VisualElement class="hud-guide__body">
+        <ui:Label name="guide-title" text="OBJECTIVE // BUILD A BATTERY BANK" class="hud-guide__title" />
+        <ui:Label name="guide-reason" text="More stored energy for builds and raids. Tap an empty plot." class="hud-guide__reason" />
+      </ui:VisualElement>
+      <ui:VisualElement name="guide-close" class="hud-guide__close"><ui:Label text="X" class="hud-guide__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="advisor" class="hud-advisor">
+      <ui:Label text="&gt;" class="hud-advisor__caret" />
+      <ui:Label name="advisor-text" text="Power is the problem. Power is always the problem." class="hud-advisor__text" />
+    </ui:VisualElement>
+
+    <!-- Command bar -->
+    <ui:VisualElement name="tabbar" class="hud-tabs">
+      <ui:VisualElement name="tab-base" class="hud-tab is-active"><ui:VisualElement class="ds-icon ds-icon--base hud-tab__icon" /><ui:Label text="BASE" class="hud-tab__label" /></ui:VisualElement>
+      <ui:VisualElement name="tab-map" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--map hud-tab__icon" /><ui:Label text="MAP" class="hud-tab__label" /></ui:VisualElement>
+      <ui:VisualElement name="tab-core" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--core hud-tab__icon" /><ui:Label text="CORE" class="hud-tab__label" /><ui:VisualElement name="core-dot" class="hud-tab__dot" /></ui:VisualElement>
+      <ui:VisualElement name="tab-ops" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--ops hud-tab__icon" /><ui:Label text="OPS" class="hud-tab__label" /></ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

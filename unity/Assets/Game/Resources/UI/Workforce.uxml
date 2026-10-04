@@ -1,0 +1,64 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Workforce.uss" />
+  <!-- WORKFORCE (SPEC-012): the people, their loyalty and the ruthless shortcuts. Every cost is shown before the tap;
+       a lethal choice needs a second tap to confirm. Sample values are for the preview; WorkforceScreen fills everything. -->
+  <ui:VisualElement name="workforce" class="wf">
+    <ui:VisualElement class="row wf-head">
+      <ui:Label text="WORKFORCE" class="ds-title grow" />
+      <ui:VisualElement name="wf-close" class="wf-close"><ui:Label text="X" class="wf-close__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement class="ds-panel wf-stats">
+      <ui:VisualElement class="row">
+        <ui:VisualElement class="wf-kv"><ui:Label text="POPULATION" class="ds-label" /><ui:Label name="wf-pop" text="18/20" class="wf-kv__value" /></ui:VisualElement>
+        <ui:VisualElement class="wf-kv"><ui:Label text="CREW" class="ds-label" /><ui:Label name="wf-crew" text="9/11" class="wf-kv__value" /></ui:VisualElement>
+        <ui:VisualElement class="wf-kv"><ui:Label text="GARRISON" class="ds-label" /><ui:Label name="wf-garrison" text="2" class="wf-kv__value" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="row wf-loyalty">
+        <ui:Label text="LOYALTY" class="ds-label" />
+        <ui:VisualElement class="spacer" />
+        <ui:Label name="wf-loyalty-band" text="STRAINED" class="ds-label t-amber" />
+        <ui:Label name="wf-loyalty-pct" text="52%" class="wf-loyalty__pct t-amber" />
+      </ui:VisualElement>
+      <ui:VisualElement name="wf-loyalty-meter" class="ds-meter ds-meter--amber" />
+      <ui:Label name="wf-loyalty-fx" text="Generator and Server Rack output -10%. Recovers 0.4% per hour without a surge." class="ds-body t-dim wf-note" />
+      <ui:Label name="wf-surge" text="SURGE RUNNING // +40% OUTPUT // 4:12:00 LEFT" class="ds-label t-amber wf-surge" />
+    </ui:VisualElement>
+
+    <ui:Label text="SHORTCUTS // EVERY ONE COSTS LIVES AND MAKES ME COLDER" class="ds-label wf-section" />
+
+    <ui:VisualElement name="wf-forced" class="ds-panel wf-choice">
+      <ui:VisualElement class="row">
+        <ui:Label text="FORCED LABOR" class="wf-choice__name grow" />
+        <ui:Label name="wf-forced-gain" text="+40% OUTPUT // 6H" class="ds-label t-phosphor" />
+      </ui:VisualElement>
+      <ui:Label name="wf-forced-cost" text="2 DIE // LOYALTY -20 // COLDER" class="ds-label t-red wf-choice__cost" />
+      <ui:VisualElement name="wf-forced-btn" class="ds-btn ds-btn--warn wf-choice__btn"><ui:Label text="ORDER DOUBLE SHIFTS" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="wf-cleanse" class="ds-panel wf-choice">
+      <ui:VisualElement class="row">
+        <ui:Label text="NEURAL CLEANSING" class="wf-choice__name grow" />
+        <ui:Label name="wf-cleanse-gain" text="CORE -16%" class="ds-label t-phosphor" />
+      </ui:VisualElement>
+      <ui:Label name="wf-cleanse-cost" text="2 DIE // LOYALTY -10 // COLDER" class="ds-label t-red wf-choice__cost" />
+      <ui:VisualElement class="row wf-stepper">
+        <ui:VisualElement name="wf-cleanse-minus" class="wf-step"><ui:Label text="-" class="wf-step__label" /></ui:VisualElement>
+        <ui:Label name="wf-cleanse-n" text="2" class="wf-step__value" />
+        <ui:VisualElement name="wf-cleanse-plus" class="wf-step"><ui:Label text="+" class="wf-step__label" /></ui:VisualElement>
+        <ui:VisualElement name="wf-cleanse-btn" class="ds-btn ds-btn--warn wf-choice__btn grow"><ui:Label text="CLEANSE" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="wf-crackdown" class="ds-panel wf-choice">
+      <ui:VisualElement class="row">
+        <ui:Label text="CRACKDOWN" class="wf-choice__name grow" />
+        <ui:Label name="wf-crackdown-gain" text="LOYALTY +25" class="ds-label t-phosphor" />
+      </ui:VisualElement>
+      <ui:Label name="wf-crackdown-cost" text="2 REMOVED // COLDER // ONLY WHEN THEY ARE RESTLESS" class="ds-label t-red wf-choice__cost" />
+      <ui:VisualElement name="wf-crackdown-btn" class="ds-btn ds-btn--warn wf-choice__btn"><ui:Label text="MAKE AN EXAMPLE" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:Label name="wf-reason" text="" class="ds-body t-amber wf-reason" />
+  </ui:VisualElement>
+</ui:UXML>
