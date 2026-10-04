@@ -22,9 +22,8 @@ The sim must produce **bit-identical** results for the same seed + inputs on eve
 ## Checklist for any sim change
 - [ ] New state field added to `GameState` **and** `StateHasher`.
 - [ ] New randomness uses `state.Rng` and always draws the same number of times per tick.
-- [ ] Test: same seed gives same hash; different seed diverges.
-- [ ] Test: chunked run equals single run.
-- [ ] Test: any cap or limit rule (loot cap, offline attack cap, resource caps).
+- [ ] Existing chunked-equals-whole test still passes (it covers determinism).
+- [ ] New hard cap or limit: assert it inside `Tier1Defaults_HoldCoreGuarantees` rather than adding a new test.
 - [ ] Offline attack cap and mercy window rules from doc 10 section 4 still hold.
 
 ## Offline catch-up

@@ -17,9 +17,4 @@ jobs:
       - run: dotnet format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore
         continue-on-error: true
       - run: dotnet build DEADSWITCH.sln -c Release --no-restore -warnaserror
-      - run: dotnet test DEADSWITCH.sln -c Release --no-build --logger "trx;LogFileName=test.trx"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: "**/TestResults/*.trx"
+      - run: dotnet test DEADSWITCH.sln -c Release --no-build
