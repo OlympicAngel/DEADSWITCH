@@ -139,6 +139,7 @@ namespace Deadswitch.Game.UI.Hud
             _dispatchChip = Q<VisualElement>("dispatch-chip");
             _dispatchChip.RegisterCallback<ClickEvent>(_ => Router.Show("dispatch"));
             Q<Label>("feed-id").text = "DRONE_RECON_" + ((_host.Sim.Seed % 89) + 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            Q<VisualElement>("heat-chip").RegisterCallback<ClickEvent>(_ => Router.Show("map"));
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));
             Router.BindTab("core", Q<VisualElement>("tab-core"));
@@ -269,6 +270,13 @@ namespace Deadswitch.Game.UI.Hud
             }
 
             _clock.text = Fmt.Clock(s.Tick);
+            Faction hot = WorldSystem.Hottest(s);
+            HeatLevel heat = WorldSystem.Level(s.Heat[(int)hot]);
+            VisualElement heatChip = Q<VisualElement>("heat-chip");
+            heatChip.EnableInClassList("hud-heat--watched", heat == HeatLevel.Watched);
+            heatChip.EnableInClassList("hud-heat--hunted", heat == HeatLevel.Hunted);
+            heatChip.EnableInClassList("hud-heat--marked", heat == HeatLevel.Marked);
+            Q<Label>("heat-text").text = "HEAT // " + heat.ToString().ToUpperInvariant() + (heat == HeatLevel.Cold ? string.Empty : " // " + Names.Faction(hot));
 
             for (int i = 0; i < _overridePips.Length; i++)
             {

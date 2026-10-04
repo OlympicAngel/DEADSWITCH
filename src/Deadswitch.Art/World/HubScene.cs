@@ -43,7 +43,8 @@ namespace Deadswitch.Art.World
         {
             FacilitySlot f = s.Slots[slot];
             BuildJob? job = s.JobForSlot(slot);
-            return new SlotView(f.Kind, f.Level, f.Enabled && f.Powered, !f.IsEmpty && f.Enabled && !f.Staffed, job?.Kind ?? FacilityKind.None, job?.TargetLevel ?? 0, f.IsEmpty ? 0 : f.Damage);
+            // a glitch-stalled unit (SPEC-021) looks dead: lamps out, parts still
+            return new SlotView(f.Kind, f.Level, f.Enabled && f.Powered && f.StalledUntilTick <= s.Tick, !f.IsEmpty && f.Enabled && !f.Staffed, job?.Kind ?? FacilityKind.None, job?.TargetLevel ?? 0, f.IsEmpty ? 0 : f.Damage);
         }
     }
 

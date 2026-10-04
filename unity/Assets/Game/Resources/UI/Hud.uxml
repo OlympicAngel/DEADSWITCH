@@ -57,6 +57,10 @@
         <ui:VisualElement class="hud-feed">
           <ui:Label name="feed-id" text="DRONE_RECON_07" class="hud-feed__line" />
           <ui:Label name="clock" text="DAY 03  14:22" class="hud-feed__line t-dim" />
+          <ui:VisualElement name="heat-chip" class="row hud-heat">
+            <ui:VisualElement name="heat-pip" class="hud-heat__pip" />
+            <ui:Label name="heat-text" text="HEAT // WATCHED // RUSTBORN" class="hud-heat__text" />
+          </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="spacer" />
         <ui:VisualElement class="hud-right">

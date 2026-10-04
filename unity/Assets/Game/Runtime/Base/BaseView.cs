@@ -37,6 +37,8 @@ namespace Deadswitch.Game.Base
         private bool _yardBurning;
         private float _fxEffects = -1f;
         private bool _fxReduced;
+        private float _flicker = 1f;
+        private float _flickerHold;
 
         private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
         private static readonly int ConeScaleId = Shader.PropertyToID("_DsConeScale");
@@ -407,6 +409,7 @@ namespace Deadswitch.Game.Base
             {
                 Lighting = _look.At(BaseLook.Hour(_host.Sim.State.Tick, _host.TickProgress));
                 ApplyLight(Lighting);
+                CorruptionFlicker();
             }
 
             bool reduced = _host != null && _host.Settings.ReducedMotion;
@@ -462,6 +465,45 @@ namespace Deadswitch.Game.Base
                 // fire stays readable by day: never below a floor of the night strength
                 float flicker = reduced ? 0.9f : BattleFx.Flicker(_time, f.Seed);
                 f.Light.intensity = f.BaseIntensity * Mathf.Max(points, 0.6f * _look.unityPointScale) * flicker;
+            }
+        }
+
+        /// <summary>
+        /// Corruption visuals (doc 06 s3): from Unstable the Hub's lamps and lights stutter, harder at Critical.
+        /// Scaled by effect intensity; off with reduced motion.
+        /// </summary>
+        private void CorruptionFlicker()
+        {
+            if (_host.Settings.ReducedMotion || _host.Settings.Effects <= 0f)
+            {
+                return;
+            }
+
+            int band = (int)Sim.Systems.CorruptionSystem.Band(_host.Sim.Config, _host.Sim.State.CorruptionMilli);
+            if (band < 2)
+            {
+                return;
+            }
+
+            _flickerHold -= Time.deltaTime;
+            if (_flickerHold <= 0f)
+            {
+                bool dip = Random.value < (band == 3 ? 0.12f : 0.05f) * _host.Settings.Effects;
+                _flicker = dip ? Random.Range(0.05f, 0.4f) : 1f;
+                _flickerHold = dip ? Random.Range(0.04f, 0.16f) : Random.Range(0.1f, 0.4f);
+            }
+
+            if (_flicker < 1f)
+            {
+                Shader.SetGlobalFloat(EmissionScaleId, Lighting.emissionScale * _flicker);
+                float points = Lighting.pointScale * _look.unityPointScale * _flicker;
+                foreach ((Light light, float baseIntensity) p in _points)
+                {
+                    if (p.light != null)
+                    {
+                        p.light.intensity = p.baseIntensity * points;
+                    }
+                }
             }
         }
 
