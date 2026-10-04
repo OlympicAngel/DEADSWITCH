@@ -10,6 +10,7 @@
 .lgc-score__unit { margin-left: var(--s-3); }
 .lgc-breakdown { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-2); white-space: normal; }
 
+.lgc-best { color: var(--c-phosphor); margin-top: var(--s-1); }
 .lgc-section { margin-top: var(--s-5); margin-bottom: var(--s-2); }
 .lgc-m { align-items: center; min-height: 48px; }
 .lgc-m__pip { width: 14px; height: 14px; margin-right: var(--s-3); border-width: 2px; border-color: var(--c-line-mid); rotate: 45deg; }

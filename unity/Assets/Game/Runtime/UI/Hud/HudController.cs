@@ -124,6 +124,7 @@ namespace Deadswitch.Game.UI.Hud
             });
             Router.Register(premium);
             Router.Register(new LegacyScreen(Router));
+            Records.Hook(_host);
             Router.Register(new StoryScreen(Router));
             Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings"), () =>
             {

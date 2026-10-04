@@ -46,6 +46,19 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void Verifier_ReplaysAHonestRun_AndRejectsAnEditedOne()
+        {
+            // leaderboards (F-049): seed + commands must reproduce the saved state; an edited save is caught
+            var honest = new Simulation(31UL);
+            Deadswitch.Host.Dev.ScriptedPlayer.Play(honest, 3L * SimConfig.TicksPerDay);
+            Assert.Equal(Deadswitch.Host.Online.VerifyResult.Verified, Deadswitch.Host.Online.RunVerifier.Verify(SaveGame.Write(honest), honest.Config, out Deadswitch.Host.Online.RunSubmission? run));
+            Assert.Equal(honest.State.Tick, run!.Info.Tick);
+
+            honest.State.Energy += 500;
+            Assert.Equal(Deadswitch.Host.Online.VerifyResult.Diverged, Deadswitch.Host.Online.RunVerifier.Verify(SaveGame.Write(honest), honest.Config, out _));
+        }
+
+        [Fact]
         public void FormatV1Save_StillLoads_AndContinues()
         {
             // Written by the build before SPEC-004 (save format v1). Guards the versioned visitor migration.

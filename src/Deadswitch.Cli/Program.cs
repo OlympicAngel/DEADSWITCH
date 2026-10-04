@@ -51,6 +51,8 @@ namespace Deadswitch.Cli
                         return ReportCommand(rest);
                     case "balance":
                         return BalanceCommand(rest);
+                    case "verify":
+                        return VerifyCommand(rest);
                     case "help":
                     case "--help":
                     case "-h":
@@ -81,6 +83,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  advisor [--days N] [--seed N] [--delegation manual|delegated|autopilot] [--away]");
             w.WriteLine("  balance [--seeds N] [--days N] [--profile active|casual|autopilot|idle|all] [--config PATH] [--out PATH]");
             w.WriteLine("  config dump [--defaults] [--out PATH]");
+            w.WriteLine("  verify --save PATH [--config PATH]   replay a save from its seed; exit 0 when it reproduces");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
             w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last] [--faction N]");
@@ -280,6 +283,21 @@ namespace Deadswitch.Cli
         }
 
         /// <summary>report [--days N] [--seed N] [--raid ID] [--verify]: a battle report after a scripted run (SPEC-006).</summary>
+        /// <summary>verify --save PATH [--config PATH]: replays a save from its seed and commands (F-049).</summary>
+        private static int VerifyCommand(string[] args)
+        {
+            string path = ValueAfter(args, "--save") ?? throw new UsageException("verify needs --save PATH.");
+            SimConfig config = LoadConfig(ValueAfter(args, "--config"), out string source);
+            Deadswitch.Host.Online.VerifyResult result = Deadswitch.Host.Online.RunVerifier.Verify(System.IO.File.ReadAllBytes(path), config, out Deadswitch.Host.Online.RunSubmission? run);
+            Console.WriteLine("verify: " + result + " (config " + source + ")");
+            if (run != null)
+            {
+                Console.WriteLine("  score " + run.Score + " // tier " + run.HighestTier + " // cycle " + (run.Cycle + 1) + " // fragments " + run.Fragments + (run.Ironman ? " // IRONMAN" : string.Empty) + " // day " + (run.Info.Tick / SimConfig.TicksPerDay));
+            }
+
+            return result == Deadswitch.Host.Online.VerifyResult.Verified ? 0 : 1;
+        }
+
         private static int ReportCommand(string[] args)
         {
             double days = double.Parse(ValueAfter(args, "--days") ?? "2", CultureInfo.InvariantCulture);

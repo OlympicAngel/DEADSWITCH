@@ -103,6 +103,8 @@ namespace Deadswitch.Game.UI.Screens
         public void OnShow()
         {
             _visible = true;
+            Records.Hook(_host);
+            Records.Update(_host);
             _armedAt = -1;
             _reason.text = string.Empty;
             Refresh();
@@ -149,6 +151,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("lgc-cycle").text = "CYCLE " + (s.Cycle + 1) + " // LEGACY ON RECORD " + Fmt.Num(s.LegacyTotal);
             _ui.Q<Label>("lgc-points").text = Fmt.Num(s.LegacyPoints) + " LP";
             _ui.Q<Label>("lgc-score").text = Fmt.Num(score);
+            _ui.Q<Label>("lgc-best").text = "PERSONAL BEST // " + Fmt.Num(Records.BestScore) + " // TIER " + Records.BestTier + " // " + Records.BestCycle + (Records.BestCycle == 1 ? " CYCLE" : " CYCLES");
             _ui.Q<Label>("lgc-breakdown").text = "TIER " + s.HighestTier + " x" + l.ScorePerTier + "  +  PEAK POWER " + Fmt.Num(s.PeakPower) + " / " + l.PowerDivisor
                 + "  +  " + veterans + " VETERANS x" + l.ScorePerVeteran + "  +  " + LegacySystem.MasteryDone(s) + " MASTERY x" + l.ScorePerMastery;
 

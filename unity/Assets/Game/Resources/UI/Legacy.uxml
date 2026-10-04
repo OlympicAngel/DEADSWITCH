@@ -17,6 +17,7 @@
         <ui:Label name="lgc-score" text="486" class="ds-value ds-value--hero" />
         <ui:Label text="LEGACY SCORE" class="ds-label lgc-score__unit" />
       </ui:VisualElement>
+      <ui:Label name="lgc-best" text="PERSONAL BEST // 1,240 // TIER 3 // 2 CYCLES" class="lgc-breakdown lgc-best" />
       <ui:Label name="lgc-breakdown" text="TIER 2 x100  +  PEAK POWER 412 / 10  +  4 VETERANS x20  +  3 MASTERY x50" class="lgc-breakdown" />
     </ui:VisualElement>
 
