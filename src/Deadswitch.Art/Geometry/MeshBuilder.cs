@@ -148,10 +148,16 @@ namespace Deadswitch.Art.Geometry
 
         /// <summary>
         /// A vertical frustum (cylinder when radii match) from <paramref name="baseCenter"/> up by
-        /// <paramref name="height"/>, with chamfered rims and flat caps. Low segment counts read as stylized facets.
+        /// <paramref name="height"/>, with chamfered rims and flat caps. Segment counts are raised for larger radii so nothing reads as a faceted toy.
         /// </summary>
         public void Frustum(Vector3 baseCenter, float rBottom, float rTop, float height, int segments, Mat mat, float bevel = 0.04f, bool caps = true, Mat? capMat = null)
         {
+            // round things are round (doc 11 anti-toy rules): faceting only survives on thin parts
+            float rMax = Math.Max(rBottom, rTop);
+            if (mat != Mat.Foliage && mat != Mat.Rock)
+            {
+                segments = Math.Max(segments, rMax >= 0.25f ? 18 : (rMax >= 0.12f ? 12 : segments));
+            }
             float b = Math.Min(bevel, Math.Min(height * 0.3f, Math.Min(rBottom, rTop) * 0.5f));
             var rings = new List<(float y, float r)>();
             if (b > 0.001f)

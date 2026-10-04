@@ -205,6 +205,89 @@ namespace Deadswitch.Art.Models
         }
 
         /// <summary>Welded patch plate (thin, slightly proud of a wall facing -Z).</summary>
+        /// <summary>200-litre steel drum (0.58 m x 0.88 m): rolling hoops, rolled rims, recessed lid with bungs.</summary>
+        public static void Barrel(MeshBuilder b, Vector3 baseCenter, Mat mat, bool lyingAlongZ = false)
+        {
+            if (lyingAlongZ)
+            {
+                b.Push(Matrix4x4.CreateTranslation(new Vector3(0, -0.44f, 0)) * Matrix4x4.CreateRotationX(MeshBuilder.Deg(90)) * Matrix4x4.CreateTranslation(baseCenter + new Vector3(0, 0.29f, 0)));
+                Barrel(b, Vector3.Zero, mat);
+                b.Pop();
+                return;
+            }
+
+            b.Frustum(baseCenter, 0.285f, 0.285f, 0.88f, 20, mat, 0.02f);
+            foreach (float y in new[] { 0.0f, 0.29f, 0.57f, 0.855f })
+            {
+                b.Frustum(baseCenter + new Vector3(0, y, 0), 0.297f, 0.297f, 0.028f, 20, mat, 0.008f, false);
+            }
+
+            b.Frustum(baseCenter + new Vector3(0, 0.875f, 0), 0.25f, 0.25f, 0.012f, 20, Mat.DarkSteel, 0f);
+            b.Frustum(baseCenter + new Vector3(0.12f, 0.885f, 0.05f), 0.035f, 0.035f, 0.02f, 8, Mat.DarkSteel, 0.004f);
+            b.Frustum(baseCenter + new Vector3(-0.15f, 0.885f, -0.02f), 0.022f, 0.022f, 0.016f, 8, Mat.DarkSteel, 0.004f);
+        }
+
+        /// <summary>
+        /// A tarp draped over a heap (center on the ground, footprint w x d, height h): a smooth folded sheet that
+        /// sags to the ground with a flared hem, two tie-down ropes and stakes. Never a blob (doc 11 anti-toy rules).
+        /// </summary>
+        public static void Tarp(MeshBuilder b, Vector3 center, float w, float d, float h, Mat mat, uint seed)
+        {
+            const int nx = 10;
+            const int nz = 8;
+            var rng = new ArtRandom(seed);
+            float foldA = rng.Range(0f, 6.28f);
+            float lump1 = rng.Range(-0.3f, 0.3f);
+            float lump2 = rng.Range(-0.3f, 0.3f);
+            var pts = new Vector3[nx + 1, nz + 1];
+            for (int i = 0; i <= nx; i++)
+            {
+                for (int k = 0; k <= nz; k++)
+                {
+                    float u = (i / (float)nx * 2f) - 1f;
+                    float v = (k / (float)nz * 2f) - 1f;
+                    float edge = Math.Max(Math.Abs(u), Math.Abs(v));
+                    float heap = (float)Math.Pow(Math.Max(0f, 1f - Math.Pow(edge, 3.0)), 0.6);
+                    float lumps = 1f + (0.18f * (float)Math.Sin((u - lump1) * 3.1f)) + (0.12f * (float)Math.Cos((v + lump2) * 2.7f));
+                    float fold = 0.035f * (float)Math.Sin(((u * Math.Cos(foldA)) + (v * Math.Sin(foldA))) * 9.0) * (1f - (edge * 0.5f));
+                    float flare = 1f + (0.08f * (float)Math.Pow(edge, 4.0));
+                    pts[i, k] = center + new Vector3(u * w * 0.5f * flare, Math.Max(0.02f, (h * heap * lumps) + fold), v * d * 0.5f * flare);
+                }
+            }
+
+            var inside = center + new Vector3(0, h * 0.3f, 0);
+            for (int i = 0; i < nx; i++)
+            {
+                for (int k = 0; k < nz; k++)
+                {
+                    Vector3[] q = { pts[i, k], pts[i + 1, k], pts[i + 1, k + 1], pts[i, k + 1] };
+                    b.FaceSmooth(inside, mat, q, new[] { Normal(pts, i, k), Normal(pts, i + 1, k), Normal(pts, i + 1, k + 1), Normal(pts, i, k + 1) });
+                }
+            }
+
+            // tie-down ropes over the top, staked at both ends
+            foreach (int k in new[] { 2, nz - 2 })
+            {
+                for (int i = 0; i < nx; i++)
+                {
+                    b.Strut(pts[i, k] + new Vector3(0, 0.015f, 0), pts[i + 1, k] + new Vector3(0, 0.015f, 0), 0.016f, Mat.Rubber);
+                }
+
+                b.Strut(pts[0, k], pts[0, k] + new Vector3(-0.15f, -0.1f, 0), 0.02f, Mat.Wood);
+                b.Strut(pts[nx, k], pts[nx, k] + new Vector3(0.15f, -0.1f, 0), 0.02f, Mat.Wood);
+            }
+        }
+
+        private static Vector3 Normal(Vector3[,] pts, int i, int k)
+        {
+            int nx = pts.GetLength(0) - 1;
+            int nz = pts.GetLength(1) - 1;
+            Vector3 du = pts[Math.Min(i + 1, nx), k] - pts[Math.Max(i - 1, 0), k];
+            Vector3 dv = pts[i, Math.Min(k + 1, nz)] - pts[i, Math.Max(k - 1, 0)];
+            Vector3 n = Vector3.Cross(dv, du);
+            return n.Y < 0 ? -Vector3.Normalize(n) : Vector3.Normalize(n);
+        }
+
         public static void Plate(MeshBuilder b, Vector3 center, float w, float h, float tiltDeg, Mat mat = Mat.Rust)
         {
             b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(tiltDeg)) * Matrix4x4.CreateTranslation(center));

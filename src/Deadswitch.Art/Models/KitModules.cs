@@ -29,7 +29,13 @@ namespace Deadswitch.Art.Models
                 }
 
                 bool lit = rng.Next() < 0.6f;
-                b.Box(new Vector3(x, baseCenter.Y + 1.55f, z - 0.01f), new Vector3(0.8f, 0.55f, 0.03f), lit ? Mat.Interior : Mat.Glass, 0f);
+                b.Box(new Vector3(x, baseCenter.Y + 1.55f, z - 0.01f), new Vector3(0.8f, 0.55f, 0.03f), Mat.Glass, 0f);
+                if (lit)
+                {
+                    // lamp-lit room behind dirty glass: a smaller warm core, not a glowing pane
+                    b.Box(new Vector3(x + 0.06f, baseCenter.Y + 1.53f, z - 0.02f), new Vector3(0.46f, 0.32f, 0.02f), Mat.Interior, 0f);
+                }
+
                 b.Box(new Vector3(x, baseCenter.Y + 1.86f, z - 0.03f), new Vector3(0.96f, 0.08f, 0.06f), Mat.DarkSteel, 0.01f);
                 b.Box(new Vector3(x, baseCenter.Y + 1.24f, z - 0.05f), new Vector3(0.96f, 0.06f, 0.12f), Mat.DarkSteel, 0.01f);
                 for (int k = 0; k < 3; k++)
@@ -67,8 +73,8 @@ namespace Deadswitch.Art.Models
                         Shapes.SandbagWall(b, p - new Vector3(0.8f, 0, 0), p + new Vector3(0.8f, 0, 0.2f), 2);
                         break;
                     case 2:
-                        b.Frustum(p, 0.29f, 0.29f, 0.88f, 12, rng.Next() < 0.5f ? Mat.PaintRed : Mat.OliveSteel, 0.03f);
-                        b.Frustum(p + new Vector3(0.62f, 0, 0.1f), 0.29f, 0.29f, 0.88f, 12, Mat.Rust, 0.03f);
+                        KitParts.Barrel(b, p, rng.Next() < 0.5f ? Mat.PaintRed : Mat.OliveSteel);
+                        KitParts.Barrel(b, p + new Vector3(0.62f, 0, 0.1f), Mat.Rust);
                         break;
                     case 3:
                         b.Frustum(p, 0.05f, 0.03f, rng.Range(1.6f, 3.2f), 6, Mat.DarkSteel, 0.01f);
@@ -286,25 +292,15 @@ namespace Deadswitch.Art.Models
             {
                 Mat mat = rng.Next() < 0.35f ? Mat.PaintRed : (rng.Next() < 0.5f ? Mat.OliveSteel : Mat.Rust);
                 var p = at + new Vector3((i % 3) * 0.62f + rng.Range(-0.05f, 0.05f), 0, (i / 3) * 0.62f + rng.Range(-0.05f, 0.05f));
-                if (rng.Next() < 0.15f)
-                {
-                    b.CylinderZ(p + new Vector3(0, 0.29f, 0.3f), 0.29f, 0.88f, 14, mat, 0.03f);
-                    continue;
-                }
-
-                b.Frustum(p, 0.29f, 0.29f, 0.88f, 14, mat, 0.03f);
-                b.Frustum(p + new Vector3(0, 0.29f, 0), 0.3f, 0.3f, 0.04f, 14, Mat.DarkSteel, 0.01f, false);
-                b.Frustum(p + new Vector3(0, 0.58f, 0), 0.3f, 0.3f, 0.04f, 14, Mat.DarkSteel, 0.01f, false);
+                KitParts.Barrel(b, p, mat, rng.Next() < 0.15f);
             }
         }
 
         /// <summary>A lumpy pile of goods under a tied-down tarp.</summary>
         public static void TarpPile(MeshBuilder b, Vector3 at, float size, ArtRandom rng)
         {
-            Mat tarp = rng.Next() < 0.5f ? Mat.TarpBlue : Mat.Tarp;
-            b.Sphere(at, new Vector3(size * 0.7f, size * 0.45f, size * 0.55f), 3, 9, tarp, 0f, 0.5f);
-            b.Sphere(at + new Vector3(size * 0.35f, 0, size * 0.1f), new Vector3(size * 0.45f, size * 0.38f, size * 0.45f), 3, 9, tarp, 0f, 0.5f);
-            b.Strut(at + new Vector3(-size * 0.7f, 0.02f, 0), at + new Vector3(size * 0.8f, size * 0.42f, 0), 0.02f, Mat.Rubber);
+            Mat tarp = rng.Next() < 0.35f ? Mat.TarpBlue : Mat.Tarp;
+            KitParts.Tarp(b, at, size * 1.5f, size * 1.15f, size * 0.5f, tarp, rng.NextUInt());
         }
 
         /// <summary>Rubble pile: concrete chunks, a bent beam, planks and rebar.</summary>

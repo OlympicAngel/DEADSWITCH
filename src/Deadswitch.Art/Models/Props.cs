@@ -57,7 +57,9 @@ namespace Deadswitch.Art.Models
             {
                 // doorway cut into the long side, warm interior, plate door swung out
                 float dx = -length * 0.18f;
-                b.Box(new Vector3(dx, (height * 0.46f) + 0.05f, -hz - 0.07f), new Vector3(1.05f, (height * 0.8f) + 0.04f, 0.04f), Mat.Interior, 0.005f);
+                // doorway reads as depth: dark reveal around a dimmer lit core (no flat glowing slab)
+                b.Box(new Vector3(dx, (height * 0.46f) + 0.05f, -hz - 0.07f), new Vector3(1.05f, (height * 0.8f) + 0.04f, 0.04f), Mat.Rubber, 0.005f);
+                b.Box(new Vector3(dx + 0.3f, (height * 0.42f) + 0.05f, -hz - 0.075f), new Vector3(0.3f, height * 0.66f, 0.04f), Mat.Interior, 0.005f);
                 b.Box(new Vector3(dx, (height * 0.87f) + 0.05f, -hz - 0.1f), new Vector3(1.25f, 0.1f, 0.06f), Mat.DarkSteel, 0.01f);
                 b.Box(new Vector3(dx - 0.6f, (height * 0.46f) + 0.05f, -hz - 0.1f), new Vector3(0.08f, height * 0.82f, 0.06f), Mat.DarkSteel, 0.01f);
                 b.Box(new Vector3(dx + 0.6f, (height * 0.46f) + 0.05f, -hz - 0.1f), new Vector3(0.08f, height * 0.82f, 0.06f), Mat.DarkSteel, 0.01f);
@@ -124,23 +126,53 @@ namespace Deadswitch.Art.Models
             b.Strut(a + new Vector3(0, 0.5f, 0), c + new Vector3(0, 0.5f, 0), 0.035f, mat);
         }
 
-        /// <summary>Faceted boulder: a low-poly sphere with noisy radius, flattened at the base.</summary>
+        /// <summary>
+        /// Weathered boulder: a smooth lumpy mass (low-frequency lobes) with one or two flat fracture faces and a
+        /// buried base. Smooth shading; never a faceted low-poly rock (doc 11 anti-toy rules).
+        /// </summary>
         public static void Boulder(MeshBuilder b, Vector3 center, Vector3 radii, uint seed, Mat mat = Mat.Rock)
         {
-            const int lat = 5;
-            const int lon = 7;
+            const int lat = 9;
+            const int lon = 14;
             var rng = new ArtRandom(seed);
+            var lobes = new Vector3[5];
+            for (int i = 0; i < lobes.Length; i++)
+            {
+                lobes[i] = Vector3.Normalize(new Vector3(rng.Range(-1f, 1f), rng.Range(-0.3f, 1f), rng.Range(-1f, 1f)));
+            }
+
+            var cuts = new[] { Vector3.Normalize(new Vector3(rng.Range(-1f, 1f), rng.Range(0.2f, 0.8f), rng.Range(-1f, 1f))), Vector3.Normalize(new Vector3(rng.Range(-1f, 1f), rng.Range(-0.2f, 0.5f), rng.Range(-1f, 1f))) };
+            float cut0 = rng.Range(0.45f, 0.65f);
+            float cut1 = rng.Range(0.5f, 0.75f);
             var pts = new Vector3[lat + 1, lon];
             for (int i = 0; i <= lat; i++)
             {
                 float phi = (float)(Math.PI * i / lat);
                 for (int j = 0; j < lon; j++)
                 {
-                    float th = (float)(Math.PI * 2 * j / lon) + (i % 2 == 0 ? 0f : 0.4f);
-                    float k = 0.78f + (rng.Next() * 0.38f);
+                    float th = (float)(Math.PI * 2 * j / lon);
                     var d = new Vector3((float)(Math.Sin(phi) * Math.Cos(th)), (float)Math.Cos(phi), (float)(Math.Sin(phi) * Math.Sin(th)));
-                    Vector3 p = center + (d * radii * k);
-                    p.Y = Math.Max(p.Y, center.Y - (radii.Y * 0.35f));
+                    float k = 0.82f + (rng.Next() * 0.06f);
+                    foreach (Vector3 l in lobes)
+                    {
+                        k += 0.16f * (float)Math.Pow(Math.Max(0f, Vector3.Dot(d, l)), 3.0);
+                    }
+
+                    Vector3 local = d * k;
+                    float o0 = Vector3.Dot(local, cuts[0]) - cut0;
+                    if (o0 > 0f)
+                    {
+                        local -= cuts[0] * o0;
+                    }
+
+                    float o1 = Vector3.Dot(local, cuts[1]) - cut1;
+                    if (o1 > 0f)
+                    {
+                        local -= cuts[1] * o1;
+                    }
+
+                    Vector3 p = center + (local * radii);
+                    p.Y = Math.Max(p.Y, center.Y - (radii.Y * 0.3f));
                     pts[i, j] = p;
                 }
             }
@@ -150,23 +182,63 @@ namespace Deadswitch.Art.Models
                 for (int j = 0; j < lon; j++)
                 {
                     int jn = (j + 1) % lon;
-                    b.Face(center, mat, 1f, pts[i, j], pts[i, jn], pts[i + 1, jn]);
-                    b.Face(center, mat, 0.96f, pts[i, j], pts[i + 1, jn], pts[i + 1, j]);
+                    b.FaceSmooth(center, mat, new[] { pts[i, j], pts[i, jn], pts[i + 1, jn], pts[i + 1, j] },
+                        new[] { RockNormal(pts, i, j, center), RockNormal(pts, i, jn, center), RockNormal(pts, i + 1, jn, center), RockNormal(pts, i + 1, j, center) });
                 }
             }
         }
 
-        /// <summary>Stylized pine: trunk and three stacked faceted cones.</summary>
+        private static Vector3 RockNormal(Vector3[,] pts, int i, int j, Vector3 center)
+        {
+            int lat = pts.GetLength(0) - 1;
+            int lon = pts.GetLength(1);
+            if (i == 0 || i == lat)
+            {
+                return i == 0 ? Vector3.UnitY : -Vector3.UnitY;
+            }
+
+            Vector3 du = pts[i, (j + 1) % lon] - pts[i, (j + lon - 1) % lon];
+            Vector3 dv = pts[i + 1, j] - pts[i - 1, j];
+            Vector3 n = Vector3.Normalize(Vector3.Cross(du, dv));
+            return Vector3.Dot(n, pts[i, j] - center) < 0 ? -n : n;
+        }
+
+        /// <summary>Conifer: thin trunk and drooping, ragged branch tiers with smooth shading.</summary>
         public static void Pine(MeshBuilder b, Vector3 basePos, float height, uint seed)
         {
+            // conifer: a thin trunk and six drooping branch tiers with ragged star outlines (no stacked cones)
             var rng = new ArtRandom(seed);
-            b.Frustum(basePos, height * 0.04f, height * 0.03f, height * 0.3f, 5, Mat.Wood, 0.01f);
-            float r = height * 0.26f;
-            for (int i = 0; i < 3; i++)
+            b.Frustum(basePos, height * 0.025f, height * 0.012f, height * 0.92f, 6, Mat.Wood, 0.005f);
+            float r = height * 0.25f;
+            const int tiers = 8;
+            const int points = 13;
+            for (int k = 0; k < tiers; k++)
             {
-                float y = height * (0.18f + (i * 0.24f));
-                float rr = r * (1f - (i * 0.22f)) * rng.Range(0.9f, 1.1f);
-                b.Frustum(basePos + new Vector3(0, y, 0), rr, rr * 0.08f, height * 0.42f, 7, Mat.Foliage, 0.02f);
+                float t = k / (float)tiers;
+                float y = height * (0.16f + (0.74f * t));
+                float rr = r * (float)Math.Pow(1f - (t * 0.86f), 0.9) * rng.Range(0.85f, 1.12f);
+                float droop = rr * 0.42f;
+                Vector3 apex = basePos + new Vector3(rng.Range(-0.05f, 0.05f), y + (height * 0.12f), rng.Range(-0.05f, 0.05f));
+                Vector3 under = basePos + new Vector3(0, y - (droop * 0.4f), 0);
+                float spin = rng.Range(0f, 6.28f);
+                var ring = new Vector3[points];
+                for (int i = 0; i < points; i++)
+                {
+                    float a = spin + (i * 6.2832f / points);
+                    float rad = rr * ((i % 2 == 0) ? 1f : 0.68f) * rng.Range(0.85f, 1.1f);
+                    ring[i] = basePos + new Vector3((float)Math.Cos(a) * rad, y - (droop * ((i % 2 == 0) ? 1f : 0.75f)), (float)Math.Sin(a) * rad);
+                }
+
+                Vector3 inside = basePos + new Vector3(0, y - (droop * 0.2f), 0);
+                for (int i = 0; i < points; i++)
+                {
+                    Vector3 p0 = ring[i];
+                    Vector3 p1 = ring[(i + 1) % points];
+                    Vector3 n0 = Vector3.Normalize(new Vector3(p0.X - basePos.X, rr * 0.9f, p0.Z - basePos.Z));
+                    Vector3 n1 = Vector3.Normalize(new Vector3(p1.X - basePos.X, rr * 0.9f, p1.Z - basePos.Z));
+                    b.FaceSmooth(inside, Mat.Foliage, new[] { apex, p0, p1 }, new[] { Vector3.UnitY, n0, n1 });
+                    b.Face(inside + new Vector3(0, droop, 0), Mat.Foliage, 0.8f, under, p1, p0);
+                }
             }
         }
 
@@ -245,7 +317,10 @@ namespace Deadswitch.Art.Models
             return b.Mesh;
         }
 
-        /// <summary>Block letters (5x7 pixel font) painted on a wall facing -Z; origin at the text's bottom-left.</summary>
+        /// <summary>
+        /// Faded stenciled letters (5x7 cells) painted on a wall facing -Z; origin at the text's bottom-left. Thin as
+        /// paint, with worn-off cells (doc 11 anti-toy rules: markings are faded, never bold pixel blocks).
+        /// </summary>
         public static void Stencil(MeshBuilder b, string text, Vector3 origin, float pixel, Mat mat)
         {
             float x = origin.X;
@@ -257,9 +332,11 @@ namespace Deadswitch.Art.Models
                     {
                         for (int c = 0; c < 5; c++)
                         {
-                            if (rows[r][c] == '#')
+                            // worn paint: some cells are gone (stable per position)
+                            uint h = (uint)((int)(x * 97f) * 73856093) ^ (uint)(r * 19349663) ^ (uint)(c * 83492791) ^ (uint)((int)(origin.Y * 53f) * 2654435761u);
+                            if (rows[r][c] == '#' && (h % 100) >= 22)
                             {
-                                b.Box(new Vector3(x + ((c + 0.5f) * pixel), origin.Y + ((6 - r + 0.5f) * pixel), origin.Z), new Vector3(pixel * 1.02f, pixel * 1.02f, 0.03f), mat, 0f);
+                                b.Box(new Vector3(x + ((c + 0.5f) * pixel), origin.Y + ((6 - r + 0.5f) * pixel), origin.Z + 0.012f), new Vector3(pixel * 0.94f, pixel * 0.94f, 0.006f), mat, 0f);
                             }
                         }
                     }

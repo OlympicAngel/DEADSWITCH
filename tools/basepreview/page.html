@@ -112,7 +112,7 @@ function geometry(md) {
   // vertex colors are linear multipliers on the sRGB base color
   g.setAttribute('color', new THREE.Float32BufferAttribute(md.colors, 3));
   const idx = []; let start = 0;
-  for (const grp of md.groups) { idx.push(...grp.indices); g.addGroup(start, grp.indices.length, grp.mat); start += grp.indices.length; }
+  for (const grp of md.groups) { for (const v of grp.indices) idx.push(v); g.addGroup(start, grp.indices.length, grp.mat); start += grp.indices.length; }
   g.setIndex(idx);
   return g;
 }
