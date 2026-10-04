@@ -16,7 +16,7 @@ routes are safe. Done = sim rules + config + saves, advisor lines, map UI wired,
 - [x] 2. Sim: wild zones in the catalog, `[hazards]` config, zone rewards and risks, no faction effects (verification: test)
 - [x] 3. Sim: fallout front (state, save v29, drift, fuel/sickness/outpost effects) (verification: test, chunking, CLI run)
 - [x] 4. Host: advisor lines for the new events; balance file dump (verification: config check, advisor tests)
-- [ ] 5. Unity: map shows zones and the fallout front; site sheet states risk (verification: Unity compile check)
+- [x] 5. Unity: map shows zones and the fallout front; site sheet states risk (verification: Unity compile check)
 - [ ] 6. Docs (doc 10 corrections log, doc 05 open task, HANDOFF), finish feature
 
 ## Notes

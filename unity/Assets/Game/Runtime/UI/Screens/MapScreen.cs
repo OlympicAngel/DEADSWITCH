@@ -115,7 +115,7 @@ namespace Deadswitch.Game.UI.Screens
                 int index = i;
                 var marker = new VisualElement();
                 marker.AddToClassList("map-site");
-                marker.AddToClassList(FactionClass[(int)d.Owner]);
+                marker.AddToClassList(HazardSystem.Wild(d.Kind) ? "map-site--wild" : FactionClass[(int)d.Owner]);
                 marker.style.left = Length.Percent(50f + (d.MapX * 0.45f));
                 marker.style.top = Length.Percent(50f - (d.MapY * 0.45f));
                 var mark = new VisualElement();
@@ -280,15 +280,21 @@ namespace Deadswitch.Game.UI.Screens
                 _markers[i].EnableInClassList("map-site--outpost", st.Outpost);
                 _markers[i].EnableInClassList("map-site--cooldown", s.Tick < st.CooldownUntilTick);
                 _markers[i].EnableInClassList("map-site--op", busy.Contains(i));
-                _markers[i].Q<Label>().text = WorldSystem.Sites[i].Name + (st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
+                _markers[i].EnableInClassList("map-site--fallout", HazardSystem.Covered(s, i));
+                _markers[i].Q<Label>().text = WorldSystem.Sites[i].Name + (HazardSystem.Covered(s, i) ? " // FALLOUT" : st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
             }
 
+            // world event and the fallout front (SPEC-032) share the banner
             bool world = s.WorldEvent != WorldEventKind.None && s.Tick < s.WorldEventUntilTick;
-            _ui.Q("map-event").EnableInClassList("is-hidden", !world);
-            if (world)
+            bool fallout = s.FalloutSite >= 0;
+            _ui.Q("map-event").EnableInClassList("is-hidden", !world && !fallout);
+            string banner = world ? LivingTexts.EventName(s.WorldEvent) + " // " + LivingTexts.EventEffect(s.WorldEvent, c).ToUpperInvariant() : string.Empty;
+            if (fallout)
             {
-                _ui.Q<Label>("map-event-text").text = LivingTexts.EventName(s.WorldEvent) + " // " + LivingTexts.EventEffect(s.WorldEvent, c).ToUpperInvariant();
+                banner += (world ? "\n" : string.Empty) + "FALLOUT OVER " + WorldSystem.Sites[s.FalloutSite].Name + " // SHIFTS IN " + Fmt.Countdown(_host.SecondsUntilTick(s.NextFalloutTick));
             }
+
+            _ui.Q<Label>("map-event-text").text = banner;
 
             RefreshSheet(s, c);
             RefreshTrade(s, c);
@@ -299,9 +305,10 @@ namespace Deadswitch.Game.UI.Screens
         {
             Faction owner = WorldSystem.Sites[_selected].Owner;
             HeatLevel level = WorldSystem.Level(s.Heat[(int)owner]);
-            bool hostile = level == HeatLevel.Marked;
+            bool wild = HazardSystem.Wild(WorldSystem.Sites[_selected].Kind);
+            bool hostile = level == HeatLevel.Marked || wild;
             int left = System.Math.Max(0, c.Living.TradesPerDay - s.TradesToday[(int)owner]);
-            _ui.Q<Label>("trade-left").text = hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant();
+            _ui.Q<Label>("trade-left").text = wild ? "NOBODY OUT THERE TO TRADE WITH" : hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant();
             for (int g = 0; g <= (int)TradeGood.Compute; g++)
             {
                 var good = (TradeGood)g;
@@ -318,16 +325,17 @@ namespace Deadswitch.Game.UI.Screens
         {
             SiteDef d = WorldSystem.Sites[_selected];
             SiteState st = s.Sites[_selected];
-            string[] kinds = { "CONVOY", "OUTPOST", "DATA CENTER", "RUINS" };
+            string[] kinds = { "CONVOY", "OUTPOST", "DATA CENTER", "RUINS", "RADIATION ZONE", "PLAGUE ZONE", "MACHINE GRAVEYARD" };
+            bool wild = HazardSystem.Wild(d.Kind);
             _ui.Q<Label>("site-name").text = d.Name;
-            _ui.Q<Label>("site-owner").text = Names.Faction(d.Owner) + " // " + kinds[(int)d.Kind];
+            _ui.Q<Label>("site-owner").text = (wild ? "NO OWNER" : Names.Faction(d.Owner)) + " // " + kinds[(int)d.Kind] + (HazardSystem.Covered(s, _selected) ? " // UNDER FALLOUT" : string.Empty);
             _ui.Q<Label>("site-travel").text = d.TravelHours + " H";
             int estimate = WorldSystem.EstimatedDefense(s, c, _selected);
-            _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
+            _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : !wild && IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
             _ui.Q<Label>("site-def").text = (st.Scouted ? string.Empty : "~") + estimate + (d.Cyber > 0 ? "  CYBER " + d.Cyber : string.Empty);
-            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty);
+            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c);
 
-            if (_kind == OpKind.Hack && d.Cyber == 0)
+            if ((_kind == OpKind.Hack && d.Cyber == 0) || (_kind == OpKind.Sabotage && wild))
             {
                 _kind = OpKind.Raid;
             }
@@ -337,6 +345,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("op-hack").EnableInClassList("is-selected", _kind == OpKind.Hack);
             _ui.Q("op-hack").EnableInClassList("is-disabled", d.Cyber == 0);
             _ui.Q("op-sabotage").EnableInClassList("is-selected", _kind == OpKind.Sabotage);
+            _ui.Q("op-sabotage").EnableInClassList("is-disabled", wild);
 
             bool hack = _kind == OpKind.Hack;
             _ui.Q<Label>("op-amount").text = (hack ? _compute : _squad).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -347,7 +356,8 @@ namespace Deadswitch.Game.UI.Screens
             oddsLabel.EnableInClassList("t-amber", odds < 60);
             int back = hack ? 1 : 2 * d.TravelHours;
             _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, _selected, _kind)) + " // BACK IN " + back + " H"
-                + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty);
+                + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty)
+                + (hack ? string.Empty : Risk(s, c, _selected));
             string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK", "SEND SABOTEURS" };
             Kit.SetButtonText(_ui.Q("op-launch"), verbs[(int)_kind]);
             bool cooling = _kind != OpKind.Scout && s.Tick < st.CooldownUntilTick;
@@ -357,6 +367,31 @@ namespace Deadswitch.Game.UI.Screens
             bool claimable = (d.Kind == SiteKind.Ruins || seize) && st.Cleared && !st.Outpost;
             _ui.Q("site-claim").EnableInClassList("is-hidden", !claimable);
             Kit.SetButtonText(_ui.Q("site-claim"), seize ? "SEIZE AND HOLD // " + c.World.SeizeEnergy + " E" : "CLAIM // " + c.World.OutpostClaimEnergy + " E");
+        }
+
+        /// <summary>What a hazard zone pays besides loot (SPEC-032).</summary>
+        private static string Bonus(SiteKind kind, SimConfig c)
+        {
+            switch (kind)
+            {
+                case SiteKind.Plague: return "  + " + c.Hazards.PlaguePeople + " SURVIVORS";
+                case SiteKind.Graveyard: return "  + PARTS (" + c.Hazards.GraveyardRepairPoints + " REPAIRS)";
+                default: return string.Empty;
+            }
+        }
+
+        /// <summary>The hazard risk on the op line; scouting first halves it (SPEC-032 rule 5).</summary>
+        private static string Risk(GameState s, SimConfig c, int site)
+        {
+            int sick = HazardSystem.SickPct(s, c, site);
+            int infection = HazardSystem.InfectionPct(s, c, site);
+            string risk = (sick > 0 ? " // SICKNESS " + sick + "%" : string.Empty) + (infection > 0 ? " // INFECTION " + infection + "%" : string.Empty);
+            if (WorldSystem.Sites[site].Kind == SiteKind.Graveyard)
+            {
+                risk += " // DRONE NESTS";
+            }
+
+            return risk.Length > 0 && s.Sites[site].Scouted ? risk + " (SCOUTED: REDUCED)" : risk;
         }
 
         /// <summary>Rebuilds the ops list only when the set of ops changes (buttons must survive between frames); timers update in place.</summary>

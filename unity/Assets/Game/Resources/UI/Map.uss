@@ -54,6 +54,9 @@
 .map-site--vanguard > .map-site__mark { border-color: var(--c-blue); background-color: rgba(130, 174, 182, 0.18); rotate: 45deg; }
 .map-site--holdout > .map-site__mark { border-color: var(--c-white); background-color: rgba(240, 235, 221, 0.14); border-radius: 10px; rotate: 45deg; width: 26px; height: 26px; }
 .map-site--church > .map-site__mark { border-color: var(--c-magenta); background-color: rgba(193, 118, 180, 0.18); border-radius: 50%; }
+.map-site--wild > .map-site__mark { border-color: var(--c-text-dim); background-color: rgba(0, 0, 0, 0); border-radius: 4px; width: 28px; height: 28px; }
+.map-site--fallout > .map-site__mark { border-color: var(--c-red); background-color: rgba(216, 91, 82, 0.22); }
+.map-site--fallout > .map-site__name { color: var(--c-red); }
 .map-site--outpost > .map-site__mark { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.4); }
 .map-site--cooldown > .map-site__mark { opacity: 0.45; }
 .map-site__name { margin-left: var(--s-2); -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
