@@ -12,6 +12,12 @@ namespace Deadswitch.Sim.Commands
     {
         public static CommandResult Execute(SimContext ctx, Command command)
         {
+            if (GlitchSystem.TakenOver(ctx.State) && Seized(command.Kind))
+            {
+                // AI takeover (SPEC-021): the core ignores these orders until it is flushed or the takeover ends
+                return CommandResult.Reject(RejectReason.AiTakeover);
+            }
+
             switch (command.Kind)
             {
                 case CommandKind.SetDelegation:
@@ -64,6 +70,8 @@ namespace Deadswitch.Sim.Commands
                     return ScarSystem.Repair(ctx, command);
                 case CommandKind.ClearWreckage:
                     return ScarSystem.ClearWreckage(ctx, command);
+                case CommandKind.FlushCore:
+                    return GlitchSystem.Flush(ctx, command);
                 case CommandKind.TakeCommand:
                     return BattleSystem.TakeCommand(ctx, command);
                 case CommandKind.UseBattleAbility:
@@ -88,6 +96,22 @@ namespace Deadswitch.Sim.Commands
                     return PeopleChoices.Crackdown(ctx, command);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
+            }
+        }
+
+        private static bool Seized(CommandKind kind)
+        {
+            switch (kind)
+            {
+                case CommandKind.Build:
+                case CommandKind.Upgrade:
+                case CommandKind.StartResearch:
+                case CommandKind.SetPosture:
+                case CommandKind.SetGarrison:
+                case CommandKind.SetDelegation:
+                    return true;
+                default:
+                    return false;
             }
         }
 

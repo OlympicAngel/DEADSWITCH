@@ -135,6 +135,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>That ability was already spent this battle.</summary>
         AbilityUsed = 44,
+
+        /// <summary>The AI has taken over and ignores that order (flush the core to end it).</summary>
+        AiTakeover = 45,
     }
 
     public readonly struct CommandResult

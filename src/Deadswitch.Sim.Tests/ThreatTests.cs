@@ -153,6 +153,26 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void CriticalCorruption_TriggersACrisis_AndAFlushPullsItBack()
+        {
+            var sim = new Simulation(41UL);
+            sim.Config.Glitch.CrisisPctPerHour = 100;
+            sim.State.CorruptionMilli = 98_000;
+            sim.Run(2L * SimConfig.TicksPerHour);
+            Assert.Single(sim.Log.Events, e => e.Kind == EventKind.CrisisStruck);
+
+            // one crisis per cooldown, and the flush is the way out (SPEC-021)
+            int before = sim.State.CorruptionMilli;
+            sim.State.Energy = sim.Config.Glitch.FlushEnergy;
+            Assert.True(sim.Execute(Command.FlushCore()).Accepted || sim.State.RaidId != 0);
+            if (sim.State.FlushUntilTick > sim.State.Tick)
+            {
+                Assert.True(sim.State.CorruptionMilli < before);
+                Assert.False(GlitchSystem.TakenOver(sim.State));
+            }
+        }
+
+        [Fact]
         public void WarlordUltimatum_FiresOnce_ForAHubStuckInTier1_AndTheWaveResolves()
         {
             var sim = new Simulation(31UL);

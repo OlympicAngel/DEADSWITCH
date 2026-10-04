@@ -81,6 +81,15 @@ namespace Deadswitch.Sim.Systems
             Spawn(ctx, 0, (int)(SimMath.Hash((uint)s.Tick, (uint)s.NextRaidId ^ 0x9A26u) % 4), 0, ctx.Config.Threats.PurgeStrikeWarningMinutes, AttackKind.Purge);
         }
 
+        /// <summary>Rival swarm (SPEC-021): machines sense a Critical core and converge. Uses no RNG draws.</summary>
+        public static void SpawnSwarm(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            Spawn(ctx, 0, (int)(SimMath.Hash((uint)s.Tick, (uint)s.NextRaidId ^ 0x5A44u) % 4), 0, ctx.Config.Raid.WarningMinutes);
+            s.RaidStrength = SimMath.PctFloor(s.RaidStrength, ctx.Config.Glitch.SwarmStrengthPct);
+            s.RaidEstimate = SimMath.PctFloor(s.RaidEstimate, ctx.Config.Glitch.SwarmStrengthPct);
+        }
+
         /// <summary>The Warlord Ultimatum's wave (F-034): a heavy Rustborn raid. Uses no RNG draws. Returns the attack id.</summary>
         public static int SpawnWarlord(SimContext ctx)
         {
@@ -180,9 +189,9 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
-            if (ClimaxSystem.Silenced(s))
+            if (ClimaxSystem.Silenced(s) || GlitchSystem.Flushing(s))
             {
-                // A silenced AI predicts nothing (SPEC-011 rule 3).
+                // A silenced (or flushed, SPEC-021) AI predicts nothing (SPEC-011 rule 3).
                 s.RaidEstimate = 0;
             }
 
@@ -265,6 +274,7 @@ namespace Deadswitch.Sim.Systems
 
             int defense = id == s.BetrayalRaidId ? Defense.Rating(s, c, s.Posture, s.Garrison, false) : Defense.Rating(s, c);
             BattleSystem.Apply(s, ref strength, ref defense);
+            GlitchSystem.Defect(ctx, id, ref strength, ref defense);
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
             int lies = s.RaidGateReported != RaidGate.None && s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 

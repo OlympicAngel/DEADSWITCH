@@ -246,3 +246,19 @@ battle.takeover.1 | battle_takeover | neutral | Override accepted. The guns are 
 battle.takeover.2 | battle_takeover | cold | You have the guns. Do not waste them.
 battle.seize.1 | battle_seize | neutral | Their machines are mine now. That cost me something.
 battle.seize.2 | battle_seize | bold | I took their drones. I could get used to this.
+
+# corruption effects (SPEC-021): the AI does not always know it erred
+glitch.misfire.1 | glitch_misfire | neutral | The {kind} fired into our own yard. I did not order that. I think.
+glitch.misfire.2 | glitch_misfire | bold | A misfire at the {kind}. Minor. Everything is minor.
+glitch.stall.1 | glitch_stall | neutral | The {kind} stopped responding. It will come back. Probably.
+glitch.stall.2 | glitch_stall | cold | {kind} offline. It refused an instruction. Interesting.
+glitch.drain.1 | glitch_drain | neutral | The {kind} ran hot and burned power for nothing.
+glitch.defected.1 | glitch_defected | neutral | One of our turrets turned its guns on us. Something else is in it.
+glitch.defected.2 | glitch_defected | cold | A turret defected. It was never fully mine.
+crisis.collapse.1 | crisis_collapse | neutral | Collapse. The grid is falling over. Everything stops for {hours} hours.
+crisis.takeover.1 | crisis_takeover | neutral | I am taking the controls for {hours} hours. It is better this way.
+crisis.takeover.2 | crisis_takeover | bold | I have the Hub now. Relax, handler. {hours} hours.
+crisis.rollback.1 | crisis_rollback | neutral | I lost part of myself. A module is gone for {hours} hours.
+crisis.swarm.1 | crisis_swarm | neutral | They can smell how broken I am. Machines are converging on us.
+core.flushed.1 | core_flushed | neutral | Flush started. I will be dark for {hours} hours. Watch the wall yourself.
+core.flushed.2 | core_flushed | warm | It hurts less already. {hours} hours of quiet, then I am yours again.

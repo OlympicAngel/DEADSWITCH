@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020).</summary>
-        public const int LayoutVersion = 13;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021).</summary>
+        public const int LayoutVersion = 14;
 
         public long Tick;
 
@@ -209,6 +209,15 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>No Critical crisis before this tick (SPEC-021).</summary>
+        public long NextCrisisTick;
+
+        /// <summary>AI takeover: build, research and posture orders are refused until this tick.</summary>
+        public long TakeoverUntilTick;
+
+        /// <summary>Core flush: AI-run units stop and the AI predicts nothing until this tick.</summary>
+        public long FlushUntilTick;
 
         /// <summary>The handler will command the incoming attack live (SPEC-020).</summary>
         public bool BattleLive;
@@ -502,6 +511,13 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref Wreckage);
                 v.Long(ref ScarredAtTick);
+            }
+
+            if (v.Version >= 14)
+            {
+                v.Long(ref NextCrisisTick);
+                v.Long(ref TakeoverUntilTick);
+                v.Long(ref FlushUntilTick);
             }
 
             if (v.Version >= 13)

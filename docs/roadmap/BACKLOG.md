@@ -31,7 +31,7 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-024 | Settings and accessibility screen: effect intensity, reduced motion, haptics, text scale, alerts; reachable from CORE | M4 | Done 2026-10-03 | doc 08 s6, doc 10 (assists), quality bar |
 | F-025 | Art direction v3: realism pass against the toy/miniature look, day/night lighting cycle, rebuilt kit primitives (owner, 2026-10-04) | M2 | Done 2026-10-04 | doc 11, ADR-0007 |
 | F-027 | One-click Android dev build (Editor menu) | M5 | Done 2026-10-04 | unity/README |
-| F-028 | Corruption effects: unmanned-unit glitches, crisis ladder at Critical, ways to reduce it | M2 | Later | doc 03 s3-4 |
+| F-028 | Corruption effects: unmanned-unit glitches, defection, crisis ladder at Critical, core flush (SPEC-021) | M2 | Done 2026-10-04 | doc 03 s3-4 |
 | F-029 | Battle scars: raid damage persists on facilities and the yard until repaired; repair action (SPEC-018) | M4 | Done 2026-10-04 | doc 06 s3, doc 10 |
 | F-030 | Full module tree: four fields x 8 nodes (32), exclusive pairs, Tier 2 nodes | M5 | Done 2026-10-04 | doc 03 s7, doc 10 |
 | F-031 | Outposts: small sites on the map that produce and can be raided | M5 | Done 2026-10-04 (in F-019) | doc 02 s7 |

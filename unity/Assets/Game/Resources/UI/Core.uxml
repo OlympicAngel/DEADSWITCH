@@ -47,6 +47,19 @@
         </ui:VisualElement>
       </ui:VisualElement>
 
+      <!-- Corruption effects (SPEC-021): takeover banner and the core flush -->
+      <ui:VisualElement name="core-crisis" class="ds-panel ds-panel--red core-crisis is-hidden">
+        <ui:Label name="core-crisis-title" text="AI TAKEOVER // 3:12:00" class="ds-label t-red" />
+        <ui:Label name="core-crisis-desc" text="I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me." class="ds-body t-dim core-audit__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement class="ds-panel ds-panel--sunken core-audit">
+        <ui:Label text="CORE FLUSH" class="ds-label" />
+        <ui:Label name="flush-desc" text="Corruption -25%. For 3 h I go dark: AI-run units stop and I predict nothing." class="ds-body t-dim core-audit__desc" />
+        <ui:VisualElement name="flush-run" class="ds-btn ds-btn--warn core-audit__btn">
+          <ui:Label name="flush-label" text="FLUSH THE CORE // 600 ENERGY" class="ds-btn__label" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
       <!-- Audit -->
       <ui:VisualElement class="ds-panel ds-panel--sunken core-audit">
         <ui:Label text="AUDIT" class="ds-label" />

@@ -31,7 +31,8 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
-            if (s.Delegation == DelegationLevel.Manual || s.Tick % c.Ai.PlanEveryMinutes != 0 || s.RaidId != 0
+            // during an AI takeover (SPEC-021) the AI builds on its own whatever the delegation
+            if ((s.Delegation == DelegationLevel.Manual && !GlitchSystem.TakenOver(s)) || s.Tick % c.Ai.PlanEveryMinutes != 0 || s.RaidId != 0
                 || s.Tick < s.PlanHoldUntilTick || s.Blackout)
             {
                 return;

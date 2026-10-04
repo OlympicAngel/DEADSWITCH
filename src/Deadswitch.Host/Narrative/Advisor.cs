@@ -34,6 +34,15 @@ namespace Deadswitch.Host.Narrative
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
             "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
+            "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
+            "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
+            "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
+            "facility_scarred", "forced_labor", "glitch_defected", "glitch_drain", "glitch_misfire", "glitch_stall", "heat_hunted", "heat_marked",
+            "heat_watched", "loyalty_mutinous", "loyalty_strained", "op_hack", "op_lost", "op_raid", "op_scout", "op_won",
+            "outpost_claimed", "outpost_lost", "purge_fizzled", "purge_paid", "purge_rumor", "purge_staging", "purge_strike", "purge_ultimatum",
+            "repair_done", "rogue", "shield_armed", "shield_down", "shield_up", "siege_damage", "siege_warning", "spy_backfired",
+            "spy_caught", "spy_exposed", "spy_framed", "spy_planted", "spy_recalled", "tribute_paid", "ultimatum_issued", "ultimatum_outgrown",
+            "ultimatum_paid", "virus_burned", "virus_infected", "warlord_wave", "wreckage_cleared",
         };
 
         private const int MaxQueue = 4;
@@ -433,6 +442,21 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.RepairDone:
                     Enqueue(new Pending("repair_done", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.B)));
+                    break;
+                case EventKind.UnitGlitched:
+                    string[] glitch = { "glitch_misfire", "glitch_stall", "glitch_drain" };
+                    _queue.RemoveAll(p => p.Trigger.StartsWith("glitch_", System.StringComparison.Ordinal));
+                    Enqueue(new Pending(glitch[System.Math.Min(2, System.Math.Max(0, e.C))], Priority.Normal).With("kind", Names.Facility((FacilityKind)e.B)));
+                    break;
+                case EventKind.UnitDefected:
+                    Enqueue(new Pending("glitch_defected", Priority.Urgent));
+                    break;
+                case EventKind.CrisisStruck:
+                    string[] crisis = { "crisis_collapse", "crisis_takeover", "crisis_rollback", "crisis_swarm" };
+                    Enqueue(new Pending(crisis[System.Math.Min(3, System.Math.Max(0, e.A))], Priority.Urgent).With("hours", e.B.ToString()));
+                    break;
+                case EventKind.CoreFlushed:
+                    Enqueue(new Pending("core_flushed", Priority.Normal).With("hours", e.C.ToString()));
                     break;
                 case EventKind.BattleStarted:
                     Enqueue(new Pending("battle_started", Priority.Urgent).With("kind", Names.Attack((AttackKind)e.C)));

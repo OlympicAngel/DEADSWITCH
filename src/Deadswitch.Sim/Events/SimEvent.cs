@@ -227,6 +227,18 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A: attack id, B: BattleAbility.</summary>
         BattleAbilityUsed = 73,
+
+        /// <summary>An AI-run unit erred (SPEC-021). A: slot, B: FacilityKind, C: GlitchKind.</summary>
+        UnitGlitched = 74,
+
+        /// <summary>An AI-run turret was hijacked mid-fight. A: attack id, B: slot, C: guns turned.</summary>
+        UnitDefected = 75,
+
+        /// <summary>Critical crisis. A: CrisisKind, B: hours it lasts (0 = instant).</summary>
+        CrisisStruck = 76,
+
+        /// <summary>Core flushed. A: energy paid, B: corruption removed (milli), C: hours offline.</summary>
+        CoreFlushed = 77,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

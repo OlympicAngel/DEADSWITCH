@@ -23,6 +23,9 @@ namespace Deadswitch.Sim.State
         /// <summary>Repair finishes at this tick (0 = not under repair).</summary>
         public long RepairUntilTick;
 
+        /// <summary>A glitch or collapse stopped it until this tick (SPEC-021).</summary>
+        public long StalledUntilTick;
+
         public bool IsEmpty => Kind == FacilityKind.None;
 
         public void Visit(IStateVisitor v)
@@ -39,6 +42,11 @@ namespace Deadswitch.Sim.State
                 v.Int(ref Damage);
                 v.Long(ref RepairUntilTick);
             }
+
+            if (v.Version >= 14)
+            {
+                v.Long(ref StalledUntilTick);
+            }
         }
 
         public void Clear()
@@ -50,6 +58,7 @@ namespace Deadswitch.Sim.State
             Staffed = false;
             Damage = 0;
             RepairUntilTick = 0;
+            StalledUntilTick = 0;
         }
     }
 }

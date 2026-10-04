@@ -117,6 +117,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Spend a live-battle ability. A: BattleAbility.</summary>
         UseBattleAbility = 36,
+
+        /// <summary>No args. Flush the core: corruption down, AI offline for a while (SPEC-021).</summary>
+        FlushCore = 37,
     }
 
     /// <summary>
@@ -264,6 +267,11 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command FlushCore()
+        {
+            return new Command(CommandKind.FlushCore);
         }
 
         public static Command TakeCommand(bool on)

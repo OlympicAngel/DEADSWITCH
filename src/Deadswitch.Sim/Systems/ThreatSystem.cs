@@ -267,7 +267,7 @@ namespace Deadswitch.Sim.Systems
         }
 
         /// <summary>A restored field module (never the trunk), chosen by hash.</summary>
-        private static ModuleNode PickLock(GameState s)
+        internal static ModuleNode PickLock(GameState s)
         {
             int count = 0;
             foreach (ModuleDef d in Modules.Catalog)

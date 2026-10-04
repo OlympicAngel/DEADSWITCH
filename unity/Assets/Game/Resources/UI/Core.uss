@@ -27,6 +27,8 @@
 .core-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-text); margin-top: var(--s-1); }
 
 .core-audit { margin-top: var(--s-3); }
+.core-crisis { margin-top: var(--s-3); }
+.core-crisis.is-hidden { display: none; }
 .core-audit__desc { margin-top: var(--s-1); font-size: var(--fs-xs); }
 .core-audit__btn { margin-top: var(--s-3); }
 .core-audit__reason { margin-top: var(--s-1); color: var(--c-amber); font-size: var(--fs-xs); }

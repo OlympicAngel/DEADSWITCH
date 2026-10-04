@@ -931,6 +931,52 @@ seize_strength_pct = 35
 seize_corruption = 3000
 
 # --------------------------------------------------------------------------------------------------
+# Corruption effects: AI-run unit glitches, defection, the Critical crisis ladder and the core flush (doc 03 s3-4). Corruption is milli. All (tune).
+[glitch]
+
+# Hourly chance each AI-run producer glitches, per band (Stable, Glitchy, Unstable, Critical). [4..4 items, each 0..100]
+glitch_pct_by_band = [0, 3, 8, 15]
+
+# Disobedience: a glitched facility stops for this long. [1..100]
+stall_hours = 2
+
+# Overextension: energy a glitched facility burns. [0..10000]
+drain_energy = 60
+
+# Unstable or worse: chance an AI-run turret is hijacked in a fight (its guns turn on us). [0..100]
+defection_pct = 25
+
+# Critical: hourly chance a crisis triggers. [0..100]
+crisis_pct_per_hour = 6
+
+# Hours between crises. [1..1000]
+crisis_cooldown_hours = 12
+
+# Collapse: share of stored energy lost. [0..100]
+collapse_energy_pct = 40
+
+# Collapse: every producer stops this long. [1..100]
+collapse_stall_hours = 3
+
+# AI takeover: the AI ignores build, research and posture orders this long. [1..100]
+takeover_hours = 4
+
+# Forced rollback: a restored module is locked this long. [1..1000]
+rollback_hours = 24
+
+# Rival swarm: attack strength as % of a raid. [1..10000]
+swarm_strength_pct = 160
+
+# Core flush: energy it costs. [0..100000]
+flush_energy = 600
+
+# Core flush: corruption it removes. [0..100000]
+flush_milli = 25000
+
+# Core flush: the AI is offline this long (AI-run units stop, no predictions). [1..100]
+flush_hours = 3
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

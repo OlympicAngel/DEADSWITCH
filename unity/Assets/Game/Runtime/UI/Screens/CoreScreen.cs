@@ -35,6 +35,12 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _ui.Q("flush-run").RegisterCallback<ClickEvent>(_ =>
+            {
+                CommandResult r = _host.Execute(Command.FlushCore());
+                _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty : r.Reason == RejectReason.NoChange ? "Nothing to flush right now." : Texts.Reason(r.Reason);
+                Refresh();
+            });
             _ui.Q("open-settings").RegisterCallback<ClickEvent>(_ => openSettings());
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
@@ -99,6 +105,19 @@ namespace Deadswitch.Game.UI.Screens
 
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
+
+            // corruption effects (SPEC-021)
+            var g = c.Glitch;
+            bool takeover = GlitchSystem.TakenOver(s);
+            bool flushing = GlitchSystem.Flushing(s);
+            _ui.Q("core-crisis").EnableInClassList("is-hidden", !takeover && !flushing);
+            _ui.Q<Label>("core-crisis-title").text = (takeover ? "AI TAKEOVER // " : "CORE FLUSHED // ") + Fmt.Countdown(_host.SecondsUntilTick(takeover ? s.TakeoverUntilTick : s.FlushUntilTick));
+            _ui.Q<Label>("core-crisis-desc").text = takeover
+                ? "I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me."
+                : "I am dark. AI-run units are stopped and I can predict nothing until I come back.";
+            _ui.Q<Label>("flush-desc").text = "Corruption -" + Fmt.Milli(g.FlushMilli) + "%. For " + g.FlushHours + " h I go dark: AI-run units stop and I predict nothing.";
+            Kit.SetButtonText(_ui.Q("flush-run"), "FLUSH THE CORE // " + Fmt.Num(g.FlushEnergy) + " ENERGY");
+            _ui.Q("flush-run").EnableInClassList("is-disabled", flushing || s.Energy < g.FlushEnergy || s.RaidId != 0 || s.CorruptionMilli == 0);
 
             bool window = s.ClimaxAtTick > 0;
             _ui.Q("climax").EnableInClassList("is-hidden", !window);
