@@ -14,7 +14,7 @@ The Hub is a small, tactile 3D world seen through the AI's recon drone. Every fa
 3. **Layout:** the AI core bunker at the center, `hub.slots` pads around it, perimeter barriers, ruined terrain, props.
 4. **Facility models per kind, growing per level** (new parts added at each level). Animated parts (fans, dishes, rotors) spin only while powered.
 5. **States:** powered (lights on, parts move), shed/off (lights off, still), unmanned (amber beacon blinks), under construction (scaffold + partial build), empty pad (markings).
-6. **Camera:** high three-quarter view, narrow FOV (miniature feel), slow drift; pinch/drag to look around within bounds; tilt-shift depth of field, subtle grain and chromatic aberration scaled by effects + corruption.
+6. **Camera:** high three-quarter view, narrow FOV, slow drift; pinch/drag to look around within bounds; no depth-of-field blur (doc 11 anti-toy rules); subtle grain and chromatic aberration scaled by effects + corruption. Lighting follows the game clock (doc 11).
 7. **Interaction:** tap a pad -> select (highlight ring) -> slot sheet: build options (cost, time, effect) or upgrade/power/demolish with clear costs and reasons when unavailable.
 
 ## Acceptance criteria

@@ -1,6 +1,6 @@
 # ADR-0007: Stylized 3D realism with a drone-feed presentation
 
-- Status: Accepted (amended 2026-10-03: heroic realism)
+- Status: Accepted (amended 2026-10-03: heroic realism; 2026-10-04: realism pass, day/night, procedural only)
 - Date: 2026-10-03
 
 ## Context
@@ -19,3 +19,6 @@ Render the world (base, map terrain, battle-report stills) as **semi-stylized 3D
 
 ## Amendment (2026-10-03): heroic realism, not cartoon
 The owner rejected chunky/semi-cartoon forms. The world is **stylized realism ("heroic realism")**: believable proportions, layered PBR material wear, overcast grounded lighting, readable medium forms for the isometric camera. The full brief and avoid-list live in doc 11 (Master art direction). Implementation: procedural geometry plus a procedural PBR salvage shader shared by Unity and the headless preview.
+
+## Amendment (2026-10-04): realism pass, day/night, procedural only
+The owner rejected the toy / miniature feel of the first heroic-realism pass. Decisions: no tilt-shift or depth-of-field blur; lighting follows the game clock with **overcast day as the reference look** (dusk and night are variants), keyed in `BaseLook.json` for Unity and the preview; assets stay **procedural** (no imported textures or models). The brief, the anti-toy rules and the lighting rules live in doc 11.

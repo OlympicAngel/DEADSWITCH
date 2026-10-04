@@ -10,7 +10,7 @@ The owner's direction (2026-10-03): **no throwaway prototypes.** Everything we b
 - Errors are handled, not swallowed. Saves are versioned. Nothing blocks the main thread on mobile.
 
 ## Visual and motion bar
-Source: `docs/design/11_visual_theme_and_motion.md` (palette is provisional, structure is not). **3D world: follow the Master art direction in doc 11 (heroic realism). Review every render against its avoid-list; anything cartoon, toy-like, cube-like, flat-colored or plastic is a defect. Build 3D assets per `docs/agents/environment-art.md` (modular, layered, broken silhouettes).**
+Source: `docs/design/11_visual_theme_and_motion.md` (palette is provisional, structure is not). **3D world: follow the Master art direction in doc 11 (heroic realism, anti-toy rules, day/night lighting). Review every render at day, dusk and night against its avoid-list; anything cartoon, toy-like, miniature, cube-like, blob-like, flat-colored or plastic is a defect. Build 3D assets per `docs/agents/environment-art.md` (modular, layered, broken silhouettes, real thickness).**
 - **One token system.** Colors, type scale, spacing (4 px grid), radii, glow strengths, animation durations and easings are named tokens. No raw hex or magic pixel values in feature code.
 - **Hierarchy first.** Each screen has one focal area, one primary action, stable critical status. Align to the grid; consistent padding; optical alignment of numbers (tabular/monospace digits).
 - **Alive, not noisy.** Terminal phosphor glow, scanlines, subtle flicker, animated counters, eased transitions, sparklines, radar sweeps. Motion explains state change; every animation has a readable static end state; nothing delays input.
