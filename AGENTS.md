@@ -53,11 +53,11 @@ The owner drives work by saying **"continue"**. Follow [`docs/agents/continue.md
 Production-ready from the first commit, not prototypes. Every tunable goes in config (`SimConfig` + balance file; design tokens for visuals). Visual polish is a first-class requirement. See [`docs/agents/quality-bar.md`](docs/agents/quality-bar.md). The 3D world follows the **Master art direction** and **Environment construction rules** in `docs/design/11_visual_theme_and_motion.md` (heroic realism; modular layered construction; never cartoon or cube-like); how-to in `docs/agents/environment-art.md`.
 
 ## Workflow
-1. **Spec first** for anything bigger than a bug fix: `docs/specs/TEMPLATE.md`. Keep specs short.
-2. **Minimal testing (owner rule, 2026-10-03).** Tests are a cost. Write one only for tricky logic where a bug would be silent and costly (determinism, save/replay, parsing, economy math that could soft-lock) or as one regression test for a fixed bug. Usually 1-3 per feature. Prefer a quick CLI/manual check. Keep existing tests; never weaken them.
+1. **Spec first** only for a new mechanic or system (`docs/specs/TEMPLATE.md`, under one page). Tweaks, fixes, and refactors need none.
+2. **Minimal tests only.** Add a test only for a rule that would break silently (determinism/chunking, a hard cap, a locked decision). No tests for getters, trivial math, or restating the implementation. Prefer extending an existing test over adding one. Run only the affected test project while iterating; the full gate once before finishing.
 3. **Small PRs.** One concern per branch. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-4. **Decisions get ADRs.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
-5. **Update docs in the same change** when behavior changes: specs, `docs/design/10_*.md` corrections log. Edit docs in place and keep them lean: no logs, no duplicated summaries (owner rule). `docs/agents/HANDOFF.md` is a short current-state snapshot, not a diary.
+4. **ADRs only for hard-to-reverse decisions.** Anything that is expensive to reverse (engine, save format, protocol) gets an ADR in `docs/adr/`.
+5. **Update docs in the same change** only where behavior or canon changed (spec, `docs/design/10_*.md` corrections log). Edit in place, keep them lean (no logs, no duplicated summaries). Add a short `HANDOFF.md` entry only if work is left half-done or the next agent needs context.
 
 ## Design Quality
 - For game ideas and player-facing changes, identify the player value, the satisfying action/result, the feedback that makes it legible, and the next meaningful choice. Aim for earned "one more turn" momentum, not pressure to keep checking in.
@@ -67,9 +67,9 @@ Production-ready from the first commit, not prototypes. Every tunable goes in co
 
 ## Definition of done
 - `pwsh tools/check.ps1` passes (or the equivalent `dotnet` commands).
-- Risky behavior has a minimal test (see Workflow 2); no existing test was weakened to make it pass.
+- Rules that could silently break are covered by a test; no existing test was weakened to make it pass.
 - No new warnings (warnings are errors).
-- Docs reflect reality (edited in place); `TASK.md` and `BACKLOG.md` are current.
+- Affected docs updated; `TASK.md` and `BACKLOG.md` are current.
 - Committed and pushed.
 
 ## Working with multiple agents

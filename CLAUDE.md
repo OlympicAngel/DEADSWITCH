@@ -7,6 +7,6 @@
 - Slash commands: `/continue`, `/check`, `/spec <name>`, `/adr <title>`, `/sim-run <seed> <hours>`, `/handoff`.
 - On Linux/cloud sessions run the gate with `tools/check.sh`. A SessionStart hook installs the .NET SDK in cloud sessions.
 - Visuals matter as much as rules: load the `quality-bar` skill for any UI, visual, or config work and look at every preview screenshot you generate.
-- Use plan mode for anything touching `GameState`, the save format, or the event log.
-- Use the `determinism-reviewer` subagent before merging any change under `src/Deadswitch.Sim/`.
+- Use plan mode only for save-format or event-log changes; otherwise just do the work.
+- Use the `determinism-reviewer` subagent only when a change adds RNG draws, `GameState` fields, or offline catch-up logic. The build and tests cover the rest.
 - Keep replies short. Prefer editing existing files over creating new ones (`TASK.md` per feature is expected).

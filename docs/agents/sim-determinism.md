@@ -31,10 +31,8 @@ Owner rule: minimal testing. The existing determinism, chunking, replay and save
 - [ ] New state field added to `GameState` **and** `GameState.Visit` (hash + save). Save layout changed? Bump `SaveGame.FormatVersion` and add a migration (ADR-0009).
 - [ ] Test: save, load, continue equals a continuous run.
 - [ ] New randomness uses `state.Rng` and always draws the same number of times per tick.
-- [ ] Test: same seed gives same hash; different seed diverges.
-- [ ] Test: chunked run equals single run.
-- [ ] Test: replay (seed + config + command log) equals the live run when commands are involved.
-- [ ] Test: any cap or limit rule (loot cap, offline attack cap, resource caps).
+- [ ] Existing chunked-equals-whole test still passes (it covers determinism); the save-continue test covers replay and saves.
+- [ ] New hard cap or limit: assert it inside `Tier1Defaults_HoldCoreGuarantees` rather than adding a new test.
 - [ ] Offline attack cap and mercy window rules from doc 10 section 4 still hold.
 
 ## Offline catch-up
