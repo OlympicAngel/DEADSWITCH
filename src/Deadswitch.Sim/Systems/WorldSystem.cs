@@ -131,7 +131,7 @@ namespace Deadswitch.Sim.Systems
         public static int EstimatedDefense(GameState s, SimConfig c, int site)
         {
             SiteDef d = CatalogArray[site];
-            if (s.Sites[site].Scouted)
+            if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A))
             {
                 return d.Defense;
             }
@@ -142,23 +142,32 @@ namespace Deadswitch.Sim.Systems
         }
 
         /// <summary>Success chance in percent against a given defense (also used by the UI with the AI's estimate).</summary>
-        public static int Odds(SimConfig c, SiteDef d, OpKind kind, int squad, int compute, int defense)
+        public static int Odds(GameState s, SimConfig c, SiteDef d, OpKind kind, int squad, int compute, int defense)
         {
+            var m = c.Modules;
             switch (kind)
             {
                 case OpKind.Scout:
                     return SimMath.Clamp(55 + (squad * 12) - (defense / 4), 10, 95);
                 case OpKind.Hack:
-                    return SimMath.Clamp(50 + ((compute - d.Cyber) * 50 / System.Math.Max(1, d.Cyber)), 5, 95);
+                    int counter = Modules.Has(s, ModuleNode.CY2A) ? m.CounterIntrusionPts : 0;
+                    return SimMath.Clamp(50 + counter + ((compute - d.Cyber) * 50 / System.Math.Max(1, d.Cyber)), 5, 95);
                 default:
-                    int power = squad * c.World.StrengthPerPerson;
-                    return SimMath.Clamp(50 + ((power - defense) * 50 / System.Math.Max(1, defense)), 5, 95);
+                    int power = squad * (c.World.StrengthPerPerson + (Modules.Has(s, ModuleNode.WF6) ? m.VeteranStrength : 0));
+                    int sims = Modules.Has(s, ModuleNode.WF3) ? m.CombatSimsPts : 0;
+                    return SimMath.Clamp(50 + sims + ((power - defense) * 50 / System.Math.Max(1, defense)), 5, 95);
             }
         }
 
-        public static int FuelCost(SimConfig c, SiteDef d, OpKind kind)
+        public static int FuelCost(GameState s, SimConfig c, SiteDef d, OpKind kind)
         {
-            return kind == OpKind.Hack ? 0 : 2 * d.TravelHours * c.World.FuelPerTravelHour;
+            int fuel = kind == OpKind.Hack ? 0 : 2 * d.TravelHours * c.World.FuelPerTravelHour;
+            return Modules.Has(s, ModuleNode.ST2B) ? SimMath.PctFloor(fuel, 100 - c.Modules.QuietRoutesPct) : fuel;
+        }
+
+        public static int MaxOps(GameState s, SimConfig c)
+        {
+            return c.World.MaxOps + (Modules.Has(s, ModuleNode.ST6) ? c.Modules.GhostOps : 0);
         }
 
         /// <summary>Which faction an incoming attack comes from: weighted by base weight + heat (hash, no RNG draw).</summary>
@@ -204,7 +213,7 @@ namespace Deadswitch.Sim.Systems
             WorldConfig w = ctx.Config.World;
             for (int f = 0; f < FactionCount; f++)
             {
-                AddHeat(ctx, (Faction)f, -w.HeatDecayPerHour);
+                AddHeat(ctx, (Faction)f, -(Modules.Has(s, ModuleNode.ST3) ? SimMath.PctFloor(w.HeatDecayPerHour, 100 + ctx.Config.Modules.HeatSinkPct) : w.HeatDecayPerHour));
             }
 
             for (int i = 0; i < s.Sites.Count; i++)
@@ -264,7 +273,7 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
-            if (s.Ops.Count >= c.World.MaxOps)
+            if (s.Ops.Count >= MaxOps(s, c))
             {
                 return CommandResult.Reject(RejectReason.OpsBusy);
             }
@@ -285,7 +294,7 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.NotEnoughPeople);
             }
 
-            int fuel = FuelCost(c, d, kind);
+            int fuel = FuelCost(s, c, d, kind);
             if (s.Fuel < fuel)
             {
                 return CommandResult.Reject(RejectReason.NotEnoughFuel);
@@ -342,7 +351,7 @@ namespace Deadswitch.Sim.Systems
             WorldConfig w = c.World;
             SiteDef d = CatalogArray[op.Site];
             SiteState st = s.Sites[op.Site];
-            int odds = Odds(c, d, op.Kind, op.Squad, op.Compute, d.Defense);
+            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, d.Defense);
             bool won = SimMath.Hash((uint)op.Id * 2654435761u, (uint)(s.Rng.State >> 32)) % 100 < (uint)odds;
             int casualties = 0;
             int heat;
@@ -361,11 +370,11 @@ namespace Deadswitch.Sim.Systems
 
                     break;
                 case OpKind.Hack:
-                    heat = w.HeatPerHack;
+                    heat = Modules.Has(s, ModuleNode.CY5B) ? 0 : w.HeatPerHack;
                     if (won)
                     {
                         st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
-                        Loot(ctx, op.Id, LossResource.Compute, d.Compute);
+                        Loot(ctx, op.Id, LossResource.Compute, Modules.Has(s, ModuleNode.CY5A) ? SimMath.PctFloor(d.Compute, 100 + c.Modules.WormPct) : d.Compute);
                         if (d.CleanData > 0)
                         {
                             CorruptionSystem.Add(ctx, -d.CleanData);
@@ -376,6 +385,10 @@ namespace Deadswitch.Sim.Systems
                 default:
                     heat = w.HeatPerRaid;
                     casualties = (op.Squad * (won ? w.CasualtyPctWin : w.CasualtyPctLoss)) / 100;
+                    if (Modules.Has(s, ModuleNode.WF5A))
+                    {
+                        casualties = SimMath.PctFloor(casualties, c.Modules.AssaultCasualtyPct);
+                    }
                     if (won)
                     {
                         st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
@@ -391,7 +404,7 @@ namespace Deadswitch.Sim.Systems
             // survivors always come home (a lowered cap never kills anyone)
             s.People += op.Squad - casualties;
             ctx.Emit(EventKind.OpReturned, op.Id, op.Site, won ? 1 : 0, casualties);
-            AddHeat(ctx, d.Owner, heat);
+            AddHeat(ctx, d.Owner, Modules.Has(s, ModuleNode.ST5B) ? SimMath.PctFloor(heat, 100 - c.Modules.FalseTrailsPct) : heat);
         }
 
         private static void Loot(SimContext ctx, int opId, LossResource resource, int amount)

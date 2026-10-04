@@ -34,18 +34,20 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Defense rating the Hub would have with another posture and garrison (setup previews, advice).</summary>
         public static int Rating(GameState s, SimConfig c, Posture posture, int garrison, bool turrets = true)
         {
-            int total = garrison * c.Defense.DefensePerDefender;
+            int perDefender = c.Defense.DefensePerDefender + (Modules.Has(s, ModuleNode.WF2A) ? c.Modules.MilitiaPerDefender : 0);
+            int total = garrison * perDefender;
+            int fireControl = Modules.Has(s, ModuleNode.WF1) ? c.Modules.FireControlPct : 0;
             foreach (FacilitySlot slot in s.Slots)
             {
                 if (turrets && slot.Kind == FacilityKind.Turret && Economy.IsRunning(slot))
                 {
-                    total += Economy.EffectiveOutput(s, c, slot);
+                    total += SimMath.PctFloor(Economy.EffectiveOutput(s, c, slot), 100 + fireControl);
                 }
             }
 
             if (posture == Posture.Turtle)
             {
-                total = SimMath.PctFloor(total, 100 + c.Defense.TurtleDefensePct);
+                total = SimMath.PctFloor(total, 100 + c.Defense.TurtleDefensePct + (Modules.Has(s, ModuleNode.WF2B) ? c.Modules.KillZonePts : 0));
             }
 
             return total;

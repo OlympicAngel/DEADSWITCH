@@ -240,6 +240,10 @@ namespace Deadswitch.Sim.Systems
             GameState s = ctx.State;
             ThreatConfig c = ctx.Config.Threats;
             int strength = c.VirusStrength + (c.VirusStrengthPerTier * (s.Tier - 1));
+            if (Modules.Has(s, ModuleNode.CY1))
+            {
+                strength = SimMath.PctFloor(strength, 100 - ctx.Config.Modules.FirewallPct);
+            }
             if (s.Compute >= strength)
             {
                 // the firewall burns compute to purge the intrusion
@@ -250,7 +254,7 @@ namespace Deadswitch.Sim.Systems
 
             int burned = s.Compute;
             s.Compute = 0;
-            ModuleNode locked = c.VirusLockHours > 0 ? PickLock(s) : ModuleNode.None;
+            ModuleNode locked = c.VirusLockHours > 0 && !Modules.Has(s, ModuleNode.CY4) ? PickLock(s) : ModuleNode.None;
             if (locked != ModuleNode.None)
             {
                 s.LockedModule = (int)locked;

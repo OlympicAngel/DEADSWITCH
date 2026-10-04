@@ -281,17 +281,17 @@ audit_compute_cost = 60
 audit_cooldown_hours = 12
 
 # --------------------------------------------------------------------------------------------------
-# AI module research (SPEC-008). Lists follow the catalog order: M1, M2, M3, LG1, LG2A, LG2B, LG3, LG4, LG5A, LG5B, LG6. All (tune).
+# AI module research (SPEC-008). Lists follow the catalog order: M1-M3, then each field (LG, WF, CY, ST) as 1, 2A, 2B, 3, 4, 5A, 5B, 6. All (tune).
 [modules]
 
-# Energy cost per node. [11..11 items, each 0..100000]
-research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900]
+# Energy cost per node. [35..35 items, each 0..100000]
+research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900]
 
-# Compute cost per node (compute caps at compute.cap). [11..11 items, each 0..100000]
-research_compute = [90, 100, 100, 30, 60, 60, 80, 90, 80, 80, 100]
+# Compute cost per node (compute caps at compute.cap). [35..35 items, each 0..100000]
+research_compute = [90, 100, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100]
 
-# Research time per node (game minutes). [11..11 items, each 1..100000]
-research_minutes = [1440, 600, 1440, 90, 150, 150, 240, 300, 300, 300, 420]
+# Research time per node (game minutes). [35..35 items, each 1..100000]
+research_minutes = [1440, 600, 1440, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420]
 
 # Share of the cost returned when research is cancelled. [0..100]
 cancel_refund_pct = 50
@@ -319,6 +319,69 @@ fuel_cells_pct = 15
 
 # LG6 Automation Protocols: output of unmanned facilities in percent. [0..100]
 automation_unmanned_pct = 75
+
+# WF1 Fire Control: turret output bonus in percent. [0..1000]
+fire_control_pct = 20
+
+# WF2A Drilled Militia: extra defense per garrison defender. [0..1000]
+militia_per_defender = 2
+
+# WF2B Kill Zones: extra Turtle defense points. [0..1000]
+kill_zone_pts = 25
+
+# WF3 Combat Simulations: raid operation odds bonus (points). [0..100]
+combat_sims_pts = 10
+
+# WF4 Hardened Walls: siege and purge strength reduction in percent. [0..90]
+hardened_pct = 15
+
+# WF5A Assault Doctrine: raid operation casualties in percent of normal. [0..100]
+assault_casualty_pct = 50
+
+# WF5B Rapid Response: extra attack warning (minutes). [0..1000]
+rapid_response_minutes = 15
+
+# WF6 Veteran Cadre: extra squad strength per person. [0..1000]
+veteran_strength = 2
+
+# CY1 Firewall: virus strength reduction in percent. [0..90]
+firewall_pct = 30
+
+# CY2A Counter-intrusion: hack odds bonus (points). [0..100]
+counter_intrusion_pts = 15
+
+# CY2B Signal Interception: attack estimate error reduction in percent. [0..100]
+interception_pct = 50
+
+# CY3 Clean Room: extra corruption decay per hour (milli). [0..100000]
+clean_room_milli = 200
+
+# CY5A Worm Factory: extra hack compute loot in percent. [0..1000]
+worm_pct = 100
+
+# CY6 Core Partition: extra proportional corruption decay per hour (per mille). [0..1000]
+partition_permille = 10
+
+# ST1 Signal Masking: extra Dark posture miss chance (points). [0..100]
+masking_pts = 15
+
+# ST2B Quiet Routes: operation fuel cost reduction in percent. [0..100]
+quiet_routes_pct = 50
+
+# ST3 Heat Sink: extra faction heat decay in percent. [0..1000]
+heat_sink_pct = 100
+
+# ST4 Decoys: strength reduction for every attack in percent. [0..90]
+decoy_pct = 10
+
+# ST5A Prediction Engine: extra attack warning (minutes). [0..1000]
+prediction_minutes = 30
+
+# ST5B False Trails: operation heat reduction in percent. [0..100]
+false_trails_pct = 50
+
+# ST6 Ghost Network: extra operation slots. [0..10]
+ghost_ops = 1
 
 # --------------------------------------------------------------------------------------------------
 # Hub tiers and tier-up gates (doc 06 s2, SPEC-008). All (tune).

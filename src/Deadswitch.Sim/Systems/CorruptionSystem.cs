@@ -12,8 +12,11 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             Config.CorruptionConfig c = ctx.Config.Corruption;
-            int proportional = (int)((long)s.CorruptionMilli * c.DecayPermillePerHour / 1000);
-            int delta = (s.AutomationLoad * c.AutomationMilliPerHour) - c.DecayMilliPerHour - proportional;
+            var m = ctx.Config.Modules;
+            int permille = c.DecayPermillePerHour + (Modules.Has(s, State.ModuleNode.CY6) ? m.PartitionPermille : 0);
+            int proportional = (int)((long)s.CorruptionMilli * permille / 1000);
+            int decay = c.DecayMilliPerHour + (Modules.Has(s, State.ModuleNode.CY3) ? m.CleanRoomMilli : 0);
+            int delta = (s.AutomationLoad * c.AutomationMilliPerHour) - decay - proportional;
             Add(ctx, delta);
         }
 

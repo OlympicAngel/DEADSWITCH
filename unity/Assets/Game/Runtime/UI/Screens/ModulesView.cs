@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Sim;
@@ -9,14 +10,17 @@ using UnityEngine.UIElements;
 namespace Deadswitch.Game.UI.Screens
 {
     /// <summary>
-    /// MODULES view inside CORE (SPEC-008): tier gate checklist and tier-up, research progress, the tree (trunk +
-    /// Logistics with its exclusive pairs) and the selected node's detail. Layout: Resources/UI/Modules.uxml.
+    /// MODULES view inside CORE (SPEC-008): tier gate checklist and tier-up, research progress, the tree (trunk + one
+    /// field tab at a time with its exclusive pairs) and the selected node's detail. Layout: Resources/UI/Modules.uxml.
     /// </summary>
     public sealed class ModulesView
     {
         private readonly GameHost _host;
         private readonly VisualElement _ui;
+        private readonly VisualElement _body;
+        private readonly Dictionary<ModuleNode, VisualElement> _nodes = new Dictionary<ModuleNode, VisualElement>();
         private ModuleNode _selected = ModuleNode.M1;
+        private ModuleField _field = ModuleField.Logistics;
 
         public ModulesView(VisualElement mount)
         {
@@ -24,17 +28,20 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Modules");
             mount.Add(tree);
             _ui = tree;
-            foreach (ModuleDef d in Modules.Catalog)
+            _body = _ui.Q("mod-field-body");
+            foreach (ModuleNode node in new[] { ModuleNode.M1, ModuleNode.M2, ModuleNode.M3 })
             {
-                ModuleNode node = d.Node;
-                _ui.Q("node-" + node).RegisterCallback<ClickEvent>(_ =>
-                {
-                    _selected = node;
-                    _ui.Q<Label>("mod-reason").text = string.Empty;
-                    Refresh();
-                });
+                Hook(_ui.Q("node-" + node), node);
+                _nodes[node] = _ui.Q("node-" + node);
             }
 
+            for (int f = (int)ModuleField.Logistics; f <= (int)ModuleField.Stealth; f++)
+            {
+                var field = (ModuleField)f;
+                _ui.Q("tab-" + f).RegisterCallback<ClickEvent>(_ => ShowField(field));
+            }
+
+            BuildField();
             _ui.Q("detail-start").RegisterCallback<ClickEvent>(_ => StartOrCancel());
             _ui.Q("tier-up").RegisterCallback<ClickEvent>(_ => Run(Command.TierUp()));
         }
@@ -77,7 +84,11 @@ namespace Deadswitch.Game.UI.Screens
             // tree
             foreach (ModuleDef d in Modules.Catalog)
             {
-                VisualElement el = _ui.Q("node-" + d.Node);
+                if (!_nodes.TryGetValue(d.Node, out VisualElement el))
+                {
+                    continue;
+                }
+
                 RejectReason why = Modules.Availability(s, d.Node);
                 bool restored = Modules.IsRestored(s, d.Node);
                 bool active = s.ResearchNode == (int)d.Node;
@@ -87,8 +98,13 @@ namespace Deadswitch.Game.UI.Screens
                 el.EnableInClassList("is-locked", why == RejectReason.Locked);
                 el.EnableInClassList("is-excluded", why == RejectReason.Excluded);
                 el.EnableInClassList("is-selected", d.Node == _selected);
-                _ui.Q<Label>("node-" + d.Node + "-state").text = restored ? "RESTORED" : active ? "RESTORING" : why == RejectReason.Excluded ? "EXCLUDED"
+                el.Q<Label>("node-" + d.Node + "-state").text = restored ? (Modules.Has(s, d.Node) ? "RESTORED" : "LOCKED") : active ? "RESTORING" : why == RejectReason.Excluded ? "EXCLUDED"
                     : why == RejectReason.Locked ? (s.Tier < d.Tier ? "TIER " + d.Tier : "NEEDS " + d.Prereq) : "AVAILABLE";
+            }
+
+            for (int f = (int)ModuleField.Logistics; f <= (int)ModuleField.Stealth; f++)
+            {
+                _ui.Q("tab-" + f).EnableInClassList("is-selected", f == (int)_field);
             }
 
             // detail
@@ -129,6 +145,104 @@ namespace Deadswitch.Game.UI.Screens
             float done = (s.Tick - s.ResearchStartTick) + _host.TickProgress;
             _ui.Q("research-fill").style.width = Length.Percent(UnityEngine.Mathf.Clamp01(done / UnityEngine.Mathf.Max(1f, total)) * 100f);
             _ui.Q<Label>("research-eta").text = Fmt.Countdown(_host.SecondsUntilTick(s.ResearchCompleteTick));
+        }
+
+        private void ShowField(ModuleField field)
+        {
+            _field = field;
+            BuildField();
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (d.Field == field)
+                {
+                    _selected = d.Node;
+                    break;
+                }
+            }
+
+            _ui.Q<Label>("mod-reason").text = string.Empty;
+            Refresh();
+        }
+
+        /// <summary>
+        /// Rebuilds the selected field's nodes from the catalog. Every field has the same shape (SPEC-008):
+        /// Tier 1 = node 1 then an exclusive pair; Tier 2 = nodes 3 and 4, an exclusive pair, then node 6.
+        /// </summary>
+        private void BuildField()
+        {
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (d.Field != ModuleField.Trunk)
+                {
+                    _nodes.Remove(d.Node);
+                }
+            }
+
+            _body.Clear();
+            var defs = new List<ModuleDef>();
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (d.Field == _field)
+                {
+                    defs.Add(d);
+                }
+            }
+
+            int i = 0;
+            int tier = 0;
+            while (i < defs.Count)
+            {
+                ModuleDef d = defs[i];
+                if (d.Tier != tier)
+                {
+                    tier = d.Tier;
+                    _body.Add(Kit.Label("TIER " + tier, "mod-tierlabel"));
+                }
+
+                var row = new VisualElement();
+                row.AddToClassList("row");
+                row.AddToClassList("mod-row");
+                row.Add(Node(d));
+                i++;
+                if (d.Pair != ModuleNode.None && i < defs.Count && defs[i].Node == d.Pair)
+                {
+                    row.AddToClassList("mod-pair");
+                    row.Add(Kit.Label("OR", "mod-or"));
+                    row.Add(Node(defs[i]));
+                    i++;
+                }
+                else if (d.Pair == ModuleNode.None && i < defs.Count && defs[i].Pair == ModuleNode.None && defs[i].Tier == d.Tier && d.Tier > 1 && i + 1 < defs.Count)
+                {
+                    row.Add(Node(defs[i]));
+                    i++;
+                }
+
+                _body.Add(row);
+            }
+        }
+
+        private VisualElement Node(ModuleDef d)
+        {
+            var el = new VisualElement { name = "node-" + d.Node };
+            el.AddToClassList("mod-node");
+            el.Add(Kit.Label(d.Node.ToString(), "mod-node__code"));
+            el.Add(Kit.Label(ModuleTexts.Name(d.Node), "mod-node__name"));
+            Label state = Kit.Label(string.Empty, "mod-node__state");
+            state.name = "node-" + d.Node + "-state";
+            el.Add(state);
+            Hook(el, d.Node);
+            _nodes[d.Node] = el;
+            return el;
+        }
+
+        private void Hook(VisualElement el, ModuleNode node)
+        {
+            el.RegisterCallback<ClickEvent>(_ =>
+            {
+                _selected = node;
+                _ui.Q<Label>("mod-reason").text = string.Empty;
+                Refresh();
+            });
         }
 
         private void Gate(string name, bool ok, string text)

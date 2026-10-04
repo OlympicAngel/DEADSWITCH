@@ -159,7 +159,7 @@ namespace Deadswitch.Game.UI.Screens
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
 
-            _ui.Q<Label>("map-ops-count").text = "OPS " + s.Ops.Count + "/" + c.World.MaxOps + " // FUEL " + Fmt.Num(s.Fuel);
+            _ui.Q<Label>("map-ops-count").text = "OPS " + s.Ops.Count + "/" + WorldSystem.MaxOps(s, c) + " // FUEL " + Fmt.Num(s.Fuel);
             for (int f = 0; f < WorldSystem.FactionCount; f++)
             {
                 HeatLevel level = WorldSystem.Level(s.Heat[f]);
@@ -214,16 +214,16 @@ namespace Deadswitch.Game.UI.Screens
             bool hack = _kind == OpKind.Hack;
             _ui.Q<Label>("op-amount").text = (hack ? _compute : _squad).ToString(System.Globalization.CultureInfo.InvariantCulture);
             _ui.Q<Label>("op-amount-unit").text = hack ? "COMPUTE" : "PEOPLE";
-            int odds = WorldSystem.Odds(c, d, _kind, _squad, _compute, estimate);
+            int odds = WorldSystem.Odds(s, c, d, _kind, _squad, _compute, estimate);
             Label oddsLabel = _ui.Q<Label>("op-odds");
             oddsLabel.text = (st.Scouted ? "ODDS " : "AI ODDS ") + odds + "%";
             oddsLabel.EnableInClassList("t-amber", odds < 60);
             int back = hack ? 1 : 2 * d.TravelHours;
-            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(c, d, _kind)) + " // BACK IN " + back + " H";
+            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, d, _kind)) + " // BACK IN " + back + " H";
             string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK" };
             Kit.SetButtonText(_ui.Q("op-launch"), verbs[(int)_kind]);
             bool cooling = _kind != OpKind.Scout && s.Tick < st.CooldownUntilTick;
-            _ui.Q("op-launch").EnableInClassList("is-disabled", st.Outpost || cooling || s.Ops.Count >= c.World.MaxOps);
+            _ui.Q("op-launch").EnableInClassList("is-disabled", st.Outpost || cooling || s.Ops.Count >= WorldSystem.MaxOps(s, c));
 
             bool claimable = d.Kind == SiteKind.Ruins && st.Cleared && !st.Outpost;
             _ui.Q("site-claim").EnableInClassList("is-hidden", !claimable);

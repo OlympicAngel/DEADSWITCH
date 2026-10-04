@@ -105,6 +105,12 @@ namespace Deadswitch.Sim.Systems
             s.RaidId = s.NextRaidId++;
             s.RaidsToday++;
             s.RaidKind = kind;
+            if (warningMinutes > 1)
+            {
+                // WF5B Rapid Response, ST5A Prediction Engine: earlier warnings (never for a betrayal)
+                warningMinutes += (Modules.Has(s, ModuleNode.WF5B) ? c.Modules.RapidResponseMinutes : 0) + (Modules.Has(s, ModuleNode.ST5A) ? c.Modules.PredictionMinutes : 0);
+            }
+
             s.RaidArriveTick = s.Tick + warningMinutes;
             s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
             // the purge comes from the faction that marked us; the opening raid stays the fixed tutorial hit
@@ -112,6 +118,15 @@ namespace Deadswitch.Sim.Systems
             if (fixedStrength <= 0)
             {
                 s.RaidStrength = WorldSystem.ScaleByHeat(s, c, s.RaidFaction, s.RaidStrength);
+                if (kind != AttackKind.Raid && Modules.Has(s, ModuleNode.WF4))
+                {
+                    s.RaidStrength = SimMath.PctFloor(s.RaidStrength, 100 - c.Modules.HardenedPct);
+                }
+
+                if (Modules.Has(s, ModuleNode.ST4))
+                {
+                    s.RaidStrength = SimMath.PctFloor(s.RaidStrength, 100 - c.Modules.DecoyPct);
+                }
             }
             if (kind == AttackKind.Siege)
             {
@@ -124,6 +139,10 @@ namespace Deadswitch.Sim.Systems
 
             int band = (int)CorruptionSystem.Band(c, s.CorruptionMilli);
             int errorPct = c.Raid.EstimateErrorPctByBand[band];
+            if (Modules.Has(s, ModuleNode.CY2B))
+            {
+                errorPct = SimMath.PctFloor(errorPct, 100 - c.Modules.InterceptionPct);
+            }
             long estimate = (long)s.RaidStrength * ((100_000L + (errorPct * estimateRoll)) / 1000) / 100;
             s.RaidEstimate = (int)(estimate < 1 ? 1 : estimate);
             if (s.FalseIntel)
@@ -220,7 +239,7 @@ namespace Deadswitch.Sim.Systems
             ctx.Emit(EventKind.RaidContact, id, (int)s.RaidGate);
             int lies = s.RaidGateReported != RaidGate.None && s.RaidGate != s.RaidGateReported ? RaidRecord.GateLie : 0;
 
-            if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct)
+            if (s.Posture == Posture.Dark && missRoll < c.Defense.DarkMissPct + (Modules.Has(s, ModuleNode.ST1) ? c.Modules.MaskingPts : 0))
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Missed, strength, defense);
                 Record(ctx, id, lies);
