@@ -42,6 +42,8 @@ namespace Deadswitch.Game.Base
 
         private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
         private static readonly int ConeScaleId = Shader.PropertyToID("_DsConeScale");
+        private static readonly int DamageId = Shader.PropertyToID("_DsDamage");
+        private MaterialPropertyBlock _damageBlock;
         private static readonly int SmokeLightId = Shader.PropertyToID("_DsSmokeLight");
 
         public static BaseView Instance { get; private set; }
@@ -385,6 +387,43 @@ namespace Deadswitch.Game.Base
             }
         }
 
+        /// <summary>
+        /// Damaged facility (SPEC-018): a red rim glow pulsing at <see cref="ScarFx.damagePulseHz"/>, stronger per damage
+        /// level, so a hurt building reads at a glance. Steady (no pulse) under reduced motion.
+        /// </summary>
+        private void DamageGlow(SlotObject o, bool reduced)
+        {
+            int damage = o.View.Kind != FacilityKind.None ? o.View.Damage : 0;
+            if (damage <= 0)
+            {
+                if (o.Glowing)
+                {
+                    foreach (MeshRenderer r in o.Renderers)
+                    {
+                        r.SetPropertyBlock(null);
+                    }
+
+                    o.Glowing = false;
+                }
+
+                return;
+            }
+
+            _damageBlock ??= new MaterialPropertyBlock();
+            ScarFx fx = _look.scarFx;
+            float pulse = reduced ? 0.6f : 0.5f + (0.5f * Mathf.Sin(_time * fx.damagePulseHz * Mathf.PI * 2f));
+            float k = fx.damageGlow * (0.4f + (0.3f * Mathf.Min(3, damage))) * (0.25f + (0.75f * pulse));
+            var glow = new Vector4(fx.damageColor[0] * k, fx.damageColor[1] * k, fx.damageColor[2] * k, fx.damageTint);
+            foreach (MeshRenderer r in o.Renderers)
+            {
+                r.GetPropertyBlock(_damageBlock);
+                _damageBlock.SetVector(DamageId, glow);
+                r.SetPropertyBlock(_damageBlock);
+            }
+
+            o.Glowing = true;
+        }
+
         /// <summary>Lamps dark and status lights off when unpowered; amber beacons only while unmanned.</summary>
         private void ApplyPower(SlotObject o, SlotView v)
         {
@@ -454,6 +493,8 @@ namespace Deadswitch.Game.Base
                     b.enabled = blink;
                     b.transform.GetChild(0).gameObject.SetActive(blink);
                 }
+
+                DamageGlow(o, reduced);
             }
 
             foreach (Walker w in _walkers)
@@ -645,6 +686,7 @@ namespace Deadswitch.Game.Base
             public SlotView View;
             public bool Built;
             public float Height;
+            public bool Glowing;
             public readonly List<PartState> Parts = new List<PartState>();
             public readonly List<Light> Beacons = new List<Light>();
             public readonly List<Light> StatusLights = new List<Light>();

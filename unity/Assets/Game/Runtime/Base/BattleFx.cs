@@ -18,6 +18,7 @@ namespace Deadswitch.Game.Base
         public static void Attach(ScarSet set, Transform parent, float effects, bool reduced, List<ParticleSystem> into)
         {
             Build();
+            ScarFx fx = BaseLook.Load().scarFx;
             float amount = Mathf.Clamp01(effects) * (reduced ? 0.5f : 1f);
             if (amount <= 0f)
             {
@@ -26,7 +27,7 @@ namespace Deadswitch.Game.Base
 
             foreach (System.Numerics.Vector3 p in set.Fires)
             {
-                into.Add(Flames(parent, ArtBridge.V(p), amount, reduced));
+                into.Add(Flames(parent, ArtBridge.V(p), amount, reduced, fx));
                 if (set.SmokeLevel >= 3)
                 {
                     into.Add(Embers(parent, ArtBridge.V(p), amount, reduced));
@@ -37,7 +38,7 @@ namespace Deadswitch.Game.Base
             {
                 foreach (System.Numerics.Vector3 p in set.Smokes)
                 {
-                    into.Add(Smoke(parent, ArtBridge.V(p), set.SmokeLevel, amount, reduced));
+                    into.Add(Smoke(parent, ArtBridge.V(p), set.SmokeLevel, amount, reduced, fx));
                 }
             }
         }
@@ -89,22 +90,22 @@ namespace Deadswitch.Game.Base
             return 0.78f + (0.14f * Mathf.Sin((time * 13.1f) + seed)) + (0.08f * Mathf.Sin((time * 23.7f) + (seed * 2.3f)));
         }
 
-        private static ParticleSystem Smoke(Transform parent, Vector3 at, int level, float amount, bool reduced)
+        private static ParticleSystem Smoke(Transform parent, Vector3 at, int level, float amount, bool reduced, ScarFx fx)
         {
             ParticleSystem ps = New("Smoke", parent, at, _smoke);
             var main = ps.main;
             float speed = reduced ? 0.45f : 1f;
             main.startLifetime = new ParticleSystem.MinMaxCurve(4f + level, 6f + (level * 2f));
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.5f * speed, (0.9f + (0.3f * level)) * speed);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.5f + (0.25f * level), 0.9f + (0.45f * level));
+            main.startSize = new ParticleSystem.MinMaxCurve((0.5f + (0.25f * level)) * fx.smokeSize, (0.9f + (0.45f * level)) * fx.smokeSize);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
-            float grey = level == 1 ? 0.48f : level == 2 ? 0.2f : 0.08f;
+            float grey = (level == 1 ? 0.48f : level == 2 ? 0.2f : 0.08f) * (1f - Mathf.Clamp01(fx.smokeDark));
             main.startColor = new ParticleSystem.MinMaxGradient(new Color(grey, grey * 0.96f, grey * 0.92f, level == 1 ? 0.28f : 0.55f), new Color(grey * 1.2f, grey * 1.15f, grey * 1.1f, level == 1 ? 0.36f : 0.7f));
-            main.maxParticles = 30 * level;
+            main.maxParticles = Mathf.CeilToInt(30 * level * fx.smokeRate);
             main.simulationSpace = ParticleSystemSimulationSpace.World;
 
             var emission = ps.emission;
-            emission.rateOverTime = (2.2f + (2.6f * level)) * amount;
+            emission.rateOverTime = (2.2f + (2.6f * level)) * amount * fx.smokeRate;
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Cone;
@@ -144,16 +145,16 @@ namespace Deadswitch.Game.Base
             return ps;
         }
 
-        private static ParticleSystem Flames(Transform parent, Vector3 at, float amount, bool reduced)
+        private static ParticleSystem Flames(Transform parent, Vector3 at, float amount, bool reduced, ScarFx fx)
         {
             ParticleSystem ps = New("Flames", parent, at, _fire);
             var main = ps.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f, 0.7f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(0.6f, 1.3f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.28f, 0.55f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f * Mathf.Sqrt(fx.fireSize), 0.7f * Mathf.Sqrt(fx.fireSize));
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.6f, 1.3f * Mathf.Sqrt(fx.fireSize));
+            main.startSize = new ParticleSystem.MinMaxCurve(0.28f * fx.fireSize, 0.55f * fx.fireSize);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
-            main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.55f, 0.18f, 0.9f), new Color(1f, 0.78f, 0.36f, 1f));
-            main.maxParticles = 60;
+            main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.55f, 0.18f, 0.9f * fx.fireBrightness), new Color(1f, 0.78f, 0.36f, fx.fireBrightness));
+            main.maxParticles = Mathf.CeilToInt(60 * fx.fireRate * Mathf.Sqrt(fx.fireSize));
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             if (reduced)
             {
@@ -161,12 +162,12 @@ namespace Deadswitch.Game.Base
             }
 
             var emission = ps.emission;
-            emission.rateOverTime = 26f * amount;
+            emission.rateOverTime = 26f * amount * fx.fireRate;
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = 6f;
-            shape.radius = 0.22f;
+            shape.angle = 6f * fx.fireSpread;
+            shape.radius = 0.22f * fx.fireSpread;
             shape.rotation = new Vector3(-90f, 0, 0);
 
             var size = ps.sizeOverLifetime;

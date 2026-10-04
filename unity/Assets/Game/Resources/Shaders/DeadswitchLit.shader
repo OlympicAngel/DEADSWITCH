@@ -14,6 +14,7 @@ Shader "Deadswitch/VertexColorLit"
         _Wear("Chip Rust Dirt Streak", Vector) = (0, 0, 0, 0)
         _WearB("Bump Scale Ground Procedural", Vector) = (0, 1, 0, 0)
         _Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5
+        [HideInInspector] _DsDamage("Damage glow (rgb, flat share)", Vector) = (0, 0, 0, 0)
     }
 
     SubShader
@@ -50,6 +51,7 @@ Shader "Deadswitch/VertexColorLit"
                 half4 _BareColor;
                 float4 _Wear;
                 float4 _WearB;
+                float4 _DsDamage;
             CBUFFER_END
 
             // time-of-day emission scale (BaseView): lamps and windows glow more at night
@@ -130,6 +132,9 @@ Shader "Deadswitch/VertexColorLit"
                 s.occlusion = 1;
                 s.alpha = 1;
                 s.emission = _EmissionColor.rgb * _DsEmissionScale;
+                // damaged facility (BaseView, per renderer): red rim that reads as an outline glow, plus a flat tint
+                float rim = 1.0 - saturate(dot(n, inputData.viewDirectionWS));
+                s.emission += _DsDamage.rgb * (_DsDamage.w + rim * rim);
                 s.normalTS = half3(0, 0, 1);
 
                 half4 c = UniversalFragmentPBR(inputData, s);

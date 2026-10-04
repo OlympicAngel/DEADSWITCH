@@ -70,6 +70,26 @@ namespace Deadswitch.Game.Base
     /// same file tools/basepreview renders with, so headless previews and the game match. Lighting comes from
     /// keyframes by game hour (doc 11: overcast day is the reference look; dusk and night are variants).
     /// </summary>
+    /// <summary>
+    /// Battle-scar effects (SPEC-018): multipliers on the fire and smoke emitters, and the pulsing red rim glow that
+    /// marks a damaged facility. Colors are linear 0..1; the glow pulse holds steady under reduced motion.
+    /// </summary>
+    [System.Serializable]
+    public sealed class ScarFx
+    {
+        public float fireRate = 1f;
+        public float fireSize = 1f;
+        public float fireSpread = 1f;
+        public float fireBrightness = 1f;
+        public float smokeRate = 1f;
+        public float smokeSize = 1f;
+        public float smokeDark = 0f;
+        public float[] damageColor = { 1f, 0.12f, 0.05f };
+        public float damageGlow = 2f;
+        public float damageTint = 0.12f;
+        public float damagePulseHz = 1.1f;
+    }
+
     [System.Serializable]
     public sealed class BaseLook
     {
@@ -88,6 +108,9 @@ namespace Deadswitch.Game.Base
 
         /// <summary>Moonlight level per night (cycled by night index), so each night has its own light.</summary>
         public float[] moonPhases = { 1f };
+
+        /// <summary>Battle-scar fire, smoke and the damage glow on hurt facilities (Unity only).</summary>
+        public ScarFx scarFx = new ScarFx();
 
         // Unity-only conversion factors. three.js divides direct and hemisphere light by pi (Lambert BRDF); URP does
         // not, so the sun is 1/pi. Points were matched by eye in the Editor (URP's range falloff is softer). The

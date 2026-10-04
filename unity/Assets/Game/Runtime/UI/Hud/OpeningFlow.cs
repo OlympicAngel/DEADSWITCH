@@ -55,7 +55,7 @@ namespace Deadswitch.Game.UI.Hud
             RefreshGuide();
         }
 
-        private static string[] RevealOrder => new[] { "topbar", "hud-right", "advisor", "tabbar" };
+        private static string[] RevealOrder => new[] { "topbar", "frame", "world", "advisor", "tabbar" };
 
         public void Tick(float dt)
         {
@@ -161,7 +161,8 @@ namespace Deadswitch.Game.UI.Hud
 
         private VisualElement Group(string name)
         {
-            return name == "hud-right" ? _hud.Q(className: "hud-right") : _hud.Q(name);
+            // "world" is the floating facility labels: kept dark behind the prologue with the rest of the HUD
+            return name == "world" ? UiRoot.Instance.World : _hud.Q(name);
         }
 
         private void RefreshGuide()
