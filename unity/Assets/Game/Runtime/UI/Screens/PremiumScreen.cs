@@ -13,7 +13,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly Label _reason;
         private string _back = "core";
 
-        public PremiumScreen(ScreenRouter router)
+        public PremiumScreen(ScreenRouter router, System.Action openSeason)
         {
             Root = new VisualElement();
             TemplateContainer tree = UiRoot.Load("Premium");
@@ -23,14 +23,14 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("prm-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
             _ui.Q("prm-buy").RegisterCallback<ClickEvent>(_ => Say(Entitlements.Instance.BuyPremium()));
             _ui.Q("prm-restore").RegisterCallback<ClickEvent>(_ => Say(Entitlements.Instance.Restore()));
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < Theme.Count; i++)
             {
                 int theme = i;
                 _ui.Q("theme-" + i).RegisterCallback<ClickEvent>(_ =>
                 {
                     if (!Theme.Owned(theme))
                     {
-                        Say("Watch an ad below to unlock this theme.");
+                        Say(theme >= 3 ? "Earn it on the season track." : "Watch an ad below to unlock this theme.");
                         return;
                     }
 
@@ -41,6 +41,8 @@ namespace Deadswitch.Game.UI.Screens
 
             _ui.Q("ad-1").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.ThemeCold)));
             _ui.Q("ad-2").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.ThemeBone)));
+            _ui.Q("prm-season").RegisterCallback<ClickEvent>(_ => openSeason());
+            SeasonPass.Changed += Refresh;
             Entitlements.Instance.Changed += Refresh;
         }
 
@@ -77,9 +79,10 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("prm-state").EnableInClassList("t-amber", !premium);
             _ui.Q<Label>("prm-state").EnableInClassList("t-phosphor", premium);
             Kit.SetButtonText(_ui.Q("prm-buy"), premium ? "UNLOCKED" : "UNLOCK FULL GAME");
+            Kit.SetButtonText(_ui.Q("prm-season"), "SEASON TRACK // RANK " + SeasonPass.Rank + " / " + Deadswitch.Host.Seasons.SeasonTrack.Ranks);
             _ui.Q("prm-buy").EnableInClassList("is-disabled", premium);
             string blocked = RewardedAds.Blocked();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < Theme.Count; i++)
             {
                 _ui.Q("theme-" + i).EnableInClassList("is-selected", Theme.Current == i && Theme.Owned(i));
                 _ui.Q("theme-" + i).EnableInClassList("is-locked", !Theme.Owned(i));

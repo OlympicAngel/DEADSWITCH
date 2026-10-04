@@ -46,6 +46,7 @@ namespace Deadswitch.Game.Audio
         private float _nextBattleSound;
         private readonly Queue<float> _speech = new Queue<float>();
         private float _nextSyllable;
+        private int _voicePack;
         private int _band;
 
         public static AudioDirector Instance { get; private set; }
@@ -80,17 +81,14 @@ namespace Deadswitch.Game.Audio
             _tick = Synth.Tick(1800f, 0.05f);
             _chime = Synth.Tick(660f, 0.5f);
 
-            // the AI's voice per corruption band: clean, then crushed and wavering
-            _syllables = new AudioClip[4][];
-            float[] pitches = { 196f, 220f, 247f, 262f, 294f, 330f };
-            for (int band = 0; band < 4; band++)
+            BuildVoice();
+            _host.Settings.Changed += () =>
             {
-                _syllables[band] = new AudioClip[pitches.Length];
-                for (int p = 0; p < pitches.Length; p++)
+                if (_voicePack != _host.Settings.VoicePack)
                 {
-                    _syllables[band][p] = Synth.Syllable(pitches[p], band / 3f, (band * 31) + p);
+                    BuildVoice();
                 }
-            }
+            };
 
             _wind.Play();
             _drone.Play();
@@ -289,6 +287,27 @@ namespace Deadswitch.Game.Audio
             s.playOnAwake = false;
             s.volume = 0f;
             return s;
+        }
+
+        /// <summary>
+        /// The AI's voice per corruption band: clean, then crushed and wavering. Voice packs (F-048, cosmetic) shift
+        /// the register: LOW CARRIER sits a fourth lower, STATIC CHOIR higher and grainier from the start.
+        /// </summary>
+        private void BuildVoice()
+        {
+            _voicePack = _host.Settings.VoicePack;
+            float[] shift = { 1f, 0.75f, 1.15f };
+            float[] grain = { 0f, 0.05f, 0.25f };
+            float[] pitches = { 196f, 220f, 247f, 262f, 294f, 330f };
+            _syllables = new AudioClip[4][];
+            for (int band = 0; band < 4; band++)
+            {
+                _syllables[band] = new AudioClip[pitches.Length];
+                for (int p = 0; p < pitches.Length; p++)
+                {
+                    _syllables[band][p] = Synth.Syllable(pitches[p] * shift[_voicePack], Mathf.Min(1f, (band / 3f) + grain[_voicePack]), (band * 31) + p);
+                }
+            }
         }
 
         private void OneShot(AudioClip clip, float volume, float pitch)

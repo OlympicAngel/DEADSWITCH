@@ -112,3 +112,22 @@
     --c-line-mid: rgba(217, 210, 190, 0.32);
     --c-line-strong: rgba(217, 210, 190, 0.62);
 }
+
+/* Season track themes (F-048): cosmetic, earned by play (verdigris) or on the premium track (ash). */
+.ds-root.theme-verdigris {
+    --c-phosphor: #7CC2AE;
+    --c-phosphor-dim: rgba(124, 194, 174, 0.55);
+    --c-phosphor-glow: rgba(124, 194, 174, 0.35);
+    --c-line: rgba(124, 194, 174, 0.16);
+    --c-line-mid: rgba(124, 194, 174, 0.32);
+    --c-line-strong: rgba(124, 194, 174, 0.62);
+}
+
+.ds-root.theme-ash {
+    --c-phosphor: #B9BEC6;
+    --c-phosphor-dim: rgba(185, 190, 198, 0.55);
+    --c-phosphor-glow: rgba(185, 190, 198, 0.35);
+    --c-line: rgba(185, 190, 198, 0.16);
+    --c-line-mid: rgba(185, 190, 198, 0.32);
+    --c-line-strong: rgba(185, 190, 198, 0.62);
+}

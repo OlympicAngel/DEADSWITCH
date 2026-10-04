@@ -25,6 +25,7 @@ namespace Deadswitch.Game.Store
     {
         private const string KeyPremium = "ds.premium";
         private const string KeyCosmetic = "ds.cosmetic.";
+        private const string KeySeason = "ds.seasonpass.";
 
         public static Entitlements Instance { get; } = new Entitlements();
 
@@ -37,7 +38,7 @@ namespace Deadswitch.Game.Store
 
         public bool OwnsSeason(string id)
         {
-            return false;
+            return PlayerPrefs.GetInt(KeySeason + id, 0) == 1;
         }
 
         public bool OwnsCosmetic(string id)
@@ -60,6 +61,23 @@ namespace Deadswitch.Game.Store
 
             Grant(KeyPremium);
             return "Full game unlocked. Thank you, handler.";
+        }
+
+        /// <summary>Buys the season's premium track (cosmetics only, never expires). Returns a player-facing line.</summary>
+        public string BuySeason(string id)
+        {
+            if (OwnsSeason(id))
+            {
+                return "Season pass already owned.";
+            }
+
+            if (!StoreAvailable)
+            {
+                return "The store is not reachable from this build.";
+            }
+
+            Grant(KeySeason + id);
+            return "Season pass unlocked. Everything you reached is yours.";
         }
 
         /// <summary>Restores purchases from the platform store (dev builds keep the local record).</summary>

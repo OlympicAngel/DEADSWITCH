@@ -115,7 +115,13 @@ namespace Deadswitch.Game.UI.Hud
             _report = new ReportScreen(Router);
             Router.Register(_report);
             Router.Register(new OpsScreen(OpenReport));
-            var premium = new PremiumScreen(Router);
+            var season = new SeasonScreen(Router);
+            Router.Register(season);
+            var premium = new PremiumScreen(Router, () =>
+            {
+                season.ReturnTo("premium");
+                Router.Show("season");
+            });
             Router.Register(premium);
             Router.Register(new LegacyScreen(Router));
             Router.Register(new StoryScreen(Router));

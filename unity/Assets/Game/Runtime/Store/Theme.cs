@@ -7,14 +7,16 @@ namespace Deadswitch.Game.Store
     public static class Theme
     {
         private const string Key = "ds.theme";
-        private static readonly string[] Classes = { string.Empty, "theme-cold", "theme-bone" };
+        private static readonly string[] Classes = { string.Empty, "theme-cold", "theme-bone", "theme-verdigris", "theme-ash" };
 
-        /// <summary>0 phosphor (always owned), 1 cold signal, 2 bone.</summary>
+        public static int Count => Classes.Length;
+
+        /// <summary>0 phosphor (always owned), 1 cold signal, 2 bone (ads), 3 verdigris, 4 ash (season track).</summary>
         public static int Current => Mathf.Clamp(PlayerPrefs.GetInt(Key, 0), 0, Classes.Length - 1);
 
         public static bool Owned(int theme)
         {
-            return theme == 0 || Entitlements.Instance.OwnsCosmetic(RewardedAds.Id((ConvenienceGrant)theme));
+            return theme == 0 || (theme < Classes.Length && Entitlements.Instance.OwnsCosmetic(theme <= 2 ? RewardedAds.Id((ConvenienceGrant)theme) : Classes[theme]));
         }
 
         public static void Select(int theme, VisualElement root)

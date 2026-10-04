@@ -28,13 +28,16 @@
       <ui:VisualElement name="theme-0" class="prm-theme is-selected"><ui:VisualElement class="prm-swatch prm-swatch--phosphor" /><ui:Label text="PHOSPHOR" class="prm-theme__label" /></ui:VisualElement>
       <ui:VisualElement name="theme-1" class="prm-theme"><ui:VisualElement class="prm-swatch prm-swatch--cold" /><ui:Label name="theme-1-label" text="COLD SIGNAL" class="prm-theme__label" /></ui:VisualElement>
       <ui:VisualElement name="theme-2" class="prm-theme"><ui:VisualElement class="prm-swatch prm-swatch--bone" /><ui:Label name="theme-2-label" text="BONE" class="prm-theme__label" /></ui:VisualElement>
+      <ui:VisualElement name="theme-3" class="prm-theme is-locked"><ui:VisualElement class="prm-swatch prm-swatch--verdigris" /><ui:Label text="VERDIGRIS" class="prm-theme__label" /></ui:VisualElement>
+      <ui:VisualElement name="theme-4" class="prm-theme is-locked"><ui:VisualElement class="prm-swatch prm-swatch--ash" /><ui:Label text="ASH" class="prm-theme__label" /></ui:VisualElement>
     </ui:VisualElement>
-    <ui:Label text="Themes are cosmetic. Unlock one by watching an optional ad; never while the Hub is under threat." class="ds-body t-dim prm-note" />
+    <ui:Label text="Themes are cosmetic. Unlock one by watching an optional ad (never while the Hub is under threat) or earn more on the season track." class="ds-body t-dim prm-note" />
     <ui:VisualElement class="row prm-actions">
       <ui:VisualElement name="ad-1" class="ds-btn ds-btn--ghost grow"><ui:Label name="ad-1-label" text="WATCH AD // COLD SIGNAL" class="ds-btn__label" /></ui:VisualElement>
       <ui:VisualElement name="ad-2" class="ds-btn ds-btn--ghost grow prm-gap"><ui:Label name="ad-2-label" text="WATCH AD // BONE" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
 
+    <ui:VisualElement name="prm-season" class="ds-btn ds-btn--ghost prm-season"><ui:Label name="prm-season-label" text="SEASON TRACK // RANK 0 / 20" class="ds-btn__label" /></ui:VisualElement>
     <ui:Label name="prm-reason" text="" class="ds-body t-amber prm-reason" />
   </ui:VisualElement>
 </ui:UXML>

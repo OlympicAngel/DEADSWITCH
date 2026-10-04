@@ -24,5 +24,8 @@
 .prm-swatch--phosphor { background-color: #A8D58A; }
 .prm-swatch--cold { background-color: #8CC8D8; }
 .prm-swatch--bone { background-color: #D9D2BE; }
+.prm-swatch--verdigris { background-color: #7CC2AE; }
+.prm-swatch--ash { background-color: #B9BEC6; }
+.prm-season { margin-top: var(--s-4); }
 .prm-note { margin-top: var(--s-2); font-size: var(--fs-micro); }
 .prm-reason { margin-top: var(--s-3); min-height: 40px; }

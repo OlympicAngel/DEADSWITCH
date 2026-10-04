@@ -15,6 +15,10 @@ namespace Deadswitch.Game.Core
         private const string KeyTextScale = "ds.text_scale_pct";
         private const string KeySound = "ds.sound_pct";
         private const string KeyMusic = "ds.music";
+        private const string KeyVoice = "ds.voice_pack";
+
+        /// <summary>AI voice packs (F-048, cosmetic): 0 standard, then the season rewards in this order.</summary>
+        public static readonly string[] VoicePacks = { "standard", "voice-low", "voice-static" };
 
         /// <summary>Sound volume steps (F-035).</summary>
         public static readonly int[] SoundSteps = { 0, 25, 50, 75, 100 };
@@ -38,6 +42,9 @@ namespace Deadswitch.Game.Core
         /// <summary>Tension music on or off; alarms and the AI's voice stay.</summary>
         public bool Music { get; private set; } = true;
 
+        /// <summary>Index into <see cref="VoicePacks"/>; only owned packs can be chosen.</summary>
+        public int VoicePack { get; private set; }
+
         /// <summary>Development only: game minutes per real minute. 1 in release builds.</summary>
         public float DevTimeScale { get; private set; } = 1f;
 
@@ -54,6 +61,7 @@ namespace Deadswitch.Game.Core
                 DevTimeScale = Debug.isDebugBuild ? Mathf.Clamp(PlayerPrefs.GetFloat(KeyTimeScale, 1f), 1f, 600f) : 1f,
                 SoundPct = Mathf.Clamp(PlayerPrefs.GetInt(KeySound, 75), 0, 100),
                 Music = PlayerPrefs.GetInt(KeyMusic, 1) == 1,
+                VoicePack = Mathf.Clamp(PlayerPrefs.GetInt(KeyVoice, 0), 0, VoicePacks.Length - 1),
             };
             return s;
         }
@@ -100,6 +108,13 @@ namespace Deadswitch.Game.Core
         {
             Music = on;
             PlayerPrefs.SetInt(KeyMusic, on ? 1 : 0);
+            Save();
+        }
+
+        public void SetVoicePack(int pack)
+        {
+            VoicePack = Mathf.Clamp(pack, 0, VoicePacks.Length - 1);
+            PlayerPrefs.SetInt(KeyVoice, VoicePack);
             Save();
         }
 
