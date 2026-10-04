@@ -234,6 +234,23 @@ namespace Deadswitch.Cli
             if (rest.Contains("--map"))
             {
                 float aspect = float.Parse(ValueAfter(rest, "--aspect") ?? "1", CultureInfo.InvariantCulture);
+
+                // preview states: --scouted 0,3,5  --fallout SITE  --op SITE (a raid in the field)
+                foreach (string id in (ValueAfter(rest, "--scouted") ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    sim.State.Sites[int.Parse(id, CultureInfo.InvariantCulture)].Scouted = true;
+                }
+
+                if (ValueAfter(rest, "--fallout") is string fallout)
+                {
+                    sim.State.FalloutSite = int.Parse(fallout, CultureInfo.InvariantCulture);
+                }
+
+                if (ValueAfter(rest, "--op") is string op)
+                {
+                    sim.State.Ops.Add(new Operation { Id = 999, Site = int.Parse(op, CultureInfo.InvariantCulture), Kind = OpKind.Raid, Squad = 4, ReturnTick = sim.State.Tick + 600 });
+                }
+
                 ArtExport.WriteMap(sim, outPath, (uint)seed, aspect);
                 Console.WriteLine("wrote " + outPath + " (sector map, day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
                 return 0;

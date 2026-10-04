@@ -246,7 +246,40 @@ if (scene.report && P.get('report')) {
 } else {
   composer.render();
 }
+if (scene.overlay && !P.get('bare')) await drawOverlay(scene.overlay);
 window.__done = { lights };
+
+// The illustrated layer and site markers of the sector map (SPEC-033), drawn like MapScreen draws them.
+async function drawOverlay(ov) {
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  Object.assign(cv.style, { position: 'absolute', left: '0', top: '0' });
+  document.body.appendChild(cv);
+  const g = cv.getContext('2d');
+  const col = c => `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${c[3]})`;
+  for (const s of ov.shapes) {
+    g.beginPath();
+    for (let i = 0; i < s.p.length; i += 2) { const x = s.p[i] * W, y = s.p[i + 1] * H; if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+    if (s.f) { g.closePath(); g.fillStyle = col(s.c); g.fill(); } else { g.lineWidth = Math.max(1, s.w * H); g.strokeStyle = col(s.c); g.lineCap = 'round'; g.stroke(); }
+  }
+  const f = new FontFace('Chakra', 'url(/fonts/ChakraPetch-Bold.ttf)'); await f.load(); document.fonts.add(f);
+  const tint = [[232, 180, 92], [130, 174, 182], [193, 118, 180], [240, 235, 221]];
+  g.font = `${Math.round(H * 0.017)}px Chakra`; g.textBaseline = 'middle';
+  // marker: a small pin floating over the landmark with a leader line to the ground; labels flip left near the right edge
+  const mark = (x, y, gx, gy, c, label, sub, side) => {
+    const s = H * 0.009, left = side % 2 === 1;
+    if (side >= 2) y += s * 4.2;
+    const px = x, py = side >= 2 ? y - s * 4.2 : y;
+    if (gx !== null) { g.strokeStyle = c; g.globalAlpha = 0.7; g.lineWidth = 1.5; g.beginPath(); g.moveTo(px, py + s); g.lineTo(gx, gy); g.stroke(); g.globalAlpha = 1; }
+    g.strokeStyle = c; g.lineWidth = 2; g.fillStyle = 'rgba(10,12,11,0.7)';
+    g.fillRect(px - s, py - s, s * 2, s * 2); g.strokeRect(px - s, py - s, s * 2, s * 2);
+    const tw = Math.max(g.measureText(label).width, sub ? g.measureText(sub).width : 0), bx = left ? x - s * 1.8 - tw - 10 : x + s * 1.8;
+    g.fillStyle = 'rgba(10,12,11,0.62)'; g.fillRect(bx, y - s * 1.7, tw + 10, s * (sub ? 5.4 : 3.4));
+    g.fillStyle = '#D8D1BC'; g.fillText(label, bx + 5, y);
+    if (sub) { g.fillStyle = '#E8B45C'; g.fillText(sub, bx + 5, y + s * 2.1); }
+  };
+  ov.sites.forEach((s, i) => mark(s.at[0] * W, s.at[1] * H, s.ground[0] * W, s.ground[1] * H, s.owner < 0 ? '#9ED9CC' : `rgb(${tint[s.owner]})`, s.name, s.scouted ? '' : '~DEF ?', ov.sides[i]));
+  mark(ov.hub[0] * W, ov.hub[1] * H, null, null, '#A8D58A', 'HUB', '', ov.sides[ov.sites.length]);
+}
 
 async function renderReport(rep) {
   novel.enabled = true;

@@ -115,6 +115,35 @@ namespace Deadswitch.Cli
             var extra = new StringBuilder();
             extra.Append(",\n\"camera\":{\"pos\":").Append(V(cam.Position)).Append(",\"target\":").Append(V(cam.Target)).Append(",\"fov\":").Append(F(cam.Fov)).Append('}')
                 .Append(",\n\"map\":true");
+
+            // the illustrated layer and marker anchors (drawn by the preview the way MapScreen draws them)
+            SectorOverlay overlay = SectorOverlay.Build(sim.State, cam, aspect, seed, 0f);
+            extra.Append(",\n\"overlay\":{\"shapes\":[");
+            for (int i = 0; i < overlay.Shapes.Count; i++)
+            {
+                OverlayShape sh = overlay.Shapes[i];
+                extra.Append(i > 0 ? "," : string.Empty).Append("{\"f\":").Append(sh.Fill ? 1 : 0)
+                    .Append(",\"c\":[").Append(F(sh.Color.X)).Append(',').Append(F(sh.Color.Y)).Append(',').Append(F(sh.Color.Z)).Append(',').Append(F(sh.Color.W)).Append(']')
+                    .Append(",\"w\":").Append(F(sh.Width)).Append(",\"p\":[").Append(string.Join(",", sh.Points.Select(p => F(p.X) + "," + F(p.Y)))).Append("]}");
+            }
+
+            // label sides from the shared layout (estimated text widths: Chakra Petch caps at about 0.62 em)
+            const float Font = 0.017f;
+            var pins = overlay.SiteAnchors.Concat(new[] { overlay.HubAnchor }).ToArray();
+            float[] widths = pins.Select((_, i) => (((i < overlay.SiteAnchors.Length ? Sim.Systems.WorldSystem.Sites[i].Name.Length : 3) * 0.62f * Font) / aspect) + 0.01f).ToArray();
+            int[] sides = SectorOverlay.PlaceLabels(pins, widths, Font * 2.9f, 0.009f);
+            extra.Append("],\"sides\":[").Append(string.Join(",", sides));
+            extra.Append("],\"sites\":[");
+            for (int i = 0; i < overlay.SiteAnchors.Length; i++)
+            {
+                Sim.Systems.SiteDef d = Sim.Systems.WorldSystem.Sites[i];
+                extra.Append(i > 0 ? "," : string.Empty).Append("{\"at\":[").Append(F(overlay.SiteAnchors[i].X)).Append(',').Append(F(overlay.SiteAnchors[i].Y))
+                    .Append("],\"ground\":[").Append(F(overlay.GroundAnchors[i].X)).Append(',').Append(F(overlay.GroundAnchors[i].Y))
+                    .Append("],\"name\":").Append(Str(d.Name)).Append(",\"owner\":").Append(Sim.Systems.HazardSystem.Wild(d.Kind) ? -1 : (int)d.Owner)
+                    .Append(",\"scouted\":").Append(sim.State.Sites[i].Scouted ? "true" : "false").Append('}');
+            }
+
+            extra.Append("],\"hub\":[").Append(F(overlay.HubAnchor.X)).Append(',').Append(F(overlay.HubAnchor.Y)).Append("]}");
             File.WriteAllText(path, scene.Json(extra.ToString()));
         }
 
