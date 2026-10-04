@@ -292,9 +292,11 @@ namespace Deadswitch.Art.Geometry
                 normal = -normal;
             }
 
-            // Vertex color = masks for the salvage shader: R = baked AO/brightness, G = worn edge, B = variation.
+            // Vertex color = masks for the salvage shader: R = baked AO/brightness (with per-face jitter), G = worn
+            // edge, B = per-part variation (one value for every face of a primitive; picks its repaint color).
             float variation = _rng.Next();
             float jitter = 1f + ((variation - 0.5f) * 2f * FaceJitter);
+            float part = PartVariation(wInside);
             float edge = tint > 1.05f ? 1f : 0f;
             float dark = tint > 1.05f ? 1f : tint;
             int first = Mesh.VertexCount;
@@ -309,7 +311,7 @@ namespace Deadswitch.Art.Geometry
                     vn = -vn;
                 }
 
-                Mesh.AddVertex(w[i], vn, new Vector4(ao * jitter * dark, edge, variation, 1f));
+                Mesh.AddVertex(w[i], vn, new Vector4(ao * jitter * dark, edge, part, 1f));
             }
 
             for (int i = 1; i < n - 1; i++)
@@ -457,6 +459,21 @@ namespace Deadswitch.Art.Geometry
                 {
                     Mesh.AddTriangle(mat, first, first + i, first + i + 1);
                 }
+            }
+        }
+
+        /// <summary>Stable 0..1 value from a primitive's center (quantized to 5 cm), so all its faces share it.</summary>
+        private static float PartVariation(Vector3 center)
+        {
+            unchecked
+            {
+                uint h = (uint)(int)Math.Round(center.X * 20f) * 73856093u;
+                h ^= (uint)(int)Math.Round(center.Y * 20f) * 19349663u;
+                h ^= (uint)(int)Math.Round(center.Z * 20f) * 83492791u;
+                h ^= h >> 15;
+                h *= 0x2C1B3C6Du;
+                h ^= h >> 12;
+                return (h & 0xFFFF) / 65535f;
             }
         }
 

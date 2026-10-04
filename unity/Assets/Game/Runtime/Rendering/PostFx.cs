@@ -81,7 +81,8 @@ namespace Deadswitch.Game.Rendering
             }
 
             LightKey k = BaseView.Instance != null ? BaseView.Instance.Lighting : _look.At(12f);
-            _color.postExposure.Override(Mathf.Log(Mathf.Max(0.01f, k.exposure), 2f));
+            // three.js ACES pre-scales by exposure / 0.6 (+0.74 stop); URP's does not, so match the preview here
+            _color.postExposure.Override(Mathf.Log(Mathf.Max(0.01f, k.exposure) / 0.6f, 2f));
             _bloom.intensity.Override(k.bloomStrength * 1.4f);
             _bloom.threshold.Override(k.bloomThreshold);
             RenderSettings.reflectionIntensity = k.envIntensity / Mathf.Max(0.01f, _envDay);
