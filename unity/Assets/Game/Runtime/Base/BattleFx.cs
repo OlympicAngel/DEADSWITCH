@@ -48,9 +48,11 @@ namespace Deadswitch.Game.Base
             Build();
             ParticleSystem ps = New(smoke ? "Burst Smoke" : "Burst Fire", parent, Vector3.zero, smoke ? _smoke : _fire);
             var main = ps.main;
-            main.loop = false;
+            // keeps playing (emission off) so particles emitted later still simulate
+            main.loop = true;
             main.prewarm = false;
             main.maxParticles = 400;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = smoke ? new ParticleSystem.MinMaxCurve(1.6f, 3.2f) : new ParticleSystem.MinMaxCurve(0.25f, 0.6f);
             main.startSpeed = smoke ? new ParticleSystem.MinMaxCurve(0.4f, 1.6f) : new ParticleSystem.MinMaxCurve(1.5f, 5f);
             main.startSize = smoke ? new ParticleSystem.MinMaxCurve(0.8f, 1.8f) : new ParticleSystem.MinMaxCurve(0.4f, 1.1f);
