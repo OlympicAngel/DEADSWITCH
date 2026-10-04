@@ -299,6 +299,18 @@ reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The gr
 reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
 radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
 radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
+hazard.sick.1 | hazard_sick | neutral | The squad from {site} is back. {people} of them are not well. They will not get well.
+hazard.sick.2 | hazard_sick | cold | Radiation exposure, {site} team: {people} lost. Scout the ground first next time.
+plague.infection.1 | plague_infection | neutral | Something came home with the {site} squad. {people} dead inside the walls.
+plague.infection.2 | plague_infection | cold | Infection vector: the {site} return. {people} lost. Quarantine was not requested.
+plague.infection.3 | plague_infection | warm | I should have flagged the coughing. {people} gone. I am sorry, handler.
+survivors.found.1 | survivors_found | neutral | {people} survivors in {site}. Alive, mostly. They are ours now.
+survivors.found.2 | survivors_found | cold | {people} additional workers recovered at {site}. Screening advised.
+parts.recovered.1 | parts_recovered | neutral | Parts from the boneyard. {lost} points of damage patched. The drones will not miss them.
+parts.recovered.2 | parts_recovered | bold | I fitted the salvage myself. {lost} repairs, no charge.
+fallout.drift.1 | fallout_drift | neutral | The fallout front moved over {site}. Routes there cost more and make people sick. It shifts in {hours} hours.
+fallout.drift.2 | fallout_drift | cold | Fallout now over {site}. Avoid for {hours} hours, or accept the exposure.
+fallout.drift.3 | fallout_drift | warm | The wind turned. {site} is under the dust now. Give it {hours} hours, handler.
 hunch.restless.1 | hunch_restless | neutral | Something is moving out there. I cannot see it. I can feel the static. Next {hours} hours.
 hunch.restless.2 | hunch_restless | cold | Radio chatter is up. Could be nothing. It is rarely nothing.
 hunch.restless.3 | hunch_restless | warm | Keep the wall manned tonight. Call it a hunch. I am not supposed to have those.
