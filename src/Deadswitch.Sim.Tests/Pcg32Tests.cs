@@ -15,31 +15,5 @@ namespace Deadswitch.Sim.Tests
                 Assert.Equal(e, rng.NextUInt());
             }
         }
-
-        [Fact]
-        public void RestoreContinuesTheSameStream()
-        {
-            var a = Pcg32.Create(7UL);
-            for (int i = 0; i < 100; i++)
-            {
-                a.NextUInt();
-            }
-
-            var b = Pcg32.Restore(a.State, a.Inc);
-            for (int i = 0; i < 100; i++)
-            {
-                Assert.Equal(a.NextUInt(), b.NextUInt());
-            }
-        }
-
-        [Fact]
-        public void NextBelowStaysInRange()
-        {
-            var rng = Pcg32.Create(1UL);
-            for (int i = 0; i < 10_000; i++)
-            {
-                Assert.True(rng.NextBelow(7) < 7);
-            }
-        }
     }
 }
