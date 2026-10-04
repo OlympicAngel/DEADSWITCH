@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017).</summary>
-        public const int LayoutVersion = 10;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018).</summary>
+        public const int LayoutVersion = 11;
 
         public long Tick;
 
@@ -209,6 +209,12 @@ namespace Deadswitch.Sim.State
 
         /// <summary>When the next world event starts (0 = not scheduled yet).</summary>
         public long NextWorldEventTick;
+
+        /// <summary>Wrecks in the yard (SPEC-018), 0..scars.max_wreckage.</summary>
+        public int Wreckage;
+
+        /// <summary>When the last attack added wreckage (fresh wrecks burn for a while).</summary>
+        public long ScarredAtTick;
 
         /// <summary>Trades made today, indexed by <see cref="Faction"/>.</summary>
         public int[] TradesToday = new int[Systems.WorldSystem.FactionCount];
@@ -474,6 +480,12 @@ namespace Deadswitch.Sim.State
                 {
                     v.Int(ref TradesToday[f]);
                 }
+            }
+
+            if (v.Version >= 11)
+            {
+                v.Int(ref Wreckage);
+                v.Long(ref ScarredAtTick);
             }
 
             if (v.IsReading)

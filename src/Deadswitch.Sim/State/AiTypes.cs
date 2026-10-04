@@ -10,6 +10,12 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Autopilot set the defense while the handler was away. Event B: Posture, C: garrison, D: the AI's estimate.</summary>
         Defend = 2,
+
+        /// <summary>Delegated routines started a repair (SPEC-018). Event B: slot, C: FacilityKind, D: damage.</summary>
+        Repair = 3,
+
+        /// <summary>Delegated routines cleared the yard's wrecks. Event B: wrecks.</summary>
+        ClearYard = 4,
     }
 
     /// <summary>The hidden project's stage (doc 10 s2). Stored in events: never renumber.</summary>

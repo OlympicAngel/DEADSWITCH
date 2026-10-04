@@ -421,7 +421,21 @@ namespace Deadswitch.Host.Narrative
                     {
                         Enqueue(new Pending("ai_defend", Priority.Urgent).With("posture", Names.Posture((Posture)e.B)));
                     }
+                    else if (e.A == (int)AiActionKind.Repair)
+                    {
+                        Enqueue(new Pending("ai_repair", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.C)));
+                    }
 
+                    break;
+                case EventKind.FacilityScarred:
+                    _queue.RemoveAll(p => p.Trigger == "facility_scarred");
+                    Enqueue(new Pending("facility_scarred", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.C)).With("level", e.D.ToString()));
+                    break;
+                case EventKind.RepairDone:
+                    Enqueue(new Pending("repair_done", Priority.Normal).With("kind", Names.Facility((FacilityKind)e.B)));
+                    break;
+                case EventKind.WreckageCleared:
+                    Enqueue(new Pending("wreckage_cleared", Priority.Normal).With("lost", e.B.ToString()));
                     break;
             }
         }

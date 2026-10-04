@@ -31,5 +31,11 @@ namespace Deadswitch.Art.Geometry
         Interior = 25,
         Rock = 26,
         LightCone = 27,
+
+        /// <summary>Soot and burnt metal (battle scars).</summary>
+        Char = 28,
+
+        /// <summary>Glowing embers in burning wreckage (emissive).</summary>
+        Ember = 29,
     }
 }

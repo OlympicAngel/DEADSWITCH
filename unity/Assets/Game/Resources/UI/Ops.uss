@@ -98,6 +98,10 @@
 .ops-toggle.is-on > .ops-toggle__label { color: var(--c-phosphor); }
 /* Purge ladder card */
 .ops-purge { margin-top: var(--s-3); padding-top: var(--s-3); padding-bottom: var(--s-3); }
+.ops-yard { margin-top: var(--s-3); padding-top: var(--s-2); padding-bottom: var(--s-2); align-items: center; }
+.ops-yard.is-hidden { display: none; }
+.ops-yard__desc { font-size: var(--fs-micro); margin-top: var(--s-1); }
+.ops-yard__btn { min-width: 260px; margin-left: var(--s-3); }
 .ops-purge__time { font-size: var(--fs-lg); }
 .ops-purge__desc { margin-top: var(--s-2); font-size: var(--fs-micro); }
 .ops-purge__answers { margin-top: var(--s-3); justify-content: space-between; }

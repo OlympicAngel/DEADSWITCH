@@ -10,8 +10,9 @@ namespace Deadswitch.Art.World
     /// <summary>What the scene needs to know about one slot (mapped from the sim by the host).</summary>
     public readonly struct SlotView
     {
-        public SlotView(FacilityKind kind, int level, bool powered, bool unmanned, FacilityKind buildingKind, int buildingLevel)
+        public SlotView(FacilityKind kind, int level, bool powered, bool unmanned, FacilityKind buildingKind, int buildingLevel, int damage = 0)
         {
+            Damage = damage;
             Kind = kind;
             Level = level;
             Powered = powered;
@@ -35,11 +36,14 @@ namespace Deadswitch.Art.World
 
         public bool UnderConstruction => BuildingKind != FacilityKind.None;
 
+        /// <summary>Battle scars on the facility (SPEC-018), 0 = none.</summary>
+        public int Damage { get; }
+
         public static SlotView From(GameState s, int slot)
         {
             FacilitySlot f = s.Slots[slot];
             BuildJob? job = s.JobForSlot(slot);
-            return new SlotView(f.Kind, f.Level, f.Enabled && f.Powered, !f.IsEmpty && f.Enabled && !f.Staffed, job?.Kind ?? FacilityKind.None, job?.TargetLevel ?? 0);
+            return new SlotView(f.Kind, f.Level, f.Enabled && f.Powered, !f.IsEmpty && f.Enabled && !f.Staffed, job?.Kind ?? FacilityKind.None, job?.TargetLevel ?? 0, f.IsEmpty ? 0 : f.Damage);
         }
     }
 

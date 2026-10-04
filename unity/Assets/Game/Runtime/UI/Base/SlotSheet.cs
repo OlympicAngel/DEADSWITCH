@@ -201,8 +201,22 @@ namespace Deadswitch.Game.UI.Base
             }
 
             chips.Add(Chip("PRIORITY #" + (s.PowerPriority.IndexOf(Slot) + 1), string.Empty));
+            bool repairing = ScarSystem.Repairing(s, slot);
+            if (slot.Damage > 0)
+            {
+                chips.Add(Chip((repairing ? "REPAIRING " : "DAMAGED ") + slot.Damage + "/" + c.Scars.MaxDamage, repairing ? "ds-chip--amber" : "ds-chip--red"));
+            }
+
             _content.Add(chips);
             _content.Add(Kit.Label(Fmt.FacilityBlurb(slot.Kind), "ds-body", "sheet__blurb"));
+            if (slot.Damage > 0)
+            {
+                // battle scars (SPEC-018): what the damage costs and what fixing it takes
+                int lost = ScarSystem.PenaltyPct(s, c, slot);
+                _content.Add(Kit.Label(repairing
+                    ? "Crews are on it. Full output in " + Fmt.Countdown(SecondsUntil(host, slot.RepairUntilTick)) + "."
+                    : (lost > 0 ? "Battle damage: output -" + lost + "% until repaired." : "Battle damage. It still works; it looks like it lost."), "ds-body", "sheet__blurb", "t-amber"));
+            }
 
             bool max = slot.Level >= f.MaxLevel;
             var stats = new VisualElement();
@@ -213,6 +227,14 @@ namespace Deadswitch.Game.UI.Base
             _content.Add(stats);
 
             var actions = Row("sheet__actions");
+            if (slot.Damage > 0 && !repairing)
+            {
+                int cost = ScarSystem.RepairCost(c, slot);
+                var fix = Kit.Button("REPAIR  " + Fmt.Num(cost) + " E  " + Fmt.Countdown(c.Scars.RepairMinutesPerPoint * slot.Damage * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Repair(Slot)), "ds-btn--warn", "sheet__primary");
+                fix.EnableInClassList("is-disabled", s.Energy < cost || s.RaidId != 0);
+                actions.Add(fix);
+            }
+
             if (!max)
             {
                 Economy.UpgradeCost(c, slot.Kind, slot.Level, out int energy, out int compute);

@@ -39,6 +39,15 @@
       </ui:VisualElement>
     </ui:VisualElement>
 
+    <!-- Yard wrecks (SPEC-018): burnt hulks slow regrowth until cleared -->
+    <ui:VisualElement name="yard" class="row ds-panel ops-yard">
+      <ui:VisualElement class="grow">
+        <ui:Label name="yard-title" text="YARD // 3 WRECKS" class="ds-label t-amber" />
+        <ui:Label name="yard-desc" text="Regrowth -30% while the wrecks stay." class="ds-body t-dim ops-yard__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement name="yard-clear" class="ds-btn ds-btn--ghost ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 E" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
     <!-- Purge warning ladder (SPEC-015, doc 10): rumor -> staging -> ultimatum with three answers -->
     <ui:VisualElement name="purge" class="ds-panel ds-panel--red ops-purge">
       <ui:VisualElement class="row">

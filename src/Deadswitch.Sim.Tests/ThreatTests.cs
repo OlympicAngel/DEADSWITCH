@@ -27,6 +27,20 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(warn.A, hit.A);
             Assert.True(sim.State.Slots[0].Level < 3);
             Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.MercyStarted && e.A == warn.A);
+
+            // battle scars (SPEC-018): the breach leaves damage and wrecks; damage cuts output until repaired
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.FacilityScarred && e.A == warn.A);
+            Assert.True(sim.State.Wreckage > 0);
+            FacilitySlot gen = sim.State.Slots[0];
+            gen.Damage = 0;
+            int whole = Economy.EffectiveOutput(sim.State, sim.Config, gen);
+            gen.Damage = 2;
+            Assert.True(Economy.EffectiveOutput(sim.State, sim.Config, gen) < whole);
+            sim.State.Energy = ScarSystem.RepairCost(sim.Config, gen);
+            Assert.True(sim.Execute(Command.Repair(0)).Accepted);
+            sim.Run(2L * sim.Config.Scars.RepairMinutesPerPoint);
+            Assert.Equal(0, gen.Damage);
+            Assert.Equal(whole, Economy.EffectiveOutput(sim.State, sim.Config, gen));
         }
 
         [Fact]

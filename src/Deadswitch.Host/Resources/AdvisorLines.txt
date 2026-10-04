@@ -214,3 +214,13 @@ dilemma.taint.1 | dilemma_taint | neutral | The broadcast had a hook in it. I am
 event.storm.1 | event_storm | neutral | Signal storm rolling in. {hours} hours. Hacks will struggle; so will I. {faction} is busy with a rival.
 event.supply.1 | event_supply | neutral | Supply window. {hours} hours of loose cargo and cheap traders. {faction} is fighting elsewhere.
 event.deadweek.1 | event_deadweek | neutral | Dead week. The wastes go quiet for {hours} hours. {faction} is licking wounds.
+
+# battle scars (SPEC-018)
+facility.scarred.1 | facility_scarred | neutral | {kind} took damage. Scar level {level}. It runs slower until we repair it.
+facility.scarred.2 | facility_scarred | cold | {kind} is burning. Output down. Repair when you can afford it.
+facility.scarred.3 | facility_scarred | warm | {kind} is hurt, handler. Nobody inside was. Repair it when we can.
+repair.done.1 | repair_done | neutral | {kind} repaired. Back to full output.
+repair.done.2 | repair_done | bold | {kind} is whole again. Better than before, almost.
+wreckage.cleared.1 | wreckage_cleared | neutral | Yard cleared. {lost} energy. People will walk there again.
+ai.repair.1 | ai_repair | neutral | I started repairs on the {kind}. Routine.
+ai.repair.2 | ai_repair | cold | {kind} under repair. Damage is waste.

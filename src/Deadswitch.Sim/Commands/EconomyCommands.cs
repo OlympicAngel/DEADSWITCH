@@ -121,7 +121,7 @@ namespace Deadswitch.Sim.Commands
                 return CommandResult.Reject(RejectReason.SlotEmpty);
             }
 
-            if (s.JobForSlot(cmd.A) != null)
+            if (s.JobForSlot(cmd.A) != null || ScarSystem.Repairing(s, slot))
             {
                 return CommandResult.Reject(RejectReason.JobInProgress);
             }

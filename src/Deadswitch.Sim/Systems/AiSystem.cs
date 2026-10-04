@@ -32,7 +32,13 @@ namespace Deadswitch.Sim.Systems
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
             if (s.Delegation == DelegationLevel.Manual || s.Tick % c.Ai.PlanEveryMinutes != 0 || s.RaidId != 0
-                || s.Tick < s.PlanHoldUntilTick || s.Jobs.Count >= c.Build.QueueSlots || s.Blackout)
+                || s.Tick < s.PlanHoldUntilTick || s.Blackout)
+            {
+                return;
+            }
+
+            // scars first (SPEC-018): repairs and clearing the yard are not build jobs
+            if (TryRepair(ctx) || TryClearYard(ctx) || s.Jobs.Count >= c.Build.QueueSlots)
             {
                 return;
             }
@@ -164,6 +170,48 @@ namespace Deadswitch.Sim.Systems
             {
                 Act(ctx, best, s.Slots[best].Kind, s.Slots[best].Level + 1, EconomyCommands.Upgrade(ctx, Command.Upgrade(best)));
             }
+        }
+
+        /// <summary>Repairs the most damaged producer when half the stock covers it.</summary>
+        private static bool TryRepair(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            int worst = -1;
+            for (int i = 0; i < s.Slots.Count; i++)
+            {
+                FacilitySlot f = s.Slots[i];
+                if (ScarSystem.Affects(f.Kind) && f.Damage > 0 && !ScarSystem.Repairing(s, f) && (worst < 0 || f.Damage > s.Slots[worst].Damage))
+                {
+                    worst = i;
+                }
+            }
+
+            if (worst < 0 || ScarSystem.RepairCost(ctx.Config, s.Slots[worst]) * 2 > s.Energy || !ScarSystem.Repair(ctx, Command.Repair(worst)).Accepted)
+            {
+                return false;
+            }
+
+            ctx.Emit(EventKind.AiActed, (int)AiActionKind.Repair, worst, (int)s.Slots[worst].Kind, s.Slots[worst].Damage);
+            return true;
+        }
+
+        /// <summary>Clears the yard's wrecks when half the stock covers it (no punitive absence for delegated play).</summary>
+        private static bool TryClearYard(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            if (s.Wreckage == 0 || ctx.Config.Scars.ClearEnergyPerWreck * s.Wreckage * 2 > s.Energy)
+            {
+                return false;
+            }
+
+            int wrecks = s.Wreckage;
+            if (!ScarSystem.ClearWreckage(ctx, Command.ClearWreckage()).Accepted)
+            {
+                return false;
+            }
+
+            ctx.Emit(EventKind.AiActed, (int)AiActionKind.ClearYard, wrecks);
+            return true;
         }
 
         private static bool TryUpgradeLowest(SimContext ctx, FacilityKind kind)

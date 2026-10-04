@@ -194,6 +194,21 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A: WorldEventKind.</summary>
         WorldEventEnded = 62,
+
+        /// <summary>Battle scar (SPEC-018). A: attack id, B: slot, C: FacilityKind, D: damage now.</summary>
+        FacilityScarred = 63,
+
+        /// <summary>A: slot, B: energy paid, C: minutes.</summary>
+        RepairStarted = 64,
+
+        /// <summary>A: slot, B: FacilityKind.</summary>
+        RepairDone = 65,
+
+        /// <summary>A: wrecks in the yard now.</summary>
+        WreckageAdded = 66,
+
+        /// <summary>A: wrecks cleared, B: energy paid.</summary>
+        WreckageCleared = 67,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

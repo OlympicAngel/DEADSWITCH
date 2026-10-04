@@ -35,6 +35,7 @@ namespace Deadswitch.Sim
         public ThreatConfig Threats = new ThreatConfig();
         public WorldConfig World = new WorldConfig();
         public LivingConfig Living = new LivingConfig();
+        public ScarConfig Scars = new ScarConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -136,6 +137,7 @@ namespace Deadswitch.Sim
             Threats.Visit(visitor);
             World.Visit(visitor);
             Living.Visit(visitor);
+            Scars.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);

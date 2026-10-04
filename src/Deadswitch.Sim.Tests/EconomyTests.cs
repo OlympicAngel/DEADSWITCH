@@ -394,6 +394,14 @@ namespace Deadswitch.Sim.Tests
         private static void TryPlan(Simulation sim)
         {
             GameState s = sim.State;
+            for (int i = 0; i < s.Slots.Count; i++)
+            {
+                if (s.Slots[i].Damage > 0 && sim.Execute(Command.Repair(i)).Accepted)
+                {
+                    return;
+                }
+            }
+
             EconomyFlows f = Economy.Flows(s, sim.Config);
             if (f.NetEnergyPerHour < 120 && sim.Execute(Command.Upgrade(0)).Accepted)
             {

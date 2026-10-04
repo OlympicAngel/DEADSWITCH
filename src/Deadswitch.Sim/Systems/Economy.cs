@@ -64,7 +64,7 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
-            return SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind)));
+            return SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind) - ScarSystem.PenaltyPct(s, c, slot)));
         }
 
         /// <summary>Module output bonus for a facility kind, in percentage points.</summary>

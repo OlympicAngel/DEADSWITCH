@@ -811,6 +811,58 @@ dead_week_interval_pct = 100
 faction_war_heat = 10000
 
 # --------------------------------------------------------------------------------------------------
+# Battle scars: facility damage and yard wreckage that stay until repaired (doc 04 s4, doc 06 s3). All (tune).
+[scars]
+
+# Damage points a facility can hold. [1..10]
+max_damage = 3
+
+# Output lost per damage point (Generator, Server Rack, Turret). [0..100]
+output_pct_per_damage = 15
+
+# A raid breach at least this deep damages a facility (lighter ones only leave wrecks). [0..1000]
+heavy_breach_permille = 500
+
+# Damage a deep raid breach deals. [0..10]
+raid_damage = 1
+
+# Damage a breached siege or Warlord wave deals. [0..10]
+siege_damage = 2
+
+# Damage a breached purge deals. [0..10]
+purge_damage = 3
+
+# Wrecks a breached siege or Warlord wave leaves. [0..10]
+siege_wreckage = 2
+
+# Wrecks a breached purge leaves. [0..10]
+purge_wreckage = 3
+
+# Wrecks the yard can hold. [0..20]
+max_wreckage = 6
+
+# Wrecks a repelled attack leaves (enemy hulks). [0..10]
+repel_wreckage = 1
+
+# Wrecks a breached raid leaves. [0..10]
+breach_wreckage = 1
+
+# Regrowth lost per wreck in the yard. [0..100]
+regrowth_pct_per_wreck = 10
+
+# Repair cost: energy x level x damage. [0..100000]
+repair_energy_per_point = 40
+
+# Repair time per damage point (the damage holds until it finishes). [1..10000]
+repair_minutes_per_point = 60
+
+# Energy to clear one wreck from the yard. [0..10000]
+clear_energy_per_wreck = 20
+
+# Fresh wrecks burn this long after an attack (visual). [0..1000]
+burn_hours = 6
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 

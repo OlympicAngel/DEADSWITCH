@@ -120,6 +120,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No room left to store what is on offer.</summary>
         StorageFull = 39,
+
+        /// <summary>Nothing there is damaged (or it is already being repaired).</summary>
+        NotDamaged = 40,
     }
 
     public readonly struct CommandResult

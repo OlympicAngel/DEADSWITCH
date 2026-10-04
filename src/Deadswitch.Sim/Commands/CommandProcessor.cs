@@ -60,6 +60,10 @@ namespace Deadswitch.Sim.Commands
                     return LivingSystem.ResolveDilemma(ctx, command);
                 case CommandKind.Trade:
                     return LivingSystem.Trade(ctx, command);
+                case CommandKind.Repair:
+                    return ScarSystem.Repair(ctx, command);
+                case CommandKind.ClearWreckage:
+                    return ScarSystem.ClearWreckage(ctx, command);
                 case CommandKind.ActivateShield:
                     return ThreatSystem.ActivateShield(ctx, command);
                 case CommandKind.SetTributeOrder:

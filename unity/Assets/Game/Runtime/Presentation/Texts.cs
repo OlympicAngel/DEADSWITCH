@@ -31,6 +31,7 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.FactionHostile: return "They have marked us. They will not trade.";
                 case RejectReason.TradeCap: return "They have traded enough with us today.";
                 case RejectReason.StorageFull: return "No room for it. Storage or beds are full.";
+                case RejectReason.NotDamaged: return "Nothing there needs repair.";
                 case RejectReason.QueueFull: return "Construction crew is busy. One job at a time.";
                 case RejectReason.JobInProgress: return "Work already underway on this plot.";
                 case RejectReason.MaxLevel: return "This is as far as this design goes.";

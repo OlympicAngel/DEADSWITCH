@@ -96,6 +96,12 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Buy one lot from a faction. A: Faction, B: TradeGood.</summary>
         Trade = 29,
+
+        /// <summary>Repair a damaged facility. A: slot.</summary>
+        Repair = 30,
+
+        /// <summary>No args. Clear the wrecks from the yard.</summary>
+        ClearWreckage = 31,
     }
 
     /// <summary>
@@ -243,6 +249,16 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command Repair(int slot)
+        {
+            return new Command(CommandKind.Repair, slot);
+        }
+
+        public static Command ClearWreckage()
+        {
+            return new Command(CommandKind.ClearWreckage);
         }
 
         public static Command PayUltimatum()

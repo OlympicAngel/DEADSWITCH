@@ -144,11 +144,34 @@ for (const o of scene.objects) {
     root.add(pivot);
   }
   for (const l of o.lights) {
-    const on = l.role === 0 || (l.role === 1 && o.powered) || (l.role === 2 && o.unmanned);
+    const on = l.role === 0 || l.role === 3 || (l.role === 1 && o.powered) || (l.role === 2 && o.unmanned);
     if (!on || l.intensity <= 0) continue;
     const pl = new THREE.PointLight(new THREE.Color().setRGB(...l.color, THREE.SRGBColorSpace), l.intensity * look.pointScale, l.range * look.rangeScale, 2);
     pl.position.set(...l.pos); root.add(pl); lights++;
     if (l.role === 2) { const s = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 2.4, 0.9) })); s.position.set(...l.pos); root.add(s); }
+  }
+  // battle scars (SPEC-018): static stand-ins for Unity's flame and smoke particles
+  let fxSeed = o.name.length * 7.31;
+  const rnd = () => { fxSeed = (fxSeed * 9301 + 49297) % 233280; return fxSeed / 233280; };
+  for (const f of (o.fires || [])) {
+    for (let k = 0; k < 7; k++) {
+      const hgt = 0.35 + rnd() * 0.7, core = k < 2;
+      const fl = new THREE.Mesh(new THREE.ConeGeometry(core ? 0.09 : 0.16 + rnd() * 0.1, hgt, 8, 1, true),
+        new THREE.MeshBasicMaterial({ color: core ? new THREE.Color(6, 4.2, 1.6) : new THREE.Color(4.5, 1.5, 0.35), transparent: true, opacity: core ? 0.9 : 0.6, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      fl.position.set(f[0] + (rnd() - 0.5) * 0.35, f[1] + hgt * 0.5, f[2] + (rnd() - 0.5) * 0.3);
+      fl.rotation.z = (rnd() - 0.5) * 0.35; fl.rotation.x = (rnd() - 0.5) * 0.3;
+      root.add(fl);
+    }
+  }
+  const lvl = o.smokeLevel || 0;
+  for (const s of (lvl > 0 ? (o.smokes || []) : [])) {
+    const puffs = 5 + lvl * 6, tone = [0, 0x77736c, 0x3a3835, 0x161514][lvl];
+    for (let k = 0; k < puffs; k++) {
+      const u = k / puffs, r = 0.25 + u * (0.6 + lvl * 0.45);
+      const puff = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 9), new THREE.MeshLambertMaterial({ color: tone, transparent: true, opacity: (0.55 + lvl * 0.1) * (1 - u * 0.85), depthWrite: false }));
+      puff.position.set(s[0] + u * u * (2 + lvl) + (rnd() - 0.5) * 0.3 * (1 + u), s[1] + u * (3 + lvl * 2.2), s[2] + (rnd() - 0.5) * 0.4 * (1 + u));
+      puff.castShadow = false; root.add(puff);
+    }
   }
   world.add(root);
 }

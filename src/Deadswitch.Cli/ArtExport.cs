@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using Deadswitch.Art.Geometry;
@@ -22,13 +23,13 @@ namespace Deadswitch.Cli
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1)
+        public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1, int wreckage = 0, bool burning = false)
         {
             var meshes = new List<MeshData>();
             var objects = new StringBuilder();
             int count = 0;
 
-            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned)
+            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null)
             {
                 int meshIndex = meshes.Count;
                 meshes.Add(model.Static);
@@ -69,7 +70,14 @@ namespace Deadswitch.Cli
                     .Append(",\"yaw\":").Append(F(-yaw))
                     .Append(",\"powered\":").Append(powered ? "true" : "false")
                     .Append(",\"unmanned\":").Append(unmanned ? "true" : "false")
-                    .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append("]}");
+                    .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append(']');
+                if (fx != null)
+                {
+                    objects.Append(",\"fires\":[").Append(string.Join(",", fx.Fires.Select(V))).Append("],\"smokes\":[").Append(string.Join(",", fx.Smokes.Select(V)))
+                        .Append("],\"smokeLevel\":").Append(fx.SmokeLevel);
+                }
+
+                objects.Append('}');
             }
 
             int slots = layout?.Length ?? sim.State.Slots.Count;
@@ -84,13 +92,28 @@ namespace Deadswitch.Cli
                 AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i, v.Kind == FacilityKind.None && !v.UnderConstruction) }, pos, yaw, true, false);
                 if (v.Kind != FacilityKind.None)
                 {
-                    AddModel("slot" + i, Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31)), pos, yaw, v.Powered, v.Unmanned);
+                    Model facility = Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31));
+                    AddModel("slot" + i, facility, pos, yaw, v.Powered, v.Unmanned);
+                    if (v.Damage > 0)
+                    {
+                        facility.Static.Bounds(out Vector3 min, out Vector3 max);
+                        ScarSet scars = Scars.Facility(v.Damage, min, max, seed + (uint)(i * 53));
+                        AddModel("scars" + i, scars.Model, pos, yaw, true, false, scars);
+                    }
                 }
 
                 if (v.UnderConstruction)
                 {
                     AddModel("scaffold" + i, new Model { Static = Facilities.Scaffold(2.8f, seed + (uint)i) }, pos, yaw, true, false);
                 }
+            }
+
+            for (int i = 0; i < Math.Min(wreckage, Scars.SpotCount); i++)
+            {
+                Vector3 spot = Scars.Spot(i);
+                spot.Y = HubScene.Height(spot.X, spot.Z, seed);
+                ScarSet wreck = Scars.Wreck(i, burning && i >= wreckage - 2, seed);
+                AddModel("wreck" + i, wreck.Model, spot, Scars.SpotYaw(i), true, false, wreck);
             }
 
             Vector3[] walk = HubScene.WalkPoints(slots);

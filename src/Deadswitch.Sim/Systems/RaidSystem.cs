@@ -263,6 +263,7 @@ namespace Deadswitch.Sim.Systems
             if (defense >= strength || strength <= 0)
             {
                 ctx.Emit(EventKind.RaidResolved, id, (int)RaidOutcome.Repelled, strength, defense);
+                ScarSystem.Repelled(ctx);
                 Record(ctx, id, lies);
                 ClearIncoming(s);
                 return;
@@ -320,6 +321,8 @@ namespace Deadswitch.Sim.Systems
             {
                 downgrades = ThreatSystem.Downgrade(ctx, id, c.Threats.PurgeDowngrades);
             }
+
+            ScarSystem.Breached(ctx, id, s.RaidKind, breach);
 
             // devastating loss (doc 10 s4): a Hub building downgraded, or too many people lost
             if (downgrades > 0 || (populationBefore > 0 && (long)casualties * 100 > (long)populationBefore * c.Raid.DevastatingPopLossPct))

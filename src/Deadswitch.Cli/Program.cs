@@ -206,12 +206,13 @@ namespace Deadswitch.Cli
                 layout = layoutArg.Split(',').Select(e =>
                 {
                     string[] kv = e.Split(':');
-                    if (kv.Length != 2 || !Enum.TryParse(kv[0], out FacilityKind kind) || !int.TryParse(kv[1], out int level))
+                    int damage = 0;
+                    if (kv.Length < 2 || kv.Length > 3 || !Enum.TryParse(kv[0], out FacilityKind kind) || !int.TryParse(kv[1], out int level) || (kv.Length == 3 && !int.TryParse(kv[2], out damage)))
                     {
-                        throw new UsageException("--layout entries look like Generator:3.");
+                        throw new UsageException("--layout entries look like Generator:3 or Generator:3:2 (level, battle damage).");
                     }
 
-                    return new SlotView(kind, level, true, false, FacilityKind.None, 0);
+                    return new SlotView(kind, level, true, false, FacilityKind.None, 0, damage);
                 }).ToArray();
             }
 
@@ -224,7 +225,9 @@ namespace Deadswitch.Cli
             }
 
             int tier = int.Parse(ValueAfter(rest, "--tier") ?? sim.State.Tier.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-            ArtExport.Write(sim, outPath, (uint)seed, layout, report, tier);
+            int wreckage = int.Parse(ValueAfter(rest, "--wreckage") ?? sim.State.Wreckage.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+            bool burning = rest.Contains("--burning");
+            ArtExport.Write(sim, outPath, (uint)seed, layout, report, tier, wreckage, burning);
             Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
             for (int i = 0; i < sim.State.Slots.Count; i++)
             {

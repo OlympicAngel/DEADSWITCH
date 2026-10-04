@@ -17,6 +17,12 @@ namespace Deadswitch.Sim.State
         /// <summary>Whether the facility has its full crew this tick (false = unmanned, AI-run).</summary>
         public bool Staffed;
 
+        /// <summary>Battle scars, 0..scars.max_damage (SPEC-018). Stays until repaired.</summary>
+        public int Damage;
+
+        /// <summary>Repair finishes at this tick (0 = not under repair).</summary>
+        public long RepairUntilTick;
+
         public bool IsEmpty => Kind == FacilityKind.None;
 
         public void Visit(IStateVisitor v)
@@ -28,6 +34,11 @@ namespace Deadswitch.Sim.State
             v.Bool(ref Enabled);
             v.Bool(ref Powered);
             v.Bool(ref Staffed);
+            if (v.Version >= 11)
+            {
+                v.Int(ref Damage);
+                v.Long(ref RepairUntilTick);
+            }
         }
 
         public void Clear()
@@ -37,6 +48,8 @@ namespace Deadswitch.Sim.State
             Enabled = true;
             Powered = false;
             Staffed = false;
+            Damage = 0;
+            RepairUntilTick = 0;
         }
     }
 }

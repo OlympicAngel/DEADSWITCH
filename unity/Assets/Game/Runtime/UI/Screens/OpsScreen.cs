@@ -73,6 +73,7 @@ namespace Deadswitch.Game.UI.Screens
             });
             _lockdown.RegisterCallback<ClickEvent>(_ => Run(Command.UseOverride(OverrideKind.Lockdown)));
             Q("purge-pay").RegisterCallback<ClickEvent>(_ => Run(Command.PayPurgeTribute()));
+            Q("yard-clear").RegisterCallback<ClickEvent>(_ => Run(Command.ClearWreckage()));
             Q("purge-retreat").RegisterCallback<ClickEvent>(_ =>
             {
                 Run(Command.SetGarrison(0));
@@ -263,6 +264,15 @@ namespace Deadswitch.Game.UI.Screens
         {
             PurgeStage stage = s.PurgeStage;
             Q("purge").EnableInClassList("is-hidden", stage == PurgeStage.None);
+            Q("yard").EnableInClassList("is-hidden", s.Wreckage == 0);
+            if (s.Wreckage > 0)
+            {
+                int clear = c.Scars.ClearEnergyPerWreck * s.Wreckage;
+                Q<Label>("yard-title").text = "YARD // " + s.Wreckage + (s.Wreckage == 1 ? " WRECK" : " WRECKS");
+                Q<Label>("yard-desc").text = "Regrowth -" + (100 - ScarSystem.RegrowthPct(s, c)) + "% while the wrecks stay.";
+                Kit.SetButtonText(Q("yard-clear"), "CLEAR // " + Fmt.Num(clear) + " E");
+                Q("yard-clear").EnableInClassList("is-disabled", s.Energy < clear || s.RaidId != 0);
+            }
             if (stage == PurgeStage.None)
             {
                 return;

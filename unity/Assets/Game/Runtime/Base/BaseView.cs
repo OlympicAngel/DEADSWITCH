@@ -31,9 +31,16 @@ namespace Deadswitch.Game.Base
         private readonly List<(Light light, float baseIntensity)> _points = new List<(Light, float)>();
         private int _tier;
         private float _time;
+        private readonly List<FireLight> _fireLights = new List<FireLight>();
+        private Transform _yard;
+        private int _yardWrecks = -1;
+        private bool _yardBurning;
+        private float _fxEffects = -1f;
+        private bool _fxReduced;
 
         private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
         private static readonly int ConeScaleId = Shader.PropertyToID("_DsConeScale");
+        private static readonly int SmokeLightId = Shader.PropertyToID("_DsSmokeLight");
 
         public static BaseView Instance { get; private set; }
 
@@ -172,6 +179,8 @@ namespace Deadswitch.Game.Base
             RenderSettings.fogColor = BaseLook.Srgb(k.fogColor);
             Shader.SetGlobalFloat(EmissionScaleId, k.emissionScale);
             Shader.SetGlobalFloat(ConeScaleId, k.coneIntensity);
+            // smoke takes the light of the hour: pale grey by day, near black against the night sky
+            Shader.SetGlobalColor(SmokeLightId, Color.Lerp(RenderSettings.ambientSkyColor * 1.6f + new Color(0.05f, 0.05f, 0.05f), Color.white, Mathf.Clamp01(k.sunElevation / 25f)));
             float points = k.pointScale * _look.unityPointScale;
             for (int i = _points.Count - 1; i >= 0; i--)
             {
@@ -200,11 +209,17 @@ namespace Deadswitch.Game.Base
                 }
             }
 
+            // a settings change (effect intensity, reduced motion) rebuilds the scar effects
+            bool fxChanged = !Mathf.Approximately(_fxEffects, _host.Settings.Effects) || _fxReduced != _host.Settings.ReducedMotion;
+            _fxEffects = _host.Settings.Effects;
+            _fxReduced = _host.Settings.ReducedMotion;
+            SyncYard(s, fxChanged);
             for (int i = 0; i < _slots.Count && i < s.Slots.Count; i++)
             {
                 SlotView v = SlotView.From(s, i);
+                bool slotFx = fxChanged && v.Damage > 0;
                 SlotObject o = _slots[i];
-                bool shapeChanged = !o.Built || v.Kind != o.View.Kind || v.Level != o.View.Level || v.UnderConstruction != o.View.UnderConstruction;
+                bool shapeChanged = !o.Built || v.Kind != o.View.Kind || v.Level != o.View.Level || v.UnderConstruction != o.View.UnderConstruction || v.Damage != o.View.Damage || slotFx;
                 if (shapeChanged)
                 {
                     Rebuild(o, v, i);
@@ -263,7 +278,62 @@ namespace Deadswitch.Game.Base
                 o.Height = Mathf.Max(o.Height, 2.8f);
             }
 
+            if (v.Kind != FacilityKind.None && v.Damage > 0)
+            {
+                // battle scars (SPEC-018): soot, debris, embers, then fire and smoke by damage
+                Model facility = Facilities.Build(v.Kind, v.Level, Seed + (uint)(slot * 31));
+                facility.Static.Bounds(out System.Numerics.Vector3 min, out System.Numerics.Vector3 max);
+                ScarSet scars = Scars.Facility(v.Damage, min, max, Seed + (uint)(slot * 53));
+                SpawnScars(scars, o.Root);
+            }
+
             ApplyPower(o, v);
+        }
+
+        /// <summary>Scar mesh, flickering fire lights and particle fire and smoke under a parent.</summary>
+        private void SpawnScars(ScarSet scars, Transform parent)
+        {
+            var root = new GameObject("Scars").transform;
+            root.SetParent(parent, false);
+            MeshObject("Scar Mesh", scars.Model.Static, root, true);
+            foreach (LightSpec spec in scars.Model.Lights)
+            {
+                Light l = PointLight(spec, root, false);
+                _fireLights.Add(new FireLight { Light = l, BaseIntensity = spec.Intensity, Seed = Random.Range(0f, 100f) });
+            }
+
+            BattleFx.Attach(scars, root, _host.Settings.Effects, _host.Settings.ReducedMotion, new List<ParticleSystem>());
+        }
+
+        /// <summary>Yard wrecks (SPEC-018): burnt hulks and craters at fixed spots; the newest burn while fresh.</summary>
+        private void SyncYard(GameState s, bool force)
+        {
+            SimConfig c = _host.Sim.Config;
+            int wrecks = Mathf.Min(s.Wreckage, Scars.SpotCount);
+            bool burning = s.ScarredAtTick > 0 && s.Tick - s.ScarredAtTick < (long)c.Scars.BurnHours * SimConfig.TicksPerHour;
+            if (!force && wrecks == _yardWrecks && burning == _yardBurning)
+            {
+                return;
+            }
+
+            _yardWrecks = wrecks;
+            _yardBurning = burning;
+            if (_yard != null)
+            {
+                Destroy(_yard.gameObject);
+            }
+
+            _yard = new GameObject("Yard Wrecks").transform;
+            _yard.SetParent(_world, false);
+            for (int i = 0; i < wrecks; i++)
+            {
+                System.Numerics.Vector3 spot = Scars.Spot(i);
+                var at = new GameObject("Wreck " + i).transform;
+                at.SetParent(_yard, false);
+                at.localPosition = new Vector3(spot.X, HubScene.Height(spot.X, spot.Z, Seed), spot.Z);
+                at.localRotation = Quaternion.Euler(0, Scars.SpotYaw(i), 0);
+                SpawnScars(Scars.Wreck(i, burning && i >= wrecks - 2, Seed), at);
+            }
         }
 
         private void SpawnFacility(SlotObject o, Model model, SlotView v)
@@ -378,6 +448,21 @@ namespace Deadswitch.Game.Base
             {
                 Walk(w, dt, reduced);
             }
+
+            float points = Lighting.pointScale * _look.unityPointScale;
+            for (int i = _fireLights.Count - 1; i >= 0; i--)
+            {
+                FireLight f = _fireLights[i];
+                if (f.Light == null)
+                {
+                    _fireLights.RemoveAt(i);
+                    continue;
+                }
+
+                // fire stays readable by day: never below a floor of the night strength
+                float flicker = reduced ? 0.9f : BattleFx.Flicker(_time, f.Seed);
+                f.Light.intensity = f.BaseIntensity * Mathf.Max(points, 0.6f * _look.unityPointScale) * flicker;
+            }
         }
 
         private Walker NewWalker(int index)
@@ -457,7 +542,7 @@ namespace Deadswitch.Game.Base
             return go;
         }
 
-        private Light PointLight(LightSpec spec, Transform parent)
+        private Light PointLight(LightSpec spec, Transform parent, bool timeOfDay = true)
         {
             var l = new GameObject("Light").AddComponent<Light>();
             l.transform.SetParent(parent, false);
@@ -465,7 +550,10 @@ namespace Deadswitch.Game.Base
             l.type = LightType.Point;
             l.color = new Color(spec.Color.X, spec.Color.Y, spec.Color.Z);
             l.intensity = spec.Intensity * Lighting.pointScale * _look.unityPointScale;
-            _points.Add((l, spec.Intensity));
+            if (timeOfDay)
+            {
+                _points.Add((l, spec.Intensity));
+            }
             l.range = spec.Range * _look.rangeScale;
             l.shadows = LightShadows.None;
             if (spec.Intensity <= 0f)
@@ -511,6 +599,13 @@ namespace Deadswitch.Game.Base
             public readonly List<Light> StatusLights = new List<Light>();
             public readonly List<MeshRenderer> Renderers = new List<MeshRenderer>();
             public readonly List<GameObject> Cones = new List<GameObject>();
+        }
+
+        private sealed class FireLight
+        {
+            public Light Light;
+            public float BaseIntensity;
+            public float Seed;
         }
 
         private sealed class PartState

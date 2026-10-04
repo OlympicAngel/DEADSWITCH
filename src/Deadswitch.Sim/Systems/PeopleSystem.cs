@@ -16,7 +16,8 @@ namespace Deadswitch.Sim.Systems
             if (!s.Blackout && s.People < cap)
             {
                 int gap = cap - s.People;
-                int gain = SimMath.PctCeil(gap, ctx.Config.People.RegrowthPctOfGapPerHour);
+                // wrecks in the yard slow regrowth (SPEC-018)
+                int gain = (int)((((long)gap * ctx.Config.People.RegrowthPctOfGapPerHour * ScarSystem.RegrowthPct(s, ctx.Config)) + 9_999) / 10_000);
                 s.People = SimMath.Clamp(s.People + gain, 0, cap);
             }
         }

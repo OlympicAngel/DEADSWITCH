@@ -53,6 +53,9 @@ namespace Deadswitch.Art.Models
 
         /// <summary>Blinks amber while the facility is unmanned (AI-run).</summary>
         Beacon = 2,
+
+        /// <summary>Flickers like fire; always on (battle scars).</summary>
+        Fire = 3,
     }
 
     public readonly struct LightSpec
@@ -92,5 +95,6 @@ namespace Deadswitch.Art.Models
         public static readonly Vector3 Amber = new Vector3(1f, 0.7f, 0.32f);
         public static readonly Vector3 Phosphor = new Vector3(0.62f, 0.9f, 0.55f);
         public static readonly Vector3 Red = new Vector3(1f, 0.35f, 0.28f);
+        public static readonly Vector3 FireColor = new Vector3(1f, 0.52f, 0.2f);
     }
 }
