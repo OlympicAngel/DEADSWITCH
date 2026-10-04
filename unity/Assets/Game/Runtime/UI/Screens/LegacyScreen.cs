@@ -29,6 +29,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly VisualElement _ui;
         private readonly Label _reason;
         private long _armedAt = -1;
+        private Region _region = Region.Ridge;
         private bool _visible;
 
         public LegacyScreen(ScreenRouter router)
@@ -41,6 +42,16 @@ namespace Deadswitch.Game.UI.Screens
             _reason = _ui.Q<Label>("lgc-reason");
             _ui.Q("lgc-close").RegisterCallback<ClickEvent>(_ => router.Show("core"));
             _ui.Q("lgc-move-btn").RegisterCallback<ClickEvent>(_ => Move());
+            for (int i = 0; i <= (int)Region.Ruins; i++)
+            {
+                var region = (Region)i;
+                _ui.Q("lgc-region-" + i).RegisterCallback<ClickEvent>(_ =>
+                {
+                    _region = region;
+                    _armedAt = -1;
+                    Refresh();
+                });
+            }
             _ui.Q("lgc-iron-btn").RegisterCallback<ClickEvent>(_ =>
             {
                 // Ironman is a premium mode (ADR-0006)
@@ -127,7 +138,7 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             _armedAt = -1;
-            Run(Command.Relocate());
+            Run(Command.Relocate(_region));
         }
 
         private void Run(Command command)
@@ -148,7 +159,15 @@ namespace Deadswitch.Game.UI.Screens
             var l = c.Legacy;
             int score = LegacySystem.Score(s, c);
             int veterans = LegacySystem.Veterans(s, c);
-            _ui.Q<Label>("lgc-cycle").text = "CYCLE " + (s.Cycle + 1) + " // LEGACY ON RECORD " + Fmt.Num(s.LegacyTotal);
+            _ui.Q<Label>("lgc-cycle").text = "CYCLE " + (s.Cycle + 1) + " // " + s.Region.ToString().ToUpperInvariant() + " // LEGACY ON RECORD " + Fmt.Num(s.LegacyTotal);
+            for (int i = 0; i <= (int)Region.Ruins; i++)
+            {
+                _ui.Q("lgc-region-" + i).EnableInClassList("is-selected", (int)_region == i);
+            }
+
+            _ui.Q<Label>("lgc-region-1-fx").text = "TURRETS +" + l.RidgeTurretPct + "%";
+            _ui.Q<Label>("lgc-region-2-fx").text = "+" + l.RiverFuelPerHour + " FUEL/H";
+            _ui.Q<Label>("lgc-region-3-fx").text = "COMPUTE +" + l.RuinsComputePct + "%";
             _ui.Q<Label>("lgc-points").text = Fmt.Num(s.LegacyPoints) + " LP";
             _ui.Q<Label>("lgc-score").text = Fmt.Num(score);
             _ui.Q<Label>("lgc-best").text = "PERSONAL BEST // " + Fmt.Num(Records.BestScore) + " // TIER " + Records.BestTier + " // " + Records.BestCycle + (Records.BestCycle == 1 ? " CYCLE" : " CYCLES");

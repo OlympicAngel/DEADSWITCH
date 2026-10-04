@@ -43,4 +43,20 @@ namespace Deadswitch.Sim.State
         AiTakeover = 2,
         PopulationCollapse = 3,
     }
+
+    /// <summary>Where the core settles after a reboot (SPEC-031, doc 06 s4 better starting region). Stored in saves and commands.</summary>
+    public enum Region
+    {
+        /// <summary>A sheltered hollow: no bonus (the first site, and old saves).</summary>
+        Hollow = 0,
+
+        /// <summary>High ground: turrets see farther.</summary>
+        Ridge = 1,
+
+        /// <summary>A river crossing: barges bring fuel every hour.</summary>
+        River = 2,
+
+        /// <summary>A dead data center's ruins: salvaged racks think faster.</summary>
+        Ruins = 3,
+    }
 }

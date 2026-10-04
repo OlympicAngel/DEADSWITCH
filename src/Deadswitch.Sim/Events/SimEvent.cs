@@ -299,6 +299,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The handler recalled an op the AI launched on its own (SPEC-030). A: op id, B: site, C: people back.</summary>
         OpRecalled = 97,
+
+        /// <summary>The core settled at a new site (SPEC-031). A: Region.</summary>
+        RegionSettled = 98,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

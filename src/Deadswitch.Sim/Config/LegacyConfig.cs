@@ -23,6 +23,9 @@ namespace Deadswitch.Sim.Config
         public int PerkStartFuel = 30;
         public int PerkRegrowthPct = 15;
         public int PerkHeatDecayPct = 25;
+        public int RidgeTurretPct = 15;
+        public int RiverFuelPerHour = 4;
+        public int RuinsComputePct = 15;
         public int MasteryCorruptionMilli = 40_000;
         public int IronmanChooseHours = 24;
         public int RebuildingSurgePct = 100;
@@ -51,6 +54,9 @@ namespace Deadswitch.Sim.Config
             v.Int("perk_start_fuel", ref PerkStartFuel, 0, 10_000, "Starting resources perk: fuel per level.");
             v.Int("perk_regrowth_pct", ref PerkRegrowthPct, 0, 1_000, "Regrowth perk: population regrowth +% per level.");
             v.Int("perk_heat_decay_pct", ref PerkHeatDecayPct, 0, 1_000, "Heat perk: faction heat fades +% per level.");
+            v.Int("ridge_turret_pct", ref RidgeTurretPct, 0, 100, "Ridge site (SPEC-031): turret output +%.");
+            v.Int("river_fuel_per_hour", ref RiverFuelPerHour, 0, 1_000, "River site: fuel arriving every hour (capped by storage).");
+            v.Int("ruins_compute_pct", ref RuinsComputePct, 0, 100, "Ruins site: server rack output +%.");
             v.Int("mastery_corruption_milli", ref MasteryCorruptionMilli, 0, 100_000, "Mastery: corruption kept under this for a full tier (doc 10: 40).");
             v.Int("rebuilding_surge_pct", ref RebuildingSurgePct, 0, 1_000, "After a forced reboot, regrowth +% until the population reaches half the cap (doc 10 s2).");
             v.Int("ironman_choose_hours", ref IronmanChooseHours, 1, 1_000, "Ironman can be switched on only in the first hours of a run (doc 10 s1.2: chosen at start).");

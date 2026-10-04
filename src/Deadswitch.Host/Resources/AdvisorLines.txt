@@ -285,6 +285,10 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+region.hollow.1 | region_hollow | neutral | A hollow out of the wind. Nothing special. Nothing hunting us yet.
+region.ridge.1 | region_ridge | neutral | High ground. The turrets can see three valleys from here.
+region.river.1 | region_river | neutral | A river crossing. Barges still run fuel along it, and they will sell to us.
+region.ruins.1 | region_ruins | neutral | Ruins of a data center. Some of the racks still answer. Mine now.
 ai.raid.1 | ai_raid | neutral | I sent {people} at {site}. The numbers were good. You can call them back from the map.
 ai.raid.2 | ai_raid | bold | {site} was soft. I did not wait for permission. {people} are on their way.
 ai.raid.3 | ai_raid | cold | Initiated: raid on {site}. {people} assets committed. Recall is available. Not advised.

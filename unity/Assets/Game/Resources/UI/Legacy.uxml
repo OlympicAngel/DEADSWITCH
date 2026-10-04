@@ -44,6 +44,12 @@
     <ui:VisualElement class="ds-panel ds-panel--amber lgc-move">
       <ui:Label text="RELOCATE THE CORE" class="lgc-move__title" />
       <ui:Label name="lgc-move-desc" text="Leave this Hub at its peak. The core keeps 2 modules, half of every grudge, 4 veterans and the full score as legacy points. Everything else stays behind." class="ds-body t-dim lgc-move__desc" />
+      <ui:VisualElement class="row lgc-regions">
+        <ui:VisualElement name="lgc-region-0" class="lgc-region is-selected"><ui:Label text="HOLLOW" class="lgc-region__name" /><ui:Label text="NO BONUS" class="lgc-region__fx" /></ui:VisualElement>
+        <ui:VisualElement name="lgc-region-1" class="lgc-region"><ui:Label text="RIDGE" class="lgc-region__name" /><ui:Label name="lgc-region-1-fx" text="TURRETS +15%" class="lgc-region__fx" /></ui:VisualElement>
+        <ui:VisualElement name="lgc-region-2" class="lgc-region"><ui:Label text="RIVER" class="lgc-region__name" /><ui:Label name="lgc-region-2-fx" text="+4 FUEL/H" class="lgc-region__fx" /></ui:VisualElement>
+        <ui:VisualElement name="lgc-region-3" class="lgc-region"><ui:Label text="RUINS" class="lgc-region__name" /><ui:Label name="lgc-region-3-fx" text="COMPUTE +15%" class="lgc-region__fx" /></ui:VisualElement>
+      </ui:VisualElement>
       <ui:VisualElement name="lgc-move-btn" class="ds-btn ds-btn--warn lgc-move__btn"><ui:Label name="lgc-move-label" text="RELOCATE // +486 LP" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
     <ui:Label name="lgc-reason" text="" class="ds-body t-amber lgc-reason" />

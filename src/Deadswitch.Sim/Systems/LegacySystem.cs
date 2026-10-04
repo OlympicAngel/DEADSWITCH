@@ -73,6 +73,12 @@ namespace Deadswitch.Sim.Systems
             SimConfig c = ctx.Config;
             LegacyConfig l = c.Legacy;
             s.PeakPower = System.Math.Max(s.PeakPower, Defense.PowerRating(s));
+            if (s.Region == Region.River)
+            {
+                // barges at the crossing (SPEC-031)
+                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(c.Fuel.Cap, s.Fuel + l.RiverFuelPerHour));
+            }
+
             if (s.Tier > s.HighestTier)
             {
                 // a tier completed: tier mastery checks
@@ -127,7 +133,7 @@ namespace Deadswitch.Sim.Systems
         public static CommandResult Relocate(SimContext ctx, Command cmd)
         {
             GameState s = ctx.State;
-            if (cmd.A != 0 || cmd.B != 0 || cmd.C != 0)
+            if (cmd.A < 0 || cmd.A > (int)Region.Ruins || cmd.B != 0 || cmd.C != 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
@@ -148,7 +154,7 @@ namespace Deadswitch.Sim.Systems
                 Earn(ctx, Mastery.RelocatePeak);
             }
 
-            Reboot(ctx, RebootReason.Relocation);
+            Reboot(ctx, RebootReason.Relocation, (Region)cmd.A);
             return CommandResult.Ok;
         }
 
@@ -217,6 +223,14 @@ namespace Deadswitch.Sim.Systems
 
         /// <summary>Ends the cycle: legacy points, then a fresh site with what the core carries (doc 10 s1.2).</summary>
         public static void Reboot(SimContext ctx, RebootReason reason)
+        {
+            // a lost Hub flees wherever it can (SPEC-031): the region is not the handler's choice
+            uint h = SimMath.Hash((uint)ctx.State.Tick ^ 0x2E61u, (uint)(ctx.State.Rng.State >> 32));
+            Reboot(ctx, reason, (Region)(h % 4));
+        }
+
+        /// <summary>Ends the cycle and settles the core at <paramref name="region"/>.</summary>
+        public static void Reboot(SimContext ctx, RebootReason reason, Region region)
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
@@ -327,6 +341,7 @@ namespace Deadswitch.Sim.Systems
             s.SurgeReadyTick = surgeReady;
             s.LiesTold = lies;
             s.Fragments = fragments;
+            s.Region = region;
             s.RebuildingSurge = forced && !ironmanEnd;
 
             // first-time schedules in a fresh state count from tick 0: start them from the new site
@@ -341,6 +356,7 @@ namespace Deadswitch.Sim.Systems
             s.MercyUntilTick = tick + ((long)c.Raid.MercyHours * SimConfig.TicksPerHour);
 
             ctx.Emit(EventKind.CycleEnded, (int)reason, score, points, veterans);
+            ctx.Emit(EventKind.RegionSettled, (int)region);
         }
     }
 }

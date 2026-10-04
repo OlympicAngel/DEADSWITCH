@@ -321,9 +321,9 @@ namespace Deadswitch.Sim.Commands
             return new Command(CommandKind.SetIronman, on ? 1 : 0);
         }
 
-        public static Command Relocate()
+        public static Command Relocate(Region region = Region.Hollow)
         {
-            return new Command(CommandKind.Relocate);
+            return new Command(CommandKind.Relocate, (int)region);
         }
 
         public static Command BuyPerk(Perk perk)

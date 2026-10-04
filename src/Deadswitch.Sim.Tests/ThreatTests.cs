@@ -176,7 +176,7 @@ namespace Deadswitch.Sim.Tests
             // chapters (SPEC-024): First Boot twisted and paid off with a fragment, and fragments outlive the core
             int fragments = sim.State.Fragments;
             Assert.Equal(1, fragments & 1);
-            while (!sim.Execute(Command.Relocate()).Accepted)
+            while (!sim.Execute(Command.Relocate(Region.River)).Accepted)
             {
                 sim.Run(SimConfig.TicksPerHour);
             }
@@ -187,6 +187,7 @@ namespace Deadswitch.Sim.Tests
             SimEvent end = sim.Log.Events.Last(e => e.Kind == EventKind.CycleEnded);
             Assert.Equal(1, sim.State.Tier);
             Assert.Equal(fragments, sim.State.Fragments);
+            Assert.Equal(Region.River, sim.State.Region);
             Assert.Equal(end.B, end.C);
             Assert.Equal(end.C, sim.State.LegacyPoints);
             Assert.Contains(Modules.Catalog, d => d.Field != ModuleField.Trunk && Modules.IsRestored(sim.State, d.Node));

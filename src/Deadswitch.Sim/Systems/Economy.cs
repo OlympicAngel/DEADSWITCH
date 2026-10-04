@@ -85,7 +85,9 @@ namespace Deadswitch.Sim.Systems
             switch (kind)
             {
                 case FacilityKind.ServerRack:
-                    return (Modules.Has(s, ModuleNode.LG2A) ? c.Modules.OverclockPct : 0) + PeopleChoices.OutputPts(s, c);
+                    return (Modules.Has(s, ModuleNode.LG2A) ? c.Modules.OverclockPct : 0) + PeopleChoices.OutputPts(s, c) + (s.Region == Region.Ruins ? c.Legacy.RuinsComputePct : 0);
+                case FacilityKind.Turret:
+                    return s.Region == Region.Ridge ? c.Legacy.RidgeTurretPct : 0;
                 case FacilityKind.BatteryBank:
                     return Modules.Has(s, ModuleNode.LG2B) ? c.Modules.DeepCellsPct : 0;
                 case FacilityKind.Generator:
