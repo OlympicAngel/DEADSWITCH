@@ -11,7 +11,7 @@ Sieges, viruses and purges (with the warning ladder) beside raids, plus vacation
 
 ## Steps
 - [x] 1. Sim: `[threats]` config, attack kinds, siege damage, virus, purge ladder + tribute, shield, tribute orders, state v8, events, tests
-- [ ] 2. Host: advisor lines, battle report titles/summaries, logout projection
+- [x] 2. Host: advisor lines, battle report titles/summaries, logout projection
 - [ ] 3. Unity: OPS threat card + purge ladder card + shield/tribute controls, HUD banner per signature; previews
 - [ ] 4. Docs (SPEC-015, BACKLOG, HANDOFF)
 

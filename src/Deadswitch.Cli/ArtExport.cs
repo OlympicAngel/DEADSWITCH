@@ -104,7 +104,7 @@ namespace Deadswitch.Cli
             if (report != null)
             {
                 RaidGate gate = report.ContactGate != RaidGate.None ? report.ContactGate : report.PredictedGate;
-                reportJson.Append(",\n\"report\":{\"title\":").Append(Str("AFTER-ACTION // RAID " + report.RaidId + " // " + report.Outcome.ToString().ToUpperInvariant()))
+                reportJson.Append(",\n\"report\":{\"title\":").Append(Str("AFTER-ACTION // " + Names.Attack(report.Kind) + " " + report.RaidId + " // " + report.Outcome.ToString().ToUpperInvariant()))
                     .Append(",\"vector\":").Append(Str("PREDICTED " + Names.Gate(report.PredictedGate) + "  //  CONTACT " + Names.Gate(report.ContactGate)))
                     .Append(",\"mismatch\":").Append(report.PredictionMismatch ? "true" : "false")
                     .Append(",\"summary\":").Append(Str(report.Summary))

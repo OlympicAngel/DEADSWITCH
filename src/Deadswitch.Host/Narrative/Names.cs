@@ -30,6 +30,17 @@ namespace Deadswitch.Host.Narrative
             }
         }
 
+        /// <summary>Signature name (SPEC-015).</summary>
+        public static string Attack(AttackKind kind)
+        {
+            switch (kind)
+            {
+                case AttackKind.Siege: return "SIEGE";
+                case AttackKind.Purge: return "PURGE";
+                default: return "RAID";
+            }
+        }
+
         public static string Posture(Posture posture)
         {
             switch (posture)

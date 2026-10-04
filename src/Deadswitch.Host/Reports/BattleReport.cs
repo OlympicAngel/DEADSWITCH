@@ -54,6 +54,12 @@ namespace Deadswitch.Host.Reports
 
         public int RaidId { get; private set; }
 
+        /// <summary>Signature of the attack (SPEC-015).</summary>
+        public AttackKind Kind { get; private set; }
+
+        /// <summary>Facilities the attack downgraded: kind and level left.</summary>
+        public List<(FacilityKind Kind, int Level)> Damage { get; } = new List<(FacilityKind, int)>();
+
         public RaidOutcome Outcome { get; private set; }
 
         public long WarningTick { get; private set; }
@@ -132,6 +138,10 @@ namespace Deadswitch.Host.Reports
                     case EventKind.RaidWarning when e.A == raidId:
                         r.WarningTick = e.Tick;
                         r.Estimate = e.C;
+                        r.Kind = (AttackKind)e.D;
+                        break;
+                    case EventKind.FacilityDamaged when e.A == raidId:
+                        r.Damage.Add(((FacilityKind)e.C, e.D));
                         break;
                     case EventKind.RaidVector when e.A == raidId:
                         r.PredictedGate = (RaidGate)e.B;
@@ -187,12 +197,17 @@ namespace Deadswitch.Host.Reports
         /// <summary>Upper-case ledger text, e.g. "-120 ENERGY, -2 PEOPLE" (or "NO LOSSES").</summary>
         public string LossText(bool shown)
         {
-            if (Ledger.Count == 0)
+            if (Ledger.Count == 0 && Damage.Count == 0)
             {
                 return "NO LOSSES";
             }
 
             var sb = new StringBuilder();
+            foreach ((FacilityKind kind, int level) in Damage)
+            {
+                sb.Append(sb.Length > 0 ? ", " : string.Empty).Append(Names.Facility(kind)).Append(" DOWN TO L").Append(level);
+            }
+
             foreach (LedgerLine line in Ledger)
             {
                 int amount = shown && line.Resource == LossResource.Energy ? ShownEnergyLoss : line.Amount;
@@ -205,10 +220,13 @@ namespace Deadswitch.Host.Reports
         private string SummaryLine()
         {
             string gate = Names.Gate(ContactGate);
+            string what = Kind == AttackKind.Siege ? "Siege" : Kind == AttackKind.Purge ? "Purge" : "Raid";
             switch (Outcome)
             {
+                case RaidOutcome.Tribute:
+                    return "Tribute paid at the gate. They took it and left. " + LossText(true) + ".";
                 case RaidOutcome.Repelled:
-                    return "Raid repelled at the " + gate + ". Defense " + DefenseRating + " held against " + Strength + ". No losses.";
+                    return what + " repelled at the " + gate + ". Defense " + DefenseRating + " held against " + Strength + ". No losses.";
                 case RaidOutcome.Breached:
                     return "Breach at the " + gate + ". Losses contained: " + LossText(true) + ".";
                 case RaidOutcome.Missed:
@@ -224,6 +242,11 @@ namespace Deadswitch.Host.Reports
             Panels.Add(new ReportPanel(ReportShot.Approach, Clock(WarningTick) + " // Movement beyond the " + gate + ". I estimated " + Estimate + "."));
             switch (Outcome)
             {
+                case RaidOutcome.Tribute:
+                    Panels.Add(new ReportPanel(ReportShot.Contact, "Your standing order. The tribute went out on a cart."));
+                    Panels.Add(new ReportPanel(ReportShot.Outcome, "They counted it. They left."));
+                    Panels.Add(new ReportPanel(ReportShot.Aftermath, LossText(false) + ". Cheaper than a fight. This time."));
+                    return;
                 case RaidOutcome.Lockdown:
                     Panels.Add(new ReportPanel(ReportShot.Contact, "Lockdown. Every door sealed, every light out."));
                     Panels.Add(new ReportPanel(ReportShot.Outcome, "They waited at the wire. Then they left."));
@@ -239,8 +262,8 @@ namespace Deadswitch.Host.Reports
             Panels.Add(new ReportPanel(ReportShot.Contact, Clock(ResolvedTick) + " // Contact at the " + gate + ". Strength " + Strength + " against defense " + DefenseRating + "."));
             Panels.Add(Outcome == RaidOutcome.Repelled
                 ? new ReportPanel(ReportShot.Outcome, "The wall held. They broke and ran.")
-                : new ReportPanel(ReportShot.Outcome, "They got through. The stores took the hit."));
-            Panels.Add(new ReportPanel(ReportShot.Aftermath, Ledger.Count == 0 ? "Everyone accounted for." : LossText(false) + (Mercy ? ". The roads go quiet for a while." : ".")));
+                : new ReportPanel(ReportShot.Outcome, Kind == AttackKind.Siege ? "The shelling walked across the yard. Buildings came down." : Kind == AttackKind.Purge ? "They came through everything. Nothing was spared." : "They got through. The stores took the hit."));
+            Panels.Add(new ReportPanel(ReportShot.Aftermath, Ledger.Count == 0 && Damage.Count == 0 ? "Everyone accounted for." : LossText(false) + (Mercy ? ". The roads go quiet for a while." : ".")));
         }
 
         private void BuildFindings(int flags)

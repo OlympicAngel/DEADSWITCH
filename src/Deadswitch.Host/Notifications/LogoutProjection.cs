@@ -65,6 +65,7 @@ namespace Deadswitch.Host.Notifications
             IReadOnlyList<SimEvent> log = copy.Log.Events;
             int warnMinutes = 0;
             int warnEstimate = 0;
+            AttackKind warnKind = AttackKind.Raid;
             for (int i = from; i < log.Count && alerts.Count < max; i++)
             {
                 SimEvent e = log[i];
@@ -74,9 +75,16 @@ namespace Deadswitch.Host.Notifications
                     case EventKind.RaidWarning:
                         warnMinutes = e.B;
                         warnEstimate = e.C;
+                        warnKind = (AttackKind)e.D;
                         break;
                     case EventKind.RaidVector when (kinds & AlertKinds.Raids) != 0:
-                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "RAID INBOUND", "Hostiles at the " + Names.Gate((RaidGate)e.B) + ". My estimate: " + warnEstimate + ". Contact in " + warnMinutes + " min."));
+                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, Names.Attack(warnKind) + " INBOUND", "Hostiles at the " + Names.Gate((RaidGate)e.B) + ". My estimate: " + warnEstimate + ". Contact in " + warnMinutes + " min."));
+                        break;
+                    case EventKind.PurgeLadder when (kinds & AlertKinds.Raids) != 0 && e.A == (int)PurgeStage.Staging:
+                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "PURGE STAGING", "A purge force is gathering. It strikes in " + (e.B / 60) + " hours unless you answer it."));
+                        break;
+                    case EventKind.PurgeLadder when (kinds & AlertKinds.Raids) != 0 && e.A == (int)PurgeStage.Ultimatum:
+                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "PURGE ULTIMATUM", "Pay, retreat or prepare. " + (e.B / 60) + " hours."));
                         break;
                     case EventKind.BuildCompleted when (kinds & AlertKinds.Construction) != 0:
                         alerts.Add(new ProjectedAlert(at, AlertKinds.Construction, "CONSTRUCTION COMPLETE", Names.Facility((FacilityKind)e.B) + " level " + e.C + " is online."));

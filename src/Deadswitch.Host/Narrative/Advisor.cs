@@ -46,6 +46,7 @@ namespace Deadswitch.Host.Narrative
         private Pending? _breach;
         private int _warnMinutes;
         private int _warnEstimate;
+        private AttackKind _warnKind;
         private float _sinceShown;
         private float _idleWait = IdleSeconds;
         private ProjectStage _stage;
@@ -204,9 +205,10 @@ namespace Deadswitch.Host.Narrative
                 case EventKind.RaidWarning:
                     _warnMinutes = e.B;
                     _warnEstimate = e.C;
+                    _warnKind = (AttackKind)e.D;
                     break;
                 case EventKind.RaidVector:
-                    Enqueue(new Pending("raid_warning", Priority.Urgent)
+                    Enqueue(new Pending(_warnKind == AttackKind.Siege ? "siege_warning" : _warnKind == AttackKind.Purge ? "purge_strike" : "raid_warning", Priority.Urgent)
                         .With("gate", Names.Gate((RaidGate)e.B))
                         .With("est", _warnEstimate.ToString())
                         .With("min", _warnMinutes.ToString()));
@@ -321,6 +323,32 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.ReportVerified:
                     Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));
+                    break;
+                case EventKind.FacilityDamaged:
+                    Enqueue(new Pending("siege_damage", Priority.Urgent).With("kind", Names.Facility((FacilityKind)e.C)).With("level", e.D.ToString()));
+                    break;
+                case EventKind.VirusStruck:
+                    Enqueue(e.A == 0
+                        ? new Pending("virus_burned", Priority.Normal).With("lost", e.B.ToString())
+                        : new Pending("virus_infected", Priority.Urgent).With("module", e.C == 0 ? "NOTHING" : ((ModuleNode)e.C).ToString()));
+                    break;
+                case EventKind.PurgeLadder:
+                    string[] ladder = { string.Empty, "purge_rumor", "purge_staging", "purge_ultimatum" };
+                    if (e.A > 0 && e.A < ladder.Length)
+                    {
+                        Enqueue(new Pending(ladder[e.A], Priority.Urgent).With("hours", (e.B / 60).ToString()));
+                    }
+                    else if (e.C == 1 || e.C == 2)
+                    {
+                        Enqueue(new Pending(e.C == 1 ? "purge_fizzled" : "purge_paid", Priority.Normal));
+                    }
+
+                    break;
+                case EventKind.TributePaid when e.A != 0:
+                    Enqueue(new Pending("tribute_paid", Priority.Normal).With("lost", e.B.ToString()));
+                    break;
+                case EventKind.ShieldChanged:
+                    Enqueue(new Pending(e.A == 1 ? "shield_up" : "shield_down", Priority.Normal).With("hours", (e.B / 60).ToString()));
                     break;
                 case EventKind.ForcedLabor:
                     Enqueue(new Pending("forced_labor", Priority.Normal).With("lost", e.A.ToString()).With("hours", e.B.ToString()));

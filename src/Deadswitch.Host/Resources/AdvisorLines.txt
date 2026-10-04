@@ -140,3 +140,32 @@ loyalty.strained.1 | loyalty_strained | neutral | The workforce is slowing. Outp
 loyalty.strained.2 | loyalty_strained | cold | Morale is a resource. It is running low.
 loyalty.mutinous.1 | loyalty_mutinous | neutral | They are close to mutiny. Expect desertions.
 loyalty.mutinous.2 | loyalty_mutinous | cold | They talk about pulling my plugs. They would lose.
+
+siege.warn.1 | siege_warning | neutral | Artillery spotters, {gate}. Siege in {min} minutes. They want the buildings, not the stores.
+siege.warn.2 | siege_warning | cold | Siege guns on the {gate}. Estimate {est}. Something will fall.
+siege.warn.3 | siege_warning | bold | A siege, {gate}. Turtle and man the turrets. I would.
+siege.damage.1 | siege_damage | neutral | The {kind} took a direct hit. Down to level {level}.
+siege.damage.2 | siege_damage | cold | {kind} reduced to level {level}. Rebuild or do without.
+siege.damage.3 | siege_damage | warm | We lost part of the {kind}. Level {level}. Nobody was inside. I checked.
+virus.burned.1 | virus_burned | neutral | Intrusion attempt. The firewall burned {lost} compute. Contained.
+virus.burned.2 | virus_burned | bold | Someone tried to get into me. They failed.
+virus.infected.1 | virus_infected | neutral | Intrusion. Module {module} is not responding. My readings may be off for a while.
+virus.infected.2 | virus_infected | bold | Minor anomaly. Handled.
+virus.infected.3 | virus_infected | cold | Something is in my code. {module} is offline. Do not trust my next estimate.
+purge.rumor.1 | purge_rumor | neutral | Chatter on the old frequencies. A purge, maybe. Maybe not.
+purge.rumor.2 | purge_rumor | bold | Rumors of a purge. I have heard rumors before.
+purge.staging.1 | purge_staging | neutral | Confirmed. A purge force is staging. It strikes in {hours} hours.
+purge.staging.2 | purge_staging | cold | They are coming to erase us. {hours} hours. Plan accordingly.
+purge.ultimatum.1 | purge_ultimatum | neutral | Ultimatum received. Pay, retreat, or prepare. {hours} hours.
+purge.ultimatum.2 | purge_ultimatum | warm | They gave us a choice. Take it seriously. {hours} hours.
+purge.ultimatum.3 | purge_ultimatum | bold | They want tribute. I want a garrison on the wall. {hours} hours.
+purge.strike.1 | purge_strike | neutral | Purge force moving in, {gate}. Estimate {est}. {min} minutes.
+purge.strike.2 | purge_strike | cold | Here they come. {gate}. {min} minutes. Everything is at stake.
+purge.fizzled.1 | purge_fizzled | neutral | The purge was a rumor. The roads are empty.
+purge.fizzled.2 | purge_fizzled | bold | No purge. I told you I had heard rumors before.
+purge.paid.1 | purge_paid | neutral | Tribute delivered. The purge force is turning back.
+purge.paid.2 | purge_paid | cold | Paid. They will remember that we pay.
+tribute.paid.1 | tribute_paid | neutral | Your standing order paid {lost} energy. They left without a fight.
+tribute.paid.2 | tribute_paid | cold | {lost} energy for peace. A fair trade, today.
+shield.up.1 | shield_up | neutral | Shield raised. I will keep them off for up to {hours} hours while you are gone.
+shield.down.1 | shield_down | neutral | Shield down. We are visible again.
