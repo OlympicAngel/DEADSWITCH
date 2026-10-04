@@ -1,6 +1,6 @@
 # DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
 # Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
-# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours}
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours} {site} {faction}
 # Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
 
 boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
@@ -170,3 +170,21 @@ tribute.paid.2 | tribute_paid | cold | {lost} energy for peace. A fair trade, to
 shield.armed.1 | shield_armed | neutral | Shield charging. It rises in {hours} hours. Anything already moving still comes.
 shield.up.1 | shield_up | neutral | Shield up. Nobody attacks us for {hours} hours. The clocks keep running.
 shield.down.1 | shield_down | neutral | Shield down. We are visible again.
+
+op.scout.1 | op_scout | neutral | Scouts out to {site}. {people} of them. Back before dark, I hope.
+op.raid.1 | op_raid | neutral | Raid team moving on {site}. {people} people. I will keep the channel open.
+op.raid.2 | op_raid | cold | {people} sent to {site}. Expect some not to return.
+op.raid.3 | op_raid | bold | Good. We take from them for once. {site}.
+op.hack.1 | op_hack | neutral | Intrusion under way against {site}. Do not interrupt me.
+op.won.1 | op_won | neutral | Team back from {site}. Mission complete. Losses: {lost}.
+op.won.2 | op_won | bold | {site} handled. As planned. {lost} lost.
+op.won.3 | op_won | warm | They made it back from {site}. Mostly. {lost} did not.
+op.lost.1 | op_lost | neutral | {site} went wrong. {lost} did not come back.
+op.lost.2 | op_lost | cold | Failure at {site}. {lost} lost. The odds were the odds.
+heat.watched.1 | heat_watched | neutral | {faction} is watching us now. Expect scouts at the wire.
+heat.hunted.1 | heat_hunted | neutral | {faction} is hunting us. Their attacks will be regular and heavy.
+heat.hunted.2 | heat_hunted | cold | {faction} wants us gone. They are not wrong to.
+heat.marked.1 | heat_marked | neutral | {faction} has marked us. A purge is only a matter of time.
+outpost.claimed.1 | outpost_claimed | neutral | Outpost raised at {site}. Power and fuel will flow home.
+outpost.lost.1 | outpost_lost | neutral | We lost {site}. {faction} took it back.
+outpost.lost.2 | outpost_lost | cold | {site} is gone. {faction}. We knew it was exposed.

@@ -24,7 +24,7 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-016 | Boot sequence + opening flow (early protection, first hit) | M4 | Done 2026-10-03 | doc 01 s7 |
 | F-017 | Logout projection + local notifications (opt-in, AI voice) | M3 | Done 2026-10-03 | ADR-0004 |
 | F-018 | Remaining signatures: siege, virus, purge + warning ladder, vacation shield, tribute orders | M3 | Done 2026-10-04 | doc 04 s3+s5, doc 10 s4 |
-| F-019 | World map: factions + heat, scout / raid / hack operations, outposts (absorbs F-031, F-032 basics, F-033) | M5 | In progress | doc 05 s1-2+s6, doc 10 |
+| F-019 | World map: factions + heat, scout / raid / hack operations, outposts (absorbs F-031, F-032 basics, F-033) | M5 | Done 2026-10-04 | doc 05 s1-2+s6, doc 10 |
 | F-021 | Ruthless choices: forced labor surge, neural cleansing, crackdown; loyalty and rogue operators (SPEC-012) | M3 | Done 2026-10-03 | doc 03 s1, doc 10 s1.3 |
 | F-022 | Project climax: final 24h warning at Imminent, counterplay (purge core, silence the AI via OVERRIDE, cancel AI actions), betrayal / fork events | M3 | Done 2026-10-03 | doc 03 s5-6, doc 10 s2 |
 | F-023 | Tier 2 district: new plots outside the walls, visual evolution of the compound per tier, Tier 2 threats scaling | M3 | Done 2026-10-03 | doc 06 s2-3 |
@@ -33,7 +33,7 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-027 | One-click Android dev build (Editor menu) | M5 | Done 2026-10-04 | unity/README |
 | F-028 | Corruption effects: unmanned-unit glitches, crisis ladder at Critical, ways to reduce it | M2 | Later | doc 03 s3-4 |
 | F-029 | Battle scars: raid damage persists on facilities and the yard until repaired; repair action | M4 | Later | doc 06 s3, doc 10 |
-| F-030 | Full module tree: four fields x 8 nodes (32), exclusive pairs, Tier 2 nodes | M5 | Later | doc 03 s7, doc 10 |
+| F-030 | Full module tree: four fields x 8 nodes (32), exclusive pairs, Tier 2 nodes | M5 | Ready | doc 03 s7, doc 10 |
 | F-031 | Outposts: small sites on the map that produce and can be raided | M5 | Later | doc 02 s7 |
 | F-032 | Intel: scouts, AI prediction, spies (double-agent risk) | M5 | Later | doc 05 s5, doc 10 |
 | F-033 | Player offense: raids and cyber warfare against factions | M5 | Later | doc 04 s8 |

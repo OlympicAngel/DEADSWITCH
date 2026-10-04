@@ -324,6 +324,23 @@ namespace Deadswitch.Host.Narrative
                 case EventKind.ReportVerified:
                     Enqueue(new Pending((e.B & RaidRecord.SummaryEdit) != 0 ? "verify_edit" : (e.B & RaidRecord.GateLie) != 0 ? "verify_gate" : "verify_clean", Priority.Urgent));
                     break;
+                case EventKind.OpLaunched:
+                    string[] launch = { "op_scout", "op_raid", "op_hack" };
+                    Enqueue(new Pending(launch[System.Math.Min(2, System.Math.Max(0, e.C))], Priority.Normal).With("site", Sim.Systems.WorldSystem.Sites[e.B].Name).With("people", e.D.ToString()));
+                    break;
+                case EventKind.OpReturned:
+                    Enqueue(new Pending(e.C == 1 ? "op_won" : "op_lost", Priority.Normal).With("site", Sim.Systems.WorldSystem.Sites[e.B].Name).With("lost", e.D.ToString()));
+                    break;
+                case EventKind.HeatLevelChanged when e.B > e.C:
+                    string[] heat = { string.Empty, "heat_watched", "heat_hunted", "heat_marked" };
+                    Enqueue(new Pending(heat[System.Math.Min(3, e.B)], e.B >= 2 ? Priority.Urgent : Priority.Normal).With("faction", Names.Faction((Faction)e.A)));
+                    break;
+                case EventKind.OutpostClaimed:
+                    Enqueue(new Pending("outpost_claimed", Priority.Normal).With("site", Sim.Systems.WorldSystem.Sites[e.A].Name));
+                    break;
+                case EventKind.OutpostLost:
+                    Enqueue(new Pending("outpost_lost", Priority.Urgent).With("site", Sim.Systems.WorldSystem.Sites[e.A].Name).With("faction", Names.Faction((Faction)e.B)));
+                    break;
                 case EventKind.FacilityDamaged:
                     Enqueue(new Pending("siege_damage", Priority.Urgent).With("kind", Names.Facility((FacilityKind)e.C)).With("level", e.D.ToString()));
                     break;

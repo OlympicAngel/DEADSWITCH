@@ -76,6 +76,33 @@ namespace Deadswitch.Sim.Systems
 
         public static IReadOnlyList<SiteDef> Sites => CatalogArray;
 
+        /// <summary>People out on operations (they come home; regrowth leaves their place free).</summary>
+        public static int Away(GameState s)
+        {
+            int n = 0;
+            foreach (Operation op in s.Ops)
+            {
+                n += op.Squad;
+            }
+
+            return n;
+        }
+
+        /// <summary>The faction with the most heat (ties: lowest index): who sends a purge.</summary>
+        public static Faction Hottest(GameState s)
+        {
+            int best = 0;
+            for (int f = 1; f < FactionCount; f++)
+            {
+                if (s.Heat[f] > s.Heat[best])
+                {
+                    best = f;
+                }
+            }
+
+            return (Faction)best;
+        }
+
         public static int Percent(int milli)
         {
             return milli / 1000;
@@ -188,8 +215,8 @@ namespace Deadswitch.Sim.Systems
                     continue;
                 }
 
-                s.Energy = System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + w.OutpostEnergyPerHour);
-                s.Fuel = System.Math.Min(ctx.Config.Fuel.Cap, s.Fuel + w.OutpostFuelPerHour);
+                s.Energy = System.Math.Max(s.Energy, System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + w.OutpostEnergyPerHour));
+                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(ctx.Config.Fuel.Cap, s.Fuel + w.OutpostFuelPerHour));
 
                 // a hunting faction takes its ground back
                 Faction owner = CatalogArray[i].Owner;
@@ -242,7 +269,13 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.OpsBusy);
             }
 
-            if (s.Sites[site].Outpost || (kind != OpKind.Scout && s.Tick < s.Sites[site].CooldownUntilTick))
+            bool inFlight = false;
+            foreach (Operation other in s.Ops)
+            {
+                inFlight |= other.Site == site;
+            }
+
+            if (inFlight || s.Sites[site].Outpost || (kind != OpKind.Scout && s.Tick < s.Sites[site].CooldownUntilTick))
             {
                 return CommandResult.Reject(RejectReason.SiteCooldown);
             }
@@ -331,6 +364,7 @@ namespace Deadswitch.Sim.Systems
                     heat = w.HeatPerHack;
                     if (won)
                     {
+                        st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
                         Loot(ctx, op.Id, LossResource.Compute, d.Compute);
                         if (d.CleanData > 0)
                         {
@@ -354,7 +388,8 @@ namespace Deadswitch.Sim.Systems
                     break;
             }
 
-            s.People = System.Math.Min(Economy.PopulationCap(s, c), s.People + op.Squad - casualties);
+            // survivors always come home (a lowered cap never kills anyone)
+            s.People += op.Squad - casualties;
             ctx.Emit(EventKind.OpReturned, op.Id, op.Site, won ? 1 : 0, casualties);
             AddHeat(ctx, d.Owner, heat);
         }
@@ -367,15 +402,15 @@ namespace Deadswitch.Sim.Systems
             switch (resource)
             {
                 case LossResource.Energy:
-                    got = System.Math.Min(amount, Economy.EnergyCap(s, c) - s.Energy);
+                    got = System.Math.Max(0, System.Math.Min(amount, Economy.EnergyCap(s, c) - s.Energy));
                     s.Energy += got;
                     break;
                 case LossResource.Fuel:
-                    got = System.Math.Min(amount, c.Fuel.Cap - s.Fuel);
+                    got = System.Math.Max(0, System.Math.Min(amount, c.Fuel.Cap - s.Fuel));
                     s.Fuel += got;
                     break;
                 default:
-                    got = System.Math.Min(amount, c.Compute.Cap - s.Compute);
+                    got = System.Math.Max(0, System.Math.Min(amount, c.Compute.Cap - s.Compute));
                     s.Compute += got;
                     break;
             }

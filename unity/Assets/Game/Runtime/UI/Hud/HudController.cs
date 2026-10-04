@@ -119,7 +119,7 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("people-cell").RegisterCallback<ClickEvent>(_ => Router.Show("workforce"));
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
-            Router.Register(new LockedScreen("map", "SECTOR MAP", "Long-range sensors are dark. I can see the perimeter. Nothing past it.", "RESTORE MODULE M1"));
+            Router.Register(new MapScreen());
             Q<Label>("feed-id").text = "DRONE_RECON_" + ((_host.Sim.Seed % 89) + 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));

@@ -107,8 +107,12 @@ namespace Deadswitch.Sim.Systems
             s.RaidKind = kind;
             s.RaidArriveTick = s.Tick + warningMinutes;
             s.RaidStrength = fixedStrength > 0 ? fixedStrength : Defense.BaseRaidStrength(s, c);
-            s.RaidFaction = WorldSystem.PickAttacker(s, c);
-            s.RaidStrength = WorldSystem.ScaleByHeat(s, c, s.RaidFaction, s.RaidStrength);
+            // the purge comes from the faction that marked us; the opening raid stays the fixed tutorial hit
+            s.RaidFaction = kind == AttackKind.Purge ? WorldSystem.Hottest(s) : WorldSystem.PickAttacker(s, c);
+            if (fixedStrength <= 0)
+            {
+                s.RaidStrength = WorldSystem.ScaleByHeat(s, c, s.RaidFaction, s.RaidStrength);
+            }
             if (kind == AttackKind.Siege)
             {
                 s.RaidStrength = SimMath.PctFloor(s.RaidStrength, c.Threats.SiegeStrengthPct);

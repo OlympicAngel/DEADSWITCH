@@ -30,6 +30,17 @@ namespace Deadswitch.Host.Narrative
             }
         }
 
+        /// <summary>Faction display name (doc 10 s5 working names).</summary>
+        public static string Faction(Faction faction)
+        {
+            switch (faction)
+            {
+                case Sim.State.Faction.Vanguard: return "VANGUARD COMMAND";
+                case Sim.State.Faction.Church: return "CHURCH OF THE LAST SIGNAL";
+                default: return "RUSTBORN";
+            }
+        }
+
         /// <summary>Signature name (SPEC-015).</summary>
         public static string Attack(AttackKind kind)
         {
