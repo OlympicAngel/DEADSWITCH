@@ -224,6 +224,8 @@ namespace Deadswitch.Sim.Tests
 
             Operation op = Assert.Single(sim.State.Ops);
             Assert.True(op.ByAi);
+            Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
+            Assert.True(Assert.Single(loaded.State.Ops).ByAi);
             int people = sim.State.People;
             Assert.True(sim.Execute(Command.RecallOp(op.Id)).Accepted);
             Assert.Empty(sim.State.Ops);

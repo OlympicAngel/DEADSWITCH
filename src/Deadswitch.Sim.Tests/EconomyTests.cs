@@ -26,10 +26,13 @@ namespace Deadswitch.Sim.Tests
             int other = sim.State.Slots.FindIndex(x => x.IsEmpty);
             Assert.Equal(RejectReason.Locked, sim.Execute(Command.Build(other, FacilityKind.Reactor)).Reason);
 
-            sim.State.Fuel = 0;
-            sim.Run(SimConfig.TicksPerHour + 1);
+            // fuel burns every minute it runs: an hour's need is gone within the hour, then it scrams
+            sim.State.Fuel = sim.Config.ReactorRules.FuelPerHour[0];
+            sim.Run(2L * SimConfig.TicksPerHour);
             Assert.False(sim.State.ReactorFueled);
             Assert.Equal(0, Economy.EffectiveOutput(sim.State, sim.Config, sim.State.Slots[plot]));
+            Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
+            Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(loaded.State));
         }
 
         [Theory]

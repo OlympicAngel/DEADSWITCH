@@ -78,6 +78,7 @@ namespace Deadswitch.Sim
             ScarSystem.Tick(ctx);
             Modules.Tick(ctx);
             CrewSystem.Tick(ctx);
+            ReactorSystem.Tick(ctx);
             EnergySystem.Tick(ctx);
             ProductionSystem.Tick(ctx);
             OverrideSystem.Tick(ctx);

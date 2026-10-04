@@ -20,7 +20,8 @@ namespace Deadswitch.Sim.Systems
             AiConfig a = c.Ai;
             // never during mercy or the opening protection: launching offense would end the handler's safety window
             bool sheltered = s.Tick < s.MercyUntilTick || s.Tick - s.CycleStartTick < (long)c.Opening.ProtectionHours * SimConfig.TicksPerHour;
-            if (s.Delegation == DelegationLevel.Manual || s.BoldnessMilli < a.InitiativeBoldness || s.RaidId != 0 || s.Blackout || sheltered)
+            // only while the handler is around to see it and recall it: never on autopilot or while away
+            if (s.Delegation != DelegationLevel.Delegated || s.Away || s.BoldnessMilli < a.InitiativeBoldness || s.RaidId != 0 || s.Blackout || sheltered)
             {
                 return;
             }
@@ -57,7 +58,9 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
-            if (best < 0 || !WorldSystem.Launch(ctx, Command.LaunchOp(best, OpKind.Raid, a.InitiativeSquad)).Accepted)
+            // it never spends the fuel the reactor needs for the next half day
+            bool keepsReactorFed = best < 0 || s.Fuel - WorldSystem.FuelCost(s, c, WorldSystem.Sites[best], OpKind.Raid) >= ReactorSystem.FuelPerHour(s, c) * 12;
+            if (best < 0 || !keepsReactorFed || !WorldSystem.Launch(ctx, Command.LaunchOp(best, OpKind.Raid, a.InitiativeSquad)).Accepted)
             {
                 return;
             }
@@ -83,6 +86,8 @@ namespace Deadswitch.Sim.Systems
                 {
                     s.Ops.RemoveAt(i);
                     s.People += op.Squad;
+                    // the target saw them coming: it stays off the AI's list for a while
+                    s.Sites[op.Site].CooldownUntilTick = System.Math.Max(s.Sites[op.Site].CooldownUntilTick, s.Tick + ((long)ctx.Config.World.RaidCooldownHours * SimConfig.TicksPerHour));
                     ctx.Emit(EventKind.OpRecalled, op.Id, op.Site, op.Squad);
                     return CommandResult.Ok;
                 }

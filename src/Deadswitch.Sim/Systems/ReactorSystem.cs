@@ -39,25 +39,58 @@ namespace Deadswitch.Sim.Systems
             return false;
         }
 
+        /// <summary>
+        /// Fuel burns every minute a reactor runs (an hour's need spread over its 60 ticks, exact in integers), so
+        /// switching it off around a check gains nothing. Out of fuel it scrams at once; any fuel restarts it.
+        /// </summary>
+        public static void Tick(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            int need = FuelPerHour(s, ctx.Config);
+            if (need == 0)
+            {
+                return;
+            }
+
+            if (!s.ReactorFueled)
+            {
+                if (s.Fuel > 0)
+                {
+                    s.ReactorFueled = true;
+                    ctx.Emit(EventKind.ReactorFuel, 1, need);
+                }
+
+                return;
+            }
+
+            s.ReactorFuelTicks += need;
+            int units = s.ReactorFuelTicks / SimConfig.TicksPerHour;
+            if (units == 0)
+            {
+                return;
+            }
+
+            if (s.Fuel < units)
+            {
+                s.Fuel = 0;
+                s.ReactorFuelTicks = 0;
+                s.ReactorFueled = false;
+                ctx.Emit(EventKind.ReactorFuel, 0, need);
+                return;
+            }
+
+            s.Fuel -= units;
+            s.ReactorFuelTicks -= units * SimConfig.TicksPerHour;
+        }
+
         public static void Hourly(SimContext ctx)
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
-            int fuel = FuelPerHour(s, c);
-            bool fueled = s.Fuel >= fuel;
-            if (fuel > 0 && fueled)
-            {
-                s.Fuel -= fuel;
-            }
-
-            if (fueled != s.ReactorFueled)
-            {
-                s.ReactorFueled = fueled;
-                ctx.Emit(EventKind.ReactorFuel, fueled ? 1 : 0, fuel);
-            }
-
             ReactorConfig r = c.ReactorRules;
-            if (s.Tick % SimConfig.TicksPerDay == 0 && s.Tick > 0 && Leaking(s, c))
+
+            // the leak only harms a Hub its handler is watching over: no punitive absence (doc 10 s4)
+            if (s.Tick % SimConfig.TicksPerDay == 0 && s.Tick > 0 && !s.Away && Leaking(s, c))
             {
                 int lost = System.Math.Min(r.LeakPeoplePerDay, System.Math.Max(0, s.People - s.Garrison - c.PeopleChoices.MinPeople));
                 if (lost > 0)
