@@ -27,6 +27,7 @@ namespace Deadswitch.Sim.Config
         public int AttackerWeightRustborn = 40;
         public int AttackerWeightVanguardTier2 = 40;
         public int AttackerWeightChurch = 10;
+        public int AttackerWeightHoldoutsTier3 = 30;
 
         public void Visit(IConfigVisitor v)
         {
@@ -55,6 +56,7 @@ namespace Deadswitch.Sim.Config
             v.Int("attacker_weight_rustborn", ref AttackerWeightRustborn, 0, 1_000, "Base weight for the Rustborn as attacker (plus heat %).");
             v.Int("attacker_weight_vanguard_tier2", ref AttackerWeightVanguardTier2, 0, 1_000, "Base weight for Vanguard Command from Tier 2 (plus heat %).");
             v.Int("attacker_weight_church", ref AttackerWeightChurch, 0, 1_000, "Base weight for the Church of the Last Signal after M1 (plus heat %).");
+            v.Int("attacker_weight_holdouts_tier3", ref AttackerWeightHoldoutsTier3, 0, 1_000, "Base weight for Halcyon Dynamics from Tier 3 (plus heat %).");
             v.EndSection();
         }
     }

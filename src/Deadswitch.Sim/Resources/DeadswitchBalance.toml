@@ -698,6 +698,9 @@ attacker_weight_vanguard_tier2 = 40
 # Base weight for the Church of the Last Signal after M1 (plus heat %). [0..1000]
 attacker_weight_church = 10
 
+# Base weight for Halcyon Dynamics from Tier 3 (plus heat %). [0..1000]
+attacker_weight_holdouts_tier3 = 30
+
 # --------------------------------------------------------------------------------------------------
 # Living world: Warlord Ultimatum, dilemmas, trade, world events (doc 05, doc 10 s4-5). Heat and corruption are milli. All (tune).
 [living]

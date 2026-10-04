@@ -11,6 +11,9 @@ namespace Deadswitch.Sim.State
 
         /// <summary>AI cultists: Church of the Last Signal (The Prophet).</summary>
         Church = 2,
+
+        /// <summary>Corporate holdouts: Halcyon Dynamics (a ghost CEO known only by voice). From Tier 3.</summary>
+        Holdouts = 3,
     }
 
     /// <summary>Heat level (doc 10 s4): Cold 0-24, Watched 25-49, Hunted 50-74, Marked 75-100. Stored in events.</summary>

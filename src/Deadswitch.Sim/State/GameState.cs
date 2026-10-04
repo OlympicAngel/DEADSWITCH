@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023).</summary>
-        public const int LayoutVersion = 18;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics).</summary>
+        public const int LayoutVersion = 19;
 
         public long Tick;
 
@@ -525,7 +525,7 @@ namespace Deadswitch.Sim.State
 
             if (v.Version >= 9)
             {
-                for (int f = 0; f < Heat.Length; f++)
+                for (int f = 0; f < (v.Version >= 19 ? Heat.Length : 3); f++)
                 {
                     v.Int(ref Heat[f]);
                 }
@@ -565,7 +565,7 @@ namespace Deadswitch.Sim.State
                 WorldEvent = (WorldEventKind)worldEvent;
                 v.Long(ref WorldEventUntilTick);
                 v.Long(ref NextWorldEventTick);
-                for (int f = 0; f < TradesToday.Length; f++)
+                for (int f = 0; f < (v.Version >= 19 ? TradesToday.Length : 3); f++)
                 {
                     v.Int(ref TradesToday[f]);
                 }
@@ -647,7 +647,7 @@ namespace Deadswitch.Sim.State
 
             if (v.Version >= 12)
             {
-                for (int f = 0; f < Spies.Length; f++)
+                for (int f = 0; f < (v.Version >= 19 ? Spies.Length : 3); f++)
                 {
                     int spy = (int)Spies[f];
                     v.Int(ref spy);

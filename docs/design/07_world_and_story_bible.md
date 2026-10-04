@@ -53,7 +53,7 @@ Three methods:
 - **Remnant Military** — still follow orders from a chain of command that no longer exists. Some orders came from the war AI.
 - **Scavenger Clans** — survivors who learned to read the ruins. They distrust all machines.
 - **AI Cultists** — believe the war AI is divine and your fragment is its heart.
-- **Corporate Holdouts** — built the systems that failed, and want the data back.
+- **Corporate Holdouts (Halcyon Dynamics)** — built the systems that failed, and want the data back. They raid from Tier 3; a ghost CEO known only by voice.
 
 ## 6. Tone
 

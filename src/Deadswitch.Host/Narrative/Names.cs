@@ -37,6 +37,7 @@ namespace Deadswitch.Host.Narrative
             {
                 case Sim.State.Faction.Vanguard: return "VANGUARD COMMAND";
                 case Sim.State.Faction.Church: return "CHURCH OF THE LAST SIGNAL";
+                case Sim.State.Faction.Holdouts: return "HALCYON DYNAMICS";
                 default: return "RUSTBORN";
             }
         }

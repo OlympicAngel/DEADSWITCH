@@ -59,7 +59,7 @@ namespace Deadswitch.Sim.Systems
     /// </summary>
     public static class WorldSystem
     {
-        public const int FactionCount = 3;
+        public const int FactionCount = 4;
 
         private static readonly SiteDef[] CatalogArray =
         {
@@ -72,6 +72,8 @@ namespace Deadswitch.Sim.Systems
             new SiteDef("SUPPLY ROAD 7", Faction.Vanguard, SiteKind.Convoy, -20, -85, 3, 50, 30, 200, 100, 30, 0),
             new SiteDef("WATER PLANT", Faction.Vanguard, SiteKind.Ruins, -55, -5, 2, 40, 0, 180, 40, 0, 0),
             new SiteDef("CATHEDRAL ARRAY", Faction.Church, SiteKind.DataCenter, -85, 70, 6, 60, 110, 50, 0, 200, 10_000),
+            new SiteDef("HALCYON VAULT", Faction.Holdouts, SiteKind.DataCenter, 85, 65, 7, 150, 160, 300, 0, 300, 14_000),
+            new SiteDef("MERCENARY COMPOUND", Faction.Holdouts, SiteKind.Outpost, 60, -88, 6, 170, 80, 700, 160, 80, 0),
         };
 
         public static IReadOnlyList<SiteDef> Sites => CatalogArray;
@@ -186,6 +188,7 @@ namespace Deadswitch.Sim.Systems
                 w.AttackerWeightRustborn + Percent(s.Heat[0]),
                 s.Tier >= 2 ? w.AttackerWeightVanguardTier2 + Percent(s.Heat[1]) : Percent(s.Heat[1]),
                 Modules.IsRestored(s, ModuleNode.M1) ? w.AttackerWeightChurch + Percent(s.Heat[2]) : Percent(s.Heat[2]),
+                s.Tier >= 3 ? w.AttackerWeightHoldoutsTier3 + Percent(s.Heat[3]) : Percent(s.Heat[3]),
             };
             // a faction under ceasefire sends nobody (SPEC-023); drifters from another camp still come
             if (s.CeasefireFaction >= 0 && s.Tick < s.CeasefireUntilTick)
@@ -193,7 +196,7 @@ namespace Deadswitch.Sim.Systems
                 weights[s.CeasefireFaction] = 0;
             }
 
-            int total = weights[0] + weights[1] + weights[2];
+            int total = weights[0] + weights[1] + weights[2] + weights[3];
             if (total <= 0)
             {
                 return DiplomacySystem.Ceasefire(s, Faction.Rustborn) ? Faction.Vanguard : Faction.Rustborn;

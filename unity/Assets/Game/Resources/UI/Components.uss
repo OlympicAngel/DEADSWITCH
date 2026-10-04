@@ -167,6 +167,7 @@
 .ds-meter--amber > .ds-meter__seg.is-on { background-color: var(--c-amber); }
 .ds-meter--red > .ds-meter__seg.is-on { background-color: var(--c-red); }
 .ds-meter--magenta > .ds-meter__seg.is-on { background-color: var(--c-magenta); }
+.ds-meter--white > .ds-meter__seg.is-on { background-color: var(--c-white); }
 
 /* ---------- Chips and badges ---------- */
 .ds-chip {

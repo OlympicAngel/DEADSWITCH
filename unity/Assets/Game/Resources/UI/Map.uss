@@ -5,13 +5,14 @@
 .map-head__sub { margin-left: var(--s-4); padding-bottom: var(--s-1); }
 
 .map-heat { justify-content: space-between; margin-bottom: var(--s-3); }
-.map-heat__cell { width: 32%; padding: var(--s-2) var(--s-3); border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.map-heat__cell { width: 24.2%; padding: var(--s-2) var(--s-3); border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
 .map-heat__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-text); }
 .map-heat__level { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text-dim); margin-top: var(--s-1); }
 .map-heat__meter { height: 10px; }
 .map-heat__cell--rust { border-left-width: 6px; border-left-color: var(--c-amber); }
 .map-heat__cell--vanguard { border-left-width: 6px; border-left-color: var(--c-blue); }
 .map-heat__cell--church { border-left-width: 6px; border-left-color: var(--c-magenta); }
+.map-heat__cell--holdout { border-left-width: 6px; border-left-color: var(--c-white); }
 .map-heat__cell.is-hot { border-color: var(--c-red-glow); }
 .map-spy__state { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: 16px; letter-spacing: 2px; color: var(--c-text-faint); margin-top: var(--s-2); }
 .map-spy__state.is-on { color: var(--c-phosphor); }
@@ -42,6 +43,7 @@
 .map-site { position: absolute; flex-direction: row; align-items: center; margin-left: -16px; margin-top: -16px; }
 .map-site__mark { width: 32px; height: 32px; border-width: var(--bw); border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.18); }
 .map-site--vanguard > .map-site__mark { border-color: var(--c-blue); background-color: rgba(130, 174, 182, 0.18); rotate: 45deg; }
+.map-site--holdout > .map-site__mark { border-color: var(--c-white); background-color: rgba(240, 235, 221, 0.14); border-radius: 10px; rotate: 45deg; width: 26px; height: 26px; }
 .map-site--church > .map-site__mark { border-color: var(--c-magenta); background-color: rgba(193, 118, 180, 0.18); border-radius: 50%; }
 .map-site--outpost > .map-site__mark { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.4); }
 .map-site--cooldown > .map-site__mark { opacity: 0.45; }

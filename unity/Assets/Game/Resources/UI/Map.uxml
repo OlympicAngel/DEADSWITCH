@@ -18,7 +18,7 @@
           <ui:VisualElement name="spy-0-a" class="map-spy__btn"><ui:Label name="spy-0-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
           <ui:VisualElement name="spy-0-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:Label name="pact-0-label" text="CEASEFIRE // 320 E" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:Label name="pact-0-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-1" class="map-heat__cell map-heat__cell--vanguard">
         <ui:Label text="VANGUARD" class="map-heat__name" />
@@ -29,7 +29,7 @@
           <ui:VisualElement name="spy-1-a" class="map-spy__btn"><ui:Label name="spy-1-a-label" text="FRAME" class="map-spy__label" /></ui:VisualElement>
           <ui:VisualElement name="spy-1-b" class="map-spy__btn"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:Label name="pact-1-label" text="CEASEFIRE // 320 E" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:Label name="pact-1-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="heat-2" class="map-heat__cell map-heat__cell--church">
         <ui:Label text="CHURCH" class="map-heat__name" />
@@ -40,7 +40,18 @@
           <ui:VisualElement name="spy-2-a" class="map-spy__btn"><ui:Label name="spy-2-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
           <ui:VisualElement name="spy-2-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:Label name="pact-2-label" text="CEASEFIRE // 320 E" class="map-spy__label" /></ui:VisualElement>
+        <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:Label name="pact-2-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="heat-3" class="map-heat__cell map-heat__cell--holdout">
+        <ui:Label text="HALCYON" class="map-heat__name" />
+        <ui:Label name="heat-3-level" text="COLD 0" class="map-heat__level" />
+        <ui:VisualElement name="heat-3-meter" class="ds-meter ds-meter--white map-heat__meter" />
+        <ui:Label name="spy-3-state" text="NO AGENT" class="map-spy__state" />
+        <ui:VisualElement class="row map-spy">
+          <ui:VisualElement name="spy-3-a" class="map-spy__btn"><ui:Label name="spy-3-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+          <ui:VisualElement name="spy-3-b" class="map-spy__btn is-hidden"><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pact-3" class="map-spy__btn map-pact"><ui:Label name="pact-3-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
 

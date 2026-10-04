@@ -17,7 +17,7 @@ namespace Deadswitch.Game.UI.Screens
     /// </summary>
     public sealed class MapScreen : IGameScreen
     {
-        private static readonly string[] FactionClass = { "map-site--rust", "map-site--vanguard", "map-site--church" };
+        private static readonly string[] FactionClass = { "map-site--rust", "map-site--vanguard", "map-site--church", "map-site--holdout" };
 
         private readonly GameHost _host;
         private readonly VisualElement _ui;
@@ -197,8 +197,8 @@ namespace Deadswitch.Game.UI.Screens
                 bool talks = DiplomacySystem.Price(s, c, (Faction)f, out int pe, out int pf);
                 bool cooling = s.Tick < s.CeasefireReadyTick || (s.CeasefireFaction >= 0 && !peace);
                 _ui.Q("pact-" + f).EnableInClassList("is-on", peace);
-                _ui.Q<Label>("pact-" + f + "-label").text = peace ? "CEASEFIRE // " + Fmt.Countdown(_host.SecondsUntilTick(s.CeasefireUntilTick))
-                    : !talks ? "WILL NOT TALK" : "CEASEFIRE // " + Fmt.Num(pe) + " E " + Fmt.Num(pf) + " F";
+                _ui.Q<Label>("pact-" + f + "-label").text = peace ? "PACT // " + Fmt.Countdown(_host.SecondsUntilTick(s.CeasefireUntilTick))
+                    : !talks ? "WILL NOT TALK" : "PACT // " + Fmt.Num(pe) + " E " + Fmt.Num(pf) + " F";
                 _ui.Q("pact-" + f).EnableInClassList("is-disabled", !peace && (!talks || cooling || s.CeasefireFaction >= 0 || s.Energy < pe || s.Fuel < pf));
             }
 
