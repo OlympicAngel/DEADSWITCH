@@ -27,6 +27,7 @@ namespace Deadswitch.Game.UI.Hud
         public void Say(string line)
         {
             _line = line ?? string.Empty;
+            Audio.AudioDirector.Instance?.Speak(_line);
             _shown = Motion.Reduced ? _line.Length : 0f;
             Render();
         }

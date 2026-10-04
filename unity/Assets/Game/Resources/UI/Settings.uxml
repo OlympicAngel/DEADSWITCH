@@ -17,6 +17,19 @@
     </ui:VisualElement>
     <ui:Label text="Glitches, scanlines and noise. Never on values, warnings or controls." class="ds-body t-dim set-note" />
 
+    <ui:Label text="SOUND" class="ds-label set-section" />
+    <ui:VisualElement name="seg-sound" class="set-seg">
+      <ui:VisualElement class="set-seg__item"><ui:Label text="OFF" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="25%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="50%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="75%" class="set-seg__label" /></ui:VisualElement>
+      <ui:VisualElement class="set-seg__item"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement class="set-row">
+      <ui:VisualElement class="grow"><ui:Label text="MUSIC" class="ds-label" /><ui:Label text="Tension music. Alarms and the AI's voice stay on." class="ds-body t-dim set-note" /></ui:VisualElement>
+      <ui:VisualElement name="tog-music" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
     <ui:Label text="TEXT SIZE" class="ds-label set-section" />
     <ui:VisualElement name="seg-text" class="set-seg">
       <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>

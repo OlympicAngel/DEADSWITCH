@@ -13,6 +13,11 @@ namespace Deadswitch.Game.Core
         private const string KeyHaptics = "ds.haptics";
         private const string KeyTimeScale = "ds.dev_time_scale";
         private const string KeyTextScale = "ds.text_scale_pct";
+        private const string KeySound = "ds.sound_pct";
+        private const string KeyMusic = "ds.music";
+
+        /// <summary>Sound volume steps (F-035).</summary>
+        public static readonly int[] SoundSteps = { 0, 25, 50, 75, 100 };
 
         /// <summary>Allowed text sizes (doc 10 assists: scalable text and touch targets).</summary>
         public static readonly int[] TextScales = { 100, 115, 130 };
@@ -26,6 +31,12 @@ namespace Deadswitch.Game.Core
 
         /// <summary>100, 115 or 130: scales type and touch targets.</summary>
         public int TextScalePct { get; private set; } = 100;
+
+        /// <summary>Master volume 0..100 (F-035).</summary>
+        public int SoundPct { get; private set; } = 75;
+
+        /// <summary>Tension music on or off; alarms and the AI's voice stay.</summary>
+        public bool Music { get; private set; } = true;
 
         /// <summary>Development only: game minutes per real minute. 1 in release builds.</summary>
         public float DevTimeScale { get; private set; } = 1f;
@@ -41,6 +52,8 @@ namespace Deadswitch.Game.Core
                 Haptics = PlayerPrefs.GetInt(KeyHaptics, 1) == 1,
                 TextScalePct = System.Array.IndexOf(TextScales, PlayerPrefs.GetInt(KeyTextScale, 100)) >= 0 ? PlayerPrefs.GetInt(KeyTextScale, 100) : 100,
                 DevTimeScale = Debug.isDebugBuild ? Mathf.Clamp(PlayerPrefs.GetFloat(KeyTimeScale, 1f), 1f, 600f) : 1f,
+                SoundPct = Mathf.Clamp(PlayerPrefs.GetInt(KeySound, 75), 0, 100),
+                Music = PlayerPrefs.GetInt(KeyMusic, 1) == 1,
             };
             return s;
         }
@@ -73,6 +86,20 @@ namespace Deadswitch.Game.Core
         {
             TextScalePct = System.Array.IndexOf(TextScales, pct) >= 0 ? pct : 100;
             PlayerPrefs.SetInt(KeyTextScale, TextScalePct);
+            Save();
+        }
+
+        public void SetSound(int pct)
+        {
+            SoundPct = Mathf.Clamp(pct, 0, 100);
+            PlayerPrefs.SetInt(KeySound, SoundPct);
+            Save();
+        }
+
+        public void SetMusic(bool on)
+        {
+            Music = on;
+            PlayerPrefs.SetInt(KeyMusic, on ? 1 : 0);
             Save();
         }
 

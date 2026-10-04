@@ -29,6 +29,8 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("set-close").RegisterCallback<ClickEvent>(_ => _router.Show("core"));
             Bind("seg-effects", i => _settings.SetEffectIntensity(Effects[i]));
             Bind("seg-text", i => _settings.SetTextScale(GameSettings.TextScales[i]));
+            Bind("seg-sound", i => _settings.SetSound(GameSettings.SoundSteps[i]));
+            Toggle("tog-music", () => _settings.SetMusic(!_settings.Music));
             Bind("seg-time", i => _settings.SetDevTimeScale(TimeScales[i]));
             Toggle("tog-motion", () => _settings.SetReducedMotion(!_settings.ReducedMotion));
             Toggle("tog-haptics", () => _settings.SetHaptics(!_settings.Haptics));
@@ -82,6 +84,8 @@ namespace Deadswitch.Game.UI.Screens
         {
             Select("seg-effects", System.Array.IndexOf(Effects, _settings.EffectIntensityPct));
             Select("seg-text", System.Array.IndexOf(GameSettings.TextScales, _settings.TextScalePct));
+            Select("seg-sound", System.Array.IndexOf(GameSettings.SoundSteps, _settings.SoundPct));
+            SetToggle("tog-music", _settings.Music);
             Select("seg-time", System.Array.IndexOf(TimeScales, _settings.DevTimeScale));
             SetToggle("tog-motion", _settings.ReducedMotion);
             SetToggle("tog-haptics", _settings.Haptics);

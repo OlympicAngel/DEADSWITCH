@@ -74,6 +74,7 @@ namespace Deadswitch.Game.UI
             Root.Add(Hud);
             Root.Add(Sheets);
             Root.Add(overlay);
+            Root.RegisterCallback<ClickEvent>(e => { if (Tappable(e.target as VisualElement)) { Audio.AudioDirector.Instance?.Tick(); } }, TrickleDown.TrickleDown);
             _crt = new CrtOverlay(overlay);
         }
 
@@ -163,6 +164,23 @@ namespace Deadswitch.Game.UI
                 layer.style.paddingTop = (screen.y - safe.yMax) * k;
                 layer.style.paddingBottom = safe.yMin * k;
             }
+        }
+
+        /// <summary>True for controls that answer a tap with a click sound (buttons, tabs, segments, cards).</summary>
+        private static bool Tappable(VisualElement v)
+        {
+            for (int depth = 0; v != null && depth < 4; depth++, v = v.parent)
+            {
+                foreach (string c in v.GetClasses())
+                {
+                    if (c.Contains("btn") || c.Contains("tab") || c.Contains("seg__item") || c.Contains("toggle") || c.Contains("choice") || c.Contains("posture") || c == "mod-node" || c == "map-site")
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

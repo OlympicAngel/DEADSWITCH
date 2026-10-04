@@ -32,6 +32,7 @@ namespace Deadswitch.Game.Core
             Root.AddComponent<UI.Hud.HudController>();
             Root.AddComponent<Base.BaseView>();
             Root.AddComponent<Base.DroneCamera>();
+            Root.AddComponent<Audio.AudioDirector>();
             Booted?.Invoke(Root);
         }
     }
