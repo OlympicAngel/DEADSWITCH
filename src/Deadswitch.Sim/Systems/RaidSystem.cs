@@ -373,7 +373,7 @@ namespace Deadswitch.Sim.Systems
             // devastating loss (doc 10 s4): a Hub building downgraded, or too many people lost
             if (downgrades > 0 || (populationBefore > 0 && (long)casualties * 100 > (long)populationBefore * c.Raid.DevastatingPopLossPct))
             {
-                s.MercyUntilTick = s.Tick + (c.Raid.MercyHours * SimConfig.TicksPerHour);
+                s.MercyUntilTick = s.Tick + SimMath.PctFloor(c.Raid.MercyHours * SimConfig.TicksPerHour, s.Ironman ? c.Legacy.IronmanMercyPct : 100);
                 ctx.Emit(EventKind.MercyStarted, id, (int)(s.MercyUntilTick - s.Tick));
             }
 

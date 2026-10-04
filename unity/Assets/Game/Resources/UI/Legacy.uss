@@ -23,6 +23,8 @@
 .lgc-perk__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
 .lgc-perk__btn { min-width: 220px; margin-left: var(--s-3); }
 
+.lgc-iron { margin-top: var(--s-5); padding-top: var(--s-3); padding-bottom: var(--s-3); align-items: center; }
+.lgc-iron.is-on { border-color: var(--c-red-glow); }
 .lgc-move { margin-top: var(--s-5); padding-top: var(--s-3); padding-bottom: var(--s-3); }
 .lgc-move__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-amber); }
 .lgc-move__desc { margin-top: var(--s-2); font-size: var(--fs-micro); }

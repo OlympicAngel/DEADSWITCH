@@ -41,6 +41,17 @@ namespace Deadswitch.Game.UI.Screens
             _reason = _ui.Q<Label>("lgc-reason");
             _ui.Q("lgc-close").RegisterCallback<ClickEvent>(_ => router.Show("core"));
             _ui.Q("lgc-move-btn").RegisterCallback<ClickEvent>(_ => Move());
+            _ui.Q("lgc-iron-btn").RegisterCallback<ClickEvent>(_ =>
+            {
+                // Ironman is a premium mode (ADR-0006)
+                if (!Store.Entitlements.Instance.HasPremium)
+                {
+                    _reason.text = "Ironman is part of the full game.";
+                    return;
+                }
+
+                Run(Command.SetIronman(!_host.Sim.State.Ironman));
+            });
 
             VisualElement mastery = _ui.Q("lgc-mastery");
             mastery.Clear();
@@ -164,6 +175,12 @@ namespace Deadswitch.Game.UI.Screens
                 Kit.SetButtonText(buy, max ? "MAX" : "BUY // " + price + " LP");
                 buy.EnableInClassList("is-disabled", max || s.LegacyPoints < price);
             }
+
+            bool choosing = s.Tick - s.CycleStartTick < (long)l.IronmanChooseHours * SimConfig.TicksPerHour;
+            _ui.Q("lgc-iron").EnableInClassList("is-on", s.Ironman);
+            _ui.Q<Label>("lgc-iron-title").text = "IRONMAN // " + (s.Ironman ? "THIS RUN" : choosing ? "CHOOSE IN THE FIRST " + l.IronmanChooseHours + " H" : "NEXT RUN");
+            Kit.SetButtonText(_ui.Q("lgc-iron-btn"), s.Ironman ? "ON" : "OFF");
+            _ui.Q("lgc-iron-btn").EnableInClassList("is-disabled", !choosing);
 
             bool can = s.HighestTier >= l.RelocateMinTier && s.RaidId == 0;
             _ui.Q<Label>("lgc-move-desc").text = "Leave this Hub at its peak. The core keeps " + l.KeptModules + " restored modules, " + l.HeatKeptPct + "% of every grudge, " + veterans

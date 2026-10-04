@@ -126,6 +126,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>Buy the next level of a legacy perk. A: Perk.</summary>
         BuyPerk = 39,
+
+        /// <summary>Choose Ironman for this run (only at its start). A: 1 on, 0 off.</summary>
+        SetIronman = 40,
     }
 
     /// <summary>
@@ -273,6 +276,11 @@ namespace Deadswitch.Sim.Commands
         public static Command ClaimOutpost(int site)
         {
             return new Command(CommandKind.ClaimOutpost, site);
+        }
+
+        public static Command SetIronman(bool on)
+        {
+            return new Command(CommandKind.SetIronman, on ? 1 : 0);
         }
 
         public static Command Relocate()

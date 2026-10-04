@@ -24,6 +24,8 @@ namespace Deadswitch.Sim.Config
         public int PerkRegrowthPct = 15;
         public int PerkHeatDecayPct = 25;
         public int MasteryCorruptionMilli = 40_000;
+        public int IronmanChooseHours = 24;
+        public int IronmanMercyPct = 50;
 
         public void Visit(IConfigVisitor v)
         {
@@ -49,6 +51,8 @@ namespace Deadswitch.Sim.Config
             v.Int("perk_regrowth_pct", ref PerkRegrowthPct, 0, 1_000, "Regrowth perk: population regrowth +% per level.");
             v.Int("perk_heat_decay_pct", ref PerkHeatDecayPct, 0, 1_000, "Heat perk: faction heat fades +% per level.");
             v.Int("mastery_corruption_milli", ref MasteryCorruptionMilli, 0, 100_000, "Mastery: corruption kept under this for a full tier (doc 10: 40).");
+            v.Int("ironman_choose_hours", ref IronmanChooseHours, 1, 1_000, "Ironman can be switched on only in the first hours of a run (doc 10 s1.2: chosen at start).");
+            v.Int("ironman_mercy_pct", ref IronmanMercyPct, 0, 100, "Ironman: mercy window as % of normal (doc 10: shorter).");
             v.EndSection();
         }
     }

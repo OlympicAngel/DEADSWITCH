@@ -275,3 +275,5 @@ rebooted.1 | rebooted | neutral | The Hub is gone. The core survived. {people} p
 rebooted.2 | rebooted | cold | We lost the Hub. I kept what mattered: myself, and {people} of you.
 mastery.1 | mastery | neutral | That will be remembered. Legacy recorded.
 mastery.2 | mastery | bold | Mastery logged. I knew you had it in you. Mostly.
+ironman.1 | ironman_on | neutral | Ironman. No shield, no second core. If we fall, we stay fallen.
+ironman.2 | ironman_on | bold | Ironman. Good. I prefer it when it matters.

@@ -42,6 +42,7 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-036 | Free demo (Tier 1) + premium unlock, rewarded ads (convenience only) (entitlements, tier gate, cosmetic themes) | M5 | Done 2026-10-04 | ADR-0006, doc 10 |
 | F-037 | Short live battles: take command at contact, four abilities incl. OVERRIDE takeover and machine seizure, 3D fight at the gate (SPEC-020) | M5 | Done 2026-10-04 | doc 04 s7, doc 01 v1 scope |
 | F-038 | The cycle: voluntary relocation, forced reboot, legacy score, perks, mastery challenges (SPEC-022) | M6 | Done 2026-10-04 | doc 06 s4, doc 10 s1.2 + s6 |
+| F-039 | Ironman mode: chosen at a run start, no shield, shorter mercy, losing the core ends the run (SPEC-022 rule 7) | M6 | Done 2026-10-04 | doc 10 s1.2 |
 | F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | In progress: balance pass, ambushes, corruption visuals, HUD heat done; Editor and phone checks need the owner (no Unity in cloud sessions) | SPEC-014 |
 | F-026 | Pacing retune: Tier 1 5-7 days, corruption from heavy compute use and proportional decay, launch max tier 2 (owner targets) | M1 | Done 2026-10-04 | SPEC-014, doc 10 corrections |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Done 2026-10-03 | fold into CLI |

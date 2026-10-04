@@ -16,7 +16,8 @@ way the portable core carries modules, grudges, a few veterans and perks into a 
 4. **What carries:** cycle count, legacy points and record, perks, mastery, `kept_modules` restored field modules, `heat_kept_pct`% of faction heat, the AI's dials and delegation, veterans (added to the starting people), corruption (0 after a relocation, `forced_corruption_kept_pct`% after a reboot). Everything else is a fresh site; a mercy window covers its first hours. Raid and operation ids keep counting.
 5. **Perks** (`BuyPerk`, `perk_cost` x next level, max `perk_max_level`): Starting cache, Rebuilding surge (regrowth), Spare OVERRIDE (+1 charge), Cold trail (heat decay), Old guard (+1 veteran).
 6. **Mastery** (doc 10 s6, kept across cycles): purge survived on Manual, Tier 2 with no outpost lost, a live battle held, a tier on Manual, a lie caught with Verify, corruption under 40% for a tier, relocation at peak power.
-7. No RNG draws. Save layout v15, event schema v15. The Warlord Ultimatum counts days from the cycle start.
+7. **Ironman** (premium, `SetIronman`, only in the first `ironman_choose_hours` of a run): no vacation shield, mercy at `ironman_mercy_pct`%; a forced reboot ends the run: perks, modules, heat and veterans are lost, only the legacy record and points carry, Ironman stays on.
+8. No RNG draws. Save layout v16, event schema v16. The Warlord Ultimatum counts days from the cycle start.
 
 ## Tests
 `ThreatTests.Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly`.

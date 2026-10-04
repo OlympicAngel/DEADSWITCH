@@ -169,6 +169,42 @@ namespace Deadswitch.Sim.Systems
             return CommandResult.Ok;
         }
 
+        public static CommandResult SetIronman(SimContext ctx, Command cmd)
+        {
+            GameState s = ctx.State;
+            if (cmd.A < 0 || cmd.A > 1 || cmd.B != 0 || cmd.C != 0)
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
+            if (s.Tick - s.CycleStartTick >= (long)ctx.Config.Legacy.IronmanChooseHours * SimConfig.TicksPerHour)
+            {
+                return CommandResult.Reject(RejectReason.Locked);
+            }
+
+            bool on = cmd.A == 1;
+            if (s.Ironman == on)
+            {
+                return CommandResult.Reject(RejectReason.NoChange);
+            }
+
+            s.Ironman = on;
+            if (on)
+            {
+                // no shield in Ironman: an armed one drops and its charge comes back
+                if (s.ShieldUntilTick > s.Tick)
+                {
+                    s.ShieldCharges++;
+                }
+
+                s.ShieldFromTick = 0;
+                s.ShieldUntilTick = 0;
+            }
+
+            ctx.Emit(EventKind.IronmanSet, cmd.A);
+            return CommandResult.Ok;
+        }
+
         /// <summary>Ends the cycle: legacy points, then a fresh site with what the core carries (doc 10 s1.2).</summary>
         public static void Reboot(SimContext ctx, RebootReason reason)
         {
@@ -207,7 +243,21 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
-            int corruption = forced ? SimMath.PctFloor(s.CorruptionMilli, l.ForcedCorruptionKeptPct) : 0;
+            // Ironman (doc 10 s1.2): losing the core ends the run; only the recorded legacy and its bonus survive
+            bool ironmanEnd = s.Ironman && forced;
+            if (ironmanEnd)
+            {
+                perks = new int[PerkCount];
+                kept = 0;
+                veterans = 0;
+                for (int f = 0; f < heat.Length; f++)
+                {
+                    heat[f] = 0;
+                }
+            }
+
+            bool ironman = s.Ironman;
+            int corruption = forced && !ironmanEnd ? SimMath.PctFloor(s.CorruptionMilli, l.ForcedCorruptionKeptPct) : 0;
             int coldness = s.ColdnessMilli;
             int boldness = s.BoldnessMilli;
             DelegationLevel delegation = s.Delegation;
@@ -232,6 +282,7 @@ namespace Deadswitch.Sim.Systems
             s.Delegation = delegation;
             s.HighestTier = 1;
             s.TierManual = true;
+            s.Ironman = ironman;
 
             // absolute schedules in a fresh state count from tick 0: move them to now
             s.OverrideNextChargeTick += tick;

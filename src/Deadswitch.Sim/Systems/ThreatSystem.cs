@@ -98,6 +98,12 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
+            if (s.Ironman)
+            {
+                // doc 10 s1.2: no vacation shield in Ironman
+                return CommandResult.Reject(RejectReason.NoShield);
+            }
+
             if (s.ShieldUntilTick > s.Tick)
             {
                 return CommandResult.Reject(RejectReason.NoChange);

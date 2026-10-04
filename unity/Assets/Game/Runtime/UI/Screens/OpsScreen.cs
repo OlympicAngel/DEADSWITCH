@@ -310,6 +310,14 @@ namespace Deadswitch.Game.UI.Screens
             Q("shield-toggle").EnableInClassList("is-on", armed);
             Q("shield-toggle").EnableInClassList("is-disabled", !armed && (s.ShieldCharges < 1 || s.RaidId != 0 || s.PurgeStage != PurgeStage.None));
             Q<Label>("shield-label").text = holding ? "ON" : armed ? "RISING" : "RAISE";
+            if (s.Ironman)
+            {
+                // doc 10 s1.2: Ironman has no shield
+                Q<Label>("shield-title").text = "VACATION SHIELD // IRONMAN";
+                Q<Label>("shield-desc").text = "This run is Ironman: there is no shield. Plan your absences.";
+                Q("shield-toggle").EnableInClassList("is-disabled", true);
+                Q<Label>("shield-label").text = "NONE";
+            }
             Q<Label>("tribute-desc").text = "When a raid arrives while you are away, pay " + c.Threats.TributePct + "% of stored energy (at least " + c.Threats.TributeMinEnergy + ") and it leaves. Not sieges or purges.";
             Q("tribute-toggle").EnableInClassList("is-on", s.TributeOrder);
             Q<Label>("tribute-label").text = s.TributeOrder ? "ON" : "OFF";

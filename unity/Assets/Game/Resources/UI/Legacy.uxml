@@ -32,6 +32,14 @@
       <ui:VisualElement class="lgc-perk"><ui:VisualElement class="lgc-perk__body"><ui:Label text="SPARE OVERRIDE" class="lgc-perk__name" /><ui:Label text="+1 OVERRIDE charge per level.  LEVEL 0/3" class="lgc-perk__fx" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label text="BUY // 100 LP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
     </ui:VisualElement>
 
+    <ui:VisualElement name="lgc-iron" class="row ds-panel lgc-iron">
+      <ui:VisualElement class="grow">
+        <ui:Label name="lgc-iron-title" text="IRONMAN // CHOOSE IN THE FIRST 24 H" class="ds-label" />
+        <ui:Label text="No vacation shield, a shorter mercy window. If the Hub is lost, the core dies with it: the run ends and only its legacy is recorded." class="ds-body t-dim lgc-move__desc" />
+      </ui:VisualElement>
+      <ui:VisualElement name="lgc-iron-btn" class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label name="lgc-iron-label" text="OFF" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
     <ui:VisualElement class="ds-panel ds-panel--amber lgc-move">
       <ui:Label text="RELOCATE THE CORE" class="lgc-move__title" />
       <ui:Label name="lgc-move-desc" text="Leave this Hub at its peak. The core keeps 2 modules, half of every grudge, 4 veterans and the full score as legacy points. Everything else stays behind." class="ds-body t-dim lgc-move__desc" />

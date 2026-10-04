@@ -248,6 +248,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The cycle ended and the core moved on. A: RebootReason, B: legacy score, C: points earned, D: veterans carried.</summary>
         CycleEnded = 80,
+
+        /// <summary>Ironman switched. A: 1 on, 0 off.</summary>
+        IronmanSet = 81,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
