@@ -218,6 +218,18 @@ plan_every_minutes = 60
 # Delegated AI builds power first while net energy per hour is below this. [0..100000]
 plan_energy_margin = 150
 
+# Boldness (milli) from which the delegated AI launches ops on its own (SPEC-030). [0..100000]
+initiative_boldness = 60000
+
+# Chance per hour, once bold enough, that it launches one. [0..100]
+initiative_pct_per_hour = 3
+
+# It only picks a raid it rates at least this likely to win (by its own estimate). [0..100]
+initiative_min_odds = 60
+
+# People it sends. [1..50]
+initiative_squad = 4
+
 # Delegated AI builds turrets next while its best defense (full garrison) is below this % of the expected raid. [0..1000]
 plan_defense_pct = 100
 

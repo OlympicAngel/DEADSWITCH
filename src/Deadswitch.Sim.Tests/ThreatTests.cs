@@ -206,6 +206,30 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void BoldAi_RaidsWithoutOrders_AndTheHandlerCanRecallIt()
+        {
+            // SPEC-030: under delegation a bold AI launches its own raid; recalling brings the squad straight home
+            var sim = new Simulation(73UL);
+            sim.Config.Ai.InitiativePctPerHour = 100;
+            sim.State.Fuel = 100;
+            Assert.True(sim.Execute(Command.SetDelegation(DelegationLevel.Delegated)).Accepted);
+            sim.State.BoldnessMilli = 100_000;
+            sim.Run((long)(sim.Config.Opening.ProtectionHours + 2) * SimConfig.TicksPerHour);
+            while (sim.State.Ops.Count == 0 && sim.State.Tick < 10L * SimConfig.TicksPerDay)
+            {
+                sim.State.Fuel = 100;
+                sim.Run(SimConfig.TicksPerHour);
+            }
+
+            Operation op = Assert.Single(sim.State.Ops);
+            Assert.True(op.ByAi);
+            int people = sim.State.People;
+            Assert.True(sim.Execute(Command.RecallOp(op.Id)).Accepted);
+            Assert.Empty(sim.State.Ops);
+            Assert.Equal(people + op.Squad, sim.State.People);
+        }
+
+        [Fact]
         public void Ceasefire_KeepsAFactionAway_UntilTheHubStrikesIt()
         {
             var sim = new Simulation(61UL);

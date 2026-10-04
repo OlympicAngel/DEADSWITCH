@@ -138,6 +138,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Dissolve the current alliance.</summary>
         EndAlliance = 43,
+
+        /// <summary>Recall an op the AI launched on its own (SPEC-030). A: op id.</summary>
+        RecallOp = 44,
     }
 
     /// <summary>
@@ -301,6 +304,11 @@ namespace Deadswitch.Sim.Commands
         public static Command ProposeAlliance(Faction faction)
         {
             return new Command(CommandKind.ProposeAlliance, (int)faction);
+        }
+
+        public static Command RecallOp(int opId)
+        {
+            return new Command(CommandKind.RecallOp, opId);
         }
 
         public static Command EndAlliance()

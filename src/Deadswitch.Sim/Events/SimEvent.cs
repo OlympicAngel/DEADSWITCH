@@ -296,6 +296,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A damaged reactor leaks: people lost tonight. A: people.</summary>
         RadiationLeak = 96,
+
+        /// <summary>The handler recalled an op the AI launched on its own (SPEC-030). A: op id, B: site, C: people back.</summary>
+        OpRecalled = 97,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

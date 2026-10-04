@@ -9,6 +9,10 @@ namespace Deadswitch.Sim.Config
         public int PlanEveryMinutes = 60;
         public int PlanEnergyMargin = 150;
         public int PlanDefensePct = 100;
+        public int InitiativeBoldness = 60_000;
+        public int InitiativePctPerHour = 3;
+        public int InitiativeMinOdds = 60;
+        public int InitiativeSquad = 4;
         public int AutopilotTurtlePct = 100;
         public int AutopilotEvacuatePct = 200;
         public int FirstLieRaid = 2;
@@ -22,6 +26,10 @@ namespace Deadswitch.Sim.Config
             v.Int("boldness_decay_per_hour_manual", ref BoldnessDecayPerHourManual, 0, 100_000, "Boldness lost per game hour while the handler runs everything (Manual).");
             v.Int("plan_every_minutes", ref PlanEveryMinutes, 1, 10_000, "How often the delegated AI looks at the build queue (game minutes).");
             v.Int("plan_energy_margin", ref PlanEnergyMargin, 0, 100_000, "Delegated AI builds power first while net energy per hour is below this.");
+            v.Int("initiative_boldness", ref InitiativeBoldness, 0, 100_000, "Boldness (milli) from which the delegated AI launches ops on its own (SPEC-030).");
+            v.Int("initiative_pct_per_hour", ref InitiativePctPerHour, 0, 100, "Chance per hour, once bold enough, that it launches one.");
+            v.Int("initiative_min_odds", ref InitiativeMinOdds, 0, 100, "It only picks a raid it rates at least this likely to win (by its own estimate).");
+            v.Int("initiative_squad", ref InitiativeSquad, 1, 50, "People it sends.");
             v.Int("plan_defense_pct", ref PlanDefensePct, 0, 1_000, "Delegated AI builds turrets next while its best defense (full garrison) is below this % of the expected raid.");
             v.Int("autopilot_turtle_pct", ref AutopilotTurtlePct, 1, 10_000, "Autopilot turtles with the full garrison when its estimate exceeds defense x this %.");
             v.Int("autopilot_evacuate_pct", ref AutopilotEvacuatePct, 1, 10_000, "Autopilot evacuates when its estimate exceeds defense x this %.");

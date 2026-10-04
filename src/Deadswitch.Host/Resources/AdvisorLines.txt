@@ -285,6 +285,11 @@ ceasefire.broken.1 | ceasefire_broken | neutral | We broke the ceasefire. {facti
 ceasefire.broken.2 | ceasefire_broken | bold | Ceasefire over. They were never going to keep it either.
 ceasefire.over.1 | ceasefire_over | neutral | The ceasefire with {faction} has run out. Expect them again.
 
+ai.raid.1 | ai_raid | neutral | I sent {people} at {site}. The numbers were good. You can call them back from the map.
+ai.raid.2 | ai_raid | bold | {site} was soft. I did not wait for permission. {people} are on their way.
+ai.raid.3 | ai_raid | cold | Initiated: raid on {site}. {people} assets committed. Recall is available. Not advised.
+op.recalled.1 | op_recalled | neutral | Recalled. {people} walking home from {site}. The fuel is spent.
+op.recalled.2 | op_recalled | cold | You overrode me. {people} return from {site}. Noted.
 reactor.scram.1 | reactor_scram | neutral | The reactor scrammed. No fuel. It needs {lost} an hour to wake up.
 reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The grid is about to feel it.
 reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.

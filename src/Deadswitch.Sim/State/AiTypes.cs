@@ -16,6 +16,9 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Delegated routines cleared the yard's wrecks. Event B: wrecks.</summary>
         ClearYard = 4,
+
+        /// <summary>The AI launched an op without orders (SPEC-030). Event B: op id, C: site, D: squad.</summary>
+        LaunchOp = 5,
     }
 
     /// <summary>The hidden project's stage (doc 10 s2). Stored in events: never renumber.</summary>

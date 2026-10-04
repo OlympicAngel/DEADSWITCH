@@ -150,6 +150,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No alliance to end, or one is already running.</summary>
         AllianceActive = 49,
+
+        /// <summary>No op the AI launched with that id is out.</summary>
+        NoSuchOp = 50,
     }
 
     public readonly struct CommandResult

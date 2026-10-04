@@ -98,6 +98,7 @@ namespace Deadswitch.Sim
                 AdaptSystem.Hourly(ctx);
                 LuckSystem.Hourly(ctx);
                 ReactorSystem.Hourly(ctx);
+                InitiativeSystem.Hourly(ctx);
                 LegacySystem.Hourly(ctx);
             }
 

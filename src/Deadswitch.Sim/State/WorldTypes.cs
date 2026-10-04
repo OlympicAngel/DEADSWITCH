@@ -104,6 +104,9 @@ namespace Deadswitch.Sim.State
 
         public long ReturnTick;
 
+        /// <summary>The AI launched it on its own (SPEC-030); the handler may recall it.</summary>
+        public bool ByAi;
+
         public void Visit(IStateVisitor v)
         {
             v.Int(ref Id);
@@ -114,6 +117,10 @@ namespace Deadswitch.Sim.State
             v.Int(ref Squad);
             v.Int(ref Compute);
             v.Long(ref ReturnTick);
+            if (v.Version >= 26)
+            {
+                v.Bool(ref ByAi);
+            }
         }
     }
 

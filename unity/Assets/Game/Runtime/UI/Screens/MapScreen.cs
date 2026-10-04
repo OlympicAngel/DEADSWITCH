@@ -31,6 +31,8 @@ namespace Deadswitch.Game.UI.Screens
         private int _compute = 40;
         private bool _visible;
         private long _allyArmedAt = -1;
+        private readonly List<Label> _opTimes = new List<Label>();
+        private string _opsSignature;
 
         public MapScreen()
         {
@@ -357,20 +359,47 @@ namespace Deadswitch.Game.UI.Screens
             Kit.SetButtonText(_ui.Q("site-claim"), seize ? "SEIZE AND HOLD // " + c.World.SeizeEnergy + " E" : "CLAIM // " + c.World.OutpostClaimEnergy + " E");
         }
 
+        /// <summary>Rebuilds the ops list only when the set of ops changes (buttons must survive between frames); timers update in place.</summary>
         private void RefreshOps()
         {
             GameState s = _host.Sim.State;
-            _ops.Clear();
-            string[] kinds = { "SCOUT", "RAID", "HACK", "SABOTAGE" };
+            string signature = string.Empty;
             foreach (Operation op in s.Ops)
             {
-                var row = new VisualElement();
-                row.AddToClassList("row");
-                row.AddToClassList("map-op");
-                string who = op.Kind == OpKind.Hack ? op.Compute + " COMPUTE" : op.Squad + " SENT";
-                row.Add(Kit.Label(kinds[(int)op.Kind] + " // " + WorldSystem.Sites[op.Site].Name + " // " + who, "map-op__text", "grow"));
-                row.Add(Kit.Label(Fmt.Countdown(_host.SecondsUntilTick(op.ReturnTick)), "map-op__time"));
-                _ops.Add(row);
+                signature += op.Id + (op.ByAi ? "a," : ",");
+            }
+
+            if (signature != _opsSignature)
+            {
+                _opsSignature = signature;
+                _ops.Clear();
+                _opTimes.Clear();
+                string[] kinds = { "SCOUT", "RAID", "HACK", "SABOTAGE" };
+                foreach (Operation op in s.Ops)
+                {
+                    var row = new VisualElement();
+                    row.AddToClassList("row");
+                    row.AddToClassList("map-op");
+                    string who = op.Kind == OpKind.Hack ? op.Compute + " COMPUTE" : op.Squad + " SENT";
+                    row.Add(Kit.Label((op.ByAi ? "AI // " : string.Empty) + kinds[(int)op.Kind] + " // " + WorldSystem.Sites[op.Site].Name + " // " + who, "map-op__text", "grow"));
+                    Label time = Kit.Label(string.Empty, "map-op__time");
+                    row.Add(time);
+                    _opTimes.Add(time);
+                    if (op.ByAi)
+                    {
+                        // the AI acted without orders (SPEC-030): the handler can call it back
+                        int id = op.Id;
+                        row.EnableInClassList("map-op--ai", true);
+                        row.Add(Kit.Button("RECALL", () => Run(Command.RecallOp(id)), "ds-btn--ghost", "map-op__recall"));
+                    }
+
+                    _ops.Add(row);
+                }
+            }
+
+            for (int i = 0; i < _opTimes.Count && i < s.Ops.Count; i++)
+            {
+                _opTimes[i].text = Fmt.Countdown(_host.SecondsUntilTick(s.Ops[i].ReturnTick));
             }
         }
     }
