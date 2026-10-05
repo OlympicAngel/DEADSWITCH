@@ -41,6 +41,12 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.Reactor:
                     Reactor(b, m, level, seed);
                     break;
+                case FacilityKind.DroneBay:
+                    Military.DroneBay(b, m, level, seed);
+                    break;
+                case FacilityKind.MotorPool:
+                    Military.MotorPool(b, m, level, seed);
+                    break;
             }
 
             b.Pop();
