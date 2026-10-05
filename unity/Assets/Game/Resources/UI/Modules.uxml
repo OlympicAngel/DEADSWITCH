@@ -48,8 +48,8 @@
         <ui:VisualElement name="node-M3" class="mod-node is-locked"><ui:VisualElement class="mod-node__top"><ui:Label text="M3" class="mod-node__code" /><ui:VisualElement class="mod-node__ics"><ui:VisualElement class="ds-icon ds-icon--lock mod-node__ic mod-node__ic--lock" /><ui:VisualElement class="ds-icon ds-icon--cross mod-node__ic mod-node__ic--out" /><ui:VisualElement class="ds-icon ds-icon--bolt mod-node__ic mod-node__ic--open" /><ui:VisualElement class="ds-icon ds-icon--clock mod-node__ic mod-node__ic--active" /><ui:VisualElement class="ds-icon ds-icon--check mod-node__ic mod-node__ic--done" /></ui:VisualElement></ui:VisualElement><ui:Label text="MEMORY SECTOR 3" class="mod-node__name" /><ui:Label name="node-M3-state" text="TIER 3" class="mod-node__state" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement class="mod-field">
-        <ui:VisualElement name="mod-tabs" class="row mod-tabs">
-          <ui:VisualElement name="tab-1" class="mod-tab is-selected"><ui:VisualElement class="ds-icon ds-icon--truck mod-tab__icon" /><ui:Label text="LOGISTICS" class="mod-tab__label" /></ui:VisualElement><ui:VisualElement name="tab-2" class="mod-tab"><ui:VisualElement class="ds-icon ds-icon--swords mod-tab__icon" /><ui:Label text="WARFARE" class="mod-tab__label" /></ui:VisualElement><ui:VisualElement name="tab-3" class="mod-tab"><ui:VisualElement class="ds-icon ds-icon--server mod-tab__icon" /><ui:Label text="CYBER" class="mod-tab__label" /></ui:VisualElement><ui:VisualElement name="tab-4" class="mod-tab"><ui:VisualElement class="ds-icon ds-icon--eye mod-tab__icon" /><ui:Label text="STEALTH" class="mod-tab__label" /></ui:VisualElement>
+        <ui:VisualElement name="mod-tabs" class="row ds-seg mod-tabs">
+          <ui:VisualElement name="tab-1" class="ds-seg__item mod-tab is-selected"><ui:VisualElement class="ds-icon ds-icon--truck mod-tab__icon" /><ui:Label text="LOGISTICS" class="mod-tab__label" /></ui:VisualElement><ui:VisualElement name="tab-2" class="ds-seg__item mod-tab"><ui:VisualElement class="ds-icon ds-icon--swords mod-tab__icon" /><ui:Label text="WARFARE" class="mod-tab__label" /></ui:VisualElement><ui:VisualElement name="tab-3" class="ds-seg__item mod-tab"><ui:VisualElement class="ds-icon ds-icon--server mod-tab__icon" /><ui:Label text="CYBER" class="mod-tab__label" /></ui:VisualElement><ui:VisualElement name="tab-4" class="ds-seg__item mod-tab"><ui:VisualElement class="ds-icon ds-icon--eye mod-tab__icon" /><ui:Label text="STEALTH" class="mod-tab__label" /></ui:VisualElement>
         </ui:VisualElement>
         <!-- ModulesView builds the selected field's nodes here; the sample is for the preview -->
         <ui:VisualElement name="mod-field-body">
@@ -70,7 +70,7 @@
         <ui:Label name="detail-title" text="LG2B // DEEP CELLS" class="mod-detail__title grow" />
         <ui:Label name="detail-state" text="AVAILABLE" class="ds-label t-phosphor" />
       </ui:VisualElement>
-      <ui:Label name="detail-desc" text="Battery Bank capacity +30%. Excludes Overclocked Racks." class="ds-body mod-detail__desc" />
+      <ui:Label name="detail-desc" text="Battery Bank capacity +30%. Excludes Overclocked Racks." class="ds-prose mod-detail__desc" />
       <ui:VisualElement class="row mod-detail__cost">
         <ui:VisualElement class="mod-chip"><ui:VisualElement class="ds-icon ds-icon--bolt mod-chip__icon" /><ui:Label name="detail-energy" text="300 ENERGY" class="mod-cost" /></ui:VisualElement>
         <ui:VisualElement class="mod-chip"><ui:VisualElement class="ds-icon ds-icon--chip mod-chip__icon" /><ui:Label name="detail-compute" text="60 COMPUTE" class="mod-cost" /></ui:VisualElement>

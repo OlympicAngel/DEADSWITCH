@@ -1,6 +1,6 @@
 # SPEC-041: Visual overhaul III (critical remake)
 
-- Status: In progress (F-102)
+- Status: Done (code) 2026-10-05 (F-102); Editor check pending
 - Owner direction (2026-10-05): "continue with overall visual improvement, don't be afraid of completely remaking stuff, be critical."
 
 ## Critique that drove it (composed HUD over the 3D base)
@@ -17,3 +17,7 @@
 3. **Depth by light, not lines:** surfaces get a top sheen (UI/Sheen), cards lose their outlines (a 1 px light top edge only), tone shows by a 6 px left accent bar.
 4. **Buttons v2:** tonal surface by default; one solid cyan primary per view; warn = amber accent bar; ghost for tertiary only.
 5. Everything stays token-driven and mirrored in tools/uipreview.
+6. **Controls:** toggles are `.ds-switch` pills with a knob, choices are `.ds-seg` tracks, close is a round `.ds-iconbtn`, lists are `.ds-row` with hairline dividers, prose is `.ds-prose` (mixed case). No outlined boxes except the selected module node and report evidence frames.
+
+## Done
+Kit v2 (type ramp, tracking tokens, sheen, scrims, buttons, cards, chips, sheets), HUD v3 (context strip, status rail, floating dock), slot sheet v2 (icon header, stat tiles), pill world labels, prologue remake, border diet on every screen. Screenshots: `docs/media/li3-*.png`.

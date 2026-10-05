@@ -15,12 +15,12 @@
 .map-scroll .ds-card, .map-scroll .map-ops, .map-scroll .map-heat, .map-scroll .ds-section { flex-shrink: 0; }
 
 /* ---------- world event banner ---------- */
-.map-event { align-items: center; padding: var(--s-2) var(--s-5); border-bottom-width: 1px; border-left-width: 6px; border-color: var(--c-amber-dim); border-left-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.map-event { align-items: center; padding: var(--s-2) var(--s-5); border-left-width: 6px; border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .map-event__icon { width: 34px; height: 34px; margin-right: var(--s-3); --icon-color: var(--c-amber); }
 .map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-amber); white-space: normal; }
 
 /* ---------- plot: render behind, illustrated layer, then pins with tags ---------- */
-.map-plot { flex-grow: 0; flex-basis: 640px; min-height: 360px; max-height: 960px; margin: var(--s-3) var(--s-5) 0 var(--s-5); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-line); border-top-color: var(--c-cyan-dim); border-bottom-color: var(--c-edge-lo); background-color: var(--c-panel-sunken); overflow: hidden; }
+.map-plot { flex-grow: 0; flex-basis: 640px; min-height: 360px; max-height: 960px; margin: var(--s-3) var(--s-5) 0 var(--s-5); border-width: 0; border-top-width: 1px; border-radius: var(--r-lg); border-top-color: var(--c-cyan-dim); background-color: var(--c-panel-sunken); overflow: hidden; }
 .map-render { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: stretch-to-fill; }
 .map-overlay { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .map-sites { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
@@ -28,7 +28,7 @@
 /* a pin is a 56 px touch target centred on its point; the tag hangs beside it */
 .map-site { position: absolute; width: 56px; height: 56px; margin-left: -28px; margin-top: -28px; align-items: center; justify-content: center; }
 .map-site__mark { width: 22px; height: 22px; border-width: var(--bw); border-color: var(--c-amber); background-color: var(--c-panel-sunken); }
-.map-site__tag { position: absolute; left: 46px; top: 4px; padding: 2px var(--s-2); border-radius: var(--r-sm); border-top-width: 1px; border-top-color: var(--c-edge-hi); background-color: var(--c-panel-sunken); }
+.map-site__tag { position: absolute; left: 46px; top: 4px; padding: 2px var(--s-2); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
 .map-site--left > .map-site__tag { left: auto; right: 46px; }
 .map-site--low > .map-site__tag { top: 40px; }
 .map-site__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text); white-space: nowrap; }
@@ -52,7 +52,7 @@
 /* ---------- selected site card ---------- */
 .map-sheet { margin-bottom: var(--s-4); }
 .map-sheet__facts { align-items: stretch; }
-.map-kv { flex-shrink: 0; min-height: 96px; margin-right: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); border-width: 1px; border-color: var(--c-line); background-color: var(--c-panel-sunken); }
+.map-kv { flex-shrink: 0; min-height: 96px; margin-right: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-lg); border-width: 0; background-color: var(--c-panel-sunken); }
 .map-kv--wide { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
 .map-kv--last { margin-right: 0; }
 .map-kv__head { align-items: center; }
@@ -62,11 +62,8 @@
 .map-sheet__section { margin-top: var(--s-4); }
 
 /* order picker: icon over word, the chosen one lights cyan (interactive) */
-.map-seg { flex-direction: row; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-line); background-color: var(--c-elev-1); overflow: hidden; }
-.map-seg__item { flex-grow: 1; flex-basis: 0; min-height: var(--touch); padding: var(--s-2) 0; align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-cyan-line); }
-.map-seg__item.is-last { border-right-width: 0; }
+.map-seg__item { padding: var(--s-2) 0; }
 .map-seg__item:active { background-color: var(--c-cyan-wash); }
-.map-seg__item.is-selected { background-color: var(--c-cyan-wash); border-bottom-width: 4px; border-bottom-color: var(--c-cyan); }
 .map-seg__item.is-disabled { opacity: 0.38; }
 .map-seg__icon { width: 40px; height: 40px; --icon-color: var(--c-text-dim); }
 .map-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text-dim); margin-top: var(--s-1); }
@@ -74,8 +71,8 @@
 .map-seg__item.is-selected > .map-seg__label { color: var(--c-cyan); }
 
 /* squad stepper and the AI's odds */
-.map-launch { align-items: center; margin-top: var(--s-4); padding: var(--s-3); border-radius: var(--r-md); border-width: 1px; border-color: var(--c-line); background-color: var(--c-panel-sunken); }
-.map-step { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-dim); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-2); }
+.map-launch { align-items: center; margin-top: var(--s-4); padding: var(--s-3); border-radius: var(--r-lg); border-width: 0; background-color: var(--c-panel-sunken); }
+.map-step { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-elev-2); }
 .map-step:active { scale: 0.95 0.95; background-color: var(--c-cyan-wash); }
 .map-step__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); color: var(--c-cyan); }
 .map-amount { width: 150px; align-items: center; }
@@ -92,21 +89,22 @@
 
 /* trade: four lots, what you get over what it costs */
 .map-trade { margin-top: var(--s-2); }
-.map-trade__left { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-bottom: var(--s-2); }
+.map-trade__left { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-bottom: var(--s-2); }
 .map-trade__row { align-items: stretch; }
-.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: var(--touch); margin-right: var(--s-1); padding: var(--s-2) var(--s-1); align-items: center; justify-content: center; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line-mid); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-2); }
+.map-trade__item { flex-grow: 1; flex-basis: 0; min-height: var(--touch); margin-right: var(--s-1); padding: var(--s-2) var(--s-1); align-items: center; justify-content: center; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); }
 .map-trade__item.is-last { margin-right: 0; }
-.map-trade__item:active { scale: 0.95 0.95; background-color: var(--c-phosphor-wash); }
+.map-trade__item:active { scale: 0.95 0.95; background-color: var(--c-elev-2); }
 .map-trade__item.is-disabled { opacity: 0.38; }
 .map-trade__get { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-phosphor); white-space: normal; -unity-text-align: upper-center; }
 .map-trade__pay { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
 
 /* ---------- operations in the field (rows built in code) ---------- */
 .map-ops { margin-bottom: var(--s-2); }
-.map-op { margin-bottom: var(--s-2); padding: var(--s-2) var(--s-3); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line); border-left-width: 4px; border-left-color: var(--c-amber-dim); background-color: var(--c-elev-1); }
-.map-op--ai { border-left-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.map-op { margin-bottom: var(--s-2); padding: var(--s-2) var(--s-3); border-width: 0; border-left-width: 6px; border-radius: var(--r-lg); border-color: var(--c-amber-dim); background-color: var(--c-elev-1); }
+.map-op--ai { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
 .map-op__text { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; flex-shrink: 1; }
 .map-op__time { flex-shrink: 0; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-amber); margin-left: var(--s-2); }
+.map-op .map-op__recall { border-width: 0; background-color: var(--c-elev-2); }
 .map-op__recall { min-width: 150px; min-height: var(--touch); margin-left: var(--s-2); }
 
 /* ---------- factions: one stacked foldable card per faction, one accent each ---------- */
@@ -126,8 +124,8 @@
 .map-heat__cell--church .map-heat__icon { --icon-color: var(--c-magenta); }
 .map-heat__cell--holdout { border-left-color: var(--c-white); }
 .map-heat__cell--holdout .map-heat__icon { --icon-color: var(--c-white); }
-.map-heat__cell.is-hot { border-color: var(--c-red-glow); border-top-color: var(--c-red); background-color: var(--c-red-wash); }
-.map-heat__cell.is-allied { border-color: var(--c-blue); }
+.map-heat__cell.is-hot { background-color: var(--c-red-wash); }
+.map-heat__cell.is-allied { background-color: var(--c-cyan-wash); }
 .map-heat__cell.is-hot .map-heat__level { color: var(--c-red); }
 .map-adapt { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-amber); margin-top: var(--s-2); white-space: normal; }
 .map-adapt.is-hidden { display: none; }
@@ -136,16 +134,16 @@
 .map-spy__state { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text-faint); }
 .map-spy__state.is-on { color: var(--c-phosphor); }
 .map-spy { margin-top: var(--s-2); align-items: stretch; }
-.map-spy__btn { flex-grow: 1; flex-basis: 0; flex-direction: row; min-height: var(--touch); padding: 0 var(--s-2); align-items: center; justify-content: center; margin-right: var(--s-1); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-line); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-2); }
+.map-spy__btn { flex-grow: 1; flex-basis: 0; flex-direction: row; min-height: var(--touch); padding: 0 var(--s-2); align-items: center; justify-content: center; margin-right: var(--s-1); border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); }
 .map-spy__btn.is-last { margin-right: 0; }
 .map-spy__btn:active { scale: 0.95 0.95; background-color: var(--c-cyan-wash); }
 .map-spy__btn.is-disabled { opacity: 0.38; }
 .map-spy__btn.is-hidden { display: none; }
 .map-spy__bicon { width: 28px; height: 28px; margin-right: var(--s-1); flex-shrink: 0; --icon-color: var(--c-cyan); }
 .map-spy__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-text-dim); white-space: normal; flex-shrink: 1; -unity-text-align: middle-center; }
-.map-pact.is-on { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.map-pact.is-on { background-color: var(--c-phosphor-wash); }
 .map-pact.is-on > .map-spy__bicon { --icon-color: var(--c-phosphor); }
-.map-ally.is-on { border-color: var(--c-blue); background-color: var(--c-cyan-wash); }
-.map-ally.is-armed { border-color: var(--c-red); background-color: var(--c-red-wash); }
+.map-ally.is-on { background-color: var(--c-cyan-wash); }
+.map-ally.is-armed { background-color: var(--c-red-wash); }
 .map-ally.is-armed > .map-spy__bicon { --icon-color: var(--c-red); }
 .is-hidden { display: none; }

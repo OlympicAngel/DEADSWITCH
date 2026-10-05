@@ -26,6 +26,8 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 
 - F-101 (SPEC-040): `UI/Choreo` (stagger, ripples, shimmer, punch), `UI/Pager` (`ds-pager` pages, `ds-card--fold` folds; preview shows the `is-preview` page), quiet HUD (status rail, `is-compact` comms), `BaseView.Animate` (rise / punch / jolt). Editor: check pager rail placement after layout, fold inline display vs. code-driven visibility, ripple clipping on rounded controls, sheet overshoot (`ease-out-back`).
 
+- F-102 (SPEC-041): `UI/Sheen` (gradients via generateVisualContent; check they sit under children and respect rounded corners), `.ds-switch` knob added by `Kit.AddKnob`, type ramp v2 in `Tokens.uss` (check text-scale 130 for overflow), HUD v3 positions (`hud-frame` top 200 px / rail / dock) on notched phones.
+
 ## Balance (latest, 2026-10-04)
 - Turret planning (F-044) plus adaptation and luck: active breach ~0-2%, casual-prepared ~12%, autopilot ~0%; Tier 2/3/4 on days ~6/20/40. All guards pass. Retune only from real play data.
 

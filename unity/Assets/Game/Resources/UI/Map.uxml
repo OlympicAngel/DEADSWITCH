@@ -100,11 +100,11 @@
               <ui:Label text="CHOOSE AN ORDER" class="ds-section__title" />
               <ui:VisualElement class="ds-section__rule" />
             </ui:VisualElement>
-            <ui:VisualElement name="op-kinds" class="map-seg">
-              <ui:VisualElement name="op-scout" class="map-seg__item"><ui:VisualElement class="ds-icon ds-icon--eye map-seg__icon" /><ui:Label text="SCOUT" class="map-seg__label" /></ui:VisualElement>
-              <ui:VisualElement name="op-raid" class="map-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--swords map-seg__icon" /><ui:Label text="RAID" class="map-seg__label" /></ui:VisualElement>
-              <ui:VisualElement name="op-hack" class="map-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip map-seg__icon" /><ui:Label text="HACK" class="map-seg__label" /></ui:VisualElement>
-              <ui:VisualElement name="op-sabotage" class="map-seg__item"><ui:VisualElement class="ds-icon ds-icon--hammer map-seg__icon" /><ui:Label text="SABOTAGE" class="map-seg__label" /></ui:VisualElement>
+            <ui:VisualElement name="op-kinds" class="ds-seg map-seg">
+              <ui:VisualElement name="op-scout" class="ds-seg__item map-seg__item"><ui:VisualElement class="ds-icon ds-icon--eye map-seg__icon" /><ui:Label text="SCOUT" class="map-seg__label" /></ui:VisualElement>
+              <ui:VisualElement name="op-raid" class="ds-seg__item map-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--swords map-seg__icon" /><ui:Label text="RAID" class="map-seg__label" /></ui:VisualElement>
+              <ui:VisualElement name="op-hack" class="ds-seg__item map-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip map-seg__icon" /><ui:Label text="HACK" class="map-seg__label" /></ui:VisualElement>
+              <ui:VisualElement name="op-sabotage" class="ds-seg__item map-seg__item"><ui:VisualElement class="ds-icon ds-icon--hammer map-seg__icon" /><ui:Label text="SABOTAGE" class="map-seg__label" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row map-launch">
               <ui:VisualElement name="op-minus" class="map-step"><ui:Label text="-" class="map-step__label" /></ui:VisualElement>

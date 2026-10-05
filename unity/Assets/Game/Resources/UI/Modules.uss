@@ -8,7 +8,7 @@
 .mod-tier__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: var(--ls-label); color: var(--c-text); }
 .mod-tier__next { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); flex-shrink: 1; white-space: normal; -unity-text-align: middle-right; max-width: 260px; }
 .mod-gate { flex-direction: row; align-items: center; margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
-.mod-gate__pip { width: 40px; height: 40px; flex-shrink: 0; margin-right: var(--s-3); align-items: center; justify-content: center; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.mod-gate__pip { width: 40px; height: 40px; flex-shrink: 0; margin-right: var(--s-3); align-items: center; justify-content: center; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-amber-wash); }
 .mod-gate__ic { width: 24px; height: 24px; }
 .mod-gate__ic--ok { display: none; --icon-color: var(--c-world); }
 .mod-gate__ic--no { --icon-color: var(--c-amber); }
@@ -27,13 +27,13 @@
 .mod-research__tag { color: var(--c-amber); letter-spacing: var(--ls-label); }
 .mod-research__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text); margin-left: var(--s-3); white-space: normal; flex-shrink: 1; }
 .mod-research__eta { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-amber); margin-left: var(--s-2); min-height: 44px; }
-.mod-bar { height: 14px; margin-top: var(--s-3); border-width: 1px; border-radius: var(--r-sm); border-color: var(--c-amber-dim); background-color: var(--c-panel-sunken); overflow: hidden; }
+.mod-bar { height: 14px; margin-top: var(--s-3); border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); overflow: hidden; }
 .mod-bar__fill { height: 100%; width: 40%; background-color: var(--c-amber-dim); border-right-width: 4px; border-color: var(--c-amber); }
 
 /* legend */
 .mod-sec { margin-top: var(--s-2); }
 .mod-legend { margin-bottom: var(--s-2); }
-.mod-leg { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; justify-content: center; min-height: 44px; margin-right: var(--s-1); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line); background-color: var(--c-panel-sunken); }
+.mod-leg { flex-grow: 1; flex-basis: 0; flex-direction: row; align-items: center; justify-content: center; min-height: 44px; margin-right: var(--s-1); border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); }
 .mod-leg__icon { width: 24px; height: 24px; margin-right: var(--s-1); --icon-color: var(--c-text-dim); }
 .mod-leg__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-tight); color: var(--c-text-dim); }
 .mod-leg--locked { opacity: 0.7; }
@@ -53,10 +53,8 @@
 .mod-trunk { width: 27%; align-items: stretch; margin-right: var(--s-3); }
 .mod-field { flex-grow: 1; flex-shrink: 1; }
 .mod-col__title { margin-bottom: var(--s-2); color: var(--c-cyan-dim); }
-.mod-tabs { margin-bottom: var(--s-3); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
-.mod-tab { flex-grow: 1; flex-basis: 0; min-height: var(--touch); align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
-.mod-tab.is-last { border-right-width: 0; }
-.mod-tab.is-selected { background-color: var(--c-cyan-wash); border-bottom-width: 3px; border-bottom-color: var(--c-cyan); }
+.mod-tabs { margin-bottom: var(--s-3); border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); }
+.mod-tab { flex-direction: column; min-height: var(--touch); padding: var(--s-1) 0; }
 .mod-tab__icon { width: 36px; height: 36px; --icon-color: var(--c-text-dim); }
 .mod-tab__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-text-dim); margin-top: var(--s-1); }
 .mod-tab.is-selected > .mod-tab__icon { --icon-color: var(--c-cyan); }
@@ -66,15 +64,13 @@
 .mod-row > .mod-node { flex-grow: 1; flex-basis: 0; margin-right: var(--s-2); }
 .mod-row > .mod-node.is-last { margin-right: 0; }
 .mod-pair > .mod-node { margin-right: 0; }
-.mod-or { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); color: var(--c-amber); width: 48px; height: 36px; align-self: center; flex-shrink: 0; margin: 0 var(--s-1); -unity-text-align: middle-center; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-amber-dim); background-color: var(--c-world); }
+.mod-or { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); color: var(--c-amber); width: 48px; height: 36px; align-self: center; flex-shrink: 0; margin: 0 var(--s-1); -unity-text-align: middle-center; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-amber-wash); }
 .mod-link { width: 2px; height: var(--s-4); margin-left: 28px; background-color: var(--c-cyan-dim); }
 
 .mod-node {
     min-height: var(--touch);
     padding: var(--s-2);
-    border-width: var(--bw);
-    border-radius: var(--r-md);
-    border-color: var(--c-line-mid);
+    border-width: 0; border-radius: var(--r-lg);
     border-top-color: var(--c-edge-hi);
     border-bottom-color: var(--c-edge-lo);
     background-color: var(--c-elev-1);
@@ -93,18 +89,18 @@
 .mod-node.is-locked .mod-node__ic--lock { display: flex; }
 .mod-node.is-excluded { opacity: 0.4; }
 .mod-node.is-excluded .mod-node__ic--out { display: flex; }
-.mod-node.is-available { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.mod-node.is-available { border-left-width: 6px; border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
 .mod-node.is-available .mod-node__ic--open { display: flex; --icon-color: var(--c-cyan); }
 .mod-node.is-available .mod-node__state { color: var(--c-cyan); }
-.mod-node.is-active { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.mod-node.is-active { border-left-width: 6px; border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .mod-node.is-active .mod-node__ic--active { display: flex; --icon-color: var(--c-amber); }
 .mod-node.is-active .mod-node__state { color: var(--c-amber); }
-.mod-node.is-restored { border-color: var(--c-phosphor-dim); background-color: var(--c-phosphor-wash); }
+.mod-node.is-restored { border-left-width: 6px; border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
 .mod-node.is-restored .mod-node__ic--done { display: flex; --icon-color: var(--c-phosphor); }
 .mod-node.is-restored .mod-node__ic--lock { display: none; }
 .mod-node.is-restored .mod-node__state { color: var(--c-phosphor); }
 .mod-node.is-restored .mod-node__code { color: var(--c-phosphor); }
-.mod-node.is-selected { border-color: var(--c-white); border-width: 3px; }
+.mod-node.is-selected { border-color: var(--c-white); border-width: 3px; border-left-width: 6px; }
 
 /* selected module */
 .mod-detail { margin-top: var(--s-4); margin-bottom: 0; }

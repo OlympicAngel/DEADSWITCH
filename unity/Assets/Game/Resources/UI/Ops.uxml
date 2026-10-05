@@ -41,8 +41,8 @@
             <ui:Label text="AI ESTIMATE" class="ds-chip__label" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label name="threat-quiet" text="Perimeter quiet. Posture and garrison stay as you set them." class="ds-body t-dim ops-threat__quiet is-hidden" />
-        <ui:VisualElement name="last-report" class="ds-btn ds-btn--ghost ops-lastreport">
+        <ui:Label name="threat-quiet" text="Perimeter quiet. Posture and garrison stay as you set them." class="ds-prose ops-threat__quiet is-hidden" />
+        <ui:VisualElement name="last-report" class="ds-btn ops-lastreport">
           <ui:Label name="last-report-label" text="LAST REPORT // RAID 2" class="ds-btn__label" />
         </ui:VisualElement>
         <ui:VisualElement name="lockdown" class="ds-btn ds-btn--warn ops-lockdown">
@@ -57,11 +57,11 @@
           <ui:Label name="purge-stage" text="PURGE // ULTIMATUM" class="ds-label t-red ops-threat__kind grow" />
           <ui:Label name="purge-time" text="5:42:10" class="ds-value t-red ops-purge__time" />
         </ui:VisualElement>
-        <ui:Label name="purge-desc" text="Pay tribute, pull everyone out, or hold the wall. They take everything they can reach." class="ds-body t-dim ops-purge__desc" />
+        <ui:Label name="purge-desc" text="Pay tribute, pull everyone out, or hold the wall. They take everything they can reach." class="ds-prose ops-purge__desc" />
         <ui:VisualElement name="purge-answers" class="row ops-purge__answers">
           <ui:VisualElement name="purge-pay" class="ds-btn ds-btn--warn ops-purge__btn"><ui:Label name="purge-pay-label" text="PAY 800 E + 60 C" class="ds-btn__label" /></ui:VisualElement>
-          <ui:VisualElement name="purge-retreat" class="ds-btn ds-btn--ghost ops-purge__btn"><ui:Label text="RETREAT" class="ds-btn__label" /></ui:VisualElement>
-          <ui:VisualElement name="purge-prepare" class="ds-btn ds-btn--ghost ops-purge__btn"><ui:Label text="PREPARE" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="purge-retreat" class="ds-btn ops-purge__btn"><ui:Label text="RETREAT" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="purge-prepare" class="ds-btn ops-purge__btn"><ui:Label text="PREPARE" class="ds-btn__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
 
@@ -73,8 +73,8 @@
             <ui:Label name="yard-title" text="YARD // 3 WRECKS" class="ds-label t-amber" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label name="yard-desc" text="Regrowth -30% while the wrecks stay." class="ds-body t-dim ops-yard__desc" />
-        <ui:VisualElement name="yard-clear" class="ds-btn ds-btn--ghost ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 E" class="ds-btn__label" /></ui:VisualElement>
+        <ui:Label name="yard-desc" text="Regrowth -30% while the wrecks stay." class="ds-prose ops-yard__desc" />
+        <ui:VisualElement name="yard-clear" class="ds-btn ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 E" class="ds-btn__label" /></ui:VisualElement>
       </ui:VisualElement>
 
       </ui:VisualElement>
@@ -151,7 +151,7 @@
         <!-- forces and counters (SPEC-035): what is coming, and how each part of our line fares against it -->
         <ui:VisualElement class="ops-forces">
           <ui:Label name="forces" text="FORCES // 60% INFANTRY  10% DRONES  30% VEHICLES" class="ds-label t-amber" />
-          <ui:Label name="forces-line" text="OUR LINE // GARRISON 48 (+8%)  DRONES 24 (+20%)  VEHICLES 0" class="ds-body t-dim ops-forces__line" />
+          <ui:Label name="forces-line" text="OUR LINE // GARRISON 48 (+8%)  DRONES 24 (+20%)  VEHICLES 0" class="ds-prose ops-forces__line" />
         </ui:VisualElement>
         <ui:VisualElement class="row ops-go">
           <ui:VisualElement class="grow">
@@ -170,12 +170,12 @@
         <ui:Label text="chip" class="ds-page__glyph" />
       <!-- How much the AI runs (SPEC-004) -->
       <ui:VisualElement class="ds-card ops-card">
-        <ui:VisualElement class="ops-seg">
-          <ui:VisualElement name="deleg-manual" class="ops-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--hand ops-seg__icon" /><ui:Label text="MANUAL" class="ops-seg__label" /></ui:VisualElement>
-          <ui:VisualElement name="deleg-routines" class="ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--cycle ops-seg__icon" /><ui:Label text="ROUTINES" class="ops-seg__label" /></ui:VisualElement>
-          <ui:VisualElement name="deleg-autopilot" class="ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip ops-seg__icon" /><ui:Label text="AUTOPILOT" class="ops-seg__label" /></ui:VisualElement>
+        <ui:VisualElement class="ds-seg ops-seg">
+          <ui:VisualElement name="deleg-manual" class="ds-seg__item ops-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--hand ops-seg__icon" /><ui:Label text="MANUAL" class="ops-seg__label" /></ui:VisualElement>
+          <ui:VisualElement name="deleg-routines" class="ds-seg__item ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--cycle ops-seg__icon" /><ui:Label text="ROUTINES" class="ops-seg__label" /></ui:VisualElement>
+          <ui:VisualElement name="deleg-autopilot" class="ds-seg__item ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip ops-seg__icon" /><ui:Label text="AUTOPILOT" class="ops-seg__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label name="deleg-desc" text="I only advise. You run everything." class="ds-body t-dim ops-seg__desc" />
+        <ui:Label name="deleg-desc" text="I only advise. You run everything." class="ds-prose ops-seg__desc" />
       </ui:VisualElement>
 
       </ui:VisualElement>
@@ -184,29 +184,29 @@
         <ui:Label text="clock" class="ds-page__glyph" />
       <!-- Away protection (SPEC-015 rules 5-6) -->
       <ui:VisualElement class="ds-card ops-card">
-        <ui:VisualElement class="row ops-alerts is-first">
+        <ui:VisualElement class="row ds-row ops-alerts">
           <ui:VisualElement class="ops-alerts__well"><ui:VisualElement class="ds-icon ds-icon--shield ops-alerts__icon" /></ui:VisualElement>
           <ui:VisualElement class="grow ops-alerts__text">
             <ui:Label name="shield-title" text="VACATION SHIELD // 1 CHARGE" class="ds-label" />
-            <ui:Label name="shield-desc" text="Pauses attacks for 72 h after a 2 h delay. Upkeep halved. A charge every 60 days (max 2)." class="ds-body t-dim ops-alerts__desc" />
+            <ui:Label name="shield-desc" text="Pauses attacks for 72 h after a 2 h delay. Upkeep halved. A charge every 60 days (max 2)." class="ds-prose ops-alerts__desc" />
           </ui:VisualElement>
-          <ui:VisualElement name="shield-toggle" class="ops-toggle"><ui:Label name="shield-label" text="RAISE" class="ops-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement name="shield-toggle" class="ds-switch ops-toggle"><ui:Label name="shield-label" text="RAISE" class="ops-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="row ops-alerts">
+        <ui:VisualElement class="row ds-row ops-alerts">
           <ui:VisualElement class="ops-alerts__well"><ui:VisualElement class="ds-icon ds-icon--box ops-alerts__icon" /></ui:VisualElement>
           <ui:VisualElement class="grow ops-alerts__text">
             <ui:Label text="TRIBUTE ORDER" class="ds-label" />
-            <ui:Label name="tribute-desc" text="When a raid arrives while you are away, pay 25% of stored energy and it leaves. Not sieges or purges." class="ds-body t-dim ops-alerts__desc" />
+            <ui:Label name="tribute-desc" text="When a raid arrives while you are away, pay 25% of stored energy and it leaves. Not sieges or purges." class="ds-prose ops-alerts__desc" />
           </ui:VisualElement>
-          <ui:VisualElement name="tribute-toggle" class="ops-toggle"><ui:Label name="tribute-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement name="tribute-toggle" class="ds-switch ops-toggle"><ui:Label name="tribute-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="row ops-alerts">
+        <ui:VisualElement class="row ds-row ops-alerts">
           <ui:VisualElement class="ops-alerts__well"><ui:VisualElement class="ds-icon ds-icon--mail ops-alerts__icon" /></ui:VisualElement>
           <ui:VisualElement class="grow ops-alerts__text">
             <ui:Label text="ALERTS WHILE AWAY" class="ds-label" />
-            <ui:Label text="I forecast the next day when you leave: raids, finished work, power loss. Nothing else." class="ds-body t-dim ops-alerts__desc" />
+            <ui:Label text="I forecast the next day when you leave: raids, finished work, power loss. Nothing else." class="ds-prose ops-alerts__desc" />
           </ui:VisualElement>
-          <ui:VisualElement name="alerts-toggle" class="ops-toggle"><ui:Label name="alerts-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement name="alerts-toggle" class="ds-switch ops-toggle"><ui:Label name="alerts-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
       </ui:VisualElement>

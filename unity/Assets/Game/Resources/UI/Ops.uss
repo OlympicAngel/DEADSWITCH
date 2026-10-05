@@ -11,17 +11,17 @@
 
 /* Threat card: C# toggles ds-panel--amber / ds-panel--red on it */
 .ops-threat { padding: var(--s-4); }
-.ops-threat.ds-panel--amber { border-color: var(--c-amber-dim); border-top-color: var(--c-amber); background-color: var(--c-amber-wash); }
-.ops-threat.ds-panel--red { border-color: var(--c-red-glow); border-top-color: var(--c-red); background-color: var(--c-red-wash); }
+.ops-threat.ds-panel--amber { background-color: var(--c-amber-wash); }
+.ops-threat.ds-panel--red { background-color: var(--c-red-wash); }
+.ops-threat > .ds-corner, .ops-purge > .ds-corner { display: none; }
 .ops-threat__well {
     width: 56px;
     height: 56px;
     align-items: center;
     justify-content: center;
     margin-right: var(--s-3);
-    border-radius: var(--r-md);
-    border-width: 1px;
-    border-color: var(--c-line-mid);
+    border-radius: var(--r-lg);
+    border-width: 0;
     background-color: var(--c-panel-sunken);
 }
 .ops-threat__pip { width: 20px; height: 20px; }
@@ -30,8 +30,9 @@
 .ops-threat__time { font-size: var(--fs-xl); }
 .ops-threat__intel {
     margin-top: var(--s-3);
-    padding: var(--s-3);
-    border-radius: var(--r-md);
+    padding: var(--s-3) var(--s-4);
+    border-width: 0;
+    border-radius: var(--r-lg);
     background-color: var(--c-panel-sunken);
 }
 .ops-threat__quiet { margin-top: var(--s-3); white-space: normal; }
@@ -46,7 +47,7 @@
 /* Yard */
 .ops-yard { padding: var(--s-3) var(--s-4); }
 .ops-yard.is-hidden { display: none; }
-.ops-yard__well { background-color: var(--c-amber-wash); border-color: var(--c-amber-dim); }
+.ops-yard__well { background-color: var(--c-amber-wash); }
 .ops-yard__icon { --icon-color: var(--c-amber); }
 .ops-yard__desc { font-size: var(--fs-micro); margin-top: var(--s-1); white-space: normal; }
 .ops-yard__btn { align-self: stretch; margin-top: var(--s-3); }
@@ -60,45 +61,42 @@
 .ops-purge__btn > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: var(--ls-label); }
 .ops-purge .ds-card__well { margin-right: var(--s-3); }
 
-/* Posture cards: 2 x 2 */
+/* Posture options: tonal tiles, the chosen one lifts and gets a cyan top edge (no outline) */
 .ops-postures { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
 .ops-posture {
     width: 49%;
     flex-direction: row;
     align-items: center;
     min-height: var(--touch);
-    padding: var(--s-3);
+    padding: var(--s-3) var(--s-4);
     margin-bottom: var(--s-2);
-    border-width: var(--bw);
-    border-radius: var(--r-md);
-    border-color: var(--c-line-mid);
-    border-top-color: var(--c-edge-hi);
+    border-width: 0;
+    border-radius: var(--r-lg);
     background-color: var(--c-panel-sunken);
-    transition-property: background-color, border-color, scale;
+    transition-property: background-color, scale;
     transition-duration: 0.12s;
 }
 .ops-posture:active { scale: 0.98 0.98; }
-.ops-posture.is-selected { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.ops-posture.is-selected { background-color: var(--c-elev-2); border-top-width: 2px; border-top-color: var(--c-cyan); }
 .ops-posture__icon { width: 56px; height: 56px; margin-right: var(--s-3); --icon-color: var(--c-text-dim); }
-.ops-posture.is-selected .ops-posture__icon { --icon-color: var(--c-phosphor); }
+.ops-posture.is-selected .ops-posture__icon { --icon-color: var(--c-cyan); }
 .ops-posture__body { flex-grow: 1; flex-shrink: 1; }
 .ops-posture__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-text); }
-.ops-posture.is-selected .ops-posture__name { color: var(--c-phosphor); }
-.ops-posture__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
+.ops-posture.is-selected .ops-posture__name { color: var(--c-cyan); }
+.ops-posture__fx { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
 
-/* Garrison sockets */
+/* Garrison sockets: sunken wells, filled ones glow phosphor */
 .ops-sockets { flex-direction: row; justify-content: space-between; }
 .ops-socket {
     width: 18.5%;
     height: var(--touch);
     align-items: center;
     justify-content: center;
-    border-width: var(--bw);
-    border-radius: var(--r-md);
-    border-color: var(--c-line-mid);
+    border-width: 0;
+    border-radius: var(--r-lg);
     background-color: var(--c-panel-sunken);
 }
-.ops-socket.is-filled { border-color: var(--c-phosphor-dim); background-color: var(--c-phosphor-wash); }
+.ops-socket.is-filled { background-color: var(--c-phosphor-wash); }
 .ops-socket__icon { width: 56px; height: 56px; --icon-color: var(--c-text-faint); }
 .ops-socket.is-filled .ops-socket__icon { --icon-color: var(--c-phosphor); }
 
@@ -110,8 +108,9 @@
 .ops-read__line { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); }
 .ops-forces {
     margin-top: var(--s-3);
-    padding: var(--s-3);
-    border-radius: var(--r-md);
+    padding: var(--s-3) var(--s-4);
+    border-width: 0;
+    border-radius: var(--r-lg);
     background-color: var(--c-panel-sunken);
 }
 .ops-forces__line { white-space: normal; margin-top: var(--s-1); font-size: var(--fs-micro); }
@@ -119,57 +118,33 @@
 .ops-go__rec { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-cyan); margin-top: var(--s-1); white-space: normal; }
 .ops-go__btn { min-width: 300px; margin-left: var(--s-3); }
 
-/* Delegation segmented control */
-.ops-seg { flex-direction: row; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
-.ops-seg__item {
-    flex-grow: 1;
-    flex-basis: 0;
-    min-height: var(--touch);
-    align-items: center;
-    justify-content: center;
-    padding: var(--s-2) 0;
-    border-right-width: 1px;
-    border-color: var(--c-line-mid);
-}
-.ops-seg__item.is-last { border-right-width: 0; }
-.ops-seg__item.is-selected { background-color: var(--c-phosphor-wash); }
+/* Delegation: ds-seg track; icon over word inside each item */
+.ops-seg__item { padding: var(--s-2) 0; }
 .ops-seg__icon { width: 36px; height: 36px; margin-bottom: var(--s-1); --icon-color: var(--c-text-dim); }
-.ops-seg__item.is-selected > .ops-seg__icon { --icon-color: var(--c-phosphor); }
+.ops-seg__item.is-selected > .ops-seg__icon { --icon-color: var(--c-cyan); }
 .ops-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
-.ops-seg__item.is-selected > .ops-seg__label { color: var(--c-phosphor); }
+.ops-seg__item.is-selected > .ops-seg__label { color: var(--c-cyan); }
 .ops-seg__desc { margin-top: var(--s-3); white-space: normal; }
 
-/* Away rows */
-.ops-alerts { margin-top: var(--s-4); align-items: center; }
-.ops-alerts.is-first { margin-top: 0; }
+/* Away rows: ds-row dividers, a switch on the right */
+.ops-alerts { margin-top: 0; padding: var(--s-4) 0; align-items: center; }
 .ops-alerts__well {
+    flex-shrink: 0;
     width: 56px;
     height: 56px;
     align-items: center;
     justify-content: center;
     margin-right: var(--s-3);
-    border-radius: var(--r-md);
-    border-width: 1px;
-    border-color: var(--c-cyan-line);
+    border-width: 0;
+    border-radius: var(--r-lg);
     background-color: var(--c-cyan-wash);
 }
 .ops-alerts__icon { width: 34px; height: 34px; --icon-color: var(--c-cyan); }
 .ops-alerts__text { flex-shrink: 1; }
-.ops-alerts__desc { font-size: var(--fs-micro); margin-top: var(--s-1); margin-right: var(--s-3); white-space: normal; }
-.ops-toggle {
-    width: 170px;
-    min-height: var(--touch);
-    align-items: center;
-    justify-content: center;
-    border-width: var(--bw);
-    border-radius: var(--r-md);
-    border-color: var(--c-line-mid);
-    background-color: var(--c-panel-sunken);
-}
-.ops-toggle.is-on { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.ops-alerts__desc { margin-top: var(--s-1); margin-right: var(--s-3); }
+.ops-toggle { flex-shrink: 0; width: 196px; }
+.ops-alerts .ops-toggle.is-on > .ds-switch__knob { left: 138px; }
 .ops-toggle.is-disabled { opacity: 0.45; }
-.ops-toggle__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
-.ops-toggle.is-on > .ops-toggle__label { color: var(--c-phosphor); }
 
 .ops-reason { margin-top: var(--s-2); color: var(--c-amber); white-space: normal; }
 

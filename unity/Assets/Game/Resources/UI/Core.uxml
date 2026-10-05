@@ -11,9 +11,9 @@
       <ui:VisualElement name="open-settings" class="core-settings"><ui:VisualElement class="ds-icon ds-icon--gear core-settings__icon" /><ui:Label text="SETTINGS" class="core-settings__label" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:VisualElement class="core-seg">
-      <ui:VisualElement name="view-status" class="core-seg__item is-selected"><ui:Label text="STATUS" class="core-seg__label" /></ui:VisualElement>
-      <ui:VisualElement name="view-modules" class="core-seg__item"><ui:Label text="MODULES" class="core-seg__label" /></ui:VisualElement>
+    <ui:VisualElement class="ds-seg core-seg">
+      <ui:VisualElement name="view-status" class="ds-seg__item core-seg__item is-selected"><ui:Label text="STATUS" class="core-seg__label" /></ui:VisualElement>
+      <ui:VisualElement name="view-modules" class="ds-seg__item core-seg__item"><ui:Label text="MODULES" class="core-seg__label" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="core-scroll" class="grow core-scroll">
@@ -25,10 +25,10 @@
           <ui:Label text="UNKNOWN PROCESS // FINAL STAGE" class="ds-label t-red grow" />
           <ui:Label name="climax-time" text="23:59:12" class="ds-value t-red core-climax__time" />
         </ui:VisualElement>
-        <ui:Label text="The core is about to act on its own. Choose what to do before the timer runs out." class="ds-body core-climax__desc" />
+        <ui:Label text="The core is about to act on its own. Choose what to do before the timer runs out." class="ds-prose core-climax__desc" />
         <ui:VisualElement name="climax-purge" class="ds-btn ds-btn--warn core-climax__btn"><ui:Label name="climax-purge-label" text="PURGE CORE // 300 ENERGY + ALL COMPUTE" class="ds-btn__label" /></ui:VisualElement>
-        <ui:VisualElement name="climax-silence" class="ds-btn ds-btn--ghost core-climax__btn"><ui:Label name="climax-silence-label" text="SILENCE THE AI // OVERRIDE, 48 H" class="ds-btn__label" /></ui:VisualElement>
-        <ui:VisualElement name="climax-cancel" class="ds-btn ds-btn--ghost core-climax__btn"><ui:Label name="climax-cancel-label" text="CANCEL THE PROJECT // 80 COMPUTE, AUDIT FIRST" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="climax-silence" class="ds-btn core-climax__btn"><ui:Label name="climax-silence-label" text="SILENCE THE AI // OVERRIDE, 48 H" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="climax-cancel" class="ds-btn core-climax__btn"><ui:Label name="climax-cancel-label" text="CANCEL THE PROJECT // 80 COMPUTE, AUDIT FIRST" class="ds-btn__label" /></ui:VisualElement>
         <ui:Label name="climax-reason" text="" class="ds-body core-audit__reason" />
       </ui:VisualElement>
       <ui:Label name="silenced" text="SILENCED // 47:59:12 // no advice, no predictions" class="ds-label t-amber core-silenced is-hidden" />
@@ -71,7 +71,7 @@
         <!-- Corruption effects (SPEC-021): takeover banner and the core flush -->
         <ui:VisualElement name="core-crisis" class="ds-card ds-card--red core-crisis is-hidden">
           <ui:Label name="core-crisis-title" text="AI TAKEOVER // 3:12:00" class="ds-label t-red" />
-          <ui:Label name="core-crisis-desc" text="I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me." class="ds-body t-dim core-audit__desc" />
+          <ui:Label name="core-crisis-desc" text="I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me." class="ds-prose core-audit__desc" />
         </ui:VisualElement>
         <ui:VisualElement class="ds-card ds-card--amber">
           <ui:VisualElement class="ds-card__head">
@@ -106,7 +106,7 @@
             <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--report ds-card__icon" /></ui:VisualElement>
             <ui:VisualElement class="ds-card__titles"><ui:Label text="CORE PROFILE" class="ds-card__title" /><ui:Label name="profile-when" text="AUDIT D4 12:00" class="ds-card__sub" /></ui:VisualElement>
           </ui:VisualElement>
-          <ui:Label name="profile-none" text="No audit on record." class="ds-body t-dim is-hidden" />
+          <ui:Label name="profile-none" text="No audit on record." class="ds-prose is-hidden" />
           <ui:VisualElement name="profile-body">
             <ui:VisualElement class="row core-dials">
               <ui:VisualElement class="core-dial">
@@ -146,8 +146,8 @@
           <ui:Label text="RECORDS" class="ds-page__title" />
           <ui:Label text="book" class="ds-page__glyph" />
         <ui:VisualElement class="row core-links">
-          <ui:VisualElement name="open-story" class="ds-btn ds-btn--ghost core-link grow"><ui:VisualElement class="ds-icon ds-icon--book core-link__icon" /><ui:Label text="STORY // CH 2 // 4/12" class="ds-btn__label" /></ui:VisualElement>
-          <ui:VisualElement name="open-legacy" class="ds-btn ds-btn--ghost core-link grow"><ui:VisualElement class="ds-icon ds-icon--cycle core-link__icon" /><ui:Label name="open-legacy-label" text="LEGACY // CYCLE 1 // 240 LP" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="open-story" class="ds-btn core-link grow"><ui:VisualElement class="ds-icon ds-icon--book core-link__icon" /><ui:Label text="STORY // CH 2 // 4/12" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="open-legacy" class="ds-btn core-link grow"><ui:VisualElement class="ds-icon ds-icon--cycle core-link__icon" /><ui:Label name="open-legacy-label" text="LEGACY // CYCLE 1 // 240 LP" class="ds-btn__label" /></ui:VisualElement>
         </ui:VisualElement>
 
         </ui:VisualElement>
