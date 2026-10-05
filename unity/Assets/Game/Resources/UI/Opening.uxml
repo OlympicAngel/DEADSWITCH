@@ -4,12 +4,45 @@
        the camera, the lights and the sound show it; tap finishes a line or moves on; SKIP ends it at any time. -->
   <ui:VisualElement name="prologue" class="op op--boot">
     <ui:VisualElement class="ds-scrim ds-scrim--up op__grade" />
-    <ui:VisualElement name="op-flash" class="op__flash" />
-    <ui:VisualElement name="op-white" class="op__white" />
     <ui:VisualElement name="op-black" class="op__black">
       <ui:VisualElement name="op-crt" class="op__crt" />
     </ui:VisualElement>
 
+    <!-- war room (command and launch beats): the AI's terminal wall around its eye -->
+    <ui:VisualElement name="op-room" class="op-room">
+      <ui:VisualElement name="room-map" class="room__panel room__panel--map">
+        <ui:Label text="STRAT-NET // GLOBAL" class="room__head" />
+        <ui:VisualElement class="room__canvas" />
+      </ui:VisualElement>
+      <ui:VisualElement class="row room__row">
+        <ui:VisualElement name="room-silos" class="room__panel room__panel--side">
+          <ui:Label text="SILO GRID" class="room__head" />
+          <ui:VisualElement class="room__canvas" />
+        </ui:VisualElement>
+        <ui:VisualElement class="room__core">
+          <ui:VisualElement name="room-eye" class="ai-orb room__eye" />
+          <ui:Label name="room-status" text="STANDBY" class="room__status" />
+        </ui:VisualElement>
+        <ui:VisualElement name="room-radar" class="room__panel room__panel--side">
+          <ui:Label text="AIRSPACE" class="room__head" />
+          <ui:VisualElement class="room__canvas" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="row room__row">
+        <ui:VisualElement name="room-log" class="room__panel room__panel--log">
+          <ui:Label text="COMMAND LOG" class="room__head" />
+          <ui:VisualElement name="room-log-lines" class="room__log" />
+        </ui:VisualElement>
+        <ui:VisualElement name="room-targets" class="room__panel room__panel--side">
+          <ui:Label text="TARGETING" class="room__head" />
+          <ui:VisualElement class="room__canvas" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="room-alarm" class="room__alarm" />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="op-flash" class="op__flash" />
+    <ui:VisualElement name="op-white" class="op__white" />
     <ui:VisualElement name="op-bar-top" class="op__bar op__bar--top">
       <ui:VisualElement class="row op__bar-row">
         <ui:VisualElement name="op-rec" class="op__rec" />

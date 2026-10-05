@@ -45,6 +45,8 @@ namespace Deadswitch.Game.UI.Hud
         private Label _line;
         private Label _handLine;
         private AiOrb _orb;
+        private WarRoom _room;
+        private VisualElement _roomEl;
         private OpeningFilm _film;
         private int _card = -1;
         private float _shown;
@@ -152,6 +154,8 @@ namespace Deadswitch.Game.UI.Hud
             // tap anywhere: finish the line being typed, or move to the next beat
             tree.Q("prologue").RegisterCallback<ClickEvent>(_ => Advance());
             _orb = new AiOrb(tree.Q("op-orb"));
+            _roomEl = tree.Q("op-room");
+            _room = new WarRoom(_roomEl);
             _orb.Assemble();
             VisualElement pips = tree.Q("op-pips");
             pips.Clear();
@@ -228,6 +232,11 @@ namespace Deadswitch.Game.UI.Hud
             {
                 _orb.Voice = typing ? 1f : 0.2f;
                 _orb.Tick(dt);
+            }
+
+            if (InRoom(mood))
+            {
+                _room.Tick(dt);
             }
 
             if (typing)
@@ -326,7 +335,19 @@ namespace Deadswitch.Game.UI.Hud
                 pips[i].EnableInClassList("is-on", i <= _card);
             }
 
+            _roomEl.EnableInClassList("is-on", InRoom(scene.Mood));
+            if (InRoom(scene.Mood))
+            {
+                _room.Play(scene.Mood == PrologueMood.Launch);
+            }
+
             _film?.Play(scene.Mood);
+        }
+
+        /// <summary>The beats set in the war room.</summary>
+        private static bool InRoom(PrologueMood mood)
+        {
+            return mood == PrologueMood.Command || mood == PrologueMood.Launch;
         }
 
         /// <summary>How hard the signal breaks up on a beat (the CRT glitch weight).</summary>

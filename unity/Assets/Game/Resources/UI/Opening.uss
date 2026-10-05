@@ -10,6 +10,29 @@
 .op__flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-red-glow); opacity: 0; }
 .op__white { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-white); opacity: 0; }
 
+/* the war room: the AI's terminal wall (cyan), red on launch. Sits above the subtitles, inside the letterbox. */
+.op-room { position: absolute; left: var(--s-8); right: var(--s-8); top: 15%; bottom: 38%; display: none; --room-color: var(--c-cyan); --room-dim: var(--c-cyan-line); }
+.op-room.is-on { display: flex; }
+.op-room--red { --room-color: var(--c-red); --room-dim: var(--c-red-glow); }
+.room__row { flex-grow: 1; align-items: stretch; margin-top: var(--s-3); }
+.room__panel { border-width: 2px; border-color: var(--c-cyan-line); background-color: var(--c-panel-sunken); padding: var(--s-2) var(--s-3); opacity: 0; }
+.op-room--red .room__panel { border-color: var(--c-red-glow); }
+.room__panel--map { height: 30%; }
+.room__panel--side { width: 30%; }
+.room__panel--log { flex-grow: 1; margin-right: var(--s-3); }
+.room__head { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-cyan); margin-bottom: var(--s-1); }
+.op-room--red .room__head { color: var(--c-red); }
+.room__canvas { flex-grow: 1; }
+.room__core { flex-grow: 1; align-items: center; justify-content: center; margin: 0 var(--s-3); }
+.room__eye { width: 240px; height: 240px; --ring-color: var(--c-cyan); --core-color: var(--c-cyan-glow); }
+.op-room--red .room__eye { --ring-color: var(--c-red); --core-color: var(--c-red-glow); }
+.room__status { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); letter-spacing: var(--ls-wide); color: var(--c-cyan); margin-top: var(--s-4); text-shadow: 0 0 14px var(--c-cyan-glow); }
+.op-room--red .room__status { color: var(--c-red); text-shadow: 0 0 14px var(--c-red-glow); }
+.room__log { flex-grow: 1; overflow: hidden; }
+.room__log-line { -unity-font-definition: resource("Fonts/IBMPlexMono-Regular"); font-size: var(--fs-nano); color: var(--c-text-dim); white-space: nowrap; }
+.op-room--red .room__log-line { color: var(--c-red); }
+.room__alarm { position: absolute; left: -20px; right: -20px; top: -20px; bottom: -20px; border-width: 6px; border-color: var(--c-red); opacity: 0; }
+
 /* before the core wakes: true black with a CRT trace across the middle */
 .op__black { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-void); justify-content: center; align-items: center; }
 .op__crt { width: 0; height: 3px; background-color: var(--c-cyan); }
