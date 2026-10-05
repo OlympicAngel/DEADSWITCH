@@ -48,6 +48,7 @@ namespace Deadswitch.Game.Base
         private float _fogScale = 1f;
         private float _fireScale = 1f;
         private readonly List<int> _litSlots = new List<int>();
+        private readonly HashSet<Light> _unpowered = new HashSet<Light>();
         private Staging _stage;
         private float _gradeAmount;
 
@@ -158,6 +159,12 @@ namespace Deadswitch.Game.Base
         /// <summary>1 for a lamp the opening's power reaches, fading over the last few metres of the radius.</summary>
         private float Reach(Light light)
         {
+            // a facility without power is dark: its lamps go out with it
+            if (_unpowered.Contains(light))
+            {
+                return 0f;
+            }
+
             if (!_openingPower)
             {
                 return 1f;
@@ -490,6 +497,12 @@ namespace Deadswitch.Game.Base
             o.Parts.Clear();
             o.Beacons.Clear();
             o.StatusLights.Clear();
+            foreach (Light l in o.Lamps)
+            {
+                _unpowered.Remove(l);
+            }
+
+            o.Lamps.Clear();
             o.Renderers.Clear();
             o.Cones.Clear();
             o.Built = true;
@@ -611,6 +624,10 @@ namespace Deadswitch.Game.Base
                 {
                     o.StatusLights.Add(l);
                 }
+                else
+                {
+                    o.Lamps.Add(l);
+                }
             }
         }
 
@@ -662,6 +679,18 @@ namespace Deadswitch.Game.Base
             foreach (Light l in o.StatusLights)
             {
                 l.enabled = v.Powered;
+            }
+
+            foreach (Light l in o.Lamps)
+            {
+                if (v.Powered)
+                {
+                    _unpowered.Remove(l);
+                }
+                else
+                {
+                    _unpowered.Add(l);
+                }
             }
 
             foreach (GameObject c in o.Cones)
@@ -927,6 +956,7 @@ namespace Deadswitch.Game.Base
             public readonly List<PartState> Parts = new List<PartState>();
             public readonly List<Light> Beacons = new List<Light>();
             public readonly List<Light> StatusLights = new List<Light>();
+            public readonly List<Light> Lamps = new List<Light>();
             public readonly List<MeshRenderer> Renderers = new List<MeshRenderer>();
             public readonly List<GameObject> Cones = new List<GameObject>();
         }

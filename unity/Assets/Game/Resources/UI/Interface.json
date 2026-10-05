@@ -18,7 +18,9 @@
     "doubleTapSeconds": 0.3,
     "inertiaDamping": 4.5,
     "idleOrbitAfter": 20,
-    "idleOrbitDegreesPerSecond": 1.2
+    "idleOrbitDegreesPerSecond": 1.2,
+    "returnAfter": 15,
+    "returnSpeed": 0.8
   },
   "cinematic": {
     "letterboxPct": 11,

@@ -75,6 +75,8 @@ namespace Deadswitch.Game.UI
             public float inertiaDamping = 4.5f;
             public float idleOrbitAfter = 20f;
             public float idleOrbitDegreesPerSecond = 1.2f;
+            public float returnAfter = 15f;
+            public float returnSpeed = 0.8f;
         }
 
         [System.Serializable]

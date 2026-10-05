@@ -64,6 +64,23 @@ namespace Deadswitch.Game.UI
             Entries.Add(new Entry { Group = group, IsOpen = isOpen, Close = close, Roots = roots });
         }
 
+        /// <summary>True while any registered panel is open.</summary>
+        public static bool AnyOpen
+        {
+            get
+            {
+                foreach (Entry entry in Entries)
+                {
+                    if (entry.IsOpen())
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>A panel of this group is opening: close every other group.</summary>
         public static void Opening(string group)
         {

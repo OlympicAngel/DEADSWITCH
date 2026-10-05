@@ -217,6 +217,15 @@ namespace Deadswitch.Game.Base
 
             // idle sway: after a while untouched the drone drifts around the compound
             _idle += dt;
+
+            // after a while untouched the drone also eases back to the overview (never under a selection or a panel)
+            if (!_focused && !Popovers.AnyOpen && _idle > rules.returnAfter)
+            {
+                float back = 1f - Mathf.Exp(-dt * rules.returnSpeed);
+                _panTarget = Vector3.Lerp(_panTarget, Vector3.zero, back);
+                _zoomTarget = Mathf.Lerp(_zoomTarget, 1f, back);
+                _velocity = Vector3.zero;
+            }
             if (!_focused && !reduced && _idle > rules.idleOrbitAfter)
             {
                 const float amplitude = 12f;
