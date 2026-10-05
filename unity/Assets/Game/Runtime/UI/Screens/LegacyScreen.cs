@@ -56,17 +56,7 @@ namespace Deadswitch.Game.UI.Screens
                     Refresh();
                 });
             }
-            _ui.Q("lgc-iron-btn").RegisterCallback<ClickEvent>(_ =>
-            {
-                // Ironman is a premium mode (ADR-0006)
-                if (!Store.Entitlements.Instance.HasPremium)
-                {
-                    _reason.text = "Ironman is part of the full game.";
-                    return;
-                }
-
-                Run(Command.SetIronman(!_host.Sim.State.Ironman));
-            });
+            _ui.Q("lgc-iron-btn").RegisterCallback<ClickEvent>(_ => Run(Command.SetIronman(!_host.Sim.State.Ironman)));
 
             VisualElement mastery = _ui.Q("lgc-mastery");
             mastery.Clear();

@@ -29,7 +29,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _showModules;
         private bool _crisisSeen;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openPremium)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -55,7 +55,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
             _orbEl = _ui.Q("core-orb");
             _orb = new AiOrb(_orbEl);
-            _modules = new ModulesView(_ui.Q("modules-view"), openPremium);
+            _modules = new ModulesView(_ui.Q("modules-view"));
             // one tab row (SPEC-042 finding 2): MODULES is a page beside PRESENCE, ACTIONS and PROFILE
             Pager.PageShown += (pager, index) =>
             {

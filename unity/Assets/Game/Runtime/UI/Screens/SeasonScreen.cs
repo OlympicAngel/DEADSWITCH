@@ -1,14 +1,14 @@
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
-using Deadswitch.Game.Store;
+using Deadswitch.Game.Cosmetics;
 using Deadswitch.Host.Seasons;
 using UnityEngine.UIElements;
 
 namespace Deadswitch.Game.UI.Screens
 {
     /// <summary>
-    /// SEASON (F-048): the cosmetic season track. Rank and XP from play, the free and premium rewards, EQUIP for
-    /// themes and voice packs, and codex logs readable in place. Opened from the premium screen.
+    /// REWARD TRACK (F-048): free cosmetics earned by play. Rank and XP, every reward with the rank that unlocks it,
+    /// EQUIP for themes and voices, codex logs readable in place. Opened from the Command menu.
     /// Layout: Resources/UI/Season.uxml.
     /// </summary>
     public sealed class SeasonScreen : IGameScreen
@@ -16,7 +16,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly GameHost _host;
         private readonly VisualElement _ui;
         private readonly Label _reason;
-        private string _back = "premium";
+        private string _back = "base";
         private bool _visible;
 
         public SeasonScreen(ScreenRouter router)
@@ -29,15 +29,6 @@ namespace Deadswitch.Game.UI.Screens
             Icons.Attach(tree);
             _reason = _ui.Q<Label>("ssn-reason");
             _ui.Q("ssn-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
-            _ui.Q("ssn-buy").RegisterCallback<ClickEvent>(_ =>
-            {
-                Entitlements.Instance.BuySeason(SeasonTrack.Id, line =>
-                {
-                    _reason.text = line;
-                    SeasonPass.GrantReached();
-                    Refresh();
-                });
-            });
             Kit.BuildMeter(_ui.Q("ssn-meter"));
 
             VisualElement list = _ui.Q("ssn-rewards");
@@ -48,7 +39,6 @@ namespace Deadswitch.Game.UI.Screens
                 var row = new VisualElement { name = "r-" + i };
                 row.AddToClassList("row");
                 row.AddToClassList("ssn-r");
-                row.EnableInClassList("is-premium", r.Premium);
                 row.Add(Kit.Label(r.Rank.ToString(), "ssn-r__rank"));
                 var well = new VisualElement();
                 well.AddToClassList("ssn-r__well");
@@ -116,7 +106,7 @@ namespace Deadswitch.Game.UI.Screens
         {
             if (!SeasonPass.Unlocked(r))
             {
-                _reason.text = r.Premium && !Entitlements.Instance.OwnsSeason(SeasonTrack.Id) ? "On the premium track. Reach rank " + r.Rank + " with the pass." : "Reach rank " + r.Rank + " to unlock it.";
+                _reason.text = "Reach rank " + r.Rank + " to unlock it.";
                 return;
             }
 
@@ -143,7 +133,6 @@ namespace Deadswitch.Game.UI.Screens
         {
             int xp = SeasonPass.Xp;
             int rank = SeasonPass.Rank;
-            bool pass = Entitlements.Instance.OwnsSeason(SeasonTrack.Id);
             _ui.Q<Label>("ssn-title").text = SeasonTrack.Title;
             _ui.Q<Label>("ssn-rank").text = rank.ToString();
             _ui.Q<Label>("ssn-rank-of").text = "/ " + SeasonTrack.Ranks + "  RANK";
@@ -151,8 +140,6 @@ namespace Deadswitch.Game.UI.Screens
             int into = xp - (rank * SeasonTrack.XpPerRank);
             Kit.SetMeter(_ui.Q("ssn-meter"), max ? 1f : (float)into / SeasonTrack.XpPerRank);
             _ui.Q<Label>("ssn-xp").text = Fmt.Num(xp) + " XP" + (max ? " // TRACK COMPLETE" : " // " + Fmt.Num(SeasonTrack.XpPerRank - into) + " TO RANK " + (rank + 1));
-            Kit.SetButtonText(_ui.Q("ssn-buy"), pass ? "PASS OWNED" : "UNLOCK PASS");
-            _ui.Q("ssn-buy").EnableInClassList("is-disabled", pass);
 
             for (int i = 0; i < SeasonTrack.Rewards.Length; i++)
             {
@@ -161,8 +148,7 @@ namespace Deadswitch.Game.UI.Screens
                 bool equipped = unlocked && Equipped(r);
                 _ui.Q("r-" + i).EnableInClassList("is-unlocked", unlocked);
                 _ui.Q("r-" + i).EnableInClassList("is-equipped", equipped);
-                string track = r.Premium ? "PASS" : "FREE";
-                _ui.Q<Label>("r-" + i + "-state").text = track + " // " + (equipped ? "EQUIPPED" : unlocked ? "UNLOCKED" : r.Premium && !pass && rank >= r.Rank ? "REACHED // NEEDS THE PASS" : "RANK " + r.Rank);
+                _ui.Q<Label>("r-" + i + "-state").text = equipped ? "EQUIPPED" : unlocked ? "UNLOCKED" : "UNLOCKS AT RANK " + r.Rank;
                 VisualElement codex = _ui.Q("r-" + i + "-codex");
                 if (codex != null)
                 {

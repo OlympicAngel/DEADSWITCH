@@ -18,7 +18,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly GameSettings _settings;
         private readonly VisualElement _ui;
 
-        public SettingsScreen(ScreenRouter router, System.Action openPremium)
+        public SettingsScreen(ScreenRouter router)
         {
             _router = router;
             _settings = GameHost.Instance.Settings;
@@ -44,7 +44,7 @@ namespace Deadswitch.Game.UI.Screens
                 GameHost.Instance.NotifyTicked();
             });
             _ui.Q("dev").EnableInClassList("is-hidden", !Debug.isDebugBuild);
-            _ui.Q("open-premium").RegisterCallback<ClickEvent>(_ => openPremium());
+            Bind("seg-theme", i => Cosmetics.Theme.Select(i, UiRoot.Instance.Root));
 
             // optional cloud backup (doc 10 s2); restore asks twice before it replaces the run
             Toggle("tog-cloud", () => Deadswitch.Game.Cloud.CloudBackup.SetEnabled(!Deadswitch.Game.Cloud.CloudBackup.Enabled));
@@ -113,6 +113,12 @@ namespace Deadswitch.Game.UI.Screens
             SetToggle("tog-haptics", _settings.Haptics);
             SetToggle("tog-alerts", LocalAlerts.Enabled);
             SetToggle("tog-cloud", Deadswitch.Game.Cloud.CloudBackup.Enabled);
+            Select("seg-theme", Cosmetics.Theme.Current);
+            VisualElement themes = _ui.Q("seg-theme");
+            for (int i = 0; i < themes.childCount; i++)
+            {
+                themes[i].EnableInClassList("is-disabled", !Cosmetics.Theme.Owned(i));
+            }
         }
 
         private void Select(string name, int index)

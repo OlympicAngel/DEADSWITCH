@@ -1,6 +1,6 @@
 # ADR-0006: Monetization plumbing: free demo + premium unlock
 
-- Status: Accepted
+- Status: Accepted — **Suspended 2026-10-05** (owner: no monetization for now; client store, ads and gates removed, see doc 10 corrections log)
 - Date: 2026-10-03
 
 ## Context

@@ -75,8 +75,6 @@ namespace Deadswitch.Game.Core
 
             Check("base view", BaseView.Instance != null, "BaseView missing");
             Note("cloud backend", Cloud.CloudBackup.Backend != null && Cloud.CloudBackup.Backend.Available);
-            Note("store backend", Store.Entitlements.Backend != null && Store.Entitlements.Backend.Available);
-            Note("ad backend", Store.RewardedAds.Backend != null);
             Check("no errors logged", _errors.Count == 0, _errors.Count + " error(s), listed below");
             foreach (string e in _errors)
             {

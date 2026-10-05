@@ -4,7 +4,7 @@ using Deadswitch.Sim.State;
 
 namespace Deadswitch.Host.Seasons
 {
-    /// <summary>What a season reward is. Cosmetic only (doc 10 s1.1, ADR-0006): nothing here touches the sim.</summary>
+    /// <summary>What a reward-track reward is. Cosmetic only: nothing here touches the sim.</summary>
     public enum RewardKind
     {
         Theme = 0,
@@ -14,10 +14,9 @@ namespace Deadswitch.Host.Seasons
 
     public sealed class SeasonReward
     {
-        public SeasonReward(int rank, bool premium, RewardKind kind, string id, string name)
+        public SeasonReward(int rank, RewardKind kind, string id, string name)
         {
             Rank = rank;
-            Premium = premium;
             Kind = kind;
             Id = id;
             Name = name;
@@ -25,42 +24,39 @@ namespace Deadswitch.Host.Seasons
 
         public int Rank { get; }
 
-        /// <summary>True on the premium track (needs the season pass), false on the free track.</summary>
-        public bool Premium { get; }
-
         public RewardKind Kind { get; }
 
-        /// <summary>Cosmetic id the entitlement store records (theme-*, voice-*, codex-*).</summary>
+        /// <summary>Cosmetic id recorded when unlocked (theme-*, voice-*, codex-*).</summary>
         public string Id { get; }
 
         public string Name { get; }
     }
 
     /// <summary>
-    /// The season track (F-048, doc 10 s1.1: cosmetics and convenience only). XP comes from what the handler does
+    /// The reward track (F-048, free since 2026-10-05: no pass, no purchases). XP comes from what the handler does
     /// (holding the wall, ops, chapters, mastery), never from time spent or money. The track never expires: no
     /// countdown, no missed rewards, no daily chores. Engine-agnostic so the CLI and tests can read it.
     /// </summary>
     public static class SeasonTrack
     {
         public const string Id = "S1";
-        public const string Title = "SEASON 1 // SIGNAL FIRES";
+        public const string Title = "SIGNAL FIRES";
         public const int Ranks = 20;
         public const int XpPerRank = 250;
 
         public static readonly SeasonReward[] Rewards =
         {
-            new SeasonReward(2, true, RewardKind.Codex, "codex-p1", "CODEX // THE SWITCHBOARD"),
-            new SeasonReward(3, false, RewardKind.Codex, "codex-1", "CODEX // FIRST LIGHT"),
-            new SeasonReward(5, true, RewardKind.Voice, "voice-static", "AI VOICE // STATIC CHOIR"),
-            new SeasonReward(7, false, RewardKind.Theme, "theme-verdigris", "HUD THEME // VERDIGRIS"),
-            new SeasonReward(9, true, RewardKind.Codex, "codex-p2", "CODEX // HALCYON MEMO"),
-            new SeasonReward(11, false, RewardKind.Codex, "codex-2", "CODEX // THE RIVER CAMP"),
-            new SeasonReward(12, true, RewardKind.Theme, "theme-ash", "HUD THEME // ASH"),
-            new SeasonReward(15, false, RewardKind.Voice, "voice-low", "AI VOICE // LOW CARRIER"),
-            new SeasonReward(16, true, RewardKind.Codex, "codex-p3", "CODEX // THE FIRST HANDLER"),
-            new SeasonReward(19, false, RewardKind.Codex, "codex-3", "CODEX // SIGNAL FIRES"),
-            new SeasonReward(20, true, RewardKind.Codex, "codex-p4", "CODEX // DEADSWITCH"),
+            new SeasonReward(2, RewardKind.Codex, "codex-p1", "CODEX // THE SWITCHBOARD"),
+            new SeasonReward(3, RewardKind.Codex, "codex-1", "CODEX // FIRST LIGHT"),
+            new SeasonReward(5, RewardKind.Voice, "voice-static", "AI VOICE // STATIC CHOIR"),
+            new SeasonReward(7, RewardKind.Theme, "theme-verdigris", "HUD THEME // VERDIGRIS"),
+            new SeasonReward(9, RewardKind.Codex, "codex-p2", "CODEX // HALCYON MEMO"),
+            new SeasonReward(11, RewardKind.Codex, "codex-2", "CODEX // THE RIVER CAMP"),
+            new SeasonReward(12, RewardKind.Theme, "theme-ash", "HUD THEME // ASH"),
+            new SeasonReward(15, RewardKind.Voice, "voice-low", "AI VOICE // LOW CARRIER"),
+            new SeasonReward(16, RewardKind.Codex, "codex-p3", "CODEX // THE FIRST HANDLER"),
+            new SeasonReward(19, RewardKind.Codex, "codex-3", "CODEX // SIGNAL FIRES"),
+            new SeasonReward(20, RewardKind.Codex, "codex-p4", "CODEX // DEADSWITCH"),
         };
 
         /// <summary>Codex logs unlocked by the track: short lore pieces in the AI's archive register.</summary>

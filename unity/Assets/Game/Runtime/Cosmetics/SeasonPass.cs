@@ -3,12 +3,11 @@ using Deadswitch.Host.Seasons;
 using Deadswitch.Sim.Events;
 using UnityEngine;
 
-namespace Deadswitch.Game.Store
+namespace Deadswitch.Game.Cosmetics
 {
     /// <summary>
-    /// Season progress on this device (F-048). XP comes from live sim events (each dispatched once), rewards on the
-    /// free track unlock as ranks are reached, premium rewards when the season is owned too, also retroactively.
-    /// Cosmetic only: themes, AI voice packs and codex logs.
+    /// Reward-track progress on this device (F-048). XP comes from live sim events (each dispatched once); every reward
+    /// unlocks when its rank is reached, also retroactively. Free, cosmetic only: themes, AI voices and codex logs.
     /// </summary>
     public static class SeasonPass
     {
@@ -23,7 +22,7 @@ namespace Deadswitch.Game.Store
 
         public static bool Unlocked(SeasonReward r)
         {
-            return Entitlements.Instance.OwnsCosmetic(r.Id);
+            return Unlocks.Owns(r.Id);
         }
 
         /// <summary>Starts counting XP from the host's events. Safe to call more than once.</summary>
@@ -36,20 +35,18 @@ namespace Deadswitch.Game.Store
 
             _hooked = true;
             host.EventRaised += OnEvent;
-            Entitlements.Instance.Changed += GrantReached;
             GrantReached();
         }
 
-        /// <summary>Unlocks every reward the handler has reached and is entitled to (free, or premium with the pass).</summary>
+        /// <summary>Unlocks every reward the handler has reached.</summary>
         public static void GrantReached()
         {
-            bool pass = Entitlements.Instance.OwnsSeason(SeasonTrack.Id);
             bool granted = false;
             foreach (SeasonReward r in SeasonTrack.Rewards)
             {
-                if (r.Rank <= Rank && (!r.Premium || pass) && !Unlocked(r))
+                if (r.Rank <= Rank && !Unlocked(r))
                 {
-                    Entitlements.Instance.GrantCosmetic(r.Id);
+                    Unlocks.Grant(r.Id);
                     granted = true;
                 }
             }

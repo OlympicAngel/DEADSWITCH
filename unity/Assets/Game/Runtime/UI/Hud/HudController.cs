@@ -164,26 +164,12 @@ namespace Deadswitch.Game.UI.Hud
             Router.Register(new OpsScreen(OpenReport));
             var season = new SeasonScreen(Router);
             Router.Register(season);
-            var premium = new PremiumScreen(Router, () =>
-            {
-                season.ReturnTo("premium");
-                Router.Show("season");
-            });
-            Router.Register(premium);
             Router.Register(new LegacyScreen(Router));
             Records.Hook(_host);
             Router.Register(new StoryScreen(Router));
-            Router.Register(new CoreScreen(() => _voice.History, () =>
-            {
-                premium.ReturnTo("core");
-                Router.Show("premium");
-            }));
-            Router.Register(new SettingsScreen(Router, () =>
-            {
-                premium.ReturnTo("settings");
-                Router.Show("premium");
-            }));
-            Store.Theme.Apply(UiRoot.Instance.Root);
+            Router.Register(new CoreScreen(() => _voice.History));
+            Router.Register(new SettingsScreen(Router));
+            Cosmetics.Theme.Apply(UiRoot.Instance.Root);
             Router.Register(new WorkforceScreen(Router));
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
@@ -227,7 +213,7 @@ namespace Deadswitch.Game.UI.Hud
                 _resourceSheet.Close();
                 return true;
             });
-            BuildMenu(premium, season);
+            BuildMenu(season);
             _queue = new QueueSheet(_ui.Sheets, slot => FocusSlot(slot, FacilityKind.None));
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));
@@ -651,7 +637,7 @@ namespace Deadswitch.Game.UI.Hud
         }
 
         /// <summary>The Command menu (SPEC-042 finding 1): every secondary destination in one place.</summary>
-        private void BuildMenu(PremiumScreen premium, SeasonScreen season)
+        private void BuildMenu(SeasonScreen season)
         {
             _menu = new CommandMenu(_ui.Sheets);
             _menu.Section("people", "THE HUB");
@@ -662,15 +648,10 @@ namespace Deadswitch.Game.UI.Hud
             _menu.Add("book", "STORY", "Chapters and the memory fragments you recovered.", () => Router.Show("story"));
             _menu.Add("cycle", "LEGACY", "This cycle's score, perks and relocation.", () => Router.Show("legacy"));
             _menu.Section("gear", "ACCOUNT");
-            _menu.Add("star", "SEASON TRACK", "Cosmetic rewards earned by play.", () =>
+            _menu.Add("star", "REWARD TRACK", "Themes, AI voices and lore, earned by play.", () =>
             {
                 season.ReturnTo("base");
                 Router.Show("season");
-            });
-            _menu.Add("diamond", "FULL GAME", "One payment. Nothing else is sold.", () =>
-            {
-                premium.ReturnTo("base");
-                Router.Show("premium");
             });
             _menu.Add("gear", "SETTINGS", "Comfort, accessibility, camera and backup.", () => Router.Show("settings"));
             Q<VisualElement>("menu-btn").RegisterCallback<ClickEvent>(_ =>

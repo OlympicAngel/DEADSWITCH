@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Deadswitch.Game.Store
+namespace Deadswitch.Game.Cosmetics
 {
     /// <summary>The chosen HUD theme (F-036, cosmetic): a class on the UI root that swaps the phosphor tokens.</summary>
     public static class Theme
@@ -11,12 +11,15 @@ namespace Deadswitch.Game.Store
 
         public static int Count => Classes.Length;
 
-        /// <summary>0 phosphor (always owned), 1 cold signal, 2 bone (ads), 3 verdigris, 4 ash (season track).</summary>
+        /// <summary>Display names, in order.</summary>
+        public static readonly string[] Names = { "PHOSPHOR", "COLD SIGNAL", "BONE", "VERDIGRIS", "ASH" };
+
+        /// <summary>0 phosphor, 1 cold signal and 2 bone are open to all; 3 verdigris and 4 ash come from the reward track.</summary>
         public static int Current => Mathf.Clamp(PlayerPrefs.GetInt(Key, 0), 0, Classes.Length - 1);
 
         public static bool Owned(int theme)
         {
-            return theme == 0 || (theme < Classes.Length && Entitlements.Instance.OwnsCosmetic(theme <= 2 ? RewardedAds.Id((ConvenienceGrant)theme) : Classes[theme]));
+            return theme <= 2 || (theme < Classes.Length && Unlocks.Owns(Classes[theme]));
         }
 
         public static void Select(int theme, VisualElement root)

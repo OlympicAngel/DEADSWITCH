@@ -108,9 +108,11 @@
       <ui:VisualElement class="ds-card ds-card--raised ds-card--violet">
         <ui:VisualElement class="ds-card__head">
           <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--star ds-card__icon" /></ui:VisualElement>
-          <ui:VisualElement class="ds-card__titles"><ui:Label text="MORE" class="ds-card__title" /><ui:Label text="Full game, themes and guidance." class="ds-card__sub" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles"><ui:Label text="LOOK AND GUIDANCE" class="ds-card__title" /><ui:Label text="Interface colour and the step-by-step objectives." class="ds-card__sub" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="open-premium" class="ds-btn ds-btn--ghost set-btn"><ui:Label text="FULL GAME AND HUD THEMES" class="ds-btn__label" /></ui:VisualElement>
+        <ui:Label text="INTERFACE COLOUR" class="set-subhead" />
+        <ui:VisualElement name="seg-theme" class="ds-seg set-seg"><ui:VisualElement class="ds-seg__item set-seg__item is-selected"><ui:Label text="PHOSPHOR" class="set-seg__label" /></ui:VisualElement><ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="COLD" class="set-seg__label" /></ui:VisualElement><ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="BONE" class="set-seg__label" /></ui:VisualElement><ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="VERDIGRIS" class="set-seg__label" /></ui:VisualElement><ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="ASH" class="set-seg__label" /></ui:VisualElement></ui:VisualElement>
+        <ui:Label name="theme-note" text="Verdigris and Ash are earned on the reward track." class="ds-prose set-note" />
         <ui:VisualElement name="guide-reset" class="ds-btn ds-btn--ghost set-btn"><ui:Label text="SHOW OBJECTIVES AGAIN" class="ds-btn__label" /></ui:VisualElement>
       </ui:VisualElement>
 
