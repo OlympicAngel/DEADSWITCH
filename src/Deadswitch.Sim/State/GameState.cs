@@ -852,12 +852,16 @@ namespace Deadswitch.Sim.State
                 v.Int(ref SecretNodes);
                 v.Int(ref SecretExposed);
             }
+        }
 
-            if (v.IsReading)
-            {
-                // older saves (and a catalog that grew) get a state entry for every map site
-                Resize(Sites, System.Math.Max(Sites.Count, Systems.WorldSystem.Sites.Count));
-            }
+        /// <summary>
+        /// Brings a freshly loaded state up to the current catalog. Runs after the save's hash is verified: the
+        /// hash covers the state as it was written, so growing it inside <see cref="Visit"/> broke every old save.
+        /// </summary>
+        public void AfterLoad()
+        {
+            // older saves (and a catalog that grew) get a state entry for every map site
+            Resize(Sites, System.Math.Max(Sites.Count, Systems.WorldSystem.Sites.Count));
         }
 
         private static void Resize<T>(List<T> list, int count)

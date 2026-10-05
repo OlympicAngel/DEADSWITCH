@@ -126,6 +126,8 @@ namespace Deadswitch.Sim.Persistence
                 throw new SaveLoadException(SaveLoadError.Corrupted, "State does not match its recorded hash.");
             }
 
+            state.AfterLoad();
+
             var commands = new CommandLog();
             int commandCount = r.Count(8 + 16);
             for (int i = 0; i < commandCount; i++)

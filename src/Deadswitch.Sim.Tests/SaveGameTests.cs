@@ -58,16 +58,19 @@ namespace Deadswitch.Sim.Tests
             Assert.Equal(Deadswitch.Host.Online.VerifyResult.Diverged, Deadswitch.Host.Online.RunVerifier.Verify(SaveGame.Write(honest), honest.Config, out _));
         }
 
-        [Fact]
-        public void FormatV1Save_StillLoads_AndContinues()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(28)]
+        public void OldFormatSave_StillLoads_AndContinues(int version)
         {
-            // Written by the build before SPEC-004 (save format v1). Guards the versioned visitor migration.
-            string path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(TestConfigs.ShippedPath)!, "..", "..", "Deadswitch.Sim.Tests", "Fixtures", "save_v1.dsws");
+            // v1: written before SPEC-004. v28: a played run with map sites, written before the site catalog grew
+            // (catalog growth must happen after the hash check). Guards the versioned visitor migration.
+            string path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(TestConfigs.ShippedPath)!, "..", "..", "Deadswitch.Sim.Tests", "Fixtures", "save_v" + version + ".dsws");
             LoadedGame loaded = SaveGame.Load(System.IO.File.ReadAllBytes(path), SimConfig.Tier1());
 
-            Assert.Equal(1, loaded.Info.FormatVersion);
+            Assert.Equal(version, loaded.Info.FormatVersion);
+            Assert.Equal(Systems.WorldSystem.Sites.Count, loaded.Simulation.State.Sites.Count);
             loaded.Simulation.Run(SimConfig.TicksPerDay);
-            Assert.Equal(0, loaded.Simulation.State.BoldnessMilli);
             Assert.Equal(GameState.LayoutVersion, SaveGame.ReadInfo(SaveGame.Write(loaded.Simulation)).FormatVersion);
         }
 
