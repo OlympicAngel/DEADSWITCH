@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 namespace Deadswitch.Game.UI
 {
     /// <summary>
-    /// The AI's display surface over everything: fine scanlines, a vignette, a slow roll bar and, as corruption
+    /// The AI's display surface over everything: fine scanlines, a vignette and, as corruption
     /// rises, brief horizontal glitch slices (doc 11). Scaled by the effect-intensity setting; ignores input and
     /// stays faint enough never to hide values, warnings or controls.
     /// </summary>
@@ -148,15 +148,6 @@ namespace Deadswitch.Game.UI
             {
                 return;
             }
-
-            // Roll bar: a soft bright band drifting down the screen every ~9 s.
-            float barH = r.height * 0.12f;
-            float y = Mathf.Repeat(_time / 9f, 1f) * (r.height + barH) - barH;
-            byte a = (byte)(10 * _effects);
-            var clear = new Color32(168, 213, 138, 0);
-            var mid = new Color32(168, 213, 138, a);
-            Mesh2D.GradientQuad(ctx, new Rect(0, y, r.width, barH * 0.5f), clear, mid);
-            Mesh2D.GradientQuad(ctx, new Rect(0, y + (barH * 0.5f), r.width, barH * 0.5f), mid, clear);
 
             if (_sliceLife > 0f)
             {

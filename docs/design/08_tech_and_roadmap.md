@@ -42,7 +42,7 @@ Rules to protect the design:
 ## 4. UI and UX
 
 - **Command bar** — bottom navigation: Base, Map, AI Terminal, Operations.
-- **Living base view** — animated diorama you tap and pan, with no list-style menus.
+- **Living base view** — animated diorama you tap, drag to pan, and zoom, with no list-style menus. After about 15 seconds without camera input, smoothly return to the regular overview; do not interrupt an active selection or open panel. Keep the timeout configurable.
 - **Gesture-driven** — swipe between command layers, pan and pinch to zoom the full-screen sector map, tap a location for its contextual information/actions, and long-press a map pin for quick actions.
 - **One-handed play** — key actions reachable by thumb, minimal HUD, immersive full-screen.
 
