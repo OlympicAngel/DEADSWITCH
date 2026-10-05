@@ -126,6 +126,14 @@ namespace Deadswitch.Game.UI.Screens
             _reason.text = string.Empty;
             Refresh();
             FocusThreat(_host.Sim.State);
+
+            // nothing to answer and nothing to clear: open on DEFEND, the page with the decisions (SPEC-042 finding 10)
+            GameState s = _host.Sim.State;
+            bool quiet = s.RaidId == 0 && s.PurgeStage == PurgeStage.None && Q("yard").ClassListContains("is-hidden");
+            if (quiet && Q("page-threat").style.display.value == DisplayStyle.Flex)
+            {
+                Pager.Show(_pager, "page-defend");
+            }
         }
 
         public void OnHide()

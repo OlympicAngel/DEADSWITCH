@@ -1,6 +1,6 @@
 # SPEC-042: Flow and QOL (information architecture pass)
 
-- Status: In progress (F-103)
+- Status: Done (code) 2026-10-05 (F-103); Editor check pending
 - Owner direction (2026-10-05): "the UI is still off, break it down even more, think of QOL; is this UI good, intuitive, cramped, dense, related to the rest of the page, should it move somewhere else? This is a big one."
 
 ## Audit (what a new player hits)
@@ -31,3 +31,12 @@ Each finding names the problem, why it hurts, and the decision.
 - Every threat can be answered from where it is announced.
 - Back always goes somewhere predictable.
 - Presentation only; commands are the existing sim commands.
+
+## Done
+- Findings 1-4: Command menu (`UI/Hud/CommandMenu`) with badges, CORE in one tab row, DEFENSE label, back stack (`UI/Back`, Android back / Escape via NavigationCancelEvent); detail screens close back to where they were opened (`ScreenRouter.Return`).
+- Findings 5-6: the raid card shows the current setup and the AI plan with one-tap APPLY.
+- Finding 7: build picker grid by category (`SlotSheet.Empty`, fixture `build-picker.uxml`).
+- Finding 8: `Presentation/Afford` ("IN 2H 10M", "NEED STORAGE") on build cards and the upgrade tile.
+- Finding 9: build queue sheet (`UI/Hud/QueueSheet`) from the job pill.
+- Finding 10: DEFENSE opens on DEFEND when there is nothing to answer; WORKFORCE splits PEOPLE and HARD CHOICES.
+- Screenshots: `docs/media/li4-*.png`.

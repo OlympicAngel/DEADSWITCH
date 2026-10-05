@@ -13,6 +13,10 @@
     </ui:VisualElement>
 
     <ui:ScrollView class="wf-scroll" vertical-scroller-visibility="Auto" horizontal-scroller-visibility="Hidden">
+      <ui:VisualElement name="wf-pager" class="ds-pager">
+      <ui:VisualElement name="page-people" class="ds-page">
+      <ui:Label text="PEOPLE" class="ds-page__title" />
+      <ui:Label text="people" class="ds-page__glyph" />
       <!-- Population and crew -->
       <ui:VisualElement class="ds-card ds-card--raised">
         <ui:VisualElement class="ds-card__head">
@@ -57,12 +61,11 @@
         <ui:Label name="wf-surge" text="SURGE RUNNING // +40% OUTPUT // 4:12:00 LEFT" class="ds-label t-amber wf-surge" />
       </ui:VisualElement>
 
-      <!-- Hard choices -->
-      <ui:VisualElement class="ds-section">
-        <ui:VisualElement class="ds-icon ds-icon--skull ds-section__icon" />
-        <ui:Label text="HARD CHOICES" class="ds-section__title" />
-        <ui:VisualElement class="ds-section__rule" />
       </ui:VisualElement>
+      <!-- Hard choices: their own page, never beside the everyday numbers (SPEC-042) -->
+      <ui:VisualElement name="page-choices" class="ds-page">
+      <ui:Label text="HARD CHOICES" class="ds-page__title" />
+      <ui:Label text="skull" class="ds-page__glyph" />
       <ui:Label text="Every one costs lives and makes me colder. Tap once to see it, again to confirm." class="ds-prose wf-lead" />
 
       <ui:VisualElement name="wf-forced" class="ds-card ds-card--red wf-choice">
@@ -104,6 +107,8 @@
         </ui:VisualElement>
         <ui:Label name="wf-crackdown-cost" text="2 REMOVED // COLDER // ONLY WHEN THEY ARE RESTLESS" class="ds-label t-red wf-choice__cost" />
         <ui:VisualElement name="wf-crackdown-btn" class="ds-btn ds-btn--warn wf-choice__btn"><ui:Label text="MAKE AN EXAMPLE" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      </ui:VisualElement>
       </ui:VisualElement>
     </ui:ScrollView>
 

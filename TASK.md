@@ -1,6 +1,6 @@
 # TASK: F-103 Flow and QOL (information architecture pass)
 
-- Status: In progress
+- Status: Code complete; Editor check pending (owner)
 - Branch: ccr-3e0227c3-c2kae3
 - Spec: `docs/specs/SPEC-042-flow-and-qol.md` (the audit and its decisions)
 
@@ -10,7 +10,7 @@
 - [x] 3. Build picker: categorized grid of build cards with the key number, cost and "affordable in"
 - [x] 4. Build queue sheet from the job pill; "affordable in" on quick actions
 - [x] 5. CORE flattened to one tab row; records and settings leave CORE
-- [ ] 6. Re-audit every screen; docs and screenshots
+- [x] 6. Re-audit every screen; docs and screenshots
 
 Previous: F-102 visual overhaul III (SPEC-041), code complete.
 
