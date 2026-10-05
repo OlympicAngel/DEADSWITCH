@@ -16,12 +16,6 @@ namespace Deadswitch.Game.UI.Base
     /// </summary>
     public sealed class SlotSheet
     {
-        private static readonly FacilityKind[] Buildable =
-        {
-            FacilityKind.Generator, FacilityKind.SolarField, FacilityKind.ServerRack, FacilityKind.BatteryBank, FacilityKind.FuelDepot, FacilityKind.LifeSupport,
-            FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool, FacilityKind.CoolingTower, FacilityKind.MemoryChamber, FacilityKind.Reactor,
-        };
-
         private readonly VisualElement _root;
         private readonly VisualElement _content;
         private readonly System.Action _onClose;
@@ -190,52 +184,121 @@ namespace Deadswitch.Game.UI.Base
             return tile;
         }
 
+        /// <summary>Build categories (SPEC-042 finding 7): compare like with like instead of scrolling one long list.</summary>
+        private static readonly (string Name, string Glyph, FacilityKind[] Kinds)[] Categories =
+        {
+            ("POWER", "bolt", new[] { FacilityKind.Generator, FacilityKind.SolarField, FacilityKind.BatteryBank, FacilityKind.Reactor }),
+            ("COMPUTE", "chip", new[] { FacilityKind.ServerRack, FacilityKind.CoolingTower, FacilityKind.MemoryChamber }),
+            ("PEOPLE", "people", new[] { FacilityKind.LifeSupport, FacilityKind.FuelDepot }),
+            ("DEFENSE", "shield", new[] { FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool }),
+        };
+
+        private static int _category;
+
         private void Empty(GameHost host)
         {
             Header("OPEN PLOT", "PLOT " + (Slot + 1) + "  //  CHOOSE WHAT TO BUILD", "plus");
-            _content.Add(Kit.Label("Cleared ground inside the wire. Tell me what to put here.", "ds-body", "sheet__blurb"));
-            var order = new System.Collections.Generic.List<FacilityKind>(Buildable);
-            if (order.Remove(_recommend))
+            if (_recommend != FacilityKind.None)
             {
-                order.Insert(0, _recommend);
+                for (int i = 0; i < Categories.Length; i++)
+                {
+                    if (System.Array.IndexOf(Categories[i].Kinds, _recommend) >= 0)
+                    {
+                        _category = i;
+                    }
+                }
             }
 
-            foreach (FacilityKind kind in order)
+            var tabs = Row("ds-seg");
+            tabs.AddToClassList("build-tabs");
+            for (int i = 0; i < Categories.Length; i++)
             {
-                // the reactor (SPEC-029) is offered only from its tier, and only one per Hub
-                if (kind == FacilityKind.Reactor && (host.Sim.State.Tier < host.Config.ReactorRules.MinTier || Economy.CountOfKind(host.Sim.State, kind) >= host.Config.ReactorRules.MaxCount))
+                var tab = Row("ds-seg__item");
+                tab.AddToClassList("build-tab");
+                tab.EnableInClassList("is-selected", i == _category);
+                tab.Add(Icons.Create(Categories[i].Glyph, "build-tab__icon"));
+                tab.Add(Kit.Label(Categories[i].Name, "build-tab__label"));
+                int index = i;
+                tab.RegisterCallback<ClickEvent>(_ =>
                 {
-                    continue;
-                }
-
-                // vehicles (SPEC-035) come with the district
-                if (kind == FacilityKind.MotorPool && host.Sim.State.Tier < host.Config.Units.MotorPoolMinTier)
-                {
-                    continue;
-                }
-
-                FacilityConfig f = host.Config.Facility(kind);
-                Economy.BuildCost(host.Sim.State, host.Config, kind, out int energy, out int compute);
-                bool affordable = host.Sim.State.Energy >= energy && host.Sim.State.Compute >= compute;
-
-                var opt = new VisualElement();
-                opt.AddToClassList("opt");
-                opt.EnableInClassList("is-disabled", !affordable);
-                opt.EnableInClassList("opt--recommended", kind == _recommend);
-                opt.Add(Icons.Create(Icons.ForFacility(kind), "opt__icon"));
-                var body = new VisualElement();
-                body.AddToClassList("opt__body");
-                body.Add(Kit.Label(Fmt.FacilityName(kind), "opt__name"));
-                string upkeep = f.UpkeepPerHour[0] > 0 ? "   -" + Fmt.Num(f.UpkeepPerHour[0]) + " ENERGY/H" : kind == FacilityKind.Reactor ? "   -" + host.Config.ReactorRules.FuelPerHour[0] + " FUEL/H" : string.Empty;
-                upkeep += kind == FacilityKind.MotorPool ? "   -" + host.Config.Units.MotorPoolFuelPerHour[0] + " FUEL/H" : string.Empty;
-                body.Add(Kit.Label(Texts.Output(kind, f.Output[0]) + upkeep, "opt__desc"));
-                body.Add(Cost(host, energy, compute));
-                opt.Add(body);
-                opt.Add(Kit.Label(Fmt.Countdown(Economy.BuildMinutes(host.Sim.State, host.Config, kind, 1) * 60.0 / host.Settings.DevTimeScale), "opt__time"));
-                FacilityKind k = kind;
-                opt.RegisterCallback<ClickEvent>(_ => Run(Command.Build(Slot, k)));
-                _content.Add(opt);
+                    _category = index;
+                    Refresh();
+                    Choreo.Enter(_content);
+                });
+                tabs.Add(tab);
             }
+
+            _content.Add(tabs);
+            var grid = Row("build-grid");
+            foreach (FacilityKind kind in Categories[_category].Kinds)
+            {
+                grid.Add(BuildCard(host, kind));
+            }
+
+            _content.Add(grid);
+        }
+
+        /// <summary>One build card: icon, name, the number that matters, cost, then build time or when it is affordable.</summary>
+        private VisualElement BuildCard(GameHost host, FacilityKind kind)
+        {
+            GameState s = host.Sim.State;
+            SimConfig c = host.Config;
+            FacilityConfig f = c.Facility(kind);
+            string locked = null;
+            if (kind == FacilityKind.Reactor && s.Tier < c.ReactorRules.MinTier)
+            {
+                locked = "TIER " + c.ReactorRules.MinTier;
+            }
+            else if (kind == FacilityKind.Reactor && Economy.CountOfKind(s, kind) >= c.ReactorRules.MaxCount)
+            {
+                locked = "ONE PER HUB";
+            }
+            else if (kind == FacilityKind.MotorPool && s.Tier < c.Units.MotorPoolMinTier)
+            {
+                locked = "TIER " + c.Units.MotorPoolMinTier;
+            }
+
+            Economy.BuildCost(s, c, kind, out int energy, out int compute);
+            string when = locked != null ? string.Empty : Afford.When(s, c, energy, compute, 3600.0 / host.Settings.DevTimeScale);
+            var card = Row("build-card");
+            card.EnableInClassList("is-locked", locked != null);
+            card.EnableInClassList("is-waiting", locked == null && when.Length > 0);
+            card.EnableInClassList("is-recommended", kind == _recommend);
+            Sheen.Attach(card);
+            var top = Row("build-card__top");
+            var well = Row("build-card__well");
+            well.Add(Icons.Create(locked != null ? "lock" : Icons.ForFacility(kind), "build-card__icon"));
+            top.Add(well);
+            if (kind == _recommend)
+            {
+                top.Add(Kit.Label("SUGGESTED", "build-card__tag"));
+            }
+
+            card.Add(top);
+            card.Add(Kit.Label(Fmt.FacilityName(kind), "build-card__name"));
+            card.Add(Kit.Label(Texts.Output(kind, f.Output[0]), "build-card__out"));
+            if (locked != null)
+            {
+                card.Add(Kit.Label("LOCKED // " + locked, "build-card__foot"));
+                return card;
+            }
+
+            card.Add(Cost(host, energy, compute));
+            card.Add(Kit.Label(when.Length > 0 ? when : "BUILD " + Fmt.SpanCoarse(Economy.BuildMinutes(s, c, kind, 1) * 60.0 / host.Settings.DevTimeScale), "build-card__foot"));
+            FacilityKind k = kind;
+            card.RegisterCallback<ClickEvent>(_ =>
+            {
+                if (card.ClassListContains("is-waiting"))
+                {
+                    // not yet: say when instead of a bare refusal
+                    Kit.Shake(card);
+                    Toasts.Show("clock", Fmt.FacilityName(k) + " // AFFORDABLE " + when, Toasts.Tone.Warn);
+                    return;
+                }
+
+                Run(Command.Build(Slot, k));
+            });
+            return card;
         }
 
         private void Building(GameHost host, FacilitySlot slot, BuildJob job)

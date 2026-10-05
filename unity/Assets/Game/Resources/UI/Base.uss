@@ -206,3 +206,27 @@
 .cmenu__badge.is-hidden { display: none; }
 .cmenu__badge-label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-world); }
 .cmenu__chev { width: 28px; height: 28px; margin-left: var(--s-2); --icon-color: var(--c-text-faint); }
+
+/* ---------- Build picker (SPEC-042 finding 7): category track + grid of build cards ---------- */
+.build-tabs { margin-bottom: var(--s-4); }
+.build-tab { flex-direction: column; padding: var(--s-1) 0; }
+.build-tab__icon { width: 32px; height: 32px; margin-bottom: 2px; --icon-color: var(--c-text-dim); }
+.build-tab.is-selected .build-tab__icon { --icon-color: var(--c-cyan); }
+.build-tab__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); }
+.build-grid { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+.build-card { width: 49%; min-height: 300px; margin-bottom: var(--s-3); padding: var(--s-4); border-radius: var(--r-lg); border-top-width: 1px; border-color: var(--c-edge-hi); background-color: var(--c-elev-2); --sheen-color: var(--c-sheen-strong); transition-property: scale, background-color; transition-duration: 0.12s; }
+.build-card:active { scale: 0.97 0.97; background-color: var(--c-cyan-wash); }
+.build-card__top { flex-direction: row; align-items: flex-start; justify-content: space-between; margin-bottom: var(--s-3); }
+.build-card__well { width: 88px; height: 88px; align-items: center; justify-content: center; border-radius: var(--r-lg); background-color: var(--c-cyan-wash); }
+.build-card__icon { width: 54px; height: 54px; --icon-color: var(--c-cyan); }
+.build-card__tag { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-tight); color: var(--c-world); padding: 2px var(--s-2); border-radius: var(--r-sm); background-color: var(--c-cyan); }
+.build-card__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-tight); color: var(--c-white); white-space: normal; }
+.build-card__out { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-phosphor); margin: var(--s-1) 0 var(--s-2) 0; white-space: normal; }
+.build-card__foot { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-dim); margin-top: var(--s-2); }
+.build-card.is-recommended { border-top-width: 3px; border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.build-card.is-waiting .build-card__foot { color: var(--c-amber); }
+.build-card.is-waiting .build-card__well { background-color: var(--c-panel-sunken); }
+.build-card.is-waiting .build-card__icon { --icon-color: var(--c-text-dim); }
+.build-card.is-locked { opacity: 0.55; background-color: var(--c-panel-sunken); }
+.build-card.is-locked .build-card__icon { --icon-color: var(--c-text-faint); }
+.build-card.is-locked .build-card__well { background-color: var(--c-panel-sunken); }
