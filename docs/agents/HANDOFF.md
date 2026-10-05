@@ -18,6 +18,12 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Sector map (F-057, SPEC-033): `Base/MapView` (map world on layer 30 at y -2000, render to texture), `Rendering/MapRender` (URP request; not covered by the compile check), overlay drawn as raw UI meshes in `MapScreen.DrawOverlay`. Editor checks: the render appears and follows the hour, pins sit on the landmarks and are tappable, overlay triangles are not culled, no frame hitch while the fallout haze drifts. Gestures (`ScreenRouter` swipes, map pin long-press) need a touch device check.
 - Play-mode checks for these: STORY/SEASON screens, map ALLY/SABOTAGE/RECALL controls, reactor model (`Facilities.Reactor`) and voice packs (`AudioDirector.BuildVoice`).
 
+## Living interface (F-100, SPEC-039, 2026-10-05)
+- New kit (Components.uss bottom section), tokens (cyan/violet accent, depth edges), shared icons in `Resources/UI/Icons.json` (Unity + uipreview), tunables in `Resources/UI/Interface.json` (`UI/InterfaceConfig`).
+- HUD: resource pods (`UI/Hud/ResourcePod`, read model `Presentation/ResourceInfo`), breakdown sheet (`UI/Hud/ResourceSheet`), comms orb (`UI/AiOrb`), suggestion chips (`UI/Hud/AiSuggestions`), toasts (`UI/Toasts`).
+- Base: camera fly-in/inertia/double-tap/idle sway/shake/`Direct` override (`Base/DroneCamera`), `Base/BaseFx` (focus light, scans, plot rings, data links, siren), quick actions (`UI/Base/QuickActions`), `Base/AttackCinematic` (+ `Resources/UI/Cinematic.uss`).
+- Editor checks needed: focus framing (`focus.screenLift`, `orbitDegrees`), cinematic shot positions per gate, LineRenderer look with the additive particle material, link/plot alpha by day and night, siren spot intensity, toast placement under the pods.
+
 ## Balance (latest, 2026-10-04)
 - Turret planning (F-044) plus adaptation and luck: active breach ~0-2%, casual-prepared ~12%, autopilot ~0%; Tier 2/3/4 on days ~6/20/40. All guards pass. Retune only from real play data.
 
