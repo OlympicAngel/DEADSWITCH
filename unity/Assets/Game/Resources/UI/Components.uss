@@ -171,29 +171,28 @@
 .ds-meter--magenta > .ds-meter__seg.is-on { background-color: var(--c-magenta); }
 .ds-meter--white > .ds-meter__seg.is-on { background-color: var(--c-white); }
 
-/* ---------- Chips and badges ---------- */
+/* ---------- Chips v2: tonal pills, no outline (SPEC-041) ---------- */
 .ds-chip {
     flex-direction: row;
     align-items: center;
     padding: var(--s-1) var(--s-3);
-    border-width: 1px;
-    border-color: var(--c-line-mid);
-    border-radius: var(--r-sm);
+    border-width: 0;
+    border-radius: 20px;
     background-color: var(--c-panel-sunken);
 }
 
 .ds-chip__label {
     -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
-    font-size: var(--fs-micro);
-    letter-spacing: var(--ls-label);
+    font-size: var(--fs-nano);
+    letter-spacing: var(--ls-tight);
     color: var(--c-text-dim);
 }
 
-.ds-chip--amber { border-color: var(--c-amber-dim); }
+.ds-chip--amber { background-color: var(--c-amber-wash); }
 .ds-chip--amber > .ds-chip__label { color: var(--c-amber); }
-.ds-chip--phosphor { border-color: var(--c-phosphor-dim); }
+.ds-chip--phosphor { background-color: var(--c-phosphor-wash); }
 .ds-chip--phosphor > .ds-chip__label { color: var(--c-phosphor); }
-.ds-chip--red { border-color: var(--c-red); }
+.ds-chip--red { background-color: var(--c-red-wash); }
 .ds-chip--red > .ds-chip__label { color: var(--c-red); }
 
 /* Status pip: shape + color (colorblind-safe). */
@@ -263,10 +262,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--c-panel-solid);
-    border-top-width: var(--bw);
-    border-color: var(--c-line-strong);
-    padding: var(--s-5) var(--s-6) var(--s-8) var(--s-6);
+    background-color: var(--c-elev-1);
+    border-top-width: 1px;
+    border-color: var(--c-cyan-line);
+    border-top-left-radius: var(--r-xl);
+    border-top-right-radius: var(--r-xl);
+    padding: var(--s-3) var(--s-6) var(--s-8) var(--s-6);
+    --sheen-color: var(--c-cyan-wash);
+    --sheen-reach: 0.25;
     transition-property: translate, opacity;
     transition-duration: 0.28s;
     transition-timing-function: ease-out-cubic;
@@ -278,7 +281,8 @@
     align-self: center;
     width: 96px;
     height: 6px;
-    background-color: var(--c-line-mid);
+    border-radius: 3px;
+    background-color: var(--c-cyan-dim);
     margin-bottom: var(--s-4);
 }
 

@@ -138,27 +138,61 @@ namespace Deadswitch.Game.UI.Base
             time.text = Fmt.Countdown(SecondsUntil(host, job.CompleteTick));
         }
 
-        private void Header(string title, string level)
+        private void Header(string title, string level, string glyph)
         {
             var head = new VisualElement();
             head.AddToClassList("sheet__head");
-            head.Add(Kit.Label(title, "ds-display", "sheet__title"));
+            var well = new VisualElement();
+            well.AddToClassList("sheet__well");
+            well.Add(Icons.Create(glyph, "sheet__icon"));
+            head.Add(well);
+            var titles = new VisualElement();
+            titles.AddToClassList("sheet__titles");
+            titles.Add(Kit.Label(title, "sheet__title"));
             if (level.Length > 0)
             {
-                head.Add(Chip(level, "ds-chip--phosphor"));
+                titles.Add(Kit.Label(level, "sheet__level"));
             }
 
+            head.Add(titles);
             var close = new VisualElement();
-            close.AddToClassList("sheet__close");
-            close.Add(Kit.Label("x", "sheet__close-x"));
+            close.AddToClassList("ds-iconbtn");
+            close.Add(Icons.Create("close", "ds-iconbtn__icon"));
             close.RegisterCallback<ClickEvent>(_ => _onClose());
             head.Add(close);
             _content.Add(head);
         }
 
+        /// <summary>Output, upkeep and crew at a glance (now, and next level when there is one).</summary>
+        private static VisualElement StatTiles(FacilitySlot slot, FacilityConfig f)
+        {
+            bool max = slot.Level >= f.MaxLevel;
+            var row = Row("sheet__tiles");
+            row.Add(StatTile("trendup", "OUTPUT", Texts.Output(slot.Kind, f.Output[slot.Level - 1]), max ? null : Texts.Output(slot.Kind, f.Output[slot.Level])));
+            row.Add(StatTile("bolt", "UPKEEP", Fmt.Num(f.UpkeepPerHour[slot.Level - 1]) + "/H", max ? null : Fmt.Num(f.UpkeepPerHour[slot.Level]) + "/H"));
+            row.Add(StatTile("people", "CREW", Fmt.Num(f.Crew[slot.Level - 1]), max ? null : Fmt.Num(f.Crew[slot.Level])));
+            return row;
+        }
+
+        private static VisualElement StatTile(string glyph, string key, string now, string next)
+        {
+            var tile = Row("sheet__tile");
+            var top = Row("sheet__tile-top");
+            top.Add(Icons.Create(glyph, "sheet__tile-icon"));
+            top.Add(Kit.Label(key, "sheet__tile-key"));
+            tile.Add(top);
+            tile.Add(Kit.Label(now, "sheet__tile-value"));
+            if (next != null)
+            {
+                tile.Add(Kit.Label("NEXT  " + next, "sheet__tile-next"));
+            }
+
+            return tile;
+        }
+
         private void Empty(GameHost host)
         {
-            Header("OPEN PLOT", "P" + (Slot + 1));
+            Header("OPEN PLOT", "PLOT " + (Slot + 1) + "  //  CHOOSE WHAT TO BUILD", "plus");
             _content.Add(Kit.Label("Cleared ground inside the wire. Tell me what to put here.", "ds-body", "sheet__blurb"));
             var order = new System.Collections.Generic.List<FacilityKind>(Buildable);
             if (order.Remove(_recommend))
@@ -206,7 +240,7 @@ namespace Deadswitch.Game.UI.Base
 
         private void Building(GameHost host, FacilitySlot slot, BuildJob job)
         {
-            Header(Fmt.FacilityName(job.Kind), "LVL " + job.TargetLevel);
+            Header(Fmt.FacilityName(job.Kind), "BUILDING LEVEL " + job.TargetLevel, Icons.ForFacility(job.Kind));
             var chips = Row("sheet__chips");
             chips.Add(Chip("UNDER CONSTRUCTION", "ds-chip--amber"));
             _content.Add(chips);
@@ -233,7 +267,7 @@ namespace Deadswitch.Game.UI.Base
             SimConfig c = host.Config;
             FacilityConfig f = c.Facility(slot.Kind);
             GameState s = host.Sim.State;
-            Header(Fmt.FacilityName(slot.Kind), "LVL " + slot.Level);
+            Header(Fmt.FacilityName(slot.Kind), "LEVEL " + slot.Level + " / " + f.MaxLevel, Icons.ForFacility(slot.Kind));
 
             var chips = Row("sheet__chips");
             chips.Add(slot.Enabled ? (slot.Powered ? Chip("POWERED", "ds-chip--phosphor") : Chip("NO POWER", "ds-chip--red")) : Chip("SWITCHED OFF", "ds-chip--red"));
@@ -274,6 +308,7 @@ namespace Deadswitch.Game.UI.Base
                     : (lost > 0 ? "Battle damage: output -" + lost + "% until repaired." : "Battle damage. It still works; it looks like it lost."), "ds-body", "sheet__blurb", "t-amber"));
             }
 
+            _content.Add(StatTiles(slot, f));
             if (!_expanded)
             {
                 // compact card: the quick-action tiles beside the facility carry the common actions
@@ -282,12 +317,6 @@ namespace Deadswitch.Game.UI.Base
             }
 
             bool max = slot.Level >= f.MaxLevel;
-            var stats = new VisualElement();
-            stats.AddToClassList("sheet__stats");
-            stats.Add(Kv("Output", Texts.Output(slot.Kind, f.Output[slot.Level - 1]) + (max ? string.Empty : "  ->  " + Texts.Output(slot.Kind, f.Output[slot.Level]))));
-            stats.Add(Kv("Upkeep", Fmt.Num(f.UpkeepPerHour[slot.Level - 1]) + "/H" + (max ? string.Empty : "  ->  " + Fmt.Num(f.UpkeepPerHour[slot.Level]) + "/H")));
-            stats.Add(Kv("Crew", Fmt.Num(f.Crew[slot.Level - 1]) + (max ? string.Empty : "  ->  " + Fmt.Num(f.Crew[slot.Level]))));
-            _content.Add(stats);
 
             var actions = Row("sheet__actions");
             if (slot.Damage > 0 && !repairing)
@@ -393,14 +422,6 @@ namespace Deadswitch.Game.UI.Base
 
             chip.Add(Kit.Label(text, "ds-chip__label"));
             return chip;
-        }
-
-        private static VisualElement Kv(string key, string value)
-        {
-            var row = Row("ds-kv");
-            row.Add(Kit.Label(key, "ds-kv__key"));
-            row.Add(Kit.Label(value, "ds-kv__value"));
-            return row;
         }
     }
 }

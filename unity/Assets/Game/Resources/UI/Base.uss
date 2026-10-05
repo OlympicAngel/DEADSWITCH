@@ -3,18 +3,19 @@
 /* ---------- Floating labels (reference: bracketed tags above facilities) ---------- */
 .lbl {
     position: absolute;
-    padding: var(--s-1) var(--s-3) var(--s-1) var(--s-3);
+    padding: var(--s-1) var(--s-4) var(--s-1) var(--s-4);
     background-color: var(--c-scrim);
-    border-width: 1px;
-    border-radius: var(--r-md);
-    border-color: var(--c-line-mid);
+    border-width: 0;
+    border-top-width: 1px;
+    border-radius: var(--r-lg);
+    border-color: var(--c-edge-hi);
     translate: -50% -100%;
     min-width: 150px;
-    transition-property: opacity, scale;
+    transition-property: opacity, scale, background-color;
     transition-duration: 0.18s;
 }
 
-.lbl > .ds-corner { width: 12px; height: 12px; border-color: var(--c-phosphor); }
+.lbl > .ds-corner { display: none; }
 
 .lbl__name {
     -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
@@ -44,38 +45,46 @@
 
 .lbl .ds-pip { width: 10px; height: 10px; margin-right: var(--s-2); }
 
-.lbl--empty { border-color: var(--c-cyan-line); background-color: var(--c-panel-sunken); }
+.lbl--empty { background-color: var(--c-panel-sunken); border-top-color: var(--c-cyan-line); }
 .lbl--empty > .ds-corner { border-color: var(--c-text-faint); }
 .lbl--empty .lbl__name { color: var(--c-cyan-dim); }
 .lbl--empty .lbl__level { color: var(--c-cyan); }
-.lbl--warn > .ds-corner { border-color: var(--c-amber); }
+.lbl--warn { border-top-color: var(--c-amber); }
 .lbl--warn .lbl__level { color: var(--c-amber); }
-.lbl--off > .ds-corner { border-color: var(--c-red); }
+.lbl--off { border-top-color: var(--c-red); }
 .lbl--off .lbl__level { color: var(--c-red); }
-.lbl--core > .ds-corner { border-color: var(--c-phosphor); }
+.lbl--core { border-top-color: var(--c-cyan); }
 .lbl--core .lbl__name { color: var(--c-phosphor); text-shadow: 0 0 8px var(--c-phosphor-glow); }
-.lbl.is-selected { border-color: var(--c-cyan); background-color: var(--c-glass); scale: 1.12 1.12; }
-.lbl.is-selected > .ds-corner { border-color: var(--c-cyan); }
+.lbl.is-selected { border-top-color: var(--c-cyan); background-color: var(--c-glass); scale: 1.12 1.12; }
 .lbl.is-selected .lbl__name { color: var(--c-cyan); text-shadow: 0 0 8px var(--c-cyan-glow); }
 .lbl.is-faded { opacity: 0.15; }
 
-/* ---------- Slot sheet ---------- */
-.sheet { padding-bottom: 180px; }
-.sheet__head { flex-direction: row; align-items: center; margin-bottom: var(--s-2); }
-.sheet__title { flex-grow: 1; }
-.sheet__close { width: 88px; height: 88px; align-items: center; justify-content: center; }
-.sheet__close-x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); color: var(--c-text-dim); }
-.sheet__chips { flex-direction: row; flex-wrap: wrap; margin-bottom: var(--s-4); }
+/* ---------- Slot sheet v2 (SPEC-041): icon header, stat tiles, tonal rows ---------- */
+.sheet { padding-bottom: 64px; }
+.sheet__head { flex-direction: row; align-items: center; margin-bottom: var(--s-4); }
+.sheet__well { width: 88px; height: 88px; align-items: center; justify-content: center; margin-right: var(--s-4); border-radius: var(--r-lg); background-color: var(--c-cyan-wash); }
+.sheet__icon { width: 52px; height: 52px; --icon-color: var(--c-cyan); }
+.sheet__titles { flex-grow: 1; flex-shrink: 1; }
+.sheet__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: var(--ls-label); color: var(--c-white); }
+.sheet__level { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); }
+.sheet__chips { flex-direction: row; flex-wrap: wrap; margin-bottom: var(--s-3); }
 .sheet__chips > .ds-chip { margin-right: var(--s-2); margin-bottom: var(--s-2); }
-.sheet__blurb { margin-bottom: var(--s-4); color: var(--c-phosphor); }
-.sheet__stats { margin-bottom: var(--s-5); }
+.sheet__blurb { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); margin-bottom: var(--s-4); color: var(--c-text-dim); white-space: normal; }
+.sheet__tiles { flex-direction: row; margin-bottom: var(--s-4); }
+.sheet__tile { flex-grow: 1; flex-basis: 0; padding: var(--s-3); margin-right: var(--s-2); border-radius: var(--r-lg); background-color: var(--c-elev-2); }
+.sheet__tile.is-last { margin-right: 0; }
+.sheet__tile-top { flex-direction: row; align-items: center; margin-bottom: var(--s-1); }
+.sheet__tile-icon { width: 24px; height: 24px; margin-right: var(--s-1); --icon-color: var(--c-text-dim); }
+.sheet__tile-key { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
+.sheet__tile-value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-white); white-space: normal; }
+.sheet__tile-next { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-phosphor); margin-top: 2px; white-space: normal; }
 .sheet__actions { flex-direction: row; flex-wrap: wrap; }
 .sheet__actions > .ds-btn { flex-grow: 1; margin-right: var(--s-3); margin-bottom: var(--s-3); }
 .sheet__primary { min-width: 520px; }
 .sheet__reason { margin-top: var(--s-2); color: var(--c-amber); white-space: normal; }
 
-.sheet__progress { height: 14px; background-color: rgba(168, 213, 138, 0.1); margin: var(--s-2) 0 var(--s-4) 0; }
-.sheet__progress-fill { height: 100%; width: 0; background-color: var(--c-amber); }
+.sheet__progress { height: 14px; border-radius: 7px; background-color: var(--c-panel-sunken); margin: var(--s-2) 0 var(--s-4) 0; overflow: hidden; }
+.sheet__progress-fill { height: 100%; width: 0; border-radius: 7px; background-color: var(--c-amber); }
 
 .cost { flex-direction: row; align-items: center; margin-top: var(--s-1); }
 .cost__item { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text); margin-right: var(--s-4); }
@@ -87,28 +96,28 @@
     align-items: center;
     padding: var(--s-3) var(--s-4);
     margin-bottom: var(--s-3);
-    border-width: 1px;
-    border-color: var(--c-line-mid);
-    background-color: var(--c-panel-sunken);
+    border-width: 0;
+    border-radius: var(--r-lg);
+    background-color: var(--c-elev-2);
     min-height: 132px;
     transition-property: background-color, border-color;
     transition-duration: 0.12s;
 }
 
-.opt:hover { border-color: var(--c-phosphor-dim); }
-.opt:active { background-color: rgba(168, 213, 138, 0.12); }
+.opt:hover { background-color: var(--c-panel-raised); }
+.opt:active { background-color: var(--c-cyan-wash); }
 .opt.is-disabled { opacity: 0.45; }
-.opt__icon { width: 72px; height: 72px; margin-right: var(--s-4); --icon-color: var(--c-phosphor); }
+.opt__icon { width: 64px; height: 64px; margin-right: var(--s-4); --icon-color: var(--c-cyan); }
 .opt__body { flex-grow: 1; flex-shrink: 1; }
 .opt__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-text); }
-.opt__desc { font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
+.opt__desc { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
 .opt__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text-dim); margin-left: var(--s-3); }
 
 /* ---------- Resource breakdown sheet (SPEC-039 B) ---------- */
 .rsheet { max-height: 78%; border-top-color: var(--c-cyan); }
 .rsheet__scroll { flex-shrink: 1; }
 .rsheet__head { flex-direction: row; align-items: center; margin-bottom: var(--s-3); }
-.rsheet__well { width: 96px; height: 96px; align-items: center; justify-content: center; margin-right: var(--s-4); border-radius: var(--r-lg); border-width: 1px; border-color: var(--c-cyan-dim); background-color: var(--c-cyan-wash); }
+.rsheet__well { width: 96px; height: 96px; align-items: center; justify-content: center; margin-right: var(--s-4); border-radius: var(--r-lg); background-color: var(--c-cyan-wash); }
 .rsheet__icon { width: 60px; height: 60px; --icon-color: var(--c-cyan); }
 .rsheet__titles { flex-grow: 1; flex-shrink: 1; }
 .rsheet__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-wide); color: var(--c-text-dim); }
@@ -134,11 +143,11 @@
     min-height: var(--touch);
     padding: var(--s-3);
     margin-bottom: var(--s-2);
-    border-width: 1px;
-    border-radius: var(--r-md);
-    border-color: var(--c-cyan-line);
-    border-top-color: var(--c-cyan-dim);
-    background-color: var(--c-glass);
+    border-width: 0;
+    border-left-width: 4px;
+    border-radius: var(--r-lg);
+    border-color: var(--c-cyan);
+    background-color: var(--c-elev-2);
     transition-property: scale, background-color;
     transition-duration: 0.12s;
 }
@@ -149,7 +158,7 @@
 .rsheet__help-icon { width: 44px; height: 44px; --icon-color: var(--c-cyan); }
 .rsheet__help-body { flex-grow: 1; flex-shrink: 1; }
 .rsheet__help-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-cyan); }
-.rsheet__help-why { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: 2px; }
+.rsheet__help-why { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: 2px; }
 .rsheet__help-go { width: 36px; height: 36px; margin-left: var(--s-2); --icon-color: var(--c-cyan); }
 .opt--recommended { border-color: var(--c-cyan); border-left-width: 6px; background-color: var(--c-cyan-wash); }
 .opt--recommended .opt__icon { --icon-color: var(--c-cyan); }

@@ -15,9 +15,18 @@
     </ui:VisualElement>
     <ui:VisualElement class="ds-sheet sheet">
       <ui:VisualElement class="ds-sheet__grip" />
-      <ui:VisualElement class="sheet__head"><ui:Label text="GENERATOR" class="ds-display sheet__title" /><ui:VisualElement class="ds-chip ds-chip--phosphor"><ui:Label text="LVL 2" class="ds-chip__label" /></ui:VisualElement><ui:VisualElement class="sheet__close"><ui:Label text="x" class="sheet__close-x" /></ui:VisualElement></ui:VisualElement>
+      <ui:VisualElement class="sheet__head">
+        <ui:VisualElement class="sheet__well"><ui:VisualElement class="ds-icon ds-icon--bolt sheet__icon" /></ui:VisualElement>
+        <ui:VisualElement class="sheet__titles"><ui:Label text="GENERATOR" class="sheet__title" /><ui:Label text="LEVEL 2 / 5" class="sheet__level" /></ui:VisualElement>
+        <ui:VisualElement class="ds-iconbtn"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
+      </ui:VisualElement>
       <ui:VisualElement class="sheet__chips"><ui:VisualElement class="ds-chip ds-chip--phosphor"><ui:Label text="POWERED" class="ds-chip__label" /></ui:VisualElement><ui:VisualElement class="ds-chip"><ui:Label text="CREWED 2" class="ds-chip__label" /></ui:VisualElement><ui:VisualElement class="ds-chip"><ui:Label text="PRIORITY #1" class="ds-chip__label" /></ui:VisualElement></ui:VisualElement>
-      <ui:Label text="Scavenged plant. Everything else runs on what this makes." class="ds-body sheet__blurb" />
+      <ui:Label text="Scavenged plant. Everything else runs on what this makes." class="sheet__blurb" />
+      <ui:VisualElement class="sheet__tiles">
+        <ui:VisualElement class="sheet__tile"><ui:VisualElement class="sheet__tile-top"><ui:VisualElement class="ds-icon ds-icon--trendup sheet__tile-icon" /><ui:Label text="OUTPUT" class="sheet__tile-key" /></ui:VisualElement><ui:Label text="+120 ENERGY/H" class="sheet__tile-value" /><ui:Label text="NEXT  +180 ENERGY/H" class="sheet__tile-next" /></ui:VisualElement>
+        <ui:VisualElement class="sheet__tile"><ui:VisualElement class="sheet__tile-top"><ui:VisualElement class="ds-icon ds-icon--bolt sheet__tile-icon" /><ui:Label text="UPKEEP" class="sheet__tile-key" /></ui:VisualElement><ui:Label text="12/H" class="sheet__tile-value" /><ui:Label text="NEXT  18/H" class="sheet__tile-next" /></ui:VisualElement>
+        <ui:VisualElement class="sheet__tile is-last"><ui:VisualElement class="sheet__tile-top"><ui:VisualElement class="ds-icon ds-icon--people sheet__tile-icon" /><ui:Label text="CREW" class="sheet__tile-key" /></ui:VisualElement><ui:Label text="2" class="sheet__tile-value" /><ui:Label text="NEXT  3" class="sheet__tile-next" /></ui:VisualElement>
+      </ui:VisualElement>
       <ui:VisualElement class="ds-btn ds-btn--ghost sheet__more"><ui:Label text="ALL DETAILS AND ACTIONS" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>
