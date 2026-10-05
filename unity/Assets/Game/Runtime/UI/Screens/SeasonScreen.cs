@@ -1,6 +1,6 @@
 using Deadswitch.Game.Core;
-using Deadswitch.Game.Presentation;
 using Deadswitch.Game.Cosmetics;
+using Deadswitch.Game.Presentation;
 using Deadswitch.Host.Seasons;
 using UnityEngine.UIElements;
 
