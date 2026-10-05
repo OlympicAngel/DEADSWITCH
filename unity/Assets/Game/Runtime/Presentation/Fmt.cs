@@ -50,10 +50,10 @@ namespace Deadswitch.Game.Presentation
         {
             switch (p)
             {
-                case Posture.Turtle: return "TURTLE";
-                case Posture.Dark: return "GO DARK";
+                case Posture.Turtle: return "FORTIFY";
+                case Posture.Dark: return "HIDE";
                 case Posture.Evacuate: return "EVACUATE";
-                default: return "NONE";
+                default: return "NORMAL";
             }
         }
 
@@ -85,6 +85,45 @@ namespace Deadswitch.Game.Presentation
         public static string Num(long v)
         {
             return v.ToString(Inv);
+        }
+
+        /// <summary>Compact count for tight readouts: 9,999 stays exact, then 12.4k, 1.2M.</summary>
+        public static string Compact(long v)
+        {
+            long a = System.Math.Abs(v);
+            string sign = v < 0 ? "-" : string.Empty;
+            if (a < 10000)
+            {
+                return v.ToString(Inv);
+            }
+
+            return a < 1000000 ? sign + (a / 1000.0).ToString(a < 100000 ? "0.0" : "0", Inv) + "k" : sign + (a / 1000000.0).ToString("0.0", Inv) + "M";
+        }
+
+        /// <summary>A coarse span from real seconds: 2D 4H, 4H 20M, 35M, &lt;1M.</summary>
+        public static string Span(double seconds)
+        {
+            long m = (long)System.Math.Ceiling(System.Math.Max(0, seconds) / 60.0);
+            if (m < 1)
+            {
+                return "<1M";
+            }
+
+            long h = m / 60;
+            long d = h / 24;
+            if (d > 0)
+            {
+                return d.ToString(Inv) + "D " + (h % 24).ToString(Inv) + "H";
+            }
+
+            return h > 0 ? h.ToString(Inv) + "H " + (m % 60).ToString(Inv) + "M" : m.ToString(Inv) + "M";
+        }
+
+        /// <summary>One-unit span for tiny readouts: 2D, 4H, 35M.</summary>
+        public static string SpanCoarse(double seconds)
+        {
+            long m = (long)System.Math.Ceiling(System.Math.Max(0, seconds) / 60.0);
+            return m >= 2880 ? (m / 1440).ToString(Inv) + "D" : m >= 60 ? (m / 60).ToString(Inv) + "H" : System.Math.Max(1, m).ToString(Inv) + "M";
         }
 
         /// <summary>Milli-units as a percent with at most one decimal: 400 = "0.4", 16000 = "16".</summary>

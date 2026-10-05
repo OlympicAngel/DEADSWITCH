@@ -39,6 +39,8 @@ namespace Deadswitch.Game.Base
         private bool _fxReduced;
         private float _flicker = 1f;
         private float _flickerHold;
+        private readonly List<SlotMove> _moves = new List<SlotMove>();
+        private ParticleSystem _dust;
 
         private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
         private static readonly int ConeScaleId = Shader.PropertyToID("_DsConeScale");
@@ -57,6 +59,24 @@ namespace Deadswitch.Game.Base
         public Vector3 LabelAnchor(int slot)
         {
             return _slots[slot].Root.position + new Vector3(0, _slots[slot].Height + 0.8f, 0);
+        }
+
+        /// <summary>Ground position of a slot (plot center).</summary>
+        public Vector3 SlotGround(int slot)
+        {
+            return _slots[slot].Root.position;
+        }
+
+        /// <summary>Height of the facility standing on a slot (0 for an empty plot).</summary>
+        public float SlotHeight(int slot)
+        {
+            return _slots[slot].Height;
+        }
+
+        /// <summary>Center of a slot's facility at half height (what the drone frames when focusing).</summary>
+        public Vector3 FocusPoint(int slot)
+        {
+            return _slots[slot].Root.position + new Vector3(0, _slots[slot].Height * 0.5f, 0);
         }
 
         /// <summary>World position of the core door (for the CORE label).</summary>
@@ -234,7 +254,13 @@ namespace Deadswitch.Game.Base
                 bool shapeChanged = !o.Built || v.Kind != o.View.Kind || v.Level != o.View.Level || v.UnderConstruction != o.View.UnderConstruction || v.Damage != o.View.Damage || slotFx;
                 if (shapeChanged)
                 {
+                    bool first = !o.Built;
+                    SlotView before = o.View;
                     Rebuild(o, v, i);
+                    if (!first)
+                    {
+                        Animate(o, before, v);
+                    }
                 }
                 else if (v.Powered != o.View.Powered || v.Unmanned != o.View.Unmanned)
                 {
@@ -254,6 +280,78 @@ namespace Deadswitch.Game.Base
             {
                 Destroy(_walkers[_walkers.Count - 1].T.gameObject);
                 _walkers.RemoveAt(_walkers.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Construction motion (SPEC-040 ideas 73-74): a new site rises out of the ground in dust, a finished build
+        /// punches up and settles, fresh damage jolts the facility with a burst. Off under reduced motion.
+        /// </summary>
+        private void Animate(SlotObject o, SlotView before, SlotView now)
+        {
+            if (_host.Settings.ReducedMotion)
+            {
+                return;
+            }
+
+            _dust ??= BattleFx.BurstEmitter(_world, true);
+            Vector3 at = o.Root.position + new Vector3(0, 0.4f, 0);
+            float effects = Mathf.Max(0.25f, _host.Settings.Effects);
+            if (now.UnderConstruction && !before.UnderConstruction)
+            {
+                _moves.Add(new SlotMove { Target = o.Root, Kind = 0, Seconds = 0.9f });
+                BattleFx.Burst(_dust, at, (int)(14 * effects), 1.2f);
+            }
+            else if (before.UnderConstruction && !now.UnderConstruction && now.Kind != FacilityKind.None)
+            {
+                _moves.Add(new SlotMove { Target = o.Root, Kind = 1, Seconds = 0.55f });
+                BattleFx.Burst(_dust, at, (int)(10 * effects), 1f);
+            }
+            else if (now.Damage > before.Damage)
+            {
+                _moves.Add(new SlotMove { Target = o.Root, Kind = 2, Seconds = 0.45f });
+                BattleFx.Burst(_dust, at + new Vector3(0, o.Height * 0.5f, 0), (int)(12 * effects), 1.4f);
+            }
+        }
+
+        private void TickMoves(float dt)
+        {
+            for (int i = _moves.Count - 1; i >= 0; i--)
+            {
+                SlotMove m = _moves[i];
+                m.Time += dt;
+                float t = Mathf.Clamp01(m.Time / m.Seconds);
+                if (m.Target == null)
+                {
+                    _moves.RemoveAt(i);
+                    continue;
+                }
+
+                switch (m.Kind)
+                {
+                    case 0:
+                        // rise from the ground
+                        float y = Mathf.Lerp(0.05f, 1f, Deadswitch.Game.UI.Ease.OutBack(t));
+                        float xz = Mathf.Lerp(0.92f, 1f, t);
+                        m.Target.localScale = new Vector3(xz, y, xz);
+                        break;
+                    case 1:
+                        // punch on completion
+                        float p = 1f + (0.12f * Mathf.Sin(t * Mathf.PI) * (1f - t));
+                        m.Target.localScale = new Vector3(p, p + (0.06f * Mathf.Sin(t * Mathf.PI)), p);
+                        break;
+                    default:
+                        // a jolt from a hit
+                        float k = Mathf.Sin(t * Mathf.PI * 5f) * (1f - t) * 0.05f;
+                        m.Target.localScale = new Vector3(1f + k, 1f - k, 1f + k);
+                        break;
+                }
+
+                if (t >= 1f)
+                {
+                    m.Target.localScale = Vector3.one;
+                    _moves.RemoveAt(i);
+                }
             }
         }
 
@@ -461,6 +559,7 @@ namespace Deadswitch.Game.Base
             }
 
             bool reduced = _host != null && _host.Settings.ReducedMotion;
+            TickMoves(dt);
             foreach (SlotObject o in _slots)
             {
                 bool powered = o.View.Powered;
@@ -677,6 +776,14 @@ namespace Deadswitch.Game.Base
             r.shadowCastingMode = ShadowCastingMode.Off;
             ring.SetActive(false);
             return ring;
+        }
+
+        private sealed class SlotMove
+        {
+            public Transform Target;
+            public int Kind;
+            public float Seconds;
+            public float Time;
         }
 
         private sealed class SlotObject

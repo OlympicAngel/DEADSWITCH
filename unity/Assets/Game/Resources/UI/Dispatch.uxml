@@ -3,57 +3,97 @@
   <!-- DISPATCH (F-034): the world knocking. Warlord Ultimatum, the pending dilemma and the current world event.
        Every cost and risk is shown before the tap. Sample values are for the preview; DispatchScreen fills everything. -->
   <ui:VisualElement name="dispatch" class="dsp">
-    <ui:VisualElement class="row dsp-head">
-      <ui:Label text="DISPATCH" class="ds-title grow" />
-      <ui:VisualElement name="dsp-close" class="dsp-close"><ui:Label text="X" class="dsp-close__x" /></ui:VisualElement>
+    <ui:VisualElement class="ds-head dsp-head">
+      <ui:VisualElement class="ds-head__well"><ui:VisualElement class="ds-icon ds-icon--mail ds-head__icon" /></ui:VisualElement>
+      <ui:VisualElement class="ds-head__body">
+        <ui:Label text="DISPATCH" class="ds-head__title" />
+        <ui:Label text="THE WORLD IS KNOCKING // CHOOSE" class="ds-head__status" />
+      </ui:VisualElement>
+      <ui:VisualElement name="dsp-close" class="ds-iconbtn dsp-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:VisualElement name="dsp-world" class="row dsp-world">
-      <ui:VisualElement name="dsp-world-pip" class="ds-pip ds-pip--amber dsp-world__pip" />
-      <ui:VisualElement class="grow">
-        <ui:Label name="dsp-world-title" text="SIGNAL STORM // 14:22:10" class="dsp-world__title" />
-        <ui:Label name="dsp-world-desc" text="Hack odds -20. Corruption creeps up 0.1% an hour." class="ds-body t-dim dsp-world__desc" />
+    <ui:ScrollView class="dsp-scroll" vertical-scroller-visibility="Auto" horizontal-scroller-visibility="Hidden">
+      <!-- World event -->
+      <ui:VisualElement name="dsp-world" class="ds-card ds-card--amber dsp-world">
+        <ui:VisualElement class="ds-card__head dsp-world__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--signal ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles">
+            <ui:Label text="WORLD EVENT // ACTIVE" class="ds-card__sub dsp-kicker" />
+            <ui:Label name="dsp-world-title" text="SIGNAL STORM // 14:22:10" class="dsp-world__title" />
+          </ui:VisualElement>
+          <ui:VisualElement name="dsp-world-pip" class="ds-pip ds-pip--amber dsp-world__pip" />
+        </ui:VisualElement>
+        <ui:Label name="dsp-world-desc" text="Hack odds -20. Corruption creeps up 0.1% an hour." class="ds-prose dsp-world__desc" />
       </ui:VisualElement>
-    </ui:VisualElement>
 
-    <!-- Warlord Ultimatum -->
-    <ui:VisualElement name="dsp-ultimatum" class="ds-panel dsp-card dsp-card--threat">
-      <ui:VisualElement class="row">
-        <ui:Label text="WARLORD ULTIMATUM" class="dsp-card__name grow" />
-        <ui:Label name="dsp-ult-time" text="23:41:08" class="dsp-card__time t-red" />
+      <!-- Warlord Ultimatum -->
+      <ui:VisualElement name="dsp-ultimatum" class="ds-card ds-card--red dsp-card dsp-card--threat">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--swords ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles">
+            <ui:Label text="WARLORD ULTIMATUM" class="ds-card__title" />
+            <ui:Label text="RUSTBORN // MOTHER KESS" class="ds-card__sub t-amber" />
+          </ui:VisualElement>
+          <ui:VisualElement class="dsp-timer dsp-timer--red">
+            <ui:VisualElement class="ds-icon ds-icon--clock dsp-timer__icon" />
+            <ui:Label name="dsp-ult-time" text="23:41:08" class="dsp-card__time t-red" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="dsp-ult-text" text="Mother Kess has watched us stay small for ten days. Pay, or her whole clan comes over the wall." class="ds-card__body" />
+        <ui:VisualElement class="row dsp-card__terms">
+          <ui:VisualElement class="dsp-kv">
+            <ui:Label text="PAY THE PRICE" class="ds-label" />
+            <ui:Label name="dsp-ult-price" text="800 E  100 F" class="dsp-kv__value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="dsp-kv dsp-kv--danger">
+            <ui:Label text="OR REFUSE" class="ds-label" />
+            <ui:Label name="dsp-ult-wave" text="WAVE x2.5" class="dsp-kv__value t-red" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="dsp-ult-note" text="Advance to Tier 2 before the deadline and she withdraws. A standing tribute order pays for you." class="ds-prose dsp-card__note" />
+        <ui:VisualElement class="row dsp-card__actions">
+          <ui:VisualElement name="dsp-ult-pay" class="ds-btn ds-btn--primary grow"><ui:Label text="PAY" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="dsp-ult-prepare" class="ds-btn ds-btn--warn grow dsp-gap"><ui:Label text="PREPARE DEFENSES" class="ds-btn__label" /></ui:VisualElement>
+        </ui:VisualElement>
       </ui:VisualElement>
-      <ui:Label text="RUSTBORN // MOTHER KESS" class="ds-label t-amber dsp-card__from" />
-      <ui:Label name="dsp-ult-text" text="Mother Kess has watched us stay small for ten days. Pay, or her whole clan comes over the wall." class="ds-body dsp-card__text" />
-      <ui:VisualElement class="row dsp-card__terms">
-        <ui:VisualElement class="dsp-kv"><ui:Label text="PRICE" class="ds-label" /><ui:Label name="dsp-ult-price" text="800 E  100 F" class="dsp-kv__value" /></ui:VisualElement>
-        <ui:VisualElement class="dsp-kv"><ui:Label text="REFUSE" class="ds-label" /><ui:Label name="dsp-ult-wave" text="WAVE x2.5" class="dsp-kv__value t-red" /></ui:VisualElement>
-      </ui:VisualElement>
-      <ui:Label name="dsp-ult-note" text="Advance to Tier 2 before the deadline and she withdraws. A standing tribute order pays for you." class="ds-body t-dim dsp-card__note" />
-      <ui:VisualElement class="row dsp-card__actions">
-        <ui:VisualElement name="dsp-ult-pay" class="ds-btn ds-btn--primary grow"><ui:Label text="PAY" class="ds-btn__label" /></ui:VisualElement>
-        <ui:VisualElement name="dsp-ult-prepare" class="ds-btn ds-btn--warn grow dsp-gap"><ui:Label text="PREPARE DEFENSES" class="ds-btn__label" /></ui:VisualElement>
-      </ui:VisualElement>
-    </ui:VisualElement>
 
-    <!-- Dilemma -->
-    <ui:VisualElement name="dsp-dilemma" class="ds-panel dsp-card">
-      <ui:VisualElement class="row">
-        <ui:Label name="dsp-dil-name" text="REFUGEES AT THE GATE" class="dsp-card__name grow" />
-        <ui:Label name="dsp-dil-time" text="11:02:40" class="dsp-card__time t-amber" />
-      </ui:VisualElement>
-      <ui:Label name="dsp-dil-text" text="Twelve people outside the north gate. Hands we need. One of them may not be what they seem." class="ds-body dsp-card__text" />
-      <ui:VisualElement name="dsp-dil-take" class="dsp-choice">
-        <ui:Label name="dsp-dil-take-label" text="TAKE THEM IN" class="dsp-choice__label" />
-        <ui:Label name="dsp-dil-take-fx" text="+3 PEOPLE // 30% A SPY: HEAT +15 ON THE HOTTEST FACTION" class="dsp-choice__fx" />
-      </ui:VisualElement>
-      <ui:VisualElement name="dsp-dil-refuse" class="dsp-choice dsp-choice--safe">
-        <ui:Label name="dsp-dil-refuse-label" text="TURN THEM AWAY" class="dsp-choice__label" />
-        <ui:Label name="dsp-dil-refuse-fx" text="NOTHING CHANGES" class="dsp-choice__fx" />
-      </ui:VisualElement>
-      <ui:Label text="UNANSWERED, I REFUSE FOR YOU." class="ds-label t-dim dsp-card__note" />
-    </ui:VisualElement>
+      <!-- Dilemma -->
+      <ui:VisualElement name="dsp-dilemma" class="ds-card ds-card--amber dsp-card">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--alert ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles">
+            <ui:Label text="DILEMMA // YOUR CALL" class="ds-card__sub dsp-kicker" />
+            <ui:Label name="dsp-dil-name" text="REFUGEES AT THE GATE" class="ds-card__title" />
+          </ui:VisualElement>
+          <ui:VisualElement class="dsp-timer">
+            <ui:VisualElement class="ds-icon ds-icon--clock dsp-timer__icon" />
+            <ui:Label name="dsp-dil-time" text="11:02:40" class="dsp-card__time t-amber" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="dsp-dil-text" text="Twelve people outside the north gate. Hands we need. One of them may not be what they seem." class="ds-card__body" />
 
-    <ui:Label name="dsp-empty" text="The wastes are quiet. Nothing is waiting on you." class="ds-body t-dim dsp-empty is-hidden" />
+        <ui:VisualElement name="dsp-dil-take" class="dsp-choice">
+          <ui:VisualElement class="dsp-choice__well"><ui:VisualElement class="ds-icon ds-icon--hand dsp-choice__icon" /></ui:VisualElement>
+          <ui:VisualElement class="dsp-choice__text">
+            <ui:Label name="dsp-dil-take-label" text="TAKE THEM IN" class="dsp-choice__label" />
+            <ui:Label name="dsp-dil-take-fx" text="+3 PEOPLE // 30% A SPY: HEAT +15 ON THE HOTTEST FACTION" class="dsp-choice__fx" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ds-icon ds-icon--chevron dsp-choice__go" />
+        </ui:VisualElement>
+        <ui:VisualElement name="dsp-dil-refuse" class="dsp-choice dsp-choice--safe">
+          <ui:VisualElement class="dsp-choice__well"><ui:VisualElement class="ds-icon ds-icon--shield dsp-choice__icon" /></ui:VisualElement>
+          <ui:VisualElement class="dsp-choice__text">
+            <ui:Label name="dsp-dil-refuse-label" text="TURN THEM AWAY" class="dsp-choice__label" />
+            <ui:Label name="dsp-dil-refuse-fx" text="NOTHING CHANGES" class="dsp-choice__fx" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ds-icon ds-icon--chevron dsp-choice__go" />
+        </ui:VisualElement>
+        <ui:Label text="UNANSWERED, I REFUSE FOR YOU." class="ds-label t-dim dsp-card__note" />
+      </ui:VisualElement>
+
+      <ui:Label name="dsp-empty" text="The wastes are quiet. Nothing is waiting on you." class="ds-body t-dim dsp-empty is-hidden" />
+    </ui:ScrollView>
+
     <ui:Label name="dsp-reason" text="" class="ds-body t-amber dsp-reason" />
   </ui:VisualElement>
 </ui:UXML>

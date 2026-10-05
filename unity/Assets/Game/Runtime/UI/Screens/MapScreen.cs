@@ -155,6 +155,7 @@ namespace Deadswitch.Game.UI.Screens
 
                     _selected = index;
                     _reason.text = string.Empty;
+                    Pager.Show(_ui.Q("map-pager"), "page-site");
                     Refresh();
                 });
 
@@ -324,7 +325,7 @@ namespace Deadswitch.Game.UI.Screens
                 Label est = _estimates[i];
                 est.EnableInClassList("is-hidden", st.Outpost);
                 est.EnableInClassList("is-known", st.Scouted);
-                string text = (st.Scouted ? "DEF " : "~") + WorldSystem.EstimatedDefense(s, c, i);
+                string text = (st.Scouted ? "DEFENSE " : "~") + WorldSystem.EstimatedDefense(s, c, i);
                 est.text = st.Scouted ? text : GlitchText.Flicker(text, weight, _frame + (i * 7));
             }
         }
@@ -525,6 +526,8 @@ namespace Deadswitch.Game.UI.Screens
             SimConfig c = _host.Sim.Config;
 
             _ui.Q<Label>("map-ops-count").text = "OPS " + s.Ops.Count + "/" + WorldSystem.MaxOps(s, c) + " // FUEL " + Fmt.Num(s.Fuel);
+            Pager.Badge(_ui.Q("map-pager"), "page-ops", s.Ops.Count);
+            _ui.Q("map-ops-empty").EnableInClassList("is-hidden", s.Ops.Count > 0);
             for (int f = 0; f < WorldSystem.FactionCount; f++)
             {
                 HeatLevel level = WorldSystem.Level(s.Heat[f]);
@@ -538,11 +541,11 @@ namespace Deadswitch.Game.UI.Screens
                 foreach (Posture p in new[] { Posture.Turtle, Posture.Dark, Posture.Evacuate })
                 {
                     int lv = AdaptSystem.Learned(s, (Faction)f, p);
-                    learned += lv > 0 ? (learned.Length > 0 ? " " : "KNOWS ") + Fmt.PostureName(p) + " " + lv : string.Empty;
+                    learned += lv > 0 ? (learned.Length > 0 ? " " : "READ OUR ") + Fmt.PostureName(p) + " " + lv : string.Empty;
                 }
 
                 int fort = s.Fortified[f];
-                string adapt = learned + (fort > 0 ? (learned.Length > 0 ? " // " : string.Empty) + "FORT " + fort : string.Empty);
+                string adapt = learned + (fort > 0 ? (learned.Length > 0 ? " // " : string.Empty) + "DUG IN " + fort : string.Empty);
                 if (LuckSystem.Regrouping(s, (Faction)f))
                 {
                     // an opportunity window (SPEC-028): their sites are thin right now
@@ -556,7 +559,7 @@ namespace Deadswitch.Game.UI.Screens
                 Label spyState = _ui.Q<Label>("spy-" + f + "-state");
                 spyState.text = spy ? "AGENT INSIDE" : "NO AGENT";
                 spyState.EnableInClassList("is-on", spy);
-                _ui.Q<Label>("spy-" + f + "-a-label").text = spy ? "FRAME" : "PLANT " + Fmt.Num(c.Intel.SpyEnergy) + " E";
+                _ui.Q<Label>("spy-" + f + "-a-label").text = spy ? "FRAME A RIVAL" : "SEND SPY // " + Fmt.Num(c.Intel.SpyEnergy) + " ENERGY";
                 _ui.Q("spy-" + f + "-a").EnableInClassList("is-disabled", !spy && s.Energy < c.Intel.SpyEnergy);
                 _ui.Q("spy-" + f + "-b").EnableInClassList("is-hidden", !spy);
 
@@ -566,7 +569,7 @@ namespace Deadswitch.Game.UI.Screens
                 bool cooling = s.Tick < s.CeasefireReadyTick || (s.CeasefireFaction >= 0 && !peace);
                 _ui.Q("pact-" + f).EnableInClassList("is-on", peace);
                 _ui.Q<Label>("pact-" + f + "-label").text = peace ? "PACT // " + Fmt.Countdown(_host.SecondsUntilTick(s.CeasefireUntilTick))
-                    : !talks ? "WILL NOT TALK" : "PACT // " + Fmt.Num(pe) + " E " + Fmt.Num(pf) + " F";
+                    : !talks ? "WILL NOT TALK" : "CEASEFIRE // " + Fmt.Num(pe) + " ENERGY " + Fmt.Num(pf) + " FUEL";
                 _ui.Q("pact-" + f).EnableInClassList("is-disabled", !peace && (!talks || cooling || s.CeasefireFaction >= 0 || s.Energy < pe || s.Fuel < pf));
 
                 // alliance (SPEC-025): only with a Cold faction; their fighters man the wall for a daily share
@@ -578,7 +581,7 @@ namespace Deadswitch.Game.UI.Screens
                 ally.EnableInClassList("is-armed", armed);
                 _ui.Q("heat-" + f).EnableInClassList("is-allied", allied);
                 _ui.Q<Label>("ally-" + f + "-label").text = armed ? "CONFIRM // END" : allied ? "ALLIED // +" + DiplomacySystem.AllyDefense(s, c) + " DEF"
-                    : level != HeatLevel.Cold ? "ALLY // NEEDS COLD" : "ALLY // " + Fmt.Num(d.AllianceEnergy) + " E " + Fmt.Num(d.AllianceFuel) + " F";
+                    : level != HeatLevel.Cold ? "ALLY // NEEDS COLD" : "ALLY // " + Fmt.Num(d.AllianceEnergy) + " ENERGY " + Fmt.Num(d.AllianceFuel) + " FUEL";
                 ally.EnableInClassList("is-disabled", !allied && (level != HeatLevel.Cold || s.AllyFaction >= 0 || s.Energy < d.AllianceEnergy || s.Fuel < d.AllianceFuel));
             }
 
@@ -626,6 +629,7 @@ namespace Deadswitch.Game.UI.Screens
             bool wild = HazardSystem.Wild(WorldSystem.Sites[_selected].Kind);
             bool hostile = level == HeatLevel.Marked || wild;
             int left = System.Math.Max(0, c.Living.TradesPerDay - s.TradesToday[(int)owner]);
+            _ui.Q<Label>("trade-with").text = (wild ? "NO OWNER" : Names.Faction(owner)) + " // " + WorldSystem.Sites[_selected].Name;
             _ui.Q<Label>("trade-left").text = wild ? "NOBODY OUT THERE TO TRADE WITH" : hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant() + " // BLUEPRINTS " + s.Blueprints + "/" + c.Living.BlueprintMax;
             for (int g = 0; g <= (int)TradeGood.Blueprints; g++)
             {
@@ -633,7 +637,7 @@ namespace Deadswitch.Game.UI.Screens
                 int price = LivingSystem.Price(s, c, owner, good);
                 bool payFuel = good == TradeGood.EnergyCells;
                 _ui.Q<Label>("trade-" + g + "-get").text = "+" + Fmt.Num(LivingSystem.Lot(c, good)) + " " + LivingTexts.Good(good);
-                _ui.Q<Label>("trade-" + g + "-pay").text = hostile ? "-" : Fmt.Num(price) + (payFuel ? " F" : " E");
+                _ui.Q<Label>("trade-" + g + "-pay").text = hostile ? "-" : Fmt.Num(price) + (payFuel ? " FUEL" : " ENERGY");
                 bool afford = price >= 0 && (payFuel ? s.Fuel >= price : s.Energy >= price);
                 bool full = good == TradeGood.Blueprints && s.Blueprints >= c.Living.BlueprintMax;
                 _ui.Q("trade-" + g).EnableInClassList("is-disabled", hostile || left == 0 || !afford || full);
@@ -652,7 +656,7 @@ namespace Deadswitch.Game.UI.Screens
             int estimate = WorldSystem.EstimatedDefense(s, c, _selected);
             _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : !wild && IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
             _ui.Q<Label>("site-def").text = (st.Scouted ? string.Empty : "~") + estimate + (d.Cyber > 0 ? "  CYBER " + d.Cyber : string.Empty);
-            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c)
+            _ui.Q<Label>("site-loot").text = d.Energy + " ENERGY  " + d.Fuel + " FUEL  " + d.Compute + " COMPUTE" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c)
                 + (d.Kind == SiteKind.DataCenter ? "  + FRAGMENT " + c.Modules.FragmentPctDataCenter + "%" : d.Kind == SiteKind.Ruins ? "  + FRAGMENT " + c.Modules.FragmentPctRuins + "%" : string.Empty);
 
             if ((_kind == OpKind.Hack && d.Cyber == 0) || (_kind == OpKind.Sabotage && wild))
@@ -678,7 +682,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, _selected, _kind)) + " // BACK IN " + back + " H"
                 + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty)
                 + (hack ? string.Empty : Risk(s, c, _selected));
-            string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK", "SEND SABOTEURS" };
+            string[] verbs = { "SEND SCOUTS", "LAUNCH STRIKE", "START HACK", "SEND SABOTEURS" };
             Kit.SetButtonText(_ui.Q("op-launch"), verbs[(int)_kind]);
             bool cooling = _kind != OpKind.Scout && s.Tick < st.CooldownUntilTick;
             _ui.Q("op-launch").EnableInClassList("is-disabled", st.Outpost || cooling || s.Ops.Count >= WorldSystem.MaxOps(s, c));
@@ -686,7 +690,7 @@ namespace Deadswitch.Game.UI.Screens
             bool seize = d.Kind == SiteKind.Outpost;
             bool claimable = (d.Kind == SiteKind.Ruins || seize) && st.Cleared && !st.Outpost;
             _ui.Q("site-claim").EnableInClassList("is-hidden", !claimable);
-            Kit.SetButtonText(_ui.Q("site-claim"), seize ? "SEIZE AND HOLD // " + c.World.SeizeEnergy + " E" : "CLAIM // " + c.World.OutpostClaimEnergy + " E");
+            Kit.SetButtonText(_ui.Q("site-claim"), seize ? "SEIZE AND HOLD // " + c.World.SeizeEnergy + " ENERGY" : "CLAIM // " + c.World.OutpostClaimEnergy + " ENERGY");
         }
 
         /// <summary>What a hazard zone pays besides loot (SPEC-032).</summary>
@@ -729,7 +733,7 @@ namespace Deadswitch.Game.UI.Screens
                 _opsSignature = signature;
                 _ops.Clear();
                 _opTimes.Clear();
-                string[] kinds = { "SCOUT", "RAID", "HACK", "SABOTAGE" };
+                string[] kinds = { "SCOUT", "STRIKE", "HACK", "SABOTAGE" };
                 foreach (Operation op in s.Ops)
                 {
                     var row = new VisualElement();

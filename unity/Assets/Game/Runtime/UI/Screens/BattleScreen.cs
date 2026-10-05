@@ -17,7 +17,7 @@ namespace Deadswitch.Game.UI.Screens
     /// </summary>
     public sealed class BattleScreen : IGameScreen
     {
-        private static readonly string[] Fx = { "DEF +{0}%", "THEM -{0}%", "DEF +{0}%", "THEM -{0}% // CORRUPTS ME" };
+        private static readonly string[] Fx = { "OUR DEFENSE +{0}%", "THEIR STRENGTH -{0}%", "OUR DEFENSE +{0}%", "THEIR STRENGTH -{0}% // CORRUPTS ME" };
 
         private readonly GameHost _host;
         private readonly VisualElement _ui;
@@ -115,7 +115,7 @@ namespace Deadswitch.Game.UI.Screens
 
             int[] values = { b.FocusDefensePct, b.BarrageStrengthPct, b.TakeoverDefensePct, b.SeizeStrengthPct };
             string charges = "OVERRIDE " + s.OverrideCharges + "/" + OverrideSystem.MaxCharges(s, c);
-            string[] costs = { b.FocusCompute + " C", b.BarrageEnergy + " E", charges, charges };
+            string[] costs = { b.FocusCompute + " COMPUTE", b.BarrageEnergy + " ENERGY", charges, charges };
             bool[] afford = { s.Compute >= b.FocusCompute, s.Energy >= b.BarrageEnergy, OverrideSystem.Ready(s), OverrideSystem.Ready(s) };
             for (int i = 0; i < 4; i++)
             {

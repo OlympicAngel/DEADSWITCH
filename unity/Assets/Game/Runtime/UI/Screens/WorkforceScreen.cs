@@ -37,7 +37,7 @@ namespace Deadswitch.Game.UI.Screens
             Kit.BuildMeter(_meter);
             _reason = _ui.Q<Label>("wf-reason");
 
-            _ui.Q("wf-close").RegisterCallback<ClickEvent>(_ => router.Show("base"));
+            _ui.Q("wf-close").RegisterCallback<ClickEvent>(_ => router.Return());
             Lethal("wf-forced-btn", () => Command.ForcedLabor(), () => _host.Sim.Config.PeopleChoices.SurgeDeaths + " DIE");
             Lethal("wf-cleanse-btn", () => Command.NeuralCleanse(_cleanseN), () => _cleanseN + " DIE");
             Lethal("wf-crackdown-btn", () => Command.Crackdown(), () => _host.Sim.Config.PeopleChoices.CrackdownPeople + " REMOVED");

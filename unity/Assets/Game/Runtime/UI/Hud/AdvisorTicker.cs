@@ -24,12 +24,19 @@ namespace Deadswitch.Game.UI.Hud
 
         public string Current => _line;
 
+        /// <summary>True while the current line is still being typed out (drives the orb and the waveform).</summary>
+        public bool Typing => _shown < _line.Length;
+
+        /// <summary>Raised when a new line starts.</summary>
+        public event System.Action<string> Spoke;
+
         public void Say(string line)
         {
             _line = line ?? string.Empty;
             Audio.AudioDirector.Instance?.Speak(_line);
             _shown = Motion.Reduced ? _line.Length : 0f;
             Render();
+            Spoke?.Invoke(_line);
         }
 
         /// <param name="glitch">0..1 corruption weight x effect intensity.</param>

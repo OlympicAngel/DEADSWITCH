@@ -88,7 +88,7 @@ namespace Deadswitch.Host.Notifications
                         alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "PURGE ULTIMATUM", "Pay, retreat or prepare. " + (e.B / 60) + " hours."));
                         break;
                     case EventKind.UltimatumIssued when (kinds & AlertKinds.Raids) != 0:
-                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "WARLORD ULTIMATUM", "Mother Kess wants " + e.B + " energy and " + e.C + " fuel. " + (e.A / 60) + " hours, or her wave comes."));
+                        alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "WARLORD ULTIMATUM", Names.Warlord + " wants " + e.B + " energy and " + e.C + " fuel. " + (e.A / 60) + " hours, or her wave comes."));
                         break;
                     case EventKind.CrisisStruck when (kinds & AlertKinds.Raids) != 0:
                         alerts.Add(new ProjectedAlert(at, AlertKinds.Raids, "CORE CRISIS", "I am failing. Come back and flush me before it spreads."));

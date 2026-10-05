@@ -101,7 +101,7 @@ namespace Deadswitch.Game.UI.Base
                 t.Pip.EnableInClassList("ds-pip--amber", job != null || !slot.Staffed);
                 t.Pip.EnableInClassList("ds-pip--diamond", job != null || !slot.Staffed);
                 t.Pip.EnableInClassList("ds-pip--red", !slot.IsEmpty && (!slot.Enabled || !slot.Powered));
-                t.State.text = job != null ? "BUILDING" : (!slot.Enabled ? "OFF" : (!slot.Powered ? "NO POWER" : (!slot.Staffed ? "AI-RUN" : string.Empty)));
+                t.State.text = job != null ? "BUILDING" : (!slot.Enabled ? "OFF" : (!slot.Powered ? "NO POWER" : (!slot.Staffed ? "RUN BY AI" : string.Empty)));
             }
 
             _core.Name.text = "CORE";

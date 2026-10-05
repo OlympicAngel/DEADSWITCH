@@ -1,0 +1,29 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="Opening.uss" />
+  <!-- Prologue (SPEC-009, SPEC-043 s4): the fragment wakes and tells its story in six beats over the world; tap advances, skippable. -->
+  <ui:VisualElement name="prologue" class="pro pro--handler">
+    <ui:VisualElement class="ds-scrim pro__scrim" />
+    <ui:VisualElement name="pro-world" class="pro__world" />
+    <ui:VisualElement name="pro-flash" class="pro__flash" />
+    <ui:VisualElement class="row pro__top">
+      <ui:VisualElement class="pro__rec" />
+      <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="pro__head-label" />
+    </ui:VisualElement>
+    <ui:VisualElement class="pro__center">
+      <ui:VisualElement name="pro-orb" class="ai-orb pro__orb" />
+      <ui:Label name="pro-kicker" text="HANDLER LINK FOUND" class="pro__kicker" />
+      <ui:Label name="pro-text" text="I was built to protect a handler. You are the only one left. Keep me running, and I will keep you alive. Mostly." class="pro__text" />
+      <ui:VisualElement name="pro-pips" class="row pro__pips">
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip is-on" />
+      </ui:VisualElement>
+      <ui:VisualElement name="pro-take" class="ds-btn ds-btn--primary pro__take"><ui:Label text="TAKE CONTROL" class="ds-btn__label" /></ui:VisualElement>
+      <ui:Label name="pro-tap" text="TAP TO CONTINUE" class="pro__tap is-hidden" />
+    </ui:VisualElement>
+    <ui:VisualElement name="pro-skip" class="ds-btn ds-btn--ghost pro__skip"><ui:Label text="SKIP STORY" class="ds-btn__label" /></ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

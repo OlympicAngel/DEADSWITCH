@@ -37,6 +37,9 @@ namespace Deadswitch.Host.Narrative
             }
         }
 
+        /// <summary>The Rustborn warlord who issues the ultimatum (one place for her name).</summary>
+        public const string Warlord = "MOTHER KESS";
+
         /// <summary>Faction display name (doc 10 s5 working names).</summary>
         public static string Faction(Faction faction)
         {
@@ -65,10 +68,10 @@ namespace Deadswitch.Host.Narrative
         {
             switch (posture)
             {
-                case Sim.State.Posture.Turtle: return "TURTLE, FULL GARRISON";
-                case Sim.State.Posture.Dark: return "DARK";
+                case Sim.State.Posture.Turtle: return "FORTIFY, ALL DEFENDERS";
+                case Sim.State.Posture.Dark: return "HIDE";
                 case Sim.State.Posture.Evacuate: return "EVACUATE";
-                default: return "NONE";
+                default: return "NORMAL";
             }
         }
     }

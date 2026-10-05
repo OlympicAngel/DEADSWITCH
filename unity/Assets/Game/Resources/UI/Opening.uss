@@ -1,25 +1,54 @@
-/* Prologue overlay (SPEC-009). Tokens only. */
+/* Prologue overlay (SPEC-009, SPEC-041, SPEC-043 s4): the core wakes in the dark and tells its story over the world.
+   One mood class per beat (pro--boot/before/war/dark/now/handler) recolours the orb, kicker and world. Tokens only. */
 
-.pro {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    justify-content: center;
-    padding: var(--s-12) var(--s-10);
-    background-color: rgba(4, 6, 5, 0.86);
+.pro { position: absolute; left: 0; right: 0; top: 0; bottom: 0; justify-content: center; padding: var(--s-12) var(--s-10); background-color: var(--c-scrim); }
+.pro__scrim { top: 0; bottom: 0; --sheen-color: var(--c-scrim-edge); --sheen-reach: 1; }
+
+/* the planet's crown and its cities, low on screen */
+.pro__world { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; --lit-color: var(--c-cyan); --war-color: var(--c-red); --rim-color: var(--c-cyan-dim); }
+.pro--war .pro__world, .pro--dark .pro__world { --rim-color: var(--c-red-glow); }
+
+/* a hit of light on the war beat (opacity driven from code) */
+.pro__flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-red-glow); opacity: 0; }
+
+.pro__top { position: absolute; left: var(--s-10); right: var(--s-10); top: 150px; align-items: center; justify-content: center; }
+.pro__rec { width: 12px; height: 12px; border-radius: 6px; margin-right: var(--s-2); background-color: var(--c-red); }
+.pro__head-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-cyan-dim); }
+
+.pro__center { align-items: center; margin-bottom: 18%; }
+.pro__orb { width: 300px; height: 300px; margin-bottom: var(--s-8); --ring-color: var(--c-cyan); --core-color: var(--c-cyan-glow); }
+.pro--war .pro__orb, .pro--dark .pro__orb { --ring-color: var(--c-red); --core-color: var(--c-red-glow); }
+.pro--handler .pro__orb { --ring-color: var(--c-violet); --core-color: var(--c-cyan-glow); }
+
+.pro__kicker {
+    -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
+    font-size: var(--fs-micro);
+    letter-spacing: var(--ls-wide);
+    color: var(--c-cyan);
+    margin-bottom: var(--s-4);
+    -unity-text-align: middle-center;
 }
-.pro__head { position: absolute; top: 140px; left: var(--s-10); color: var(--c-text-faint); }
+.pro--war .pro__kicker, .pro--dark .pro__kicker { color: var(--c-red); }
+.pro--handler .pro__kicker { color: var(--c-violet); }
+
 .pro__text {
-    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    -unity-font-definition: resource("Fonts/ChakraPetch-Regular");
     font-size: var(--fs-lg);
-    color: var(--c-text);
+    color: var(--c-white);
     white-space: normal;
     min-height: 300px;
-    -unity-text-align: middle-left;
+    max-width: 900px;
+    -unity-text-align: upper-center;
 }
-.pro__pips { margin-top: var(--s-8); }
-.pro__pip { width: 40px; height: 6px; margin-right: var(--s-2); background-color: rgba(216, 209, 188, 0.18); }
-.pro__pip.is-on { background-color: var(--c-text); }
-.pro__skip { position: absolute; right: var(--s-10); bottom: 160px; min-width: 220px; }
+.pro__pips { margin-top: var(--s-6); }
+.pro__pip { width: 44px; height: 6px; margin: 0 var(--s-1); border-radius: 3px; background-color: var(--c-line-mid); }
+.pro__pip.is-on { background-color: var(--c-cyan); }
+.pro--war .pro__pip.is-on, .pro--dark .pro__pip.is-on { background-color: var(--c-red); }
+
+.pro__take { margin-top: var(--s-8); min-width: 520px; height: 120px; border-radius: 60px; }
+.pro__take > .ds-btn__label { font-size: var(--fs-md); letter-spacing: var(--ls-wide); }
+.pro__take.is-hidden { display: none; }
+.pro__tap { margin-top: var(--s-6); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-faint); }
+.pro__tap.is-hidden { opacity: 0; }
+
+.pro__skip { position: absolute; right: var(--s-8); bottom: 140px; min-width: 240px; border-radius: 44px; }

@@ -1,17 +1,24 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Report.uss" />
-  <!-- After-action report (SPEC-006). Panels receive rendered stills; sample text is for the preview. -->
+  <!-- After-action report (SPEC-006, SPEC-039). Panels receive rendered stills; sample text is for the preview. -->
   <ui:VisualElement name="report" class="rep">
-    <ui:VisualElement class="row rep-head">
-      <ui:VisualElement class="grow">
+    <ui:VisualElement class="ds-head rep-head">
+      <ui:VisualElement class="ds-head__well"><ui:VisualElement class="ds-icon ds-icon--report ds-head__icon" /></ui:VisualElement>
+      <ui:VisualElement class="ds-head__body">
         <ui:Label name="rep-title" text="AFTER-ACTION // RAID 1 // BREACHED" class="rep-title" />
         <ui:Label name="rep-vector" text="PREDICTED NORTH RIDGE  //  CONTACT SOUTH GATE" class="rep-vector is-mismatch" />
       </ui:VisualElement>
-      <ui:VisualElement name="rep-close" class="rep-close"><ui:Label text="X" class="rep-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="rep-close" class="ds-iconbtn rep-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="rep-scroll" class="grow">
+    <ui:ScrollView name="rep-scroll" class="grow rep-scroll">
 
+      <ui:VisualElement class="rep-outcome-row">
+        <ui:Label text="OUTCOME" class="rep-outcome-key" />
+        <ui:Label name="rep-outcome" text="BREACHED" class="rep-outcome is-bad" />
+      </ui:VisualElement>
+
+      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--eye ds-section__icon" /><ui:Label text="EVIDENCE" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="rep-grid">
         <ui:VisualElement name="panel-0" class="rep-panel rep-panel--wide"><ui:Label name="cap-0" text="D1 05:41 // Movement beyond the SOUTH GATE. I estimated 33." class="rep-cap" /></ui:VisualElement>
         <ui:VisualElement name="panel-1" class="rep-panel rep-panel--tall"><ui:Label name="cap-1" text="D1 06:01 // Contact at the SOUTH GATE. Strength 30 against defense 0." class="rep-cap rep-cap--bottom" /></ui:VisualElement>
@@ -19,24 +26,29 @@
         <ui:VisualElement name="panel-3" class="rep-panel rep-panel--wide"><ui:Label name="cap-3" text="-60 ENERGY, -15 COMPUTE." class="rep-cap" /></ui:VisualElement>
       </ui:VisualElement>
 
-      <ui:VisualElement class="rep-box">
-        <ui:VisualElement class="row">
-          <ui:Label text="AI SUMMARY" class="ds-label grow" />
+      <ui:VisualElement class="ds-card ds-card--holo rep-card">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--chip ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles"><ui:Label text="AI SUMMARY" class="ds-card__title" /><ui:Label text="What the core says happened." class="ds-card__sub" /></ui:VisualElement>
           <ui:VisualElement name="rep-state" class="ds-chip ds-chip--amber"><ui:Label name="rep-state-label" text="UNVERIFIED" class="ds-chip__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:Label name="rep-summary" text="&gt; Breach at the SOUTH GATE. Losses contained: -36 ENERGY, -15 COMPUTE." class="rep-say" />
       </ui:VisualElement>
 
-      <ui:VisualElement class="rep-box">
-        <ui:VisualElement class="row">
-          <ui:Label text="LOSS LEDGER" class="ds-label grow" />
-          <ui:Label text="STORE COUNT" class="ds-label" />
+      <ui:VisualElement class="ds-card ds-card--red rep-card">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--skull ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles"><ui:Label text="LOSS LEDGER" class="ds-card__title" /><ui:Label text="True store count." class="ds-card__sub" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:Label name="rep-ledger" text="-60 ENERGY, -15 COMPUTE" class="rep-ledger" />
+        <ui:VisualElement name="rep-loss" class="rep-loss">
+          <ui:VisualElement class="rep-loss__item"><ui:VisualElement class="ds-icon ds-icon--bolt rep-loss__icon" /><ui:Label text="-60 ENERGY" class="rep-loss__label" /></ui:VisualElement>
+          <ui:VisualElement class="rep-loss__item"><ui:VisualElement class="ds-icon ds-icon--chip rep-loss__icon" /><ui:Label text="-15 COMPUTE" class="rep-loss__label" /></ui:VisualElement>
+        </ui:VisualElement>
         <ui:VisualElement name="rep-findings" class="rep-findings is-hidden" />
       </ui:VisualElement>
 
-      <ui:VisualElement name="rep-verify" class="ds-btn rep-verify">
+      <ui:VisualElement name="rep-verify" class="ds-btn ds-btn--ai rep-verify">
         <ui:Label name="rep-verify-label" text="VERIFY // 20 COMPUTE" class="ds-btn__label" />
       </ui:VisualElement>
       <ui:Label name="rep-reason" text="" class="ds-body rep-reason" />

@@ -15,12 +15,20 @@ namespace Deadswitch.Game.Core
     /// <summary>Summary of what happened while the handler was away (drives the return report).</summary>
     public readonly struct CatchUpReport
     {
-        public CatchUpReport(CatchUpPlan plan, int firstEventIndex, int lastEventIndex)
+        public CatchUpReport(CatchUpPlan plan, int firstEventIndex, int lastEventIndex, int[] before, int[] after)
         {
             Plan = plan;
             FirstEventIndex = firstEventIndex;
             LastEventIndex = lastEventIndex;
+            Before = before;
+            After = after;
         }
+
+        /// <summary>Energy, compute, people and fuel before the catch-up ran (the away summary, SPEC-039 idea 20).</summary>
+        public int[] Before { get; }
+
+        /// <summary>The same four after it.</summary>
+        public int[] After { get; }
 
         public CatchUpPlan Plan { get; }
 
@@ -246,6 +254,11 @@ namespace Deadswitch.Game.Core
             return result.Config;
         }
 
+        private int[] Stock()
+        {
+            return new[] { Sim.State.Energy, Sim.State.Compute, Sim.State.People, Sim.State.Fuel };
+        }
+
         private void CatchUp()
         {
             Notifications.LocalAlerts.OnReturn();
@@ -257,6 +270,7 @@ namespace Deadswitch.Game.Core
 
             CatchUpPlan plan = OfflineClock.Plan(last, now, Config.Host);
             int first = _dispatchedEvents;
+            int[] before = Stock();
             if (plan.Minutes > 0)
             {
                 Sim.Run(plan.Minutes);
@@ -273,7 +287,7 @@ namespace Deadswitch.Game.Core
 
             int last2 = Sim.Log.Count;
             _dispatchedEvents = last2;
-            LastCatchUp = new CatchUpReport(plan, first, last2);
+            LastCatchUp = new CatchUpReport(plan, first, last2, before, Stock());
             CaughtUp?.Invoke(LastCatchUp.Value);
             Ticked?.Invoke();
         }

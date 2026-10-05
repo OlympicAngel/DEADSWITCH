@@ -1,5 +1,6 @@
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
+using Deadswitch.Host.Narrative;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.State;
@@ -28,7 +29,7 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _reason = _ui.Q<Label>("dsp-reason");
-            _ui.Q("dsp-close").RegisterCallback<ClickEvent>(_ => router.Show("base"));
+            _ui.Q("dsp-close").RegisterCallback<ClickEvent>(_ => router.Return());
             _ui.Q("dsp-ult-pay").RegisterCallback<ClickEvent>(_ => Run(Command.PayUltimatum()));
             _ui.Q("dsp-ult-prepare").RegisterCallback<ClickEvent>(_ => router.Show("ops"));
             _ui.Q("dsp-dil-take").RegisterCallback<ClickEvent>(_ => Run(Command.ResolveDilemma(0)));
@@ -90,8 +91,9 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("dsp-ultimatum").EnableInClassList("is-hidden", !ult);
             if (ult)
             {
-                _ui.Q<Label>("dsp-ult-text").text = "Mother Kess has watched us stay small for " + l.UltimatumDay + " days. Pay, or her whole clan comes over the wall.";
-                _ui.Q<Label>("dsp-ult-price").text = Fmt.Num(l.UltimatumEnergy) + " E  " + Fmt.Num(l.UltimatumFuel) + " F";
+                _ui.Q<Label>("dsp-ult-text").text = Names.Warlord + " has watched us stay small for " + l.UltimatumDay + " days. Pay, or her whole clan comes over the wall.";
+                _ui.Q<Label>("dsp-ult-note").text = "Reach Tier " + (s.Tier + 1) + " before the deadline and she withdraws. " + (s.TributeOrder ? "Your tribute order pays her if you are away." : "A tribute order on DEFENSE pays her while you are away.");
+                _ui.Q<Label>("dsp-ult-price").text = Fmt.Num(l.UltimatumEnergy) + " ENERGY  " + Fmt.Num(l.UltimatumFuel) + " FUEL";
                 _ui.Q<Label>("dsp-ult-wave").text = "WAVE x" + Fmt.Milli(l.UltimatumStrengthPct * 10);
                 _ui.Q("dsp-ult-pay").EnableInClassList("is-disabled", s.Energy < l.UltimatumEnergy || s.Fuel < l.UltimatumFuel);
             }

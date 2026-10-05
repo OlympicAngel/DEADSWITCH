@@ -1,16 +1,29 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Opening.uss" />
-  <!-- Prologue (SPEC-009 rule 4): typed cards over the dimmed drone feed, skippable. -->
-  <ui:VisualElement name="prologue" class="pro">
-    <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="ds-label pro__head" />
-    <ui:Label name="pro-text" text="They gave the war to a machine." class="pro__text" />
-    <ui:VisualElement name="pro-pips" class="row pro__pips">
-      <ui:VisualElement class="pro__pip is-on" />
-      <ui:VisualElement class="pro__pip" />
-      <ui:VisualElement class="pro__pip" />
-      <ui:VisualElement class="pro__pip" />
-      <ui:VisualElement class="pro__pip" />
+  <!-- Prologue (SPEC-009, SPEC-043 s4): the fragment wakes and tells its story in six beats over the world; tap advances, skippable. -->
+  <ui:VisualElement name="prologue" class="pro pro--boot">
+    <ui:VisualElement class="ds-scrim pro__scrim" />
+    <ui:VisualElement name="pro-world" class="pro__world" />
+    <ui:VisualElement name="pro-flash" class="pro__flash" />
+    <ui:VisualElement class="row pro__top">
+      <ui:VisualElement class="pro__rec" />
+      <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="pro__head-label" />
     </ui:VisualElement>
-    <ui:VisualElement name="pro-skip" class="ds-btn ds-btn--ghost pro__skip"><ui:Label text="SKIP" class="ds-btn__label" /></ui:VisualElement>
+    <ui:VisualElement class="pro__center">
+      <ui:VisualElement name="pro-orb" class="ai-orb pro__orb" />
+      <ui:Label name="pro-kicker" text="" class="pro__kicker" />
+      <ui:Label name="pro-text" text="" class="pro__text" />
+      <ui:VisualElement name="pro-pips" class="row pro__pips">
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+      </ui:VisualElement>
+      <ui:VisualElement name="pro-take" class="ds-btn ds-btn--primary pro__take is-hidden"><ui:Label text="TAKE CONTROL" class="ds-btn__label" /></ui:VisualElement>
+      <ui:Label name="pro-tap" text="TAP TO CONTINUE" class="pro__tap" />
+    </ui:VisualElement>
+    <ui:VisualElement name="pro-skip" class="ds-btn ds-btn--ghost pro__skip"><ui:Label text="SKIP STORY" class="ds-btn__label" /></ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>

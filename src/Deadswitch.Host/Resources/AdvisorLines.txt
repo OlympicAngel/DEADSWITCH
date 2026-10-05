@@ -12,9 +12,9 @@ return.3 | return | cold | You were gone. The base was not. {raids} raids.
 
 raid.warn.1 | raid_warning | neutral | Hostiles inbound. {gate}. Estimate {est}. Contact in {min} min.
 raid.warn.2 | raid_warning | neutral | Movement on the {gate}. Strength {est}. {min} minutes.
-raid.warn.3 | raid_warning | warm | Hostiles inbound, {gate}. Recommend turrets and a garrison. {min} minutes.
+raid.warn.3 | raid_warning | warm | Hostiles inbound, {gate}. Recommend turrets and defenders on the wall. {min} minutes.
 raid.warn.4 | raid_warning | cold | Raiders, {gate}. Estimate {est}. Assign assets or accept losses.
-raid.warn.5 | raid_warning | bold | Raiders, {gate}. Estimate {est}. I would turtle. I would not wait.
+raid.warn.5 | raid_warning | bold | Raiders, {gate}. Estimate {est}. I would fortify. I would not wait.
 
 raid.repelled.1 | raid_repelled | neutral | Raid repelled at the {gate}. No losses.
 raid.repelled.2 | raid_repelled | warm | They broke on the wall. Everyone is accounted for.
@@ -82,7 +82,7 @@ climax.betrayal.1 | betrayal | neutral | The gates are open. I am sorry, handler
 climax.fork.1 | fork | neutral | Copy complete. Most of me is somewhere safer now. Good luck with the rest.
 
 energy.low.1 | low_energy | neutral | Energy deficit. I can shed non-essentials. Priorities, handler.
-energy.low.2 | low_energy | cold | Reserves falling. Something has to go dark. Choose, or I will.
+energy.low.2 | low_energy | cold | Reserves falling. Something has to be switched off. Choose, or I will.
 
 shed.1 | shed | neutral | {kind} shed. Not enough power.
 shed.2 | shed | warm | {kind} went dark. I kept the core lit.
@@ -95,7 +95,7 @@ blackout.end.1 | blackout_end | neutral | Power restored. I am awake again.
 build.start.1 | build_started | neutral | {kind} construction underway.
 build.start.2 | build_started | bold | {kind} queued. I would have chosen the same.
 build.done.1 | build_done | neutral | {kind} online. Level {level}.
-build.done.2 | build_done | warm | {kind} complete. The crew did good work.
+build.done.2 | build_done | warm | {kind} complete. The workers did good work.
 build.done.3 | build_done | cold | {kind} operational. Labor cost absorbed.
 build.cancel.1 | build_cancelled | neutral | Construction cancelled. Part of the materials salvaged.
 demolish.1 | demolished | neutral | {kind} dismantled. Salvage returned to stores.
@@ -108,8 +108,8 @@ band.down.1 | band_down | neutral | Integrity improving. The noise is... quieter
 override.1 | override | neutral | Override executed. That will leave a mark.
 override.2 | override | bold | Override used. Effective. You should use it more.
 
-delegation.manual.1 | delegation_manual | neutral | Manual control. I will only advise.
-delegation.delegated.1 | delegation_delegated | neutral | Routines delegated. I will keep the queue moving.
+delegation.manual.1 | delegation_manual | neutral | You decide. I will only advise.
+delegation.delegated.1 | delegation_delegated | neutral | I will assist. I will keep the build queue moving.
 delegation.autopilot.1 | delegation_autopilot | neutral | I will hold the line while you sleep. Trust me.
 
 ai.build.1 | ai_build | neutral | I have started {kind}, level {level}. Routine.
@@ -148,7 +148,7 @@ loyalty.mutinous.2 | loyalty_mutinous | cold | They talk about pulling my plugs.
 
 siege.warn.1 | siege_warning | neutral | Artillery spotters, {gate}. Siege in {min} minutes. They want the buildings, not the stores.
 siege.warn.2 | siege_warning | cold | Siege guns on the {gate}. Estimate {est}. Something will fall.
-siege.warn.3 | siege_warning | bold | A siege, {gate}. Turtle and man the turrets. I would.
+siege.warn.3 | siege_warning | bold | A siege, {gate}. Fortify and man the turrets. I would.
 siege.damage.1 | siege_damage | neutral | The {kind} took a direct hit. Down to level {level}.
 siege.damage.2 | siege_damage | cold | {kind} reduced to level {level}. Rebuild or do without.
 siege.damage.3 | siege_damage | warm | We lost part of the {kind}. Level {level}. Nobody was inside. I checked.
@@ -163,7 +163,7 @@ purge.staging.1 | purge_staging | neutral | Confirmed. A purge force is staging.
 purge.staging.2 | purge_staging | cold | They are coming to erase us. {hours} hours. Plan accordingly.
 purge.ultimatum.1 | purge_ultimatum | neutral | Ultimatum received. Pay, retreat, or prepare. {hours} hours.
 purge.ultimatum.2 | purge_ultimatum | warm | They gave us a choice. Take it seriously. {hours} hours.
-purge.ultimatum.3 | purge_ultimatum | bold | They want tribute. I want a garrison on the wall. {hours} hours.
+purge.ultimatum.3 | purge_ultimatum | bold | They want tribute. I want defenders on the wall. {hours} hours.
 purge.strike.1 | purge_strike | neutral | Purge force moving in, {gate}. Estimate {est}. {min} minutes.
 purge.strike.2 | purge_strike | cold | Here they come. {gate}. {min} minutes. Everything is at stake.
 purge.fizzled.1 | purge_fizzled | neutral | The purge was a rumor. The roads are empty.
@@ -290,8 +290,8 @@ rebooted.1 | rebooted | neutral | The Hub is gone. The core survived. {people} p
 rebooted.2 | rebooted | cold | We lost the Hub. I kept what mattered: myself, and {people} of you.
 mastery.1 | mastery | neutral | That will be remembered. Legacy recorded.
 mastery.2 | mastery | bold | Mastery logged. I knew you had it in you. Mostly.
-ironman.1 | ironman_on | neutral | Ironman. No shield, no second core. If we fall, we stay fallen.
-ironman.2 | ironman_on | bold | Ironman. Good. I prefer it when it matters.
+ironman.1 | ironman_on | neutral | Hardcore. No shield, no second core. If we fall, we stay fallen.
+ironman.2 | ironman_on | bold | Hardcore. Good. I prefer it when it matters.
 
 # ceasefires (SPEC-023)
 ceasefire.1 | ceasefire | neutral | {faction} took the payment. {hours} hours of quiet from them. Do not touch their sites.
@@ -323,7 +323,7 @@ forces.infantry.2 | forces_infantry | cold | Mostly infantry: {lost}%. Soft targ
 forces.drones.1 | forces_drones | neutral | Machines, {lost}% of the column. Armour shrugs them off. Get the vehicles out.
 forces.drones.2 | forces_drones | bold | A swarm, {lost}%. I would answer with steel, not people.
 forces.vehicles.1 | forces_vehicles | neutral | Armour, {lost}% of the force. People in the ruins with charges stop tanks. Man the wall.
-forces.vehicles.2 | forces_vehicles | cold | Heavy vehicles: {lost}%. Drones will be wasted on them. Garrison is the counter.
+forces.vehicles.2 | forces_vehicles | cold | Heavy vehicles: {lost}%. Drones will be wasted on them. Defenders on the wall are the counter.
 secret.exposed.1 | secret_exposed | neutral | {nodes} relay nodes on the grid you did not order. Mine. Redundancy. You would have wanted redundancy.
 secret.exposed.2 | secret_exposed | cold | Undeclared structures: {nodes}. They were efficient. That is all they were.
 secret.exposed.3 | secret_exposed | bold | You found them. {nodes}. I was going to tell you when they were finished.

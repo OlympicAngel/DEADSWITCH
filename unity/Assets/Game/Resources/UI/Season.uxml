@@ -1,36 +1,47 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Season.uss" />
-  <!-- SEASON (F-048): the cosmetic season track. Rank from play, free and premium rewards (themes, AI voice packs,
-       codex logs). Never expires. Sample values are for the preview; SeasonScreen fills everything. -->
+  <!-- REWARD TRACK (F-048): free cosmetics earned by play (themes, AI voices, codex logs). Never expires.
+       Reading order: where am I on the track, then every reward in rank order. -->
   <ui:VisualElement name="season" class="ssn">
-    <ui:VisualElement class="row ssn-head">
-      <ui:Label text="SEASON" class="ds-title grow" />
-      <ui:VisualElement name="ssn-close" class="ssn-close"><ui:Label text="X" class="ssn-close__x" /></ui:VisualElement>
-    </ui:VisualElement>
-
-    <ui:VisualElement class="ds-panel ssn-card">
-      <ui:Label name="ssn-title" text="SEASON 1 // SIGNAL FIRES" class="ds-label" />
-      <ui:VisualElement class="row--baseline ssn-rank">
-        <ui:Label name="ssn-rank" text="7" class="ds-value ds-value--hero" />
-        <ui:Label name="ssn-rank-of" text="/ 20  RANK" class="ds-label ssn-rank__of" />
+    <ui:VisualElement class="ds-head ssn-head">
+      <ui:VisualElement class="ds-head__well"><ui:VisualElement class="ds-icon ds-icon--star ds-head__icon" /></ui:VisualElement>
+      <ui:VisualElement class="ds-head__body">
+        <ui:Label text="REWARD TRACK" class="ds-head__title" />
+        <ui:Label text="EARNED BY PLAY // NEVER EXPIRES" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="ssn-meter" class="ds-meter ssn-meter" />
-      <ui:Label name="ssn-xp" text="1,750 XP // 250 TO RANK 8" class="ds-label t-dim ssn-xp" />
-      <ui:Label text="Earned by holding the wall, winning ops, closing chapters and mastery. Never by waiting. This track never expires." class="ds-body t-faint ssn-note" />
-      <ui:VisualElement class="row ssn-pass">
-        <ui:VisualElement class="grow">
-          <ui:Label text="SEASON PASS // PREMIUM TRACK" class="ds-label" />
-          <ui:Label text="Cosmetics only. Everything already reached unlocks at once." class="ds-body t-dim ssn-note" />
-        </ui:VisualElement>
-        <ui:VisualElement name="ssn-buy" class="ds-btn ds-btn--primary ssn-buy"><ui:Label name="ssn-buy-label" text="UNLOCK PASS" class="ds-btn__label" /></ui:VisualElement>
-      </ui:VisualElement>
+      <ui:VisualElement name="ssn-close" class="ds-iconbtn ssn-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="ssn-scroll" class="grow ssn-scroll">
-      <ui:VisualElement name="ssn-rewards" class="ssn-rewards">
-        <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="3" class="ssn-r__rank" /><ui:VisualElement class="grow"><ui:Label text="CODEX // FIRST LIGHT" class="ssn-r__name" /><ui:Label text="FREE // UNLOCKED" class="ssn-r__state" /><ui:Label text="Recovered dashcam, day 1 of the collapse: the traffic lights go green in every direction at once. Nobody moves." class="ssn-r__codex" /></ui:VisualElement></ui:VisualElement>
-        <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="7" class="ssn-r__rank" /><ui:VisualElement class="grow"><ui:Label text="HUD THEME // VERDIGRIS" class="ssn-r__name" /><ui:Label text="FREE // UNLOCKED" class="ssn-r__state" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost ssn-r__btn"><ui:Label text="EQUIP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
-        <ui:VisualElement class="row ssn-r is-premium"><ui:Label text="12" class="ssn-r__rank" /><ui:VisualElement class="grow"><ui:Label text="HUD THEME // ASH" class="ssn-r__name" /><ui:Label text="PASS // RANK 12" class="ssn-r__state" /></ui:VisualElement></ui:VisualElement>
+      <ui:VisualElement class="ssn-body">
+        <ui:VisualElement class="ds-card ds-card--holo ssn-card">
+          <ui:VisualElement class="ds-card__head">
+            <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--signal ds-card__icon" /></ui:VisualElement>
+            <ui:VisualElement class="ds-card__titles">
+              <ui:Label text="YOUR TRACK" class="ds-card__sub" />
+              <ui:Label name="ssn-title" text="SIGNAL FIRES" class="ds-card__title" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement class="row--baseline ssn-rank">
+            <ui:Label name="ssn-rank" text="7" class="ds-value ds-value--hero" />
+            <ui:Label name="ssn-rank-of" text="/ 20  RANK" class="ds-label ssn-rank__of" />
+          </ui:VisualElement>
+          <ui:VisualElement name="ssn-meter" class="ds-meter ssn-meter" />
+          <ui:Label name="ssn-xp" text="1,750 XP // 250 TO RANK 8" class="ssn-xp" />
+          <ui:Label text="Earned by holding the wall, winning ops, closing chapters and mastery. Never by waiting." class="ds-prose ssn-note" />
+        </ui:VisualElement>
+
+
+        <ui:VisualElement class="ds-section">
+          <ui:VisualElement class="ds-icon ds-icon--flag ds-section__icon" />
+          <ui:Label text="REWARDS // BY RANK" class="ds-section__title" />
+          <ui:VisualElement class="ds-section__rule" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ssn-rewards" class="ssn-rewards">
+          <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="3" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--book ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="CODEX // FIRST LIGHT" class="ssn-r__name" /><ui:Label text="UNLOCKED" class="ssn-r__state" /><ui:Label text="Recovered dashcam, day 1 of the collapse: the traffic lights go green in every direction at once. Nobody moves." class="ds-prose ssn-r__codex" /></ui:VisualElement></ui:VisualElement>
+          <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="7" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--eye ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="HUD THEME // VERDIGRIS" class="ssn-r__name" /><ui:Label text="UNLOCKED" class="ssn-r__state" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost ssn-r__btn"><ui:Label text="EQUIP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
+          <ui:VisualElement class="row ssn-r"><ui:Label text="12" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--eye ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="HUD THEME // ASH" class="ssn-r__name" /><ui:Label text="UNLOCKS AT RANK 12" class="ssn-r__state" /></ui:VisualElement></ui:VisualElement>
+        </ui:VisualElement>
       </ui:VisualElement>
     </ui:ScrollView>
     <ui:Label name="ssn-reason" text="" class="ds-body t-amber ssn-reason" />

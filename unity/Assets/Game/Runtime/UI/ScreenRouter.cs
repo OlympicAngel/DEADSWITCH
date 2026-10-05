@@ -40,6 +40,27 @@ namespace Deadswitch.Game.UI
 
         public string Current { get; private set; }
 
+        /// <summary>The screen shown before the current one (where a close or back returns).</summary>
+        public string Previous { get; private set; }
+
+        /// <summary>True for the command-bar layers (BASE, MAP, CORE, DEFENSE); false for detail screens.</summary>
+        public bool IsLayer(string id)
+        {
+            return _layers.Contains(id ?? string.Empty);
+        }
+
+        /// <summary>Closes a detail screen: back to the layer it was opened from (BASE when unknown).</summary>
+        public void Return()
+        {
+            string to = Previous != null && Previous != Current && _screens.ContainsKey(Previous) ? Previous : "base";
+            if (!IsLayer(to))
+            {
+                to = "base";
+            }
+
+            Show(to);
+        }
+
         public event System.Action<string> Changed;
 
         /// <summary>Every registered screen id, sorted (the smoke run walks them).</summary>
@@ -89,13 +110,26 @@ namespace Deadswitch.Game.UI
                 return;
             }
 
+            // layers slide in the direction of travel; detail screens rise from below (SPEC-040)
+            int from = Current != null ? _layers.IndexOf(Current) : -1;
+            int to = _layers.IndexOf(id);
+            float dir = from >= 0 && to >= 0 ? Mathf.Sign(to - from) : 0f;
             if (Current != null && _screens.TryGetValue(Current, out IGameScreen prev))
             {
                 prev.OnHide();
                 VisualElement old = prev.Root;
-                Motion.To(old, 0.16f, Ease.OutCubic, t => old.style.opacity = 1f - t, () => old.style.display = DisplayStyle.None);
+                Motion.To(old, 0.2f, Ease.OutCubic, t =>
+                {
+                    old.style.opacity = 1f - t;
+                    old.style.translate = new Translate(-dir * t * 80f, 0, 0);
+                }, () =>
+                {
+                    old.style.display = DisplayStyle.None;
+                    old.style.translate = new Translate(0, 0, 0);
+                });
             }
 
+            Previous = Current;
             Current = id;
             foreach (KeyValuePair<string, VisualElement> kv in _tabs)
             {
@@ -104,12 +138,13 @@ namespace Deadswitch.Game.UI
 
             VisualElement root = next.Root;
             root.style.display = DisplayStyle.Flex;
-            Motion.To(root, 0.24f, Ease.OutCubic, t =>
+            Motion.To(root, 0.3f, Ease.OutCubic, t =>
             {
                 root.style.opacity = t;
-                root.style.translate = new Translate(0, (1f - t) * 24f, 0);
+                root.style.translate = dir != 0f ? new Translate(dir * (1f - t) * 120f, 0, 0) : new Translate(0, (1f - t) * 40f, 0);
             });
             next.OnShow();
+            Choreo.Enter(root);
             Changed?.Invoke(id);
         }
 

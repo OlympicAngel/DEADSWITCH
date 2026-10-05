@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Headless UI preview: renders Unity UI Toolkit layouts (UXML + USS) to PNG with Chromium.
 // Mirrors Unity's layout defaults (Yoga flex, column, border-box) and the runtime behaviors in
-// unity/Assets/Game/Runtime/UI (corner brackets, segmented meters, sparklines, gauges) closely enough
+// unity/Assets/Game/Runtime/UI (corner brackets, segmented meters, gauges) closely enough
 // to review hierarchy, spacing, typography and color without the Editor. See docs/agents/quality-bar.md.
 //
 // usage: node tools/uipreview/preview.mjs <screen.uxml> [--out file.png] [--bg image.png] [--height 2340] [--scale 0.5]
@@ -117,40 +117,89 @@ ${css}
 // Mirrors of the C# element behaviors (Runtime/UI/Behaviors.cs).
 for (const p of document.querySelectorAll('.ds-panel')) for (const c of ['tl','tr','bl','br']) { const d = document.createElement('div'); d.className = 'ui-ve ds-corner ds-corner--' + c; p.appendChild(d); }
 for (const el of document.querySelectorAll('#preview-root, #preview-root *')) { const kids = [...el.children].filter(c => !c.classList.contains('ds-corner')); if (kids.length) { kids[0].classList.add('is-first'); kids[kids.length - 1].classList.add('is-last'); } }
+// Pager.cs mirror: tab strip from page titles, first page (or data-page) shown; folds collapse to the header
+for (const pg of document.querySelectorAll('.ds-pager')) {
+  const pages = [...pg.children].filter(c => c.classList.contains('ds-page'));
+  const show = Math.max(0, pages.findIndex(p => p.classList.contains('is-preview')));
+  const tabs = document.createElement('div'); tabs.className = 'ui-ve ds-pager__tabs';
+  pages.forEach((p, i) => {
+    const t = document.createElement('div'); t.className = 'ui-ve ds-pager__tab' + (i === show ? ' is-active' : '');
+    const g = p.querySelector('.ds-page__glyph'); if (g) { const ic = document.createElement('div'); ic.className = 'ui-ve ds-icon ds-icon--' + g.textContent.trim() + ' ds-pager__icon'; t.appendChild(ic); }
+    const l = document.createElement('div'); l.className = 'ui-label unity-label ds-pager__label'; l.textContent = (p.querySelector('.ds-page__title') || {}).textContent || ('PAGE ' + (i + 1)); t.appendChild(l);
+    tabs.appendChild(t); if (i !== show) p.style.display = 'none';
+  });
+  pg.insertBefore(tabs, pg.firstChild);
+  requestAnimationFrame(() => {}); const act = tabs.children[show]; if (act) { const r = document.createElement('div'); r.className = 'ui-ve ds-pager__rail'; r.style.left = act.offsetLeft + 'px'; r.style.width = act.offsetWidth + 'px'; tabs.appendChild(r); }
+}
+for (const c of document.querySelectorAll('.ds-card--fold')) {
+  const head = c.querySelector('.ds-card__head'); if (!head) continue;
+  head.classList.add('ds-fold__head'); const ch = document.createElement('div'); ch.className = 'ui-ve ds-icon ds-icon--chevron ds-fold__chev'; ch.style.rotate = c.classList.contains('is-folded') ? '0deg' : '90deg'; head.appendChild(ch);
+  if (c.classList.contains('is-folded')) for (const k of c.children) if (k !== head && !k.classList.contains('ds-corner')) k.style.display = 'none';
+}
 for (const m of document.querySelectorAll('.ds-meter')) {
   const n = 20, on = Math.round(n * parseFloat(m.dataset.fill || (m.id && m.id.includes('corruption') ? '0.23' : '0.62')));
   for (let i = 0; i < n; i++) { const s = document.createElement('div'); s.className = 'ui-ve ds-meter__seg' + (i < on ? ' is-on' : ''); m.appendChild(s); }
 }
 const cs = getComputedStyle(document.querySelector('.ds-root') || document.body);
 const v = n => cs.getPropertyValue(n).trim();
-for (const el of document.querySelectorAll('.ds-sparkline')) {
-  const w = el.clientWidth, h = el.clientHeight, pts = []; let y = 0.55;
-  for (let i = 0; i <= 48; i++) { y = Math.min(0.92, Math.max(0.12, y + Math.sin(i * 0.7) * 0.06 + (i % 7 === 0 ? -0.18 : 0.02))); pts.push([i / 48 * w, (1 - y) * h]); }
-  const poly = pts.map(p => p.join(',')).join(' ');
-  el.innerHTML = '<svg width="'+w+'" height="'+h+'"><polygon points="0,'+h+' '+poly+' '+w+','+h+'" fill="'+v('--c-phosphor-glow')+'" opacity="0.35"/><polyline points="'+poly+'" fill="none" stroke="'+v('--c-phosphor')+'" stroke-width="3"/></svg>';
+// PrologueWorld.cs mirror: the planet's crown and its cities, coloured by the prologue mood
+for (const el of document.querySelectorAll('.pro__world')) {
+  const w = el.clientWidth, h = el.clientHeight, st = getComputedStyle(el), mood = ([...el.closest('.pro').classList].find(c => c.startsWith('pro--')) || 'pro--boot').slice(5);
+  const lit = st.getPropertyValue('--lit-color').trim(), war = st.getPropertyValue('--war-color').trim(), rim = st.getPropertyValue('--rim-color').trim();
+  const R = w * 1.6, cx = w / 2, cy = h * 0.42 + R, half = Math.asin(Math.min(1, w * 0.62 / R)), top = -Math.PI / 2;
+  const pt = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  const arc = (r) => { const [x0, y0] = pt(top - half, r), [x1, y1] = pt(top + half, r); return 'M'+x0+','+y0+' A'+r+','+r+' 0 0 1 '+x1+','+y1; };
+  let svg = '<path d="'+arc(R - 18)+'" stroke="'+rim+'" stroke-opacity="0.18" stroke-width="30" fill="none"/><path d="'+arc(R)+'" stroke="'+rim+'" stroke-width="3" fill="none"/>';
+  for (let i = 0; i < 23; i++) {
+    const u = (i + 0.5) / 23, x = 0.06 + 0.88 * (u + 0.035 * Math.sin(i * 2.7)), ph = (i * 0.618) % 1;
+    const [px, py] = pt(top + (x - 0.5) * 2 * half * 0.94, R - 10);
+    let col = lit, a = 0.85, size = 7;
+    if (mood === 'boot') continue;
+    if (mood === 'war') { col = war; const f = ph > 0.5 ? 1 : 0.3; a = 0.55 + 0.45 * f; size = 7 + f * 9; }
+    if (mood === 'dark') { col = war; a = ph > 0.6 ? 0.7 : 0; }
+    if (mood === 'now' || mood === 'handler') { if (i !== 14) continue; size = 13; svg += '<circle cx="'+px+'" cy="'+py+'" r="'+size*3.4+'" fill="'+col+'" opacity="0.25"/>'; }
+    if (a <= 0) continue;
+    svg += '<circle cx="'+px+'" cy="'+py+'" r="'+size*2.4+'" fill="'+col+'" opacity="'+a*0.3+'"/><circle cx="'+px+'" cy="'+py+'" r="'+size*0.6+'" fill="#fff" opacity="'+a+'"/>';
+  }
+  el.innerHTML = '<svg width="'+w+'" height="'+h+'">'+svg+'</svg>';
 }
-// Icons.cs mirror
-const poly = (n, r, cx = 0.5, cy = 0.5) => Array.from({ length: n + 1 }, (_, i) => [cx + Math.cos(Math.PI * 2 * i / n) * r, cy + Math.sin(Math.PI * 2 * i / n) * r]);
-const P = (...a) => a.reduce((acc, v, i) => (i % 2 ? acc[acc.length - 1].push(v) : acc.push([v]), acc), []);
-const GLYPHS = {
-  base: [P(0.1,0.9,0.1,0.45,0.5,0.15,0.9,0.45,0.9,0.9,0.1,0.9), P(0.4,0.9,0.4,0.62,0.6,0.62,0.6,0.9)],
-  map: [poly(6, 0.42), P(0.44,0.44,0.56,0.44,0.56,0.56,0.44,0.56,0.44,0.44)],
-  core: [poly(32, 0.4), P(0.5,0.3,0.7,0.5,0.5,0.7,0.3,0.5,0.5,0.3)],
-  bolt: [P(0.58,0.06,0.24,0.56,0.5,0.56,0.4,0.94,0.76,0.42,0.5,0.42,0.58,0.06)],
-  chip: [P(0.25,0.25,0.75,0.25,0.75,0.75,0.25,0.75,0.25,0.25), P(0.4,0.4,0.6,0.4,0.6,0.6,0.4,0.6,0.4,0.4), P(0.38,0.08,0.38,0.25), P(0.62,0.08,0.62,0.25), P(0.38,0.75,0.38,0.92), P(0.62,0.75,0.62,0.92), P(0.08,0.38,0.25,0.38), P(0.08,0.62,0.25,0.62), P(0.75,0.38,0.92,0.38), P(0.75,0.62,0.92,0.62)],
-  people: [poly(16, 0.15, 0.5, 0.3), P(0.18,0.92,0.22,0.66,0.36,0.54,0.64,0.54,0.78,0.66,0.82,0.92)],
-  cross: [P(0.38,0.1,0.62,0.1,0.62,0.38,0.9,0.38,0.9,0.62,0.62,0.62,0.62,0.9,0.38,0.9,0.38,0.62,0.1,0.62,0.1,0.38,0.38,0.38,0.38,0.1)],
-  battery: [P(0.12,0.3,0.82,0.3,0.82,0.7,0.12,0.7,0.12,0.3), P(0.82,0.42,0.92,0.42,0.92,0.58,0.82,0.58), P(0.24,0.42,0.24,0.58), P(0.4,0.42,0.4,0.58), P(0.56,0.42,0.56,0.58)],
-  ops: [poly(28, 0.3), P(0.5,0.02,0.5,0.25), P(0.5,0.75,0.5,0.98), P(0.02,0.5,0.25,0.5), P(0.75,0.5,0.98,0.5)],
-  shield: [P(0.5,0.08,0.86,0.2,0.82,0.55,0.5,0.92,0.18,0.55,0.14,0.2,0.5,0.08), P(0.5,0.24,0.5,0.74)],
-  dark: [P(0.08,0.5,0.3,0.3,0.5,0.24,0.7,0.3,0.92,0.5,0.7,0.7,0.5,0.76,0.3,0.7,0.08,0.5), P(0.16,0.86,0.84,0.14)],
-  evacuate: [P(0.55,0.15,0.15,0.15,0.15,0.85,0.55,0.85), P(0.4,0.5,0.92,0.5), P(0.75,0.32,0.92,0.5,0.75,0.68)],
-  hold: [poly(24, 0.36), P(0.3,0.5,0.7,0.5)],
-};
+// Icons.cs mirror: the same glyph file (Resources/UI/Icons.json)
+const GLYPH_SRC = ${JSON.stringify(JSON.parse(fs.readFileSync(path.join(UI, 'Icons.json'), 'utf8')).glyphs)};
+const arcPts = (r, cx, cy, d0, d1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = (d0 + (d1 - d0) * i / n) * Math.PI / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; });
+const parseLine = src => { const t = src.trim().split(' ').filter(Boolean); if (t[0] === 'o') return arcPts(+t[2], +t[3], +t[4], 0, 360, +t[1]); if (t[0] === 'a') return arcPts(+t[1], +t[2], +t[3], +t[4], +t[5], +t[6]);
+  const pts = []; for (let i = 0; i + 1 < t.length; i += 2) pts.push([+t[i], +t[i + 1]]); return pts; };
+const GLYPHS = Object.fromEntries(GLYPH_SRC.map(g => [g.name, g.lines.map(parseLine)]));
 for (const el of document.querySelectorAll('.ds-icon')) {
   const g = [...el.classList].find(c => c.startsWith('ds-icon--'))?.slice(9); if (!GLYPHS[g]) continue;
   const s = Math.min(el.clientWidth, el.clientHeight), col = getComputedStyle(el).getPropertyValue('--icon-color').trim();
-  el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="3" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
+  el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="'+Math.min(5,Math.max(2,s*0.07))+'" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
+}
+for (const sw of document.querySelectorAll('.ds-switch')) { const k = document.createElement('div'); k.className = 'ui-ve ds-switch__knob'; sw.appendChild(k); }
+// Sheen.cs mirror: top light on surfaces, edge darkening on scrims
+for (const sel of ['.ds-card', '.ds-tile', '.ds-btn', '.pod', '.hud-advisor', '.ds-sheet', '.ds-scrim']) for (const el of document.querySelectorAll(sel)) {
+  const st = getComputedStyle(el); const col = st.getPropertyValue('--sheen-color').trim(); if (!col) continue;
+  const reach = parseFloat(st.getPropertyValue('--sheen-reach')) || (sel === '.ds-scrim' ? 1 : 0.6);
+  const up = el.classList.contains('ds-scrim--up');
+  const g = up ? 'linear-gradient(to top, ' + col + ' 0%, transparent ' + (reach * 100) + '%)' : 'linear-gradient(to bottom, ' + col + ' 0%, transparent ' + (reach * 100) + '%)';
+  el.style.backgroundImage = g;
+}
+// AiOrb.cs / AiWave mirror (a still frame)
+for (const el of document.querySelectorAll('.ai-orb')) {
+  const st = getComputedStyle(el), ring = st.getPropertyValue('--ring-color').trim() || v('--c-cyan'), core = st.getPropertyValue('--core-color').trim() || v('--c-cyan-glow');
+  const w = Math.min(el.clientWidth, el.clientHeight), R = w / 2, c = R;
+  const arc = (r, a0, a1, sw, col, op = 1) => { const x0 = c + r * Math.cos(a0), y0 = c + r * Math.sin(a0), x1 = c + r * Math.cos(a1), y1 = c + r * Math.sin(a1); return '<path d="M'+x0+','+y0+' A'+r+','+r+' 0 '+((a1-a0)>Math.PI?1:0)+' 1 '+x1+','+y1+'" stroke="'+col+'" stroke-opacity="'+op+'" stroke-width="'+sw+'" fill="none"/>'; };
+  let svg = '<defs><radialGradient id="g'+w+'"><stop offset="0" stop-color="'+core+'"/><stop offset="1" stop-color="'+core+'" stop-opacity="0"/></radialGradient></defs>';
+  svg += '<circle cx="'+c+'" cy="'+c+'" r="'+(R*0.62)+'" fill="url(#g'+w+')"/><circle cx="'+c+'" cy="'+c+'" r="'+(R*0.2)+'" fill="'+ring+'" opacity="0.9"/>';
+  svg += '<circle cx="'+c+'" cy="'+c+'" r="'+(R*0.93)+'" stroke="'+ring+'" stroke-opacity="0.35" stroke-width="1.5" fill="none"/>';
+  for (let i = 0; i < 36; i++) { const t = Math.PI * 2 * i / 36, ri = i % 9 === 0 ? 0.8 : 0.86; svg += '<line x1="'+(c+Math.cos(t)*R*ri)+'" y1="'+(c+Math.sin(t)*R*ri)+'" x2="'+(c+Math.cos(t)*R*0.91)+'" y2="'+(c+Math.sin(t)*R*0.91)+'" stroke="'+ring+'" stroke-opacity="0.35" stroke-width="'+(i%9===0?2.5:1.2)+'"/>'; }
+  for (let i = 0; i < 3; i++) { const a = 0.4 + i * Math.PI * 2 / 3; svg += arc(R * 0.72, a, a + 1.25, 4, ring); }
+  for (let i = 0; i < 12; i++) { const a = i * Math.PI * 2 / 12; svg += arc(R * 0.52, a, a + 0.32, 2, ring, 0.7); }
+  el.insertAdjacentHTML('afterbegin', '<svg style="position:absolute;left:0;top:0" width="'+w+'" height="'+w+'">'+svg+'</svg>');
+}
+for (const el of document.querySelectorAll('.ai-wave')) {
+  const col = getComputedStyle(el).getPropertyValue('--wave-color').trim() || v('--c-cyan'), w = el.clientWidth, h = el.clientHeight, n = 18, step = w / n;
+  let svg = ''; for (let i = 0; i < n; i++) { const bh = Math.max(2, h * (0.25 + 0.6 * Math.abs(Math.sin(i * 1.7) * Math.sin(i * 0.6 + 1)))); svg += '<rect x="'+(i*step+1)+'" y="'+((h-bh)/2)+'" width="'+(step-3)+'" height="'+bh+'" fill="'+col+'"/>'; }
+  el.insertAdjacentHTML('afterbegin', '<svg style="position:absolute;left:0;top:0" width="'+w+'" height="'+h+'">'+svg+'</svg>');
 }
 for (const el of document.querySelectorAll('.ds-gauge')) {
   const w = el.clientWidth, r = w / 2 - 8, c = w / 2, f = 0.23, a0 = Math.PI * 0.75, a1 = a0 + Math.PI * 1.5 * f, aEnd = a0 + Math.PI * 1.5;

@@ -37,7 +37,8 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Story");
             Root.Add(tree);
             _ui = tree;
-            _ui.Q("sty-close").RegisterCallback<ClickEvent>(_ => router.Show("core"));
+            Icons.Attach(tree);
+            _ui.Q("sty-close").RegisterCallback<ClickEvent>(_ => router.Return());
             Kit.BuildMeter(_ui.Q("sty-payoff-meter"));
 
             VisualElement list = _ui.Q("sty-fragments");
@@ -48,8 +49,16 @@ namespace Deadswitch.Game.UI.Screens
                 row.AddToClassList("sty-frag");
                 _fragIds[i] = Kit.Label(string.Empty, "sty-frag__id");
                 _fragTexts[i] = Kit.Label(string.Empty, "sty-frag__text");
-                row.Add(_fragIds[i]);
-                row.Add(_fragTexts[i]);
+                var well = new VisualElement();
+                well.AddToClassList("sty-frag__well");
+                well.Add(Icons.Create("memory", "sty-frag__ic", "sty-frag__ic--known"));
+                well.Add(Icons.Create("lock", "sty-frag__ic", "sty-frag__ic--lost"));
+                row.Add(well);
+                var body = new VisualElement();
+                body.AddToClassList("sty-frag__body");
+                body.Add(_fragIds[i]);
+                body.Add(_fragTexts[i]);
+                row.Add(body);
                 list.Add(row);
             }
 

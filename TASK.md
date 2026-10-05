@@ -1,25 +1,15 @@
-# TASK: F-099 polish and balance pass (last)
+# TASK: F-104 Plain language, no monetization, new opening, engagement layer
 
-- Status: In progress (owner steps). Every design feature buildable in a cloud session is in (F-001..F-063, 2026-10-05 gap audits clean).
-- Branch: claude/confident-heisenberg-m3gwju
+- Status: Done (code) 2026-10-05; Editor check pending
+- Branch: ccr-3e0227c3-c2kae3
+- Spec: `docs/specs/SPEC-043-clarity-and-hook.md`
 
 ## Steps
-- [x] Balance pass with the runner (doc 10 corrections log, SPEC-014 findings)
-- [x] Missing doc 10 rules: ambushes, highest heat on the HUD
-- [x] Corruption visuals on the base; crewed glitches; dilemmas wait for the handler
-- [x] Play in the Unity Editor (UI layout, lighting, damage FX, report stills fixed; open items in docs/agents/HANDOFF.md)
-- [x] Night report stills readable (BaseLook.reportNightBoost)
-- [x] Smoke run (`Core/SmokeRun`, launch with `-ds-smoke`): walks every screen, map render + pins, backends, logged errors -> `smoke.txt`
-- [ ] Editor pass for F-055..F-063: run `-ds-smoke` first, then the visual checks (HANDOFF checklist: sector map render + MapRender URP path, pins, overlay, gestures, new facilities, OPS forces line, premium ad grants, mobile notifications package resolve)
-- [ ] Android phone run (owner)
-- [ ] Fix whatever the phone run finds; open Editor items: puddle reflections, ALLY/SABOTAGE/RECALL, reactor, themes
+- [x] 1. Monetization off: store, ads, premium gate, season pass removed; reward track free; themes in Settings
+- [x] 2. Plain language: one name per concept, no cryptic abbreviations, Field Guide screen, hints on jargon
+- [x] 3. Leftovers: dead code, hard-coded names, sample text, unexplained numbers
+- [x] 4. New opening: story, boot sequence, camera descent, effects
+- [x] 5. Engagement layer: next-milestone tracker, celebration moments
+- [x] 6. Docs, screenshots
 
-## Needs the owner (accounts, services or native tooling)
-Code is in; each service compiles only once its package is installed (package-gated asmdefs).
-- Cloud backup (doc 10 s2): install `com.unity.services.cloudsave` and link the Unity Cloud project (`Cloud/Services`).
-- Store and ads (ADR-0006): install `com.unity.purchasing` and `com.unity.ads`, fill `Resources/Store/StoreIds.json` (product ids, ad game ids).
-- Widget (doc 08 s5): copy `unity/NativeWidgets~` into place per its README (Android androidlib; iOS widget extension + App Group).
-- Editor resolve and device tests for all of the above.
-
-## Blocked / questions
-- See "Needs the owner".
+F-100 to F-103 are code complete; their Editor checklists are in `docs/agents/HANDOFF.md`.

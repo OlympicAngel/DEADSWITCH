@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -6,87 +7,16 @@ namespace Deadswitch.Game.UI
 {
     /// <summary>
     /// Procedural line icons (no texture assets). Elements with class <c>ds-icon ds-icon--name</c> draw the named
-    /// glyph in --icon-color. Geometry is in a 0..1 box; tools/uipreview mirrors the same point lists.
+    /// glyph in --icon-color. Glyphs live in <c>Resources/UI/Icons.json</c> (0..1 box, y down), shared with
+    /// tools/uipreview so previews draw the same set. A line is a point list "x y x y ..."; "o n r cx cy" is an
+    /// n-sided polygon; "a r cx cy deg0 deg1 n" is an arc.
     /// </summary>
     public static class Icons
     {
         private static readonly CustomStyleProperty<Color> IconColor = new CustomStyleProperty<Color>("--icon-color");
+        private static Dictionary<string, Vector2[][]> _glyphs;
 
-        private static readonly Dictionary<string, Vector2[][]> Glyphs = new Dictionary<string, Vector2[][]>
-        {
-            ["base"] = new[]
-            {
-                P(0.1f, 0.9f, 0.1f, 0.45f, 0.5f, 0.15f, 0.9f, 0.45f, 0.9f, 0.9f, 0.1f, 0.9f),
-                P(0.4f, 0.9f, 0.4f, 0.62f, 0.6f, 0.62f, 0.6f, 0.9f),
-            },
-            ["map"] = new[]
-            {
-                Polygon(6, 0.42f, 0f),
-                P(0.44f, 0.44f, 0.56f, 0.44f, 0.56f, 0.56f, 0.44f, 0.56f, 0.44f, 0.44f),
-            },
-            ["core"] = new[]
-            {
-                Polygon(32, 0.4f, 0f),
-                P(0.5f, 0.3f, 0.7f, 0.5f, 0.5f, 0.7f, 0.3f, 0.5f, 0.5f, 0.3f),
-            },
-            ["bolt"] = new[]
-            {
-                P(0.58f, 0.06f, 0.24f, 0.56f, 0.5f, 0.56f, 0.4f, 0.94f, 0.76f, 0.42f, 0.5f, 0.42f, 0.58f, 0.06f),
-            },
-            ["chip"] = new[]
-            {
-                P(0.25f, 0.25f, 0.75f, 0.25f, 0.75f, 0.75f, 0.25f, 0.75f, 0.25f, 0.25f),
-                P(0.4f, 0.4f, 0.6f, 0.4f, 0.6f, 0.6f, 0.4f, 0.6f, 0.4f, 0.4f),
-                P(0.38f, 0.08f, 0.38f, 0.25f), P(0.62f, 0.08f, 0.62f, 0.25f),
-                P(0.38f, 0.75f, 0.38f, 0.92f), P(0.62f, 0.75f, 0.62f, 0.92f),
-                P(0.08f, 0.38f, 0.25f, 0.38f), P(0.08f, 0.62f, 0.25f, 0.62f),
-                P(0.75f, 0.38f, 0.92f, 0.38f), P(0.75f, 0.62f, 0.92f, 0.62f),
-            },
-            ["people"] = new[]
-            {
-                Polygon(16, 0.15f, 0f, 0.5f, 0.3f),
-                P(0.18f, 0.92f, 0.22f, 0.66f, 0.36f, 0.54f, 0.64f, 0.54f, 0.78f, 0.66f, 0.82f, 0.92f),
-            },
-            ["cross"] = new[]
-            {
-                P(0.38f, 0.1f, 0.62f, 0.1f, 0.62f, 0.38f, 0.9f, 0.38f, 0.9f, 0.62f, 0.62f, 0.62f, 0.62f, 0.9f, 0.38f, 0.9f, 0.38f, 0.62f, 0.1f, 0.62f, 0.1f, 0.38f, 0.38f, 0.38f, 0.38f, 0.1f),
-            },
-            ["battery"] = new[]
-            {
-                P(0.12f, 0.3f, 0.82f, 0.3f, 0.82f, 0.7f, 0.12f, 0.7f, 0.12f, 0.3f),
-                P(0.82f, 0.42f, 0.92f, 0.42f, 0.92f, 0.58f, 0.82f, 0.58f),
-                P(0.24f, 0.42f, 0.24f, 0.58f), P(0.4f, 0.42f, 0.4f, 0.58f), P(0.56f, 0.42f, 0.56f, 0.58f),
-            },
-            ["ops"] = new[]
-            {
-                Polygon(28, 0.3f, 0f),
-                P(0.5f, 0.02f, 0.5f, 0.25f),
-                P(0.5f, 0.75f, 0.5f, 0.98f),
-                P(0.02f, 0.5f, 0.25f, 0.5f),
-                P(0.75f, 0.5f, 0.98f, 0.5f),
-            },
-            ["shield"] = new[]
-            {
-                P(0.5f, 0.08f, 0.86f, 0.2f, 0.82f, 0.55f, 0.5f, 0.92f, 0.18f, 0.55f, 0.14f, 0.2f, 0.5f, 0.08f),
-                P(0.5f, 0.24f, 0.5f, 0.74f),
-            },
-            ["dark"] = new[]
-            {
-                P(0.08f, 0.5f, 0.3f, 0.3f, 0.5f, 0.24f, 0.7f, 0.3f, 0.92f, 0.5f, 0.7f, 0.7f, 0.5f, 0.76f, 0.3f, 0.7f, 0.08f, 0.5f),
-                P(0.16f, 0.86f, 0.84f, 0.14f),
-            },
-            ["evacuate"] = new[]
-            {
-                P(0.55f, 0.15f, 0.15f, 0.15f, 0.15f, 0.85f, 0.55f, 0.85f),
-                P(0.4f, 0.5f, 0.92f, 0.5f),
-                P(0.75f, 0.32f, 0.92f, 0.5f, 0.75f, 0.68f),
-            },
-            ["hold"] = new[]
-            {
-                Polygon(24, 0.36f, 0f),
-                P(0.3f, 0.5f, 0.7f, 0.5f),
-            },
-        };
+        private static Dictionary<string, Vector2[][]> Glyphs => _glyphs ??= Load();
 
         /// <summary>Attaches drawing to every <c>.ds-icon</c> under <paramref name="root"/>.</summary>
         public static void Attach(VisualElement root)
@@ -94,8 +24,64 @@ namespace Deadswitch.Game.UI
             root.Query(className: "ds-icon").ForEach(Attach1);
         }
 
+        /// <summary>A new icon element for code-built UI.</summary>
+        public static VisualElement Create(string glyph, params string[] classes)
+        {
+            var el = new VisualElement { pickingMode = PickingMode.Ignore };
+            el.AddToClassList("ds-icon");
+            el.AddToClassList("ds-icon--" + glyph);
+            foreach (string c in classes)
+            {
+                if (!string.IsNullOrEmpty(c))
+                {
+                    el.AddToClassList(c);
+                }
+            }
+
+            Attach1(el);
+            return el;
+        }
+
+        /// <summary>Swaps the glyph an attached icon draws.</summary>
+        public static void SetGlyph(VisualElement el, string glyph)
+        {
+            if (el?.userData is IconState state && state.Glyph != glyph)
+            {
+                el.RemoveFromClassList("ds-icon--" + state.Glyph);
+                el.AddToClassList("ds-icon--" + glyph);
+                state.Glyph = glyph;
+                el.MarkDirtyRepaint();
+            }
+        }
+
+        /// <summary>Glyph name for a facility kind.</summary>
+        public static string ForFacility(Deadswitch.Sim.State.FacilityKind kind)
+        {
+            switch (kind)
+            {
+                case Deadswitch.Sim.State.FacilityKind.Generator: return "bolt";
+                case Deadswitch.Sim.State.FacilityKind.ServerRack: return "server";
+                case Deadswitch.Sim.State.FacilityKind.LifeSupport: return "cross";
+                case Deadswitch.Sim.State.FacilityKind.BatteryBank: return "battery";
+                case Deadswitch.Sim.State.FacilityKind.Turret: return "turret";
+                case Deadswitch.Sim.State.FacilityKind.DroneBay: return "drone";
+                case Deadswitch.Sim.State.FacilityKind.MotorPool: return "truck";
+                case Deadswitch.Sim.State.FacilityKind.SolarField: return "sun";
+                case Deadswitch.Sim.State.FacilityKind.FuelDepot: return "fuel";
+                case Deadswitch.Sim.State.FacilityKind.CoolingTower: return "tower";
+                case Deadswitch.Sim.State.FacilityKind.MemoryChamber: return "memory";
+                case Deadswitch.Sim.State.FacilityKind.Reactor: return "reactor";
+                default: return "base";
+            }
+        }
+
         private static void Attach1(VisualElement el)
         {
+            if (el.userData is IconState)
+            {
+                return;
+            }
+
             string glyph = null;
             foreach (string c in el.GetClasses())
             {
@@ -105,95 +91,125 @@ namespace Deadswitch.Game.UI
                 }
             }
 
-            if (glyph == null || !Glyphs.TryGetValue(glyph, out Vector2[][] lines))
-            {
-                return;
-            }
-
-            Color color = Color.white;
+            var state = new IconState { Glyph = glyph, Color = Color.white };
+            el.userData = state;
             el.RegisterCallback<CustomStyleResolvedEvent>(e =>
             {
                 if (e.customStyle.TryGetValue(IconColor, out Color c))
                 {
-                    color = c;
+                    state.Color = c;
                     el.MarkDirtyRepaint();
                 }
             });
-            el.generateVisualContent += ctx =>
-            {
-                Rect r = el.contentRect;
-                float s = Mathf.Min(r.width, r.height);
-                var o = new Vector2(r.center.x - (s / 2f), r.center.y - (s / 2f));
-                foreach (Vector2[] line in lines)
-                {
-                    var pts = new Vector2[line.Length];
-                    for (int i = 0; i < line.Length; i++)
-                    {
-                        pts[i] = o + (line[i] * s);
-                    }
-
-                    Mesh2D.Polyline(ctx, pts, pts.Length, 3f, color);
-                }
-            };
+            el.generateVisualContent += ctx => Draw(ctx, el, state);
         }
 
-        private static Vector2[] P(params float[] xy)
+        private static void Draw(MeshGenerationContext ctx, VisualElement el, IconState state)
         {
-            var pts = new Vector2[xy.Length / 2];
+            if (state.Glyph == null || !Glyphs.TryGetValue(state.Glyph, out Vector2[][] lines))
+            {
+                return;
+            }
+
+            Rect r = el.contentRect;
+            float s = Mathf.Min(r.width, r.height);
+            if (s <= 0f)
+            {
+                return;
+            }
+
+            var o = new Vector2(r.center.x - (s / 2f), r.center.y - (s / 2f));
+            float width = Mathf.Clamp(s * 0.07f, 2f, 5f);
+            foreach (Vector2[] line in lines)
+            {
+                var pts = new Vector2[line.Length];
+                for (int i = 0; i < line.Length; i++)
+                {
+                    pts[i] = o + (line[i] * s);
+                }
+
+                Mesh2D.Polyline(ctx, pts, pts.Length, width, state.Color);
+            }
+        }
+
+        private static Dictionary<string, Vector2[][]> Load()
+        {
+            var map = new Dictionary<string, Vector2[][]>();
+            var asset = Resources.Load<TextAsset>("UI/Icons");
+            if (asset == null)
+            {
+                Debug.LogError("Icons: Resources/UI/Icons.json is missing");
+                return map;
+            }
+
+            GlyphFile file = JsonUtility.FromJson<GlyphFile>(asset.text);
+            foreach (GlyphDef def in file.glyphs)
+            {
+                var lines = new Vector2[def.lines.Length][];
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    lines[i] = ParseLine(def.lines[i]);
+                }
+
+                map[def.name] = lines;
+            }
+
+            return map;
+        }
+
+        private static Vector2[] ParseLine(string src)
+        {
+            string[] t = src.Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+            if (t[0] == "o")
+            {
+                return Arc(F(t[2]), F(t[3]), F(t[4]), 0f, 360f, (int)F(t[1]));
+            }
+
+            if (t[0] == "a")
+            {
+                return Arc(F(t[1]), F(t[2]), F(t[3]), F(t[4]), F(t[5]), (int)F(t[6]));
+            }
+
+            var pts = new Vector2[t.Length / 2];
             for (int i = 0; i < pts.Length; i++)
             {
-                pts[i] = new Vector2(xy[i * 2], xy[(i * 2) + 1]);
+                pts[i] = new Vector2(F(t[i * 2]), F(t[(i * 2) + 1]));
             }
 
             return pts;
         }
 
-        private static Vector2[] Polygon(int sides, float radius, float phase, float cx = 0.5f, float cy = 0.5f)
+        private static Vector2[] Arc(float radius, float cx, float cy, float deg0, float deg1, int segments)
         {
-            var pts = new Vector2[sides + 1];
-            for (int i = 0; i <= sides; i++)
+            var pts = new Vector2[segments + 1];
+            for (int i = 0; i <= segments; i++)
             {
-                float a = phase + (Mathf.PI * 2f * i / sides);
+                float a = Mathf.Lerp(deg0, deg1, i / (float)segments) * Mathf.Deg2Rad;
                 pts[i] = new Vector2(cx + (Mathf.Cos(a) * radius), cy + (Mathf.Sin(a) * radius));
             }
 
             return pts;
         }
 
-        /// <summary>Glyph name for a facility kind.</summary>
-        public static string ForFacility(Deadswitch.Sim.State.FacilityKind kind)
+        private static float F(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+        private sealed class IconState
         {
-            switch (kind)
-            {
-                case Deadswitch.Sim.State.FacilityKind.Generator: return "bolt";
-                case Deadswitch.Sim.State.FacilityKind.ServerRack: return "chip";
-                case Deadswitch.Sim.State.FacilityKind.LifeSupport: return "cross";
-                case Deadswitch.Sim.State.FacilityKind.BatteryBank: return "battery";
-                case Deadswitch.Sim.State.FacilityKind.Turret: return "ops";
-                case Deadswitch.Sim.State.FacilityKind.DroneBay: return "ops";
-                case Deadswitch.Sim.State.FacilityKind.MotorPool: return "shield";
-                case Deadswitch.Sim.State.FacilityKind.SolarField: return "bolt";
-                case Deadswitch.Sim.State.FacilityKind.FuelDepot: return "battery";
-                case Deadswitch.Sim.State.FacilityKind.CoolingTower: return "chip";
-                case Deadswitch.Sim.State.FacilityKind.MemoryChamber: return "chip";
-                case Deadswitch.Sim.State.FacilityKind.Reactor: return "bolt";
-                default: return "base";
-            }
+            public string Glyph;
+            public Color Color;
         }
 
-        /// <summary>A new icon element for code-built UI.</summary>
-        public static VisualElement Create(string glyph, string extraClass)
+        [System.Serializable]
+        private sealed class GlyphFile
         {
-            var el = new VisualElement { pickingMode = PickingMode.Ignore };
-            el.AddToClassList("ds-icon");
-            el.AddToClassList("ds-icon--" + glyph);
-            if (!string.IsNullOrEmpty(extraClass))
-            {
-                el.AddToClassList(extraClass);
-            }
+            public GlyphDef[] glyphs = new GlyphDef[0];
+        }
 
-            Attach1(el);
-            return el;
+        [System.Serializable]
+        private sealed class GlyphDef
+        {
+            public string name = string.Empty;
+            public string[] lines = new string[0];
         }
     }
 }

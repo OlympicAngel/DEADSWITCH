@@ -4,6 +4,7 @@ using Deadswitch.Game.Reports;
 using Deadswitch.Host.Narrative;
 using Deadswitch.Host.Reports;
 using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.State;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -29,7 +30,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Report");
             Root.Add(tree);
             _ui = tree;
-            _ui.Q("rep-close").RegisterCallback<ClickEvent>(_ => _router.Show("base"));
+            _ui.Q("rep-close").RegisterCallback<ClickEvent>(_ => _router.Return());
             _ui.Q("rep-verify").RegisterCallback<ClickEvent>(_ => Verify());
         }
 
@@ -71,7 +72,7 @@ namespace Deadswitch.Game.UI.Screens
 
         private void Fill(BattleReport r)
         {
-            _ui.Q<Label>("rep-title").text = "AFTER-ACTION // " + Names.Attack(r.Kind) + " " + r.RaidId + " // " + r.Outcome.ToString().ToUpperInvariant();
+            _ui.Q<Label>("rep-title").text = "AFTER-ACTION // " + Names.Attack(r.Kind) + " " + r.RaidId + " // " + Outcome(r.Outcome);
             var vector = _ui.Q<Label>("rep-vector");
             vector.text = "PREDICTED " + Host.Narrative.Names.Gate(r.PredictedGate) + "  //  CONTACT " + Host.Narrative.Names.Gate(r.ContactGate);
             vector.EnableInClassList("is-mismatch", r.PredictionMismatch);
@@ -82,6 +83,7 @@ namespace Deadswitch.Game.UI.Screens
 
             _ui.Q<Label>("rep-summary").text = "> " + r.Summary;
             _ui.Q<Label>("rep-ledger").text = r.LossText(false);
+            FillOutcomeAndLosses(r);
             _ui.Q<Label>("rep-state-label").text = r.Verified ? "VERIFIED" : "UNVERIFIED";
             _ui.Q("rep-state").EnableInClassList("ds-chip--amber", !r.Verified);
             _ui.Q("rep-state").EnableInClassList("ds-chip--phosphor", r.Verified);
@@ -101,6 +103,34 @@ namespace Deadswitch.Game.UI.Screens
             Kit.SetButtonText(verify, "VERIFY // " + _host.Sim.Config.Report.VerifyComputeCost + " COMPUTE");
         }
 
+        private void FillOutcomeAndLosses(BattleReport r)
+        {
+            Label stamp = _ui.Q<Label>("rep-outcome");
+            if (stamp != null)
+            {
+                stamp.text = Outcome(r.Outcome);
+                stamp.EnableInClassList("is-bad", r.Outcome == Deadswitch.Sim.State.RaidOutcome.Breached);
+                stamp.EnableInClassList("is-good", r.Outcome == Deadswitch.Sim.State.RaidOutcome.Repelled);
+            }
+
+            VisualElement items = _ui.Q("rep-loss");
+            if (items == null)
+            {
+                return;
+            }
+
+            items.Clear();
+            foreach (string part in r.LossText(false).Split(new[] { ", " }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                string glyph = part.Contains("ENERGY") ? "bolt" : part.Contains("COMPUTE") ? "chip" : part.Contains("PEOPLE") ? "people" : part.Contains("FUEL") ? "fuel" : part.Contains("DOWN TO") ? "wrench" : "check";
+                var row = new VisualElement();
+                row.AddToClassList("rep-loss__item");
+                row.Add(Icons.Create(glyph, "rep-loss__icon"));
+                row.Add(Kit.Label(part, "rep-loss__label"));
+                items.Add(row);
+            }
+        }
+
         private void Verify()
         {
             CommandResult result = _host.Execute(Command.VerifyReport(_raid));
@@ -109,6 +139,20 @@ namespace Deadswitch.Game.UI.Screens
             if (report != null)
             {
                 Fill(report);
+            }
+        }
+
+        /// <summary>The outcome in plain words (SPEC-043 s1).</summary>
+        private static string Outcome(RaidOutcome o)
+        {
+            switch (o)
+            {
+                case RaidOutcome.Repelled: return "REPELLED";
+                case RaidOutcome.Breached: return "BREACHED";
+                case RaidOutcome.Missed: return "THEY MISSED US";
+                case RaidOutcome.Lockdown: return "LOCKDOWN HELD";
+                case RaidOutcome.Tribute: return "PAID OFF";
+                default: return "OVER";
             }
         }
     }

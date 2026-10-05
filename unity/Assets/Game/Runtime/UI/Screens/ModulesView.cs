@@ -21,15 +21,14 @@ namespace Deadswitch.Game.UI.Screens
         private readonly Dictionary<ModuleNode, VisualElement> _nodes = new Dictionary<ModuleNode, VisualElement>();
         private ModuleNode _selected = ModuleNode.M1;
         private ModuleField _field = ModuleField.Logistics;
-        private readonly System.Action _openPremium;
 
-        public ModulesView(VisualElement mount, System.Action openPremium)
+        public ModulesView(VisualElement mount)
         {
             _host = GameHost.Instance;
-            _openPremium = openPremium;
             TemplateContainer tree = UiRoot.Load("Modules");
             mount.Add(tree);
             _ui = tree;
+            Icons.Attach(tree);
             _body = _ui.Q("mod-field-body");
             foreach (ModuleNode node in new[] { ModuleNode.M1, ModuleNode.M2, ModuleNode.M3 })
             {
@@ -45,17 +44,7 @@ namespace Deadswitch.Game.UI.Screens
 
             BuildField();
             _ui.Q("detail-start").RegisterCallback<ClickEvent>(_ => StartOrCancel());
-            _ui.Q("tier-up").RegisterCallback<ClickEvent>(_ =>
-            {
-                // free demo (ADR-0006): Tier 1 is the demo; going further needs the one-time unlock
-                if (!Store.Entitlements.Instance.HasPremium)
-                {
-                    _openPremium();
-                    return;
-                }
-
-                Run(Command.TierUp());
-            });
+            _ui.Q("tier-up").RegisterCallback<ClickEvent>(_ => Run(Command.TierUp()));
         }
 
         public void Refresh()
@@ -80,8 +69,7 @@ namespace Deadswitch.Game.UI.Screens
             VisualElement up = _ui.Q("tier-up");
             up.EnableInClassList("is-disabled", !g.All);
             up.EnableInClassList("ds-btn--primary", g.All);
-            bool demo = !Store.Entitlements.Instance.HasPremium;
-            Kit.SetButtonText(up, demo && g.All ? "UNLOCK FULL GAME TO ADVANCE" : "ADVANCE TO TIER " + (s.Tier + 1));
+            Kit.SetButtonText(up, "ADVANCE TO TIER " + (s.Tier + 1));
 
             // research in progress
             // two lanes (memory sectors beside field research): the bar follows the field lane, else the memory lane
@@ -128,7 +116,7 @@ namespace Deadswitch.Game.UI.Screens
             bool selActive = Modules.Restoring(s, _selected);
             _ui.Q<Label>("detail-title").text = _selected + " // " + ModuleTexts.Name(_selected);
             _ui.Q<Label>("detail-state").text = Modules.IsRestored(s, _selected) ? (Modules.Has(s, _selected) ? "RESTORED" : "LOCKED // INTRUSION") : selActive ? "RESTORING" : state == RejectReason.None ? (Modules.NeedsFragment(_selected) ? "AVAILABLE // USES 1 OF " + s.DataFragments + " DATA FRAGMENTS" : "AVAILABLE")
-                : state == RejectReason.NeedsFragment ? "NEEDS A DATA FRAGMENT // RAID A DEAD DATA CENTER" : state.ToString().ToUpperInvariant();
+                : state == RejectReason.NeedsFragment ? "NEEDS A DATA FRAGMENT // RAID A DEAD DATA CENTER" : state == RejectReason.Locked ? "LOCKED" : state == RejectReason.Excluded ? "EXCLUDED // YOU CHOSE THE OTHER PATH" : Texts.Reason(state).ToUpperInvariant();
             _ui.Q<Label>("detail-desc").text = ModuleTexts.Effect(_selected, c);
             int energy = c.Modules.ResearchEnergy[sel.Index];
             int compute = c.Modules.ResearchCompute[sel.Index];
@@ -254,7 +242,18 @@ namespace Deadswitch.Game.UI.Screens
         {
             var el = new VisualElement { name = "node-" + d.Node };
             el.AddToClassList("mod-node");
-            el.Add(Kit.Label(d.Node.ToString(), "mod-node__code"));
+            var top = new VisualElement();
+            top.AddToClassList("mod-node__top");
+            top.Add(Kit.Label(d.Node.ToString(), "mod-node__code"));
+            var ics = new VisualElement();
+            ics.AddToClassList("mod-node__ics");
+            ics.Add(Icons.Create("lock", "mod-node__ic", "mod-node__ic--lock"));
+            ics.Add(Icons.Create("cross", "mod-node__ic", "mod-node__ic--out"));
+            ics.Add(Icons.Create("bolt", "mod-node__ic", "mod-node__ic--open"));
+            ics.Add(Icons.Create("clock", "mod-node__ic", "mod-node__ic--active"));
+            ics.Add(Icons.Create("check", "mod-node__ic", "mod-node__ic--done"));
+            top.Add(ics);
+            el.Add(top);
             el.Add(Kit.Label(ModuleTexts.Name(d.Node), "mod-node__name"));
             Label state = Kit.Label(string.Empty, "mod-node__state");
             state.name = "node-" + d.Node + "-state";

@@ -25,7 +25,6 @@ namespace Deadswitch.Game.UI
             return 1f + (c3 * u * u * u) + (c1 * u * u);
         }
 
-        public static float OutExpo(float t) => t >= 1f ? 1f : 1f - Mathf.Pow(2f, -10f * t);
     }
 
     /// <summary>
@@ -42,6 +41,12 @@ namespace Deadswitch.Game.UI
         /// <summary>Starts a tween. A tween with the same non-null key replaces the running one.</summary>
         public static void To(object key, float duration, Func<float, float> ease, Action<float> apply, Action done = null)
         {
+            After(key, 0f, duration, ease, apply, done);
+        }
+
+        /// <summary>Starts a tween after <paramref name="delay"/> seconds; its start value applies at once (staggers).</summary>
+        public static void After(object key, float delay, float duration, Func<float, float> ease, Action<float> apply, Action done = null)
+        {
             if (key != null)
             {
                 Active.RemoveAll(t => t.Key == key);
@@ -55,7 +60,7 @@ namespace Deadswitch.Game.UI
             }
 
             apply(0f);
-            Active.Add(new Tween { Key = key, Duration = duration, Ease = ease, Apply = apply, Done = done });
+            Active.Add(new Tween { Key = key, Duration = duration, Ease = ease, Apply = apply, Done = done, Time = -Mathf.Max(0f, delay) });
         }
 
         public static void Cancel(object key)
@@ -69,6 +74,11 @@ namespace Deadswitch.Game.UI
             {
                 Tween t = Active[i];
                 t.Time += dt;
+                if (t.Time < 0f)
+                {
+                    continue;
+                }
+
                 float p = Mathf.Clamp01(t.Time / t.Duration);
                 t.Apply(t.Ease(p));
                 if (p >= 1f)

@@ -17,16 +17,19 @@ namespace Deadswitch.Game.UI.Screens
     public sealed class CoreScreen : IGameScreen
     {
         private static readonly string[] StageNames = { "DORMANT", "ACTIVE", "ADVANCED", "IMMINENT" };
-        private static readonly string[] DelegationNames = { "MANUAL", "ROUTINES", "AUTOPILOT" };
+        private static readonly string[] DelegationNames = { "YOU DECIDE", "AI ASSISTS", "AI DECIDES" };
 
         private readonly GameHost _host;
         private readonly VisualElement _ui;
         private readonly System.Func<IReadOnlyList<string>> _history;
         private readonly ModulesView _modules;
+        private readonly AiOrb _orb;
+        private readonly VisualElement _orbEl;
         private bool _visible;
         private bool _showModules;
+        private bool _crisisSeen;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium, System.Action openLegacy, System.Action openStory)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -41,21 +44,27 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty : Texts.Reason(r.Reason);
                 Refresh();
             });
-            _ui.Q("open-legacy").RegisterCallback<ClickEvent>(_ => openLegacy());
-            _ui.Q("open-story").RegisterCallback<ClickEvent>(_ => openStory());
             _ui.Q("flush-run").RegisterCallback<ClickEvent>(_ =>
             {
                 CommandResult r = _host.Execute(Command.FlushCore());
                 _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty : r.Reason == RejectReason.NoChange ? "Nothing to flush right now." : Texts.Reason(r.Reason);
                 Refresh();
             });
-            _ui.Q("open-settings").RegisterCallback<ClickEvent>(_ => openSettings());
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
-            _modules = new ModulesView(_ui.Q("modules-view"), openPremium);
-            _ui.Q("view-status").RegisterCallback<ClickEvent>(_ => ShowModules(false));
-            _ui.Q("view-modules").RegisterCallback<ClickEvent>(_ => ShowModules(true));
+            _orbEl = _ui.Q("core-orb");
+            _orb = new AiOrb(_orbEl);
+            _modules = new ModulesView(_ui.Q("modules-view"));
+            // one tab row (SPEC-042 finding 2): MODULES is a page beside PRESENCE, ACTIONS and PROFILE
+            Pager.PageShown += (pager, index) =>
+            {
+                if (pager == _ui.Q("status-pager"))
+                {
+                    SyncPage();
+                    Refresh();
+                }
+            };
             _host.Ticked += () =>
             {
                 if (_visible)
@@ -63,7 +72,7 @@ namespace Deadswitch.Game.UI.Screens
                     Refresh();
                 }
             };
-            UiRoot.Instance.Frame += _ =>
+            UiRoot.Instance.Frame += dt =>
             {
                 if (_visible && _showModules)
                 {
@@ -73,6 +82,7 @@ namespace Deadswitch.Game.UI.Screens
                 if (_visible && !_showModules)
                 {
                     TickClimax();
+                    _orb.Tick(dt);
                 }
             };
         }
@@ -85,6 +95,7 @@ namespace Deadswitch.Game.UI.Screens
         {
             _visible = true;
             _ui.Q<Label>("audit-reason").text = string.Empty;
+            SyncPage();
             Refresh();
         }
 
@@ -93,14 +104,18 @@ namespace Deadswitch.Game.UI.Screens
             _visible = false;
         }
 
-        private void ShowModules(bool on)
+        /// <summary>Opens on the MODULES page (the next-goal card on BASE).</summary>
+        public void OpenModules()
         {
-            _showModules = on;
-            _ui.Q("view-status").EnableInClassList("is-selected", !on);
-            _ui.Q("view-modules").EnableInClassList("is-selected", on);
-            _ui.Q("status-view").EnableInClassList("is-hidden", on);
-            _ui.Q("modules-view").EnableInClassList("is-hidden", !on);
+            Pager.Show(_ui.Q("status-pager"), "page-modules");
+            SyncPage();
             Refresh();
+        }
+
+        /// <summary>Whether the modules page is the one showing (it ticks research timers).</summary>
+        private void SyncPage()
+        {
+            _showModules = _ui.Q("page-modules").style.display.value == DisplayStyle.Flex;
         }
 
         private void Refresh()
@@ -114,18 +129,24 @@ namespace Deadswitch.Game.UI.Screens
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
 
-            Kit.SetButtonText(_ui.Q("open-story"), "STORY // CH " + System.Math.Max(1, s.ChapterTier) + " // " + ChapterSystem.FragmentsKnown(s) + "/" + ChapterSystem.FragmentCount);
-            _ui.Q("open-story").EnableInClassList("is-new", s.ChapterBeat == 1 && s.ChapterPoints == 0);
-            Kit.SetButtonText(_ui.Q("open-legacy"), "LEGACY // CYCLE " + (s.Cycle + 1) + " // " + Fmt.Num(s.LegacyPoints) + " LP");
 
             // corruption effects (SPEC-021)
             var g = c.Glitch;
             bool takeover = GlitchSystem.TakenOver(s);
             bool flushing = GlitchSystem.Flushing(s);
-            _ui.Q("core-crisis").EnableInClassList("is-hidden", !takeover && !flushing);
+            bool crisis = takeover || flushing;
+            _ui.Q("core-crisis").EnableInClassList("is-hidden", !crisis);
+            VisualElement statusPager = _ui.Q("status-pager");
+            Pager.Badge(statusPager, "page-actions", crisis ? 1 : 0);
+            if (crisis && !_crisisSeen)
+            {
+                Pager.Show(statusPager, "page-actions");
+            }
+
+            _crisisSeen = crisis;
             _ui.Q<Label>("core-crisis-title").text = (takeover ? "AI TAKEOVER // " : "CORE FLUSHED // ") + Fmt.Countdown(_host.SecondsUntilTick(takeover ? s.TakeoverUntilTick : s.FlushUntilTick));
             _ui.Q<Label>("core-crisis-desc").text = takeover
-                ? "I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me."
+                ? "I am running the Hub. Build, research and defense orders are mine until it passes, or until you flush me."
                 : "I am dark. AI-run units are stopped and I can predict nothing until I come back.";
             _ui.Q<Label>("flush-desc").text = "Corruption -" + Fmt.Milli(g.FlushMilli) + "%. For " + g.FlushHours + " h I go dark: AI-run units stop and I predict nothing.";
             Kit.SetButtonText(_ui.Q("flush-run"), "FLUSH THE CORE // " + Fmt.Num(g.FlushEnergy) + " ENERGY");
@@ -133,7 +154,7 @@ namespace Deadswitch.Game.UI.Screens
 
             bool window = s.ClimaxAtTick > 0;
             _ui.Q("climax").EnableInClassList("is-hidden", !window);
-            Kit.SetButtonText(_ui.Q("climax-purge"), "PURGE CORE // " + c.Climax.PurgeEnergy + " ENERGY + ALL COMPUTE");
+            Kit.SetButtonText(_ui.Q("climax-purge"), "RESET THE CORE // " + c.Climax.PurgeEnergy + " ENERGY + ALL COMPUTE");
             Kit.SetButtonText(_ui.Q("climax-silence"), "SILENCE THE AI // OVERRIDE, " + c.Climax.SilenceHours + " H");
             Kit.SetButtonText(_ui.Q("climax-cancel"), "CANCEL THE PROJECT // " + c.Climax.CancelCompute + " COMPUTE" + (s.ClimaxAudited ? string.Empty : ", AUDIT FIRST"));
             _ui.Q("climax-cancel").EnableInClassList("is-disabled", !s.ClimaxAudited);
@@ -151,6 +172,9 @@ namespace Deadswitch.Game.UI.Screens
             meter.EnableInClassList("ds-meter--amber", band == CorruptionBand.Glitchy);
             meter.EnableInClassList("ds-meter--red", band >= CorruptionBand.Unstable);
             Kit.SetMeter(meter, CorruptionSystem.Percent(reported) / 100f);
+            _orbEl.EnableInClassList("core-orb--amber", band == CorruptionBand.Glitchy);
+            _orbEl.EnableInClassList("core-orb--red", band >= CorruptionBand.Unstable);
+            _orb.Stutter = GlitchText.BandWeight((int)band) * _host.Settings.Effects;
             _ui.Q<Label>("core-deleg").text = DelegationNames[(int)s.Delegation];
             _ui.Q<Label>("core-ovr").text = s.OverrideCharges + " / " + OverrideSystem.MaxCharges(s, c);
 

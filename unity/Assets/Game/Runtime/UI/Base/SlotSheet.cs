@@ -16,16 +16,12 @@ namespace Deadswitch.Game.UI.Base
     /// </summary>
     public sealed class SlotSheet
     {
-        private static readonly FacilityKind[] Buildable =
-        {
-            FacilityKind.Generator, FacilityKind.SolarField, FacilityKind.ServerRack, FacilityKind.BatteryBank, FacilityKind.FuelDepot, FacilityKind.LifeSupport,
-            FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool, FacilityKind.CoolingTower, FacilityKind.MemoryChamber, FacilityKind.Reactor,
-        };
-
         private readonly VisualElement _root;
         private readonly VisualElement _content;
         private readonly System.Action _onClose;
         private bool _confirmDemolish;
+        private FacilityKind _recommend = FacilityKind.None;
+        private bool _expanded;
         private string _reason = string.Empty;
 
         public SlotSheet(VisualElement layer, System.Action onClose)
@@ -35,11 +31,14 @@ namespace Deadswitch.Game.UI.Base
             _root.AddToClassList("ds-sheet");
             _root.AddToClassList("sheet");
             _root.AddToClassList("is-hidden");
+            Sheen.Attach(_root);
             var grip = new VisualElement();
             grip.AddToClassList("ds-sheet__grip");
             _root.Add(grip);
-            _content = new VisualElement();
-            _root.Add(_content);
+            var scroll = new ScrollView(ScrollViewMode.Vertical);
+            scroll.AddToClassList("sheet__scroll");
+            _root.Add(scroll);
+            _content = scroll.contentContainer;
             _root.RegisterCallback<PointerDownEvent>(e => e.StopPropagation());
             layer.Add(_root);
         }
@@ -51,15 +50,31 @@ namespace Deadswitch.Game.UI.Base
         public void Open(int slot)
         {
             Slot = slot;
+            _expanded = false;
             _confirmDemolish = false;
             _reason = string.Empty;
             _root.RemoveFromClassList("is-hidden");
             Refresh();
         }
 
+        /// <summary>Shows the full stats and every action (the compact card shows status only, idea 24).</summary>
+        public void Expand()
+        {
+            _expanded = true;
+            Refresh();
+        }
+
+        /// <summary>Puts a facility first and marks it (a resource shortcut led here, SPEC-039 idea 15).</summary>
+        public void Recommend(FacilityKind kind)
+        {
+            _recommend = kind;
+            Refresh();
+        }
+
         public void Close()
         {
             Slot = -1;
+            _recommend = FacilityKind.None;
             _root.AddToClassList("is-hidden");
         }
 
@@ -117,68 +132,178 @@ namespace Deadswitch.Game.UI.Base
             time.text = Fmt.Countdown(SecondsUntil(host, job.CompleteTick));
         }
 
-        private void Header(string title, string level)
+        private void Header(string title, string level, string glyph)
         {
             var head = new VisualElement();
             head.AddToClassList("sheet__head");
-            head.Add(Kit.Label(title, "ds-display", "sheet__title"));
+            var well = new VisualElement();
+            well.AddToClassList("sheet__well");
+            well.Add(Icons.Create(glyph, "sheet__icon"));
+            head.Add(well);
+            var titles = new VisualElement();
+            titles.AddToClassList("sheet__titles");
+            titles.Add(Kit.Label(title, "sheet__title"));
             if (level.Length > 0)
             {
-                head.Add(Chip(level, "ds-chip--phosphor"));
+                titles.Add(Kit.Label(level, "sheet__level"));
             }
 
+            head.Add(titles);
             var close = new VisualElement();
-            close.AddToClassList("sheet__close");
-            close.Add(Kit.Label("x", "sheet__close-x"));
+            close.AddToClassList("ds-iconbtn");
+            close.Add(Icons.Create("close", "ds-iconbtn__icon"));
             close.RegisterCallback<ClickEvent>(_ => _onClose());
             head.Add(close);
             _content.Add(head);
         }
 
+        /// <summary>Output, upkeep and crew at a glance (now, and next level when there is one).</summary>
+        private static VisualElement StatTiles(FacilitySlot slot, FacilityConfig f)
+        {
+            bool max = slot.Level >= f.MaxLevel;
+            var row = Row("sheet__tiles");
+            row.Add(StatTile("trendup", "OUTPUT", Texts.Output(slot.Kind, f.Output[slot.Level - 1]), max ? null : Texts.Output(slot.Kind, f.Output[slot.Level])));
+            row.Add(StatTile("bolt", "UPKEEP", Fmt.Num(f.UpkeepPerHour[slot.Level - 1]) + "/H", max ? null : Fmt.Num(f.UpkeepPerHour[slot.Level]) + "/H"));
+            row.Add(StatTile("people", "WORKERS", Fmt.Num(f.Crew[slot.Level - 1]), max ? null : Fmt.Num(f.Crew[slot.Level])));
+            return row;
+        }
+
+        private static VisualElement StatTile(string glyph, string key, string now, string next)
+        {
+            var tile = Row("sheet__tile");
+            var top = Row("sheet__tile-top");
+            top.Add(Icons.Create(glyph, "sheet__tile-icon"));
+            top.Add(Kit.Label(key, "sheet__tile-key"));
+            tile.Add(top);
+            tile.Add(Kit.Label(now, "sheet__tile-value"));
+            if (next != null)
+            {
+                tile.Add(Kit.Label("NEXT  " + next, "sheet__tile-next"));
+            }
+
+            return tile;
+        }
+
+        /// <summary>Build categories (SPEC-042 finding 7): compare like with like instead of scrolling one long list.</summary>
+        private static readonly (string Name, string Glyph, FacilityKind[] Kinds)[] Categories =
+        {
+            ("POWER", "bolt", new[] { FacilityKind.Generator, FacilityKind.SolarField, FacilityKind.BatteryBank, FacilityKind.Reactor }),
+            ("COMPUTE", "chip", new[] { FacilityKind.ServerRack, FacilityKind.CoolingTower, FacilityKind.MemoryChamber }),
+            ("PEOPLE", "people", new[] { FacilityKind.LifeSupport, FacilityKind.FuelDepot }),
+            ("DEFENSE", "shield", new[] { FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool }),
+        };
+
+        private static int _category;
+
         private void Empty(GameHost host)
         {
-            Header("OPEN PLOT", "P" + (Slot + 1));
-            _content.Add(Kit.Label("Cleared ground inside the wire. Tell me what to put here.", "ds-body", "sheet__blurb"));
-            foreach (FacilityKind kind in Buildable)
+            Header("OPEN PLOT", "PLOT " + (Slot + 1) + "  //  CHOOSE WHAT TO BUILD", "plus");
+            if (_recommend != FacilityKind.None)
             {
-                // the reactor (SPEC-029) is offered only from its tier, and only one per Hub
-                if (kind == FacilityKind.Reactor && (host.Sim.State.Tier < host.Config.ReactorRules.MinTier || Economy.CountOfKind(host.Sim.State, kind) >= host.Config.ReactorRules.MaxCount))
+                for (int i = 0; i < Categories.Length; i++)
                 {
-                    continue;
+                    if (System.Array.IndexOf(Categories[i].Kinds, _recommend) >= 0)
+                    {
+                        _category = i;
+                    }
                 }
-
-                // vehicles (SPEC-035) come with the district
-                if (kind == FacilityKind.MotorPool && host.Sim.State.Tier < host.Config.Units.MotorPoolMinTier)
-                {
-                    continue;
-                }
-
-                FacilityConfig f = host.Config.Facility(kind);
-                Economy.BuildCost(host.Sim.State, host.Config, kind, out int energy, out int compute);
-                bool affordable = host.Sim.State.Energy >= energy && host.Sim.State.Compute >= compute;
-
-                var opt = new VisualElement();
-                opt.AddToClassList("opt");
-                opt.EnableInClassList("is-disabled", !affordable);
-                opt.Add(Icons.Create(Icons.ForFacility(kind), "opt__icon"));
-                var body = new VisualElement();
-                body.AddToClassList("opt__body");
-                body.Add(Kit.Label(Fmt.FacilityName(kind), "opt__name"));
-                string upkeep = f.UpkeepPerHour[0] > 0 ? "   -" + Fmt.Num(f.UpkeepPerHour[0]) + " ENERGY/H" : kind == FacilityKind.Reactor ? "   -" + host.Config.ReactorRules.FuelPerHour[0] + " FUEL/H" : string.Empty;
-                upkeep += kind == FacilityKind.MotorPool ? "   -" + host.Config.Units.MotorPoolFuelPerHour[0] + " FUEL/H" : string.Empty;
-                body.Add(Kit.Label(Texts.Output(kind, f.Output[0]) + upkeep, "opt__desc"));
-                body.Add(Cost(host, energy, compute));
-                opt.Add(body);
-                opt.Add(Kit.Label(Fmt.Countdown(Economy.BuildMinutes(host.Sim.State, host.Config, kind, 1) * 60.0 / host.Settings.DevTimeScale), "opt__time"));
-                FacilityKind k = kind;
-                opt.RegisterCallback<ClickEvent>(_ => Run(Command.Build(Slot, k)));
-                _content.Add(opt);
             }
+
+            var tabs = Row("ds-seg");
+            tabs.AddToClassList("build-tabs");
+            for (int i = 0; i < Categories.Length; i++)
+            {
+                var tab = Row("ds-seg__item");
+                tab.AddToClassList("build-tab");
+                tab.EnableInClassList("is-selected", i == _category);
+                tab.Add(Icons.Create(Categories[i].Glyph, "build-tab__icon"));
+                tab.Add(Kit.Label(Categories[i].Name, "build-tab__label"));
+                int index = i;
+                tab.RegisterCallback<ClickEvent>(_ =>
+                {
+                    _category = index;
+                    Refresh();
+                    Choreo.Enter(_content);
+                });
+                tabs.Add(tab);
+            }
+
+            _content.Add(tabs);
+            var grid = Row("build-grid");
+            foreach (FacilityKind kind in Categories[_category].Kinds)
+            {
+                grid.Add(BuildCard(host, kind));
+            }
+
+            _content.Add(grid);
+        }
+
+        /// <summary>One build card: icon, name, the number that matters, cost, then build time or when it is affordable.</summary>
+        private VisualElement BuildCard(GameHost host, FacilityKind kind)
+        {
+            GameState s = host.Sim.State;
+            SimConfig c = host.Config;
+            FacilityConfig f = c.Facility(kind);
+            string locked = null;
+            if (kind == FacilityKind.Reactor && s.Tier < c.ReactorRules.MinTier)
+            {
+                locked = "TIER " + c.ReactorRules.MinTier;
+            }
+            else if (kind == FacilityKind.Reactor && Economy.CountOfKind(s, kind) >= c.ReactorRules.MaxCount)
+            {
+                locked = "ONE PER HUB";
+            }
+            else if (kind == FacilityKind.MotorPool && s.Tier < c.Units.MotorPoolMinTier)
+            {
+                locked = "TIER " + c.Units.MotorPoolMinTier;
+            }
+
+            Economy.BuildCost(s, c, kind, out int energy, out int compute);
+            string when = locked != null ? string.Empty : Afford.When(s, c, energy, compute, 3600.0 / host.Settings.DevTimeScale);
+            var card = Row("build-card");
+            card.EnableInClassList("is-locked", locked != null);
+            card.EnableInClassList("is-waiting", locked == null && when.Length > 0);
+            card.EnableInClassList("is-recommended", kind == _recommend);
+            Sheen.Attach(card);
+            var top = Row("build-card__top");
+            var well = Row("build-card__well");
+            well.Add(Icons.Create(locked != null ? "lock" : Icons.ForFacility(kind), "build-card__icon"));
+            top.Add(well);
+            if (kind == _recommend)
+            {
+                top.Add(Kit.Label("SUGGESTED", "build-card__tag"));
+            }
+
+            card.Add(top);
+            card.Add(Kit.Label(Fmt.FacilityName(kind), "build-card__name"));
+            card.Add(Kit.Label(Texts.Output(kind, f.Output[0]), "build-card__out"));
+            if (locked != null)
+            {
+                card.Add(Kit.Label("LOCKED // " + locked, "build-card__foot"));
+                return card;
+            }
+
+            card.Add(Cost(host, energy, compute));
+            card.Add(Kit.Label(when.Length > 0 ? when : "BUILD " + Fmt.SpanCoarse(Economy.BuildMinutes(s, c, kind, 1) * 60.0 / host.Settings.DevTimeScale), "build-card__foot"));
+            FacilityKind k = kind;
+            card.RegisterCallback<ClickEvent>(_ =>
+            {
+                if (card.ClassListContains("is-waiting"))
+                {
+                    // not yet: say when instead of a bare refusal
+                    Kit.Shake(card);
+                    Toasts.Show("clock", Fmt.FacilityName(k) + " // AFFORDABLE " + when, Toasts.Tone.Warn);
+                    return;
+                }
+
+                Run(Command.Build(Slot, k));
+            });
+            return card;
         }
 
         private void Building(GameHost host, FacilitySlot slot, BuildJob job)
         {
-            Header(Fmt.FacilityName(job.Kind), "LVL " + job.TargetLevel);
+            Header(Fmt.FacilityName(job.Kind), "BUILDING LEVEL " + job.TargetLevel, Icons.ForFacility(job.Kind));
             var chips = Row("sheet__chips");
             chips.Add(Chip("UNDER CONSTRUCTION", "ds-chip--amber"));
             _content.Add(chips);
@@ -191,7 +316,7 @@ namespace Deadswitch.Game.UI.Base
             _content.Add(Kit.Label(Fmt.Countdown(SecondsUntil(host, job.CompleteTick)), "ds-value", "sheet__eta"));
             if (!slot.IsEmpty)
             {
-                _content.Add(Kit.Label("Still running at level " + slot.Level + " while the crew works.", "ds-body", "sheet__blurb"));
+                _content.Add(Kit.Label("Still running at level " + slot.Level + " while the work goes on.", "ds-body", "sheet__blurb"));
             }
 
             var actions = Row("sheet__actions");
@@ -205,13 +330,13 @@ namespace Deadswitch.Game.UI.Base
             SimConfig c = host.Config;
             FacilityConfig f = c.Facility(slot.Kind);
             GameState s = host.Sim.State;
-            Header(Fmt.FacilityName(slot.Kind), "LVL " + slot.Level);
+            Header(Fmt.FacilityName(slot.Kind), "LEVEL " + slot.Level + " / " + f.MaxLevel, Icons.ForFacility(slot.Kind));
 
             var chips = Row("sheet__chips");
             chips.Add(slot.Enabled ? (slot.Powered ? Chip("POWERED", "ds-chip--phosphor") : Chip("NO POWER", "ds-chip--red")) : Chip("SWITCHED OFF", "ds-chip--red"));
             if (slot.Enabled)
             {
-                chips.Add(slot.Staffed ? Chip("CREWED " + Economy.CrewNeeded(c, slot), string.Empty) : Chip("AI-RUN", "ds-chip--amber"));
+                chips.Add(slot.Staffed ? Chip(Economy.CrewNeeded(c, slot) + " WORKERS", string.Empty) : Chip("NO WORKERS // RUN BY AI", "ds-chip--amber"));
             }
 
             chips.Add(Chip("PRIORITY #" + (s.PowerPriority.IndexOf(Slot) + 1), string.Empty));
@@ -242,23 +367,25 @@ namespace Deadswitch.Game.UI.Base
                 // battle scars (SPEC-018): what the damage costs and what fixing it takes
                 int lost = ScarSystem.PenaltyPct(s, c, slot);
                 _content.Add(Kit.Label(repairing
-                    ? "Crews are on it. Full output in " + Fmt.Countdown(SecondsUntil(host, slot.RepairUntilTick)) + "."
+                    ? "Workers are on it. Full output in " + Fmt.Countdown(SecondsUntil(host, slot.RepairUntilTick)) + "."
                     : (lost > 0 ? "Battle damage: output -" + lost + "% until repaired." : "Battle damage. It still works; it looks like it lost."), "ds-body", "sheet__blurb", "t-amber"));
             }
 
+            _content.Add(StatTiles(slot, f));
+            if (!_expanded)
+            {
+                // compact card: the quick-action tiles beside the facility carry the common actions
+                _content.Add(Kit.Button("ALL DETAILS AND ACTIONS", Expand, "ds-btn--ghost", "sheet__more"));
+                return;
+            }
+
             bool max = slot.Level >= f.MaxLevel;
-            var stats = new VisualElement();
-            stats.AddToClassList("sheet__stats");
-            stats.Add(Kv("Output", Texts.Output(slot.Kind, f.Output[slot.Level - 1]) + (max ? string.Empty : "  ->  " + Texts.Output(slot.Kind, f.Output[slot.Level]))));
-            stats.Add(Kv("Upkeep", Fmt.Num(f.UpkeepPerHour[slot.Level - 1]) + "/H" + (max ? string.Empty : "  ->  " + Fmt.Num(f.UpkeepPerHour[slot.Level]) + "/H")));
-            stats.Add(Kv("Crew", Fmt.Num(f.Crew[slot.Level - 1]) + (max ? string.Empty : "  ->  " + Fmt.Num(f.Crew[slot.Level]))));
-            _content.Add(stats);
 
             var actions = Row("sheet__actions");
             if (slot.Damage > 0 && !repairing)
             {
                 int cost = ScarSystem.RepairCost(c, slot);
-                var fix = Kit.Button("REPAIR  " + Fmt.Num(cost) + " E  " + Fmt.Countdown(c.Scars.RepairMinutesPerPoint * slot.Damage * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Repair(Slot)), "ds-btn--warn", "sheet__primary");
+                var fix = Kit.Button("REPAIR  " + Fmt.Num(cost) + " ENERGY  " + Fmt.Countdown(c.Scars.RepairMinutesPerPoint * slot.Damage * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Repair(Slot)), "ds-btn--warn", "sheet__primary");
                 fix.EnableInClassList("is-disabled", s.Energy < cost || s.RaidId != 0);
                 actions.Add(fix);
             }
@@ -307,18 +434,26 @@ namespace Deadswitch.Game.UI.Base
             CommandResult r = host.Execute(command);
             _reason = r.Accepted ? string.Empty : Texts.Reason(r.Reason);
             Hud.HudController.Instance?.Advisor.Say(r.Accepted ? Texts.Ack(command) : Texts.Reason(r.Reason));
+            if (r.Accepted)
+            {
+                Toasts.Show("check", "ORDER ACCEPTED", Toasts.Tone.Good);
+            }
+            else
+            {
+                Toasts.Show("alert", "REFUSED", Toasts.Tone.Bad);
+            }
             Refresh();
         }
 
         private VisualElement Cost(GameHost host, int energy, int compute)
         {
             var row = Row("cost");
-            var e = Kit.Label("E " + Fmt.Num(energy), "cost__item");
+            var e = Kit.Label("ENERGY " + Fmt.Num(energy), "cost__item");
             e.EnableInClassList("is-short", host.Sim.State.Energy < energy);
             row.Add(e);
             if (compute > 0)
             {
-                var cpu = Kit.Label("C " + Fmt.Num(compute), "cost__item");
+                var cpu = Kit.Label("COMPUTE " + Fmt.Num(compute), "cost__item");
                 cpu.EnableInClassList("is-short", host.Sim.State.Compute < compute);
                 row.Add(cpu);
             }
@@ -350,14 +485,6 @@ namespace Deadswitch.Game.UI.Base
 
             chip.Add(Kit.Label(text, "ds-chip__label"));
             return chip;
-        }
-
-        private static VisualElement Kv(string key, string value)
-        {
-            var row = Row("ds-kv");
-            row.Add(Kit.Label(key, "ds-kv__key"));
-            row.Add(Kit.Label(value, "ds-kv__value"));
-            return row;
         }
     }
 }

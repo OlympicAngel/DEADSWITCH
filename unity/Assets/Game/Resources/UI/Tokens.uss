@@ -4,12 +4,19 @@
 
 .ds-root {
     /* Surfaces */
-    --c-world: #171B19;            /* world charcoal: deep background */
-    --c-panel: rgba(20, 25, 22, 0.86);
-    --c-panel-solid: #1C221F;
-    --c-panel-raised: #252B27;     /* panel graphite */
-    --c-panel-sunken: rgba(8, 11, 9, 0.72);
-    --c-scrim: rgba(6, 8, 7, 0.62);
+    --c-world: #12171A;            /* world charcoal, cooled toward blue-black (SPEC-039 accent pass) */
+    --c-panel: rgba(14, 20, 23, 0.88);
+    --c-panel-solid: #161D21;
+    --c-panel-raised: #1F282D;     /* panel graphite */
+    --c-panel-sunken: rgba(5, 9, 11, 0.74);
+    --c-scrim: rgba(4, 7, 9, 0.66);
+
+    /* Depth (SPEC-039): USS has no shadows, so elevation is a light top edge, a dark bottom edge and a tone step */
+    --c-elev-1: rgba(17, 24, 28, 0.92);
+    --c-elev-2: rgba(26, 35, 40, 0.95);
+    --c-edge-hi: rgba(210, 240, 245, 0.10);
+    --c-edge-lo: rgba(0, 0, 0, 0.55);
+    --c-glass: rgba(12, 30, 36, 0.66);
 
     /* Lines */
     --c-line: rgba(168, 213, 138, 0.16);
@@ -33,6 +40,19 @@
     --c-magenta: #C176B4;
     --c-white: #F0EBDD;
     --c-blue: #82AEB6;
+    --c-phosphor-wash: rgba(168, 213, 138, 0.08);
+    --c-amber-wash: rgba(232, 180, 92, 0.10);
+    --c-red-wash: rgba(216, 91, 82, 0.12);
+
+    /* AI tech accent (owner 2026-10-05: restrained cyberpunk, on AI surfaces, focus and interactables only) */
+    --c-cyan: #46DCE6;
+    --c-cyan-dim: rgba(70, 220, 230, 0.5);
+    --c-cyan-glow: rgba(70, 220, 230, 0.35);
+    --c-cyan-line: rgba(70, 220, 230, 0.22);
+    --c-cyan-wash: rgba(70, 220, 230, 0.08);
+    --c-violet: #9C8CFF;            /* intel, story and legacy surfaces */
+    --c-violet-dim: rgba(156, 140, 255, 0.5);
+    --c-violet-wash: rgba(156, 140, 255, 0.10);
 
     /* Spacing: 4 px grid */
     --s-1: 4px;
@@ -45,18 +65,31 @@
     --s-10: 40px;
     --s-12: 48px;
 
-    /* Type scale */
-    --fs-micro: 20px;
-    --fs-xs: 24px;
-    --fs-sm: 28px;
-    --fs-md: 34px;
-    --fs-lg: 44px;
-    --fs-xl: 60px;
-    --fs-hero: 88px;
+    /* Type scale v2 (SPEC-041): one step larger at the bottom so nothing reads below ~10 pt on a phone */
+    --fs-nano: 19px;
+    --fs-micro: 22px;
+    --fs-xs: 26px;
+    --fs-sm: 30px;
+    --fs-md: 36px;
+    --fs-lg: 46px;
+    --fs-xl: 64px;
+    --fs-hero: 92px;
+
+    /* Tracking: labels breathe, they do not shout */
+    --ls-tight: 1px;
+    --ls-label: 2px;
+    --ls-wide: 3px;
+
+    /* Depth sheen (gradient light from the top edge; drawn by UI/Sheen) */
+    --c-sheen: rgba(150, 230, 240, 0.07);
+    --c-sheen-strong: rgba(150, 230, 240, 0.14);
+    --c-scrim-edge: rgba(4, 8, 10, 0.86);
 
     /* Shape */
     --r-sm: 2px;
     --r-md: 4px;
+    --r-lg: 10px;
+    --r-xl: 18px;
     --bw: 2px;
     --corner: 18px;
     --touch: 112px;               /* >= 44pt on a typical phone at the reference scale */
@@ -65,6 +98,7 @@
     --t-fast: 0.12s;
     --t-med: 0.24s;
     --t-slow: 0.42s;
+    --t-pulse: 1.2s;
 
     -unity-font-definition: resource("Fonts/IBMPlexMono-Regular");
     color: var(--c-text);
@@ -73,24 +107,26 @@
 
 /* Text size assist (doc 10): type and touch targets scale together. */
 .ds-root.ds-scale-115 {
-    --fs-micro: 23px;
-    --fs-xs: 28px;
-    --fs-sm: 32px;
-    --fs-md: 39px;
-    --fs-lg: 50px;
-    --fs-xl: 68px;
-    --fs-hero: 100px;
+    --fs-nano: 22px;
+    --fs-micro: 25px;
+    --fs-xs: 30px;
+    --fs-sm: 34px;
+    --fs-md: 41px;
+    --fs-lg: 52px;
+    --fs-xl: 72px;
+    --fs-hero: 104px;
     --touch: 128px;
 }
 
 .ds-root.ds-scale-130 {
-    --fs-micro: 26px;
-    --fs-xs: 31px;
-    --fs-sm: 36px;
-    --fs-md: 44px;
-    --fs-lg: 57px;
-    --fs-xl: 78px;
-    --fs-hero: 114px;
+    --fs-nano: 25px;
+    --fs-micro: 28px;
+    --fs-xs: 33px;
+    --fs-sm: 39px;
+    --fs-md: 47px;
+    --fs-lg: 60px;
+    --fs-xl: 82px;
+    --fs-hero: 118px;
     --touch: 144px;
 }
 
