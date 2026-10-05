@@ -223,6 +223,7 @@ namespace Deadswitch.Game.UI.Hud
             Router.BindTab("core", Q<VisualElement>("tab-core"));
             Router.BindTab("ops", Q<VisualElement>("tab-ops"));
             Q<VisualElement>("raid-defend").RegisterCallback<ClickEvent>(_ => Router.Show("ops"));
+            Q<VisualElement>("raid-apply").RegisterCallback<ClickEvent>(_ => ApplyAiPlan());
             // The drone-feed frame belongs to BASE; over the other screens its text collides with their headers.
             Router.Changed += id =>
             {
@@ -403,7 +404,8 @@ namespace Deadswitch.Game.UI.Hud
             Q<Label>("raid-command-label").text = s.BattleLive ? "LIVE // ON" : "TAKE COMMAND";
             if (raid)
             {
-                _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // EST " + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " // DEF " + Fmt.Num(Defense.Rating(s, c)) + " // " + Fmt.PostureName(s.Posture);
+                _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // EST " + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " // DEF " + Fmt.Num(Defense.Rating(s, c));
+                RefreshPlan(s, c);
             }
 
             // dispatch chip (F-034): an ultimatum outranks a dilemma
@@ -594,6 +596,45 @@ namespace Deadswitch.Game.UI.Hud
             {
                 Choreo.Punch(icon, 0.25f);
             }
+        }
+
+        /// <summary>The raid card's plan line (SPEC-042 findings 5-6): what is set now, what the AI would set.</summary>
+        private void RefreshPlan(GameState s, SimConfig c)
+        {
+            Q<Label>("raid-now").text = "NOW  " + Fmt.PostureName(s.Posture) + " // " + s.Garrison + " ON THE WALL";
+            AiSystem.Recommend(s, c, out Posture posture, out int garrison);
+            bool set = posture == Posture.None || (posture == s.Posture && garrison == s.Garrison);
+            VisualElement plan = Q<VisualElement>("raid-apply").parent;
+            plan.EnableInClassList("is-set", set);
+            Q<Label>("raid-plan").text = set ? "PLAN SET // NOTHING TO CHANGE" : Fmt.PostureName(posture) + " // " + garrison + " DEFENDERS";
+            Q<VisualElement>("raid-apply").EnableInClassList("is-hidden", set);
+        }
+
+        /// <summary>One tap answers the threat with the AI's recommendation (the same commands as OPS SET &amp; GO).</summary>
+        private void ApplyAiPlan()
+        {
+            GameState s = _host.Sim.State;
+            if (s.RaidId == 0)
+            {
+                return;
+            }
+
+            AiSystem.Recommend(s, _host.Sim.Config, out Posture posture, out int garrison);
+            if (posture == Posture.None)
+            {
+                return;
+            }
+
+            CommandResult a = _host.Execute(Command.SetGarrison(garrison));
+            CommandResult b = _host.Execute(Command.SetPosture(posture));
+            bool ok = a.Accepted && b.Accepted;
+            Toasts.Show(ok ? "shield" : "alert", ok ? "PLAN SET // " + Fmt.PostureName(posture) : "PLAN REFUSED", ok ? Toasts.Tone.Good : Toasts.Tone.Bad);
+            if (!ok)
+            {
+                Advisor.Say(Texts.Reason(a.Accepted ? b.Reason : a.Reason));
+            }
+
+            Refresh();
         }
 
         /// <summary>The Command menu (SPEC-042 finding 1): every secondary destination in one place.</summary>

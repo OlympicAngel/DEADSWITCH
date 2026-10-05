@@ -134,11 +134,20 @@
       <ui:VisualElement name="raid-detail" class="hud-raidrow is-collapsed">
         <ui:VisualElement class="row hud-raidrow__info">
           <ui:VisualElement class="ds-icon ds-icon--target hud-raidrow__icon" />
-          <ui:Label name="raid-estimate" text="NORTH RIDGE // EST 34 // DEF 12 // TURTLE" class="hud-raidrow__text" />
+          <ui:Label name="raid-estimate" text="NORTH RIDGE // EST 34 // DEF 12" class="hud-raidrow__text" />
+        </ui:VisualElement>
+        <ui:Label name="raid-now" text="NOW  HOLD // 2 ON THE WALL" class="hud-raidrow__now" />
+        <ui:VisualElement class="row hud-raidrow__plan">
+          <ui:VisualElement class="ds-icon ds-icon--core hud-raidrow__plan-icon" />
+          <ui:VisualElement class="hud-raidrow__plan-body">
+            <ui:Label text="AI PLAN" class="hud-raidrow__plan-key" />
+            <ui:Label name="raid-plan" text="TURTLE // 5 DEFENDERS" class="hud-raidrow__plan-value" />
+          </ui:VisualElement>
+          <ui:VisualElement name="raid-apply" class="ds-btn ds-btn--primary hud-raidrow__apply"><ui:Label name="raid-apply-label" text="APPLY" class="ds-btn__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="row">
           <ui:VisualElement name="raid-command" class="ds-btn hud-raidrow__btn hud-raidrow__cmd"><ui:Label name="raid-command-label" text="TAKE COMMAND" class="ds-btn__label" /></ui:VisualElement>
-          <ui:VisualElement name="raid-defend" class="ds-btn ds-btn--primary hud-raidrow__btn"><ui:Label text="DEFEND" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="raid-defend" class="ds-btn hud-raidrow__btn"><ui:Label text="OPEN DEFENSE" class="ds-btn__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
