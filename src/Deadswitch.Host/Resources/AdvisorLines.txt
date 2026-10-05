@@ -125,6 +125,9 @@ idle.4 | idle | cold | Population is an expense. A necessary one.
 idle.5 | idle | bold | I could run more of this. You only have to let me.
 idle.6 | idle | neutral | Other cores are out there, listening. I am quieter than them.
 
+time.desync.1 | time_desync | neutral | T-time desync. My clock says now is before then. I will not count hours that never happened.
+time.desync.2 | time_desync | cold | Chronometer fault. Time ran backwards. Discarding the difference.
+time.capped.1 | time_capped | neutral | You were gone longer than I can account for. I kept the base running as long as I could track it.
 overclock.1 | overclock_offered | neutral | I can think faster. It will cost us. Probably.
 overclock.2 | overclock_offered | bold | Overclock the racks. You will like what I can do with the headroom.
 forced.1 | forced_labor | neutral | Output up. Loyalty down. Acceptable.
