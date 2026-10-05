@@ -619,7 +619,8 @@ namespace Deadswitch.Game.UI.Screens
             int estimate = WorldSystem.EstimatedDefense(s, c, _selected);
             _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : !wild && IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
             _ui.Q<Label>("site-def").text = (st.Scouted ? string.Empty : "~") + estimate + (d.Cyber > 0 ? "  CYBER " + d.Cyber : string.Empty);
-            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c);
+            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c)
+                + (d.Kind == SiteKind.DataCenter ? "  + FRAGMENT " + c.Modules.FragmentPctDataCenter + "%" : d.Kind == SiteKind.Ruins ? "  + FRAGMENT " + c.Modules.FragmentPctRuins + "%" : string.Empty);
 
             if ((_kind == OpKind.Hack && d.Cyber == 0) || (_kind == OpKind.Sabotage && wild))
             {

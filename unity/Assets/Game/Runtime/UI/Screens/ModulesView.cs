@@ -127,7 +127,8 @@ namespace Deadswitch.Game.UI.Screens
             RejectReason state = Modules.Availability(s, _selected);
             bool selActive = Modules.Restoring(s, _selected);
             _ui.Q<Label>("detail-title").text = _selected + " // " + ModuleTexts.Name(_selected);
-            _ui.Q<Label>("detail-state").text = Modules.IsRestored(s, _selected) ? (Modules.Has(s, _selected) ? "RESTORED" : "LOCKED // INTRUSION") : selActive ? "RESTORING" : state == RejectReason.None ? "AVAILABLE" : state.ToString().ToUpperInvariant();
+            _ui.Q<Label>("detail-state").text = Modules.IsRestored(s, _selected) ? (Modules.Has(s, _selected) ? "RESTORED" : "LOCKED // INTRUSION") : selActive ? "RESTORING" : state == RejectReason.None ? (Modules.NeedsFragment(_selected) ? "AVAILABLE // USES 1 OF " + s.DataFragments + " DATA FRAGMENTS" : "AVAILABLE")
+                : state == RejectReason.NeedsFragment ? "NEEDS A DATA FRAGMENT // RAID A DEAD DATA CENTER" : state.ToString().ToUpperInvariant();
             _ui.Q<Label>("detail-desc").text = ModuleTexts.Effect(_selected, c);
             int energy = c.Modules.ResearchEnergy[sel.Index];
             int compute = c.Modules.ResearchCompute[sel.Index];

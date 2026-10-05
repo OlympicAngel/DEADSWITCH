@@ -483,6 +483,7 @@ namespace Deadswitch.Sim.Systems
                     {
                         st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
                         Loot(ctx, op.Id, LossResource.Compute, Modules.Has(s, ModuleNode.CY5A) ? SimMath.PctFloor(d.Compute, 100 + c.Modules.WormPct) : d.Compute);
+                        Fragment(ctx, op);
                         IntelSystem.CrossCheck(ctx, d.Owner);
                         if (d.CleanData > 0)
                         {
@@ -508,6 +509,7 @@ namespace Deadswitch.Sim.Systems
                         Loot(ctx, op.Id, LossResource.Energy, SimMath.PctFloor(d.Energy, rich));
                         Loot(ctx, op.Id, LossResource.Fuel, SimMath.PctFloor(d.Fuel, rich));
                         Loot(ctx, op.Id, LossResource.Compute, SimMath.PctFloor(d.Compute, rich));
+                        Fragment(ctx, op);
                         if (!wild)
                         {
                             AdaptSystem.Fortify(ctx, d.Owner);
@@ -527,6 +529,22 @@ namespace Deadswitch.Sim.Systems
             }
 
             AddHeat(ctx, d.Owner, Modules.Has(s, ModuleNode.ST5B) ? SimMath.PctFloor(heat, 100 - c.Modules.FalseTrailsPct) : heat);
+        }
+
+        /// <summary>Dead data centers (and sometimes ruins) give up a data fragment to a won raid or hack (SPEC-037).</summary>
+        private static void Fragment(SimContext ctx, Operation op)
+        {
+            GameState s = ctx.State;
+            ModuleConfig m = ctx.Config.Modules;
+            SiteKind kind = CatalogArray[op.Site].Kind;
+            int pct = kind == SiteKind.DataCenter ? m.FragmentPctDataCenter : kind == SiteKind.Ruins && op.Kind == OpKind.Raid ? m.FragmentPctRuins : 0;
+            if (pct <= 0 || s.DataFragments >= m.FragmentMax || SimMath.Hash((uint)op.Id * 0x6F1Du, (uint)(s.Rng.State >> 32)) % 100 >= (uint)pct)
+            {
+                return;
+            }
+
+            s.DataFragments++;
+            ctx.Emit(EventKind.FragmentRecovered, op.Site, s.DataFragments);
         }
 
         private static void Loot(SimContext ctx, int opId, LossResource resource, int amount)

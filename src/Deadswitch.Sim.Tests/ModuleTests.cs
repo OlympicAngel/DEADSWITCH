@@ -41,6 +41,29 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void KeyModule_NeedsARecoveredFragment_AndUsesItUp()
+        {
+            // SPEC-037: each field's capstone rebuilds from recovered data
+            var sim = new Simulation(3UL);
+            GameState s = sim.State;
+            s.Tier = 4;
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (d.Field == ModuleField.Warfare && d.Node != ModuleNode.WF6)
+                {
+                    s.Modules |= 1UL << (int)d.Node;
+                }
+            }
+
+            s.Energy = 5_000;
+            s.Compute = 500;
+            Assert.Equal(RejectReason.NeedsFragment, sim.Execute(Command.StartResearch(ModuleNode.WF6)).Reason);
+            s.DataFragments = 1;
+            Assert.True(sim.Execute(Command.StartResearch(ModuleNode.WF6)).Accepted);
+            Assert.Equal(0, s.DataFragments);
+        }
+
+        [Fact]
         public void Research_StrainsTheCore_AndCorruptionDecaysWithItsLevel()
         {
             // F-026 (shipped balance): heavy compute use adds corruption; decay scales with the current level

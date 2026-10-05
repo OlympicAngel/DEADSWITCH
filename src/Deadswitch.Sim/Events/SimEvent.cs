@@ -335,6 +335,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The handler's actions are bringing a breakdown phase on (SPEC-036). A: WorldEventKind, B: pressure.</summary>
         AftershockBuilding = 109,
+
+        /// <summary>A won op recovered a data fragment from dead hardware (SPEC-037). A: site, B: fragments held.</summary>
+        FragmentRecovered = 110,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

@@ -9,8 +9,8 @@ namespace Deadswitch.Sim.State
     /// </summary>
     public sealed class GameState
     {
-        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026). v23: adaptive enemies (SPEC-027). v24: luck swings (SPEC-028). v25: reactor (SPEC-029). v26: AI initiative (SPEC-030). v27: starting regions (SPEC-031). v28: reactor fuel per tick, AI initiative only when present. v29: fallout front (SPEC-032). v30: secret nodes (SPEC-034). v31: raid force mix (SPEC-035). v32: blueprints, first-lie tick, collapse watch. v33: aftershock pressure (SPEC-036).</summary>
-        public const int LayoutVersion = 33;
+        /// <summary>Field layout version (save format). v2: AI dials, raid gates, lies, planner hold (SPEC-004). v3: raid records (SPEC-006). v4: project clock and audit (SPEC-007). v5: tier, modules, research (SPEC-008). v6: climax window, silence, betrayal, OVERRIDE penalty (SPEC-011). v7: loyalty and surge (SPEC-012). v8: threats (SPEC-015). v9: world map (SPEC-016). v10: living world (SPEC-017). v11: battle scars (SPEC-018). v12: spies (SPEC-019). v13: live battles (SPEC-020). v14: corruption effects (SPEC-021). v15: legacy cycle (SPEC-022). v16: Ironman. v17: cycle mastery, rebuilding surge, memory lane. v18: ceasefires (SPEC-023). v19: fourth faction (Halcyon Dynamics). v20: chapters and memory fragments (SPEC-024). v21: alliances (SPEC-025). v22: sabotage (SPEC-026). v23: adaptive enemies (SPEC-027). v24: luck swings (SPEC-028). v25: reactor (SPEC-029). v26: AI initiative (SPEC-030). v27: starting regions (SPEC-031). v28: reactor fuel per tick, AI initiative only when present. v29: fallout front (SPEC-032). v30: secret nodes (SPEC-034). v31: raid force mix (SPEC-035). v32: blueprints, first-lie tick, collapse watch. v33: aftershock pressure (SPEC-036). v34: data fragments (SPEC-037).</summary>
+        public const int LayoutVersion = 34;
 
         public long Tick;
 
@@ -235,6 +235,9 @@ namespace Deadswitch.Sim.State
         /// <summary>Pressure toward each breakdown phase (SPEC-036): fallout, plague, blackouts, machine surge.</summary>
         public int[] Aftershock = new int[4];
 
+        /// <summary>Recovered data fragments held (SPEC-037); key modules need one each.</summary>
+        public int Fragments;
+
         /// <summary>Traded blueprints held (doc 10 s5).</summary>
         public int Blueprints;
 
@@ -292,7 +295,7 @@ namespace Deadswitch.Sim.State
         public int ChapterPoints;
 
         /// <summary>Memory fragments recovered: bit n for fragment n (12 in all). Survives every reboot.</summary>
-        public int Fragments;
+        public int DataFragments;
 
         /// <summary>Faction under ceasefire (-1 = none, SPEC-023), until <see cref="CeasefireUntilTick"/>.</summary>
         public int CeasefireFaction = -1;
@@ -802,6 +805,11 @@ namespace Deadswitch.Sim.State
             {
                 v.Int(ref FalloutSite);
                 v.Long(ref NextFalloutTick);
+            }
+
+            if (v.Version >= 34)
+            {
+                v.Int(ref DataFragments);
             }
 
             if (v.Version >= 33)

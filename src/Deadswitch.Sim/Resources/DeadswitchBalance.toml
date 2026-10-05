@@ -302,6 +302,15 @@ audit_cooldown_hours = 12
 # AI module research (SPEC-008). Lists follow the catalog order: M1-M3, then each field (LG, WF, CY, ST) as 1, 2A, 2B, 3, 4, 5A, 5B, 6. All (tune).
 [modules]
 
+# Chance a won raid or hack on a dead data center recovers a data fragment (SPEC-037). [0..100]
+fragment_pct_data_center = 60
+
+# Chance a won raid on ruins recovers a data fragment. [0..100]
+fragment_pct_ruins = 25
+
+# Data fragments the Hub can hold. Each field's capstone module (node 6) needs one to start. [0..20]
+fragment_max = 4
+
 # Energy cost per node. [35..35 items, each 0..100000]
 research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900]
 
