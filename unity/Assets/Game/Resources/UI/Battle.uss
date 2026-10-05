@@ -1,45 +1,78 @@
-/* LIVE BATTLE (F-037). Tokens only. The middle stays clear so the fight shows through. */
+/* LIVE BATTLE (F-037, SPEC-039). Tokens only. The middle stays clear so the fight shows through. */
 
-.bat { flex-grow: 1; padding: var(--s-3) var(--s-6) var(--s-2) var(--s-6); }
-.bat-top { padding-top: var(--s-3); padding-bottom: var(--s-3); background-color: var(--c-panel); }
-.bat-pip { margin-right: var(--s-3); }
-.bat-time { font-size: var(--fs-lg); }
-.bat-forces { align-items: center; margin-top: var(--s-3); }
-.bat-side { width: 200px; }
+.bat { flex-grow: 1; padding: var(--s-3) var(--s-4) var(--s-2) var(--s-4); }
+.bat-top { padding: var(--s-3) var(--s-4); background-color: var(--c-elev-1); border-radius: var(--r-md); border-top-width: 4px; }
+.bat-headrow { align-items: center; }
+.bat-headwell { width: 64px; height: 64px; align-items: center; justify-content: center; margin-right: var(--s-3); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-amber-dim); background-color: var(--c-amber-wash); }
+.bat-headicon { width: 40px; height: 40px; --icon-color: var(--c-amber); }
+.bat-pip { margin-right: var(--s-2); }
+.bat-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-amber); white-space: normal; flex-shrink: 1; }
+.bat-clock { flex-direction: row; align-items: center; padding: 0 var(--s-3); border-radius: var(--r-md); background-color: var(--c-amber-wash); border-width: 1px; border-color: var(--c-amber-dim); }
+.bat-clock__icon { width: 30px; height: 30px; margin-right: var(--s-2); --icon-color: var(--c-amber); }
+.bat-time { font-size: var(--fs-lg); flex-shrink: 0; }
+
+.bat-forces { align-items: stretch; margin-top: var(--s-3); }
+.bat-side { flex-grow: 1; flex-basis: 0; padding: var(--s-2) var(--s-3); border-width: 1px; border-radius: var(--r-md); }
+.bat-side--def { border-color: var(--c-phosphor-dim); background-color: var(--c-phosphor-wash); border-left-width: 6px; border-left-color: var(--c-phosphor); }
+.bat-side--att { border-color: var(--c-red-glow); background-color: var(--c-red-wash); border-right-width: 6px; border-right-color: var(--c-red); }
 .bat-side--right { align-items: flex-end; }
-.bat-num { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); margin-top: var(--s-1); }
-.bat-bar { flex-direction: row; height: 18px; margin: 0 var(--s-3); background-color: var(--c-panel-sunken); border-width: 1px; border-color: var(--c-line-mid); }
-.bat-bar__def { height: 100%; width: 45%; background-color: var(--c-phosphor); }
-.bat-bar__att { height: 100%; flex-grow: 1; background-color: var(--c-red-glow); }
-.bat-read { margin-top: var(--s-2); font-size: var(--fs-micro); }
+.bat-side__row--right { justify-content: flex-end; }
+.bat-side__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); white-space: normal; flex-shrink: 1; }
+.bat-side__icon { width: 30px; height: 30px; margin-right: var(--s-2); }
+.bat-side__icon--def { --icon-color: var(--c-phosphor); }
+.bat-side__icon--att { --icon-color: var(--c-red); margin-right: 0; margin-left: var(--s-2); }
+.bat-num { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xl); margin-top: var(--s-1); flex-shrink: 0; }
+.bat-vs { width: 72px; align-items: center; justify-content: center; }
+.bat-vs__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: 2px; color: var(--c-amber); }
 
-.bat-bottom { padding-top: var(--s-3); padding-bottom: var(--s-3); background-color: var(--c-panel); }
-.bat-abilities { margin-bottom: var(--s-2); }
+.bat-bar { flex-direction: row; height: 22px; margin-top: var(--s-3); border-radius: var(--r-sm); overflow: hidden; background-color: var(--c-panel-sunken); border-width: 1px; border-color: var(--c-line-mid); }
+.bat-bar__def { height: 100%; width: 45%; background-color: var(--c-phosphor); border-right-width: 4px; border-color: var(--c-white); }
+.bat-bar__att { height: 100%; flex-grow: 1; background-color: var(--c-red-glow); }
+
+.bat-advice { flex-direction: row; align-items: center; margin-top: var(--s-3); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); border-width: 1px; border-color: var(--c-cyan-line); background-color: var(--c-cyan-wash); }
+.bat-advice__icon { width: 34px; height: 34px; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
+.bat-read { font-size: var(--fs-xs); color: var(--c-text); white-space: normal; flex-shrink: 1; }
+
+.bat-bottom { padding: var(--s-3) var(--s-4); background-color: var(--c-elev-1); border-radius: var(--r-md); }
+.bat-sect { margin-bottom: var(--s-2); }
+.bat-sect__title { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 4px; color: var(--c-text-dim); }
+.bat-sect__rule { flex-grow: 1; height: 1px; margin-left: var(--s-3); background-color: var(--c-cyan-line); }
+.bat-abilities { margin-bottom: var(--s-2); align-items: stretch; }
 .bat-ab {
     flex-grow: 1;
     flex-basis: 0;
-    min-height: 132px;
+    min-height: 196px;
     margin-right: var(--s-2);
     padding: var(--s-2) var(--s-3);
+    align-items: center;
     justify-content: center;
     border-width: var(--bw);
-    border-color: var(--c-phosphor);
-    background-color: rgba(168, 213, 138, 0.08);
+    border-radius: var(--r-md);
+    border-top-color: var(--c-phosphor);
+    border-color: var(--c-phosphor-dim);
+    background-color: var(--c-elev-2);
     transition-property: scale, opacity;
     transition-duration: 0.12s;
 }
 .bat-ab.is-last { margin-right: 0; }
-.bat-ab:active { scale: 0.97 0.97; }
-.bat-ab--override { border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.08); }
+.bat-ab:active { scale: 0.96 0.96; }
+.bat-ab--override { border-color: var(--c-amber-dim); border-top-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .bat-ab.is-used { opacity: 0.32; }
-.bat-ab.is-disabled { opacity: 0.45; }
-.bat-ab__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text); }
-.bat-ab__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-phosphor); margin-top: var(--s-1); }
+.bat-ab.is-disabled { opacity: 0.55; }
+.bat-ab__well { width: 72px; height: 72px; align-items: center; justify-content: center; border-radius: var(--r-md); border-width: 1px; border-color: var(--c-phosphor-dim); background-color: var(--c-phosphor-wash); }
+.bat-ab__icon { width: 46px; height: 46px; --icon-color: var(--c-phosphor); }
+.bat-ab--override .bat-ab__well { border-color: var(--c-amber-dim); background-color: var(--c-amber-wash); }
+.bat-ab--override .bat-ab__icon { --icon-color: var(--c-amber); }
+.bat-ab__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-text); margin-top: var(--s-2); white-space: normal; -unity-text-align: middle-center; }
+.bat-ab__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-phosphor); margin-top: var(--s-1); white-space: normal; -unity-text-align: middle-center; }
 .bat-ab--override .bat-ab__fx { color: var(--c-amber); }
 .bat-ab__cost { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); }
+
 .bat-foot { margin-top: var(--s-1); align-items: center; }
-.bat-toggle { width: 240px; min-height: 88px; align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); }
-.bat-toggle.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+.bat-toggle { flex-direction: row; width: 300px; min-height: var(--touch); align-items: center; justify-content: center; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-elev-2); }
+.bat-toggle.is-on { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.bat-toggle__icon { width: 30px; height: 30px; margin-right: var(--s-2); --icon-color: var(--c-text-dim); }
+.bat-toggle.is-on > .bat-toggle__icon { --icon-color: var(--c-phosphor); }
 .bat-toggle__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
 .bat-toggle.is-on > .bat-toggle__label { color: var(--c-phosphor); }
 .bat-gap { margin-left: var(--s-3); }

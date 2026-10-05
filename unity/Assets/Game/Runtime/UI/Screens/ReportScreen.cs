@@ -82,6 +82,7 @@ namespace Deadswitch.Game.UI.Screens
 
             _ui.Q<Label>("rep-summary").text = "> " + r.Summary;
             _ui.Q<Label>("rep-ledger").text = r.LossText(false);
+            FillOutcomeAndLosses(r);
             _ui.Q<Label>("rep-state-label").text = r.Verified ? "VERIFIED" : "UNVERIFIED";
             _ui.Q("rep-state").EnableInClassList("ds-chip--amber", !r.Verified);
             _ui.Q("rep-state").EnableInClassList("ds-chip--phosphor", r.Verified);
@@ -99,6 +100,34 @@ namespace Deadswitch.Game.UI.Screens
             VisualElement verify = _ui.Q("rep-verify");
             verify.style.display = r.Verified ? DisplayStyle.None : DisplayStyle.Flex;
             Kit.SetButtonText(verify, "VERIFY // " + _host.Sim.Config.Report.VerifyComputeCost + " COMPUTE");
+        }
+
+        private void FillOutcomeAndLosses(BattleReport r)
+        {
+            Label stamp = _ui.Q<Label>("rep-outcome");
+            if (stamp != null)
+            {
+                stamp.text = r.Outcome.ToString().ToUpperInvariant();
+                stamp.EnableInClassList("is-bad", r.Outcome == Deadswitch.Sim.State.RaidOutcome.Breached);
+                stamp.EnableInClassList("is-good", r.Outcome == Deadswitch.Sim.State.RaidOutcome.Repelled);
+            }
+
+            VisualElement items = _ui.Q("rep-loss");
+            if (items == null)
+            {
+                return;
+            }
+
+            items.Clear();
+            foreach (string part in r.LossText(false).Split(new[] { ", " }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                string glyph = part.Contains("ENERGY") ? "bolt" : part.Contains("COMPUTE") ? "chip" : part.Contains("PEOPLE") ? "people" : part.Contains("FUEL") ? "fuel" : part.Contains("DOWN TO") ? "wrench" : "check";
+                var row = new VisualElement();
+                row.AddToClassList("rep-loss__item");
+                row.Add(Icons.Create(glyph, "rep-loss__icon"));
+                row.Add(Kit.Label(part, "rep-loss__label"));
+                items.Add(row);
+            }
         }
 
         private void Verify()
