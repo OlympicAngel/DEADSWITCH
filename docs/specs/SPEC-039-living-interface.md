@@ -39,7 +39,7 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 14. Tap a pod: resource breakdown sheet (producers, drains, net). *Done*
 15. "How to get more" shortcuts in the breakdown that select and fly to the building that helps (or the empty plot to build one). *Done*
 16. Costs show the missing amount ("NEED 140 MORE") and when it will be affordable at the current rate. *Done*
-17. Floating "+N" pickups over producing buildings when stock ticks up (throttled). *Planned*
+17. Floating "+N" pickups over producing buildings when stock ticks up (throttled). *Done*
 18. Storage fill rendered on the battery bank / fuel depot model (lit cells). *Editor*
 19. Pod flashes and the rate pill turns red when a drain starts (blackout warning lead time). *Done*
 20. Production summary card on BASE when the player returns ("while you were away: +2,340 energy"). *Done*
@@ -57,7 +57,7 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 30. Upgrade construction: scaffold flicker and sparks while building. *Editor*
 31. Holographic plot markers on empty plots ("+ BUILD" ring that breathes). *Done*
 32. Data links: thin animated cyan lines from powered facilities to the core. *Done*
-33. Ambient drones circling the compound, more at higher tiers. *Planned*
+33. Ambient drones circling the compound, more at higher tiers. *Done*
 34. Neon accent strips on AI-tech facilities (server rack, cooling, memory chamber). *Editor*
 
 ### D. Attack cinematic and battle feel

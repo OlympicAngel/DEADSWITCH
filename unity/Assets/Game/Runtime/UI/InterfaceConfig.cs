@@ -17,6 +17,7 @@ namespace Deadswitch.Game.UI
         public CinematicRules cinematic = new CinematicRules();
         public ToastRules toast = new ToastRules();
         public OrbRules orb = new OrbRules();
+        public AmbientRules ambient = new AmbientRules();
 
         public static InterfaceConfig Current => _current ??= Load();
 
@@ -43,6 +44,9 @@ namespace Deadswitch.Game.UI
 
             /// <summary>At or above this share of capacity (and still producing) a pod reads FULL.</summary>
             public int fullPct = 98;
+
+            /// <summary>Real seconds between floating "+N" pickups over the top producer (idea 17).</summary>
+            public float pickupSeconds = 20f;
         }
 
         [System.Serializable]
@@ -90,6 +94,15 @@ namespace Deadswitch.Game.UI
         {
             public float seconds = 2.8f;
             public int max = 3;
+        }
+
+        [System.Serializable]
+        public sealed class AmbientRules
+        {
+            /// <summary>Patrol drones circling the compound per Hub tier (idea 33).</summary>
+            public int dronesPerTier = 2;
+            public float droneHeight = 10f;
+            public float droneRadius = 16f;
         }
 
         [System.Serializable]

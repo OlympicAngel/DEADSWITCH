@@ -5,6 +5,8 @@ using Deadswitch.Game.UI;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
 using UnityEngine;
+using UnityEngine.UIElements;
+using Motion = Deadswitch.Game.UI.Motion;
 
 namespace Deadswitch.Game.Base
 {
@@ -27,7 +29,12 @@ namespace Deadswitch.Game.Base
         private Transform _root;
         private Light _focusLight;
         private Light _siren;
+        private readonly List<Drone> _drones = new List<Drone>();
+        private readonly List<Pickup> _pickups = new List<Pickup>();
         private int _focus = -1;
+        private int _lastEnergy = -1;
+        private int _gained;
+        private float _pickupClock;
         private float _time;
         private float _nextScan;
 
@@ -93,6 +100,13 @@ namespace Deadswitch.Game.Base
             }
 
             GameState s = _host.Sim.State;
+            if (_lastEnergy >= 0 && s.Energy > _lastEnergy)
+            {
+                _gained += s.Energy - _lastEnergy;
+            }
+
+            _lastEnergy = s.Energy;
+            SyncDrones(s.Tier);
             int n = Mathf.Min(view.SlotCount, s.Slots.Count);
             while (_plots.Count < n)
             {
@@ -188,6 +202,8 @@ namespace Deadswitch.Game.Base
             }
 
             TickScans(dt, view, effects);
+            TickDrones(dt, reduced, night, effects);
+            TickPickups(dt, view);
 
             // raid siren (idea 43): a red beam sweeps from the bunker while an attack is inbound
             bool raid = _host.Sim.State.RaidId != 0;
@@ -198,6 +214,103 @@ namespace Deadswitch.Game.Base
                 float yaw = reduced ? 30f : _time * 140f;
                 _siren.transform.rotation = Quaternion.Euler(28f, yaw, 0f);
                 _siren.intensity = 6f * effects;
+            }
+        }
+
+        /// <summary>Patrol drones (idea 33): blinking nav lights on slow orbits, more with each tier.</summary>
+        private void SyncDrones(int tier)
+        {
+            InterfaceConfig.AmbientRules a = InterfaceConfig.Current.ambient;
+            int want = Mathf.Max(0, tier * a.dronesPerTier);
+            while (_drones.Count < want)
+            {
+                int i = _drones.Count;
+                LineRenderer body = NewLine("Patrol Drone", 0.22f);
+                body.useWorldSpace = true;
+                body.positionCount = 2;
+                _drones.Add(new Drone
+                {
+                    Body = body,
+                    Radius = a.droneRadius * (0.7f + (0.12f * (i % 4))),
+                    Height = a.droneHeight + ((i % 3) * 1.6f),
+                    Speed = (i % 2 == 0 ? 1f : -1f) * (0.05f + (0.012f * (i % 5))),
+                    Angle = i * 2.3f,
+                });
+            }
+        }
+
+        private void TickDrones(float dt, bool reduced, float night, float effects)
+        {
+            Vector3 center = BaseView.Instance.CoreAnchor;
+            foreach (Drone d in _drones)
+            {
+                d.Angle += reduced ? 0f : d.Speed * dt;
+                var dir = new Vector3(Mathf.Cos(d.Angle), 0f, Mathf.Sin(d.Angle));
+                Vector3 p = new Vector3(center.x, d.Height, center.z) + (dir * d.Radius);
+                Vector3 tangent = Vector3.Cross(Vector3.up, dir) * Mathf.Sign(d.Speed) * 0.35f;
+                d.Body.SetPosition(0, p - tangent);
+                d.Body.SetPosition(1, p + tangent);
+                bool blink = reduced || Mathf.Repeat(_time + d.Angle, 1.4f) < 0.12f;
+                Color c = blink ? new Color(1f, 0.3f, 0.25f) : Cyan;
+                SetColor(d.Body, c, (blink ? 0.9f : 0.25f + (0.4f * night)) * Mathf.Max(0.3f, effects));
+            }
+        }
+
+        /// <summary>A floating "+N" over the strongest energy producer every few seconds (idea 17).</summary>
+        private void TickPickups(float dt, BaseView view)
+        {
+            _pickupClock += dt;
+            if (_pickupClock >= InterfaceConfig.Current.resources.pickupSeconds && _gained > 0)
+            {
+                _pickupClock = 0f;
+                int best = -1;
+                int bestOut = 0;
+                GameState s = _host.Sim.State;
+                for (int i = 0; i < s.Slots.Count && i < view.SlotCount; i++)
+                {
+                    FacilitySlot slot = s.Slots[i];
+                    if (Deadswitch.Sim.Systems.Economy.IsSource(slot.Kind) && Deadswitch.Sim.Systems.Economy.IsRunning(slot))
+                    {
+                        int o = Deadswitch.Sim.Systems.Economy.EffectiveOutput(s, _host.Config, slot);
+                        if (o > bestOut)
+                        {
+                            bestOut = o;
+                            best = i;
+                        }
+                    }
+                }
+
+                if (best >= 0 && UiRoot.Instance != null)
+                {
+                    var label = new VisualElement { pickingMode = PickingMode.Ignore };
+                    label.AddToClassList("pickup");
+                    label.Add(Icons.Create("bolt", "pickup__icon"));
+                    label.Add(Kit.Label("+" + Fmt.Compact(_gained), "pickup__label"));
+                    UiRoot.Instance.World.Add(label);
+                    _pickups.Add(new Pickup { Label = label, Slot = best });
+                }
+
+                _gained = 0;
+            }
+
+            Camera cam = DroneCamera.Instance != null ? DroneCamera.Instance.Camera : null;
+            VisualElement root = UiRoot.Instance != null ? UiRoot.Instance.Root : null;
+            for (int i = _pickups.Count - 1; i >= 0; i--)
+            {
+                Pickup p = _pickups[i];
+                p.Time += dt;
+                if (p.Time > 1.6f || cam == null || root == null || p.Slot >= view.SlotCount)
+                {
+                    p.Label.RemoveFromHierarchy();
+                    _pickups.RemoveAt(i);
+                    continue;
+                }
+
+                Vector3 world = view.SlotGround(p.Slot) + new Vector3(0, view.SlotHeight(p.Slot) + 1.2f + (p.Time * 0.9f), 0);
+                Vector3 sp = cam.WorldToScreenPoint(world);
+                p.Label.style.left = sp.x / Screen.width * root.layout.width;
+                p.Label.style.top = (Screen.height - sp.y) / Screen.height * root.layout.height;
+                p.Label.style.opacity = p.Time < 0.2f ? p.Time / 0.2f : 1f - Mathf.Clamp01((p.Time - 1f) / 0.6f);
             }
         }
 
@@ -313,6 +426,22 @@ namespace Deadswitch.Game.Base
             public Vector3 To;
             public float Phase;
             public bool Active;
+        }
+
+        private sealed class Drone
+        {
+            public LineRenderer Body;
+            public float Radius;
+            public float Height;
+            public float Speed;
+            public float Angle;
+        }
+
+        private sealed class Pickup
+        {
+            public VisualElement Label;
+            public int Slot;
+            public float Time;
         }
 
         private sealed class Scan

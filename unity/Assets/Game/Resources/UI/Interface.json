@@ -2,7 +2,8 @@
   "resources": {
     "lowPct": 20,
     "shortHours": 2,
-    "fullPct": 98
+    "fullPct": 98,
+    "pickupSeconds": 20
   },
   "focus": {
     "zoom": 0.52,
@@ -36,5 +37,10 @@
   "orb": {
     "ringSpeed": 0.35,
     "wobble": 0.08
+  },
+  "ambient": {
+    "dronesPerTier": 2,
+    "droneHeight": 10,
+    "droneRadius": 16
   }
 }

@@ -170,3 +170,8 @@
 .away__row > .ds-delta { align-self: center; }
 .away__raids { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); margin-top: var(--s-3); }
 .away__hint { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: 16px; letter-spacing: 4px; color: var(--c-text-faint); margin-top: var(--s-3); -unity-text-align: middle-right; }
+
+/* Floating "+N" over a producer (SPEC-039 idea 17) */
+.pickup { position: absolute; flex-direction: row; align-items: center; translate: -50% -100%; }
+.pickup__label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-phosphor); text-shadow: 0 0 10px var(--c-phosphor-glow); }
+.pickup__icon { width: 30px; height: 30px; margin-right: 2px; --icon-color: var(--c-phosphor); }
