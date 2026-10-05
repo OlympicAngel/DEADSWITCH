@@ -284,7 +284,7 @@ async function drawOverlay(ov) {
 
 async function renderReport(rep) {
   novel.enabled = true;
-  renderer.toneMappingExposure = look.exposure * 1.45;
+  renderer.toneMappingExposure = look.exposure * 1.45 * (1 + ((look.reportNightBoost ?? 1) - 1) * (look.moon || 0));
   const sizes = [[1000, 400], [492, 500], [492, 500], [1000, 400]];
   const imgs = [];
   for (let i = 0; i < rep.shots.length; i++) {

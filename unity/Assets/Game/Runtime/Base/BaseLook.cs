@@ -125,6 +125,9 @@ namespace Deadswitch.Game.Base
         /// <summary>Battle-scar fire, smoke and the damage glow on hurt facilities (Unity only).</summary>
         public ScarFx scarFx = new ScarFx();
 
+        /// <summary>Battle report stills: exposure multiplier at full night (scaled by the key's moon weight), so night panels stay readable.</summary>
+        public float reportNightBoost = 1f;
+
         /// <summary>Sector map overrides (SPEC-033).</summary>
         public MapLook map = new MapLook();
 

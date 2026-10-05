@@ -42,6 +42,12 @@ namespace Deadswitch.Game.Reports
 
             Shader shader = Shader.Find("Deadswitch/Novel");
             var grade = shader != null ? new Material(shader) : null;
+            if (grade != null && BaseView.Instance != null)
+            {
+                // night stills get more exposure (BaseLook.reportNightBoost) or the grade crushes them to black
+                float night = BaseView.Instance.Lighting.moon;
+                grade.SetFloat("_Exposure", grade.GetFloat("_Exposure") * Mathf.Lerp(1f, BaseLook.Load().reportNightBoost, night));
+            }
             var stills = new RenderTexture[ReportScene.Shots];
             var meshes = new List<Mesh>();
             for (int shot = 0; shot < ReportScene.Shots; shot++)

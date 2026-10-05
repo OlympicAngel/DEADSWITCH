@@ -21,6 +21,7 @@
     "smokeRate": 1.4, "smokeSize": 1.25, "smokeDark": 0.0,
     "damageColor": [1.0, 0.1, 0.04], "damageGlow": 4.5, "damageTint": 0.2, "damagePulseHz": 1.1
   },
+  "reportNightBoost": 1.8,
   "map": {
     "_doc": "Sector map (SPEC-033): the fixed recon camera sits far out, so fog is thinned and the sun's shadow frustum widened. Camera angle and fit live in SectorScene.Camera.",
     "fogScale": 0.2,
