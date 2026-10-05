@@ -21,6 +21,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Premium");
             Root.Add(tree);
             _ui = tree;
+            Icons.Attach(tree);
             _reason = _ui.Q<Label>("prm-reason");
             _ui.Q("prm-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
             _ui.Q("prm-buy").RegisterCallback<ClickEvent>(_ => Entitlements.Instance.BuyPremium(Say));

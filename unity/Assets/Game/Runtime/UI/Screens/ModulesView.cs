@@ -30,6 +30,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Modules");
             mount.Add(tree);
             _ui = tree;
+            Icons.Attach(tree);
             _body = _ui.Q("mod-field-body");
             foreach (ModuleNode node in new[] { ModuleNode.M1, ModuleNode.M2, ModuleNode.M3 })
             {
@@ -254,7 +255,18 @@ namespace Deadswitch.Game.UI.Screens
         {
             var el = new VisualElement { name = "node-" + d.Node };
             el.AddToClassList("mod-node");
-            el.Add(Kit.Label(d.Node.ToString(), "mod-node__code"));
+            var top = new VisualElement();
+            top.AddToClassList("mod-node__top");
+            top.Add(Kit.Label(d.Node.ToString(), "mod-node__code"));
+            var ics = new VisualElement();
+            ics.AddToClassList("mod-node__ics");
+            ics.Add(Icons.Create("lock", "mod-node__ic", "mod-node__ic--lock"));
+            ics.Add(Icons.Create("cross", "mod-node__ic", "mod-node__ic--out"));
+            ics.Add(Icons.Create("bolt", "mod-node__ic", "mod-node__ic--open"));
+            ics.Add(Icons.Create("clock", "mod-node__ic", "mod-node__ic--active"));
+            ics.Add(Icons.Create("check", "mod-node__ic", "mod-node__ic--done"));
+            top.Add(ics);
+            el.Add(top);
             el.Add(Kit.Label(ModuleTexts.Name(d.Node), "mod-node__name"));
             Label state = Kit.Label(string.Empty, "mod-node__state");
             state.name = "node-" + d.Node + "-state";

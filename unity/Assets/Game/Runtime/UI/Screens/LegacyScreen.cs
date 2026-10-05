@@ -26,6 +26,8 @@ namespace Deadswitch.Game.UI.Screens
 
         private static readonly string[] PerkNames = { "STARTING CACHE", "REBUILDING SURGE", "SPARE OVERRIDE", "COLD TRAIL", "OLD GUARD" };
 
+        private static readonly string[] PerkIcons = { "box", "hammer", "hand", "eye", "shield" };
+
         private readonly GameHost _host;
         private readonly VisualElement _ui;
         private readonly Label _reason;
@@ -40,6 +42,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Legacy");
             Root.Add(tree);
             _ui = tree;
+            Icons.Attach(tree);
             _reason = _ui.Q<Label>("lgc-reason");
             _ui.Q("lgc-close").RegisterCallback<ClickEvent>(_ => router.Show("core"));
             _ui.Q("lgc-move-btn").RegisterCallback<ClickEvent>(_ => Move());
@@ -74,6 +77,7 @@ namespace Deadswitch.Game.UI.Screens
                 row.AddToClassList("lgc-m");
                 var pip = new VisualElement();
                 pip.AddToClassList("lgc-m__pip");
+                pip.Add(Icons.Create("check", "lgc-m__check"));
                 row.Add(pip);
                 row.Add(Kit.Label(MasteryNames[i], "lgc-m__label"));
                 mastery.Add(row);
@@ -86,6 +90,10 @@ namespace Deadswitch.Game.UI.Screens
                 var perk = (Perk)i;
                 var row = new VisualElement { name = "p-" + i };
                 row.AddToClassList("lgc-perk");
+                var well = new VisualElement();
+                well.AddToClassList("lgc-perk__well");
+                well.Add(Icons.Create(PerkIcons[i], "lgc-perk__icon"));
+                row.Add(well);
                 var body = new VisualElement();
                 body.AddToClassList("lgc-perk__body");
                 body.Add(Kit.Label(PerkNames[i], "lgc-perk__name"));

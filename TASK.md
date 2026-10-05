@@ -1,6 +1,6 @@
 # TASK: F-100 Living interface (UI, camera, motion, VFX rework)
 
-- Status: In progress
+- Status: Code complete; Editor tuning pass pending (owner)
 - Branch: ccr-3e0227c3-c2kae3
 - Spec: `docs/specs/SPEC-039-living-interface.md` (the 60 ideas and their status)
 - Sources: owner direction 2026-10-05, doc 11 (amended: restrained cyberpunk accent on UI and AI tech), `docs/agents/quality-bar.md`
@@ -16,7 +16,7 @@
 - [x] 7. Attack cinematic: letterbox, title card, shot sequence, shake, impacts, siren, aftermath stamp
 - [x] 8. Screen rework: OPS regrouped into titled cards, CORE with the orb as hero, command bar badges
 - [x] 9. 3D accents: data links to the core, raid edge vignette
-- [ ] 10. Remaining screens to the new kit (Workforce, Map sheet, Dispatch, Settings), docs, spec statuses
+- [x] 10. Remaining screens to the new kit (Workforce, Map sheet, Dispatch, Settings), docs, spec statuses
 
 ## Notes
 - Presentation only: no `GameState` fields, no sim changes.

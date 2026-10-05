@@ -1,34 +1,56 @@
-/* FULL GAME (F-036). Tokens only. */
+/* FULL GAME (F-036). Tokens only (the five swatches show the real theme colors from Tokens.uss themes). Honest and calm:
+   no urgency, no scarcity, no shame. Optional things look optional (ghost buttons); the one purchase is the one primary. */
 
-.prm { flex-grow: 1; padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6); background-color: var(--c-world); }
-.prm-head { align-items: center; margin-bottom: var(--s-3); }
-.prm-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-color: var(--c-line-mid); }
+.prm { flex-grow: 1; background-color: var(--c-world); }
+.prm-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-elev-2); }
+.prm-close:active { background-color: var(--c-cyan-wash); }
 .prm-close__x { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); color: var(--c-text-dim); }
+.prm-body { padding: var(--s-5) var(--s-5) var(--s-4) var(--s-5); }
 
-.prm-card { padding-top: var(--s-4); padding-bottom: var(--s-4); }
-.prm-card__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: 3px; color: var(--c-text); margin-top: var(--s-2); }
-.prm-list { margin-top: var(--s-3); }
-.prm-list__item { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-phosphor); margin-top: var(--s-1); }
-.prm-card__note { margin-top: var(--s-3); font-size: var(--fs-micro); }
+/* the offer */
+.prm-card { padding-bottom: var(--s-5); }
+.prm-state { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; margin-top: 2px; }
+.prm-state.t-amber { color: var(--c-amber); }
+.prm-state.t-phosphor { color: var(--c-phosphor); }
+.prm-group { margin-top: var(--s-3); margin-bottom: var(--s-2); }
+.prm-item { flex-direction: row; align-items: center; min-height: 64px; margin-bottom: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
+.prm-item__icon { width: 32px; height: 32px; flex-shrink: 0; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
+.prm-item__text { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); white-space: normal; flex-shrink: 1; }
+.prm-item--have .prm-item__icon { --icon-color: var(--c-phosphor); }
+.prm-item--have .prm-item__text { color: var(--c-phosphor); }
+.prm-promise { flex-direction: row; align-items: center; margin-top: var(--s-3); padding: var(--s-3); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-phosphor-dim); background-color: var(--c-phosphor-wash); }
+.prm-promise__icon { width: 40px; height: 40px; flex-shrink: 0; margin-right: var(--s-3); --icon-color: var(--c-phosphor); }
+.prm-promise__text { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); white-space: normal; flex-shrink: 1; }
 .prm-actions { margin-top: var(--s-4); }
+.prm-actions--tight { margin-top: var(--s-3); }
 .prm-gap { margin-left: var(--s-3); }
 
-.prm-section { margin-top: var(--s-6); margin-bottom: var(--s-2); }
+/* themes */
 .prm-seg { flex-direction: row; }
-.prm-theme { flex-grow: 1; flex-basis: 0; min-height: 120px; margin-right: var(--s-2); align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
+.prm-theme { flex-grow: 1; flex-basis: 0; min-height: 140px; margin-right: var(--s-2); padding: var(--s-2) var(--s-1); align-items: center; justify-content: center; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
 .prm-theme.is-last { margin-right: 0; }
-.prm-theme.is-selected { border-color: var(--c-white); }
-.prm-theme.is-locked { opacity: 0.45; }
-.prm-theme__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); margin-top: var(--s-2); }
-.prm-swatch { width: 56px; height: 16px; }
+.prm-theme.is-selected { border-color: var(--c-white); background-color: var(--c-elev-2); }
+.prm-theme.is-locked { opacity: 0.6; }
+.prm-theme__mark { width: 32px; height: 32px; margin-bottom: var(--s-2); align-items: center; justify-content: center; }
+.prm-theme__tick { display: none; width: 28px; height: 28px; --icon-color: var(--c-white); }
+.prm-theme__lock { display: none; width: 28px; height: 28px; --icon-color: var(--c-text-dim); }
+.prm-theme.is-selected .prm-theme__tick { display: flex; }
+.prm-theme.is-locked .prm-theme__lock { display: flex; }
+.prm-theme.is-locked .prm-theme__tick { display: none; }
+.prm-theme__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 1px; color: var(--c-text-dim); margin-top: var(--s-2); white-space: normal; -unity-text-align: middle-center; }
+.prm-theme.is-selected .prm-theme__label { color: var(--c-text); }
+.prm-swatch { width: 56px; height: 16px; border-radius: var(--r-sm); }
 .prm-swatch--phosphor { background-color: #A8D58A; }
 .prm-swatch--cold { background-color: #8CC8D8; }
 .prm-swatch--bone { background-color: #D9D2BE; }
 .prm-swatch--verdigris { background-color: #7CC2AE; }
 .prm-swatch--ash { background-color: #B9BEC6; }
-.prm-season { margin-top: var(--s-4); }
-.prm-note { margin-top: var(--s-2); font-size: var(--fs-micro); }
-.prm-reason { margin-top: var(--s-3); min-height: 40px; }
-
-/* stacked convenience grants (doc 10 s1.1) */
+.prm-note { margin-top: var(--s-3); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; }
+.prm-note--first { margin-top: 0; }
+.prm-ad > .ds-btn__label { font-size: var(--fs-xs); letter-spacing: 2px; white-space: normal; -unity-text-align: middle-center; }
 .prm-stack { margin-top: var(--s-2); }
+
+/* season link */
+.prm-season { margin-top: var(--s-2); }
+.prm-season__icon { width: 36px; height: 36px; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
+.prm-reason { margin-top: var(--s-3); min-height: 40px; }

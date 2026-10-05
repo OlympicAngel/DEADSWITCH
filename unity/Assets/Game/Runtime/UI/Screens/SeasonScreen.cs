@@ -26,6 +26,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Season");
             Root.Add(tree);
             _ui = tree;
+            Icons.Attach(tree);
             _reason = _ui.Q<Label>("ssn-reason");
             _ui.Q("ssn-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
             _ui.Q("ssn-buy").RegisterCallback<ClickEvent>(_ =>
@@ -49,8 +50,13 @@ namespace Deadswitch.Game.UI.Screens
                 row.AddToClassList("ssn-r");
                 row.EnableInClassList("is-premium", r.Premium);
                 row.Add(Kit.Label(r.Rank.ToString(), "ssn-r__rank"));
+                var well = new VisualElement();
+                well.AddToClassList("ssn-r__well");
+                well.Add(Icons.Create(r.Kind == RewardKind.Codex ? "book" : r.Kind == RewardKind.Voice ? "signal" : "eye", "ssn-r__icon"));
+                row.Add(well);
                 var body = new VisualElement();
                 body.AddToClassList("grow");
+                body.AddToClassList("ssn-r__body");
                 body.Add(Kit.Label(r.Name, "ssn-r__name"));
                 Label state = Kit.Label(string.Empty, "ssn-r__state");
                 state.name = "r-" + i + "-state";

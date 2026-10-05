@@ -1,48 +1,86 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Premium.uss" />
   <!-- FULL GAME (F-036, ADR-0006): free Tier 1 demo, one-time premium unlock, optional ads for cosmetics only.
-       Nothing sold or watched grants safety, defense, timer skips or combat power. -->
+       Nothing sold or watched grants safety, defense, timer skips or combat power. Honest layout: what you already
+       have, what one payment adds, the promise, then clearly optional extras. No countdowns, no urgency, no shaming. -->
   <ui:VisualElement name="premium" class="prm">
-    <ui:VisualElement class="row prm-head">
-      <ui:Label text="FULL GAME" class="ds-title grow" />
+    <ui:VisualElement class="ds-head prm-head">
+      <ui:VisualElement class="ds-head__well"><ui:VisualElement class="ds-icon ds-icon--diamond ds-head__icon" /></ui:VisualElement>
+      <ui:VisualElement class="ds-head__body">
+        <ui:Label text="FULL GAME" class="ds-head__title" />
+        <ui:Label text="ONE PAYMENT // NOTHING ELSE IS SOLD" class="ds-head__status" />
+      </ui:VisualElement>
       <ui:VisualElement name="prm-close" class="prm-close"><ui:Label text="X" class="prm-close__x" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:VisualElement name="prm-card" class="ds-panel prm-card">
-      <ui:Label name="prm-state" text="FREE DEMO // TIER 1" class="ds-label t-amber" />
-      <ui:Label text="DEADSWITCH // FULL CORE ACCESS" class="prm-card__title" />
-      <ui:VisualElement class="prm-list">
-        <ui:Label text="+  TIER 2 DISTRICT AND EVERY TIER AFTER" class="prm-list__item" />
-        <ui:Label text="+  THE REST OF THE MODULE TREE AND THE AI'S MEMORY" class="prm-list__item" />
-        <ui:Label text="+  IRONMAN RUNS AND FUTURE CONTENT" class="prm-list__item" />
-      </ui:VisualElement>
-      <ui:Label text="One payment. No timers sold, no defense sold, no power sold. The demo is the whole of Tier 1, yours to keep." class="ds-body t-dim prm-card__note" />
-      <ui:VisualElement class="row prm-actions">
-        <ui:VisualElement name="prm-buy" class="ds-btn ds-btn--primary grow"><ui:Label name="prm-buy-label" text="UNLOCK FULL GAME" class="ds-btn__label" /></ui:VisualElement>
-        <ui:VisualElement name="prm-restore" class="ds-btn ds-btn--ghost prm-gap"><ui:Label text="RESTORE" class="ds-btn__label" /></ui:VisualElement>
-      </ui:VisualElement>
-    </ui:VisualElement>
+    <ui:ScrollView name="prm-scroll" class="grow">
+      <ui:VisualElement class="prm-body">
 
-    <ui:Label text="HUD THEME" class="ds-label prm-section" />
-    <ui:VisualElement name="prm-themes" class="prm-seg">
-      <ui:VisualElement name="theme-0" class="prm-theme is-selected"><ui:VisualElement class="prm-swatch prm-swatch--phosphor" /><ui:Label text="PHOSPHOR" class="prm-theme__label" /></ui:VisualElement>
-      <ui:VisualElement name="theme-1" class="prm-theme"><ui:VisualElement class="prm-swatch prm-swatch--cold" /><ui:Label name="theme-1-label" text="COLD SIGNAL" class="prm-theme__label" /></ui:VisualElement>
-      <ui:VisualElement name="theme-2" class="prm-theme"><ui:VisualElement class="prm-swatch prm-swatch--bone" /><ui:Label name="theme-2-label" text="BONE" class="prm-theme__label" /></ui:VisualElement>
-      <ui:VisualElement name="theme-3" class="prm-theme is-locked"><ui:VisualElement class="prm-swatch prm-swatch--verdigris" /><ui:Label text="VERDIGRIS" class="prm-theme__label" /></ui:VisualElement>
-      <ui:VisualElement name="theme-4" class="prm-theme is-locked"><ui:VisualElement class="prm-swatch prm-swatch--ash" /><ui:Label text="ASH" class="prm-theme__label" /></ui:VisualElement>
-    </ui:VisualElement>
-    <ui:Label text="Themes are cosmetic. Unlock one by watching an optional ad (never while the Hub is under threat) or earn more on the season track." class="ds-body t-dim prm-note" />
-    <ui:VisualElement class="row prm-actions">
-      <ui:VisualElement name="ad-1" class="ds-btn ds-btn--ghost grow"><ui:Label name="ad-1-label" text="WATCH AD // COLD SIGNAL" class="ds-btn__label" /></ui:VisualElement>
-      <ui:VisualElement name="ad-2" class="ds-btn ds-btn--ghost grow prm-gap"><ui:Label name="ad-2-label" text="WATCH AD // BONE" class="ds-btn__label" /></ui:VisualElement>
-    </ui:VisualElement>
-    <!-- convenience grants (doc 10 s1.1): never safety, defense, timer skips or combat power -->
-    <ui:VisualElement class="prm-actions">
-      <ui:VisualElement name="ad-3" class="ds-btn ds-btn--ghost"><ui:Label name="ad-3-label" text="AD // SALVAGE +120 E +12 F (DAILY)" class="ds-btn__label" /></ui:VisualElement>
-      <ui:VisualElement name="ad-4" class="ds-btn ds-btn--ghost prm-stack"><ui:Label name="ad-4-label" text="AD // STORAGE +15% FOR 24 H" class="ds-btn__label" /></ui:VisualElement>
-    </ui:VisualElement>
+        <ui:VisualElement name="prm-card" class="ds-card ds-card--raised prm-card">
+          <ui:VisualElement class="ds-card__head">
+            <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--core ds-card__icon" /></ui:VisualElement>
+            <ui:VisualElement class="ds-card__titles">
+              <ui:Label text="FULL CORE ACCESS" class="ds-card__title" />
+              <ui:Label name="prm-state" text="FREE DEMO // TIER 1" class="prm-state t-amber" />
+            </ui:VisualElement>
+          </ui:VisualElement>
 
-    <ui:VisualElement name="prm-season" class="ds-btn ds-btn--ghost prm-season"><ui:Label name="prm-season-label" text="SEASON TRACK // RANK 0 / 20" class="ds-btn__label" /></ui:VisualElement>
-    <ui:Label name="prm-reason" text="" class="ds-body t-amber prm-reason" />
+          <ui:Label text="YOURS NOW, FREE" class="ds-label prm-group" />
+          <ui:VisualElement class="prm-item prm-item--have"><ui:VisualElement class="ds-icon ds-icon--check prm-item__icon" /><ui:Label text="THE WHOLE OF TIER 1, YOURS TO KEEP" class="prm-item__text" /></ui:VisualElement>
+
+          <ui:Label text="THE FULL GAME ADDS" class="ds-label prm-group" />
+          <ui:VisualElement class="prm-item"><ui:VisualElement class="ds-icon ds-icon--up prm-item__icon" /><ui:Label text="TIER 2 DISTRICT AND EVERY TIER AFTER" class="prm-item__text" /></ui:VisualElement>
+          <ui:VisualElement class="prm-item"><ui:VisualElement class="ds-icon ds-icon--chip prm-item__icon" /><ui:Label text="THE REST OF THE MODULE TREE AND THE AI'S MEMORY" class="prm-item__text" /></ui:VisualElement>
+          <ui:VisualElement class="prm-item"><ui:VisualElement class="ds-icon ds-icon--skull prm-item__icon" /><ui:Label text="IRONMAN RUNS AND FUTURE CONTENT" class="prm-item__text" /></ui:VisualElement>
+
+          <ui:VisualElement class="prm-promise">
+            <ui:VisualElement class="ds-icon ds-icon--shield prm-promise__icon" />
+            <ui:Label text="One payment. No timers sold, no defense sold, no power sold." class="prm-promise__text" />
+          </ui:VisualElement>
+
+          <ui:VisualElement class="row prm-actions">
+            <ui:VisualElement name="prm-buy" class="ds-btn ds-btn--primary grow"><ui:Label name="prm-buy-label" text="UNLOCK FULL GAME" class="ds-btn__label" /></ui:VisualElement>
+            <ui:VisualElement name="prm-restore" class="ds-btn ds-btn--ghost prm-gap"><ui:Label text="RESTORE" class="ds-btn__label" /></ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement class="ds-section">
+          <ui:VisualElement class="ds-icon ds-icon--eye ds-section__icon" />
+          <ui:Label text="LOOK // HUD THEME" class="ds-section__title" />
+          <ui:VisualElement class="ds-section__rule" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ds-card prm-themes">
+          <ui:VisualElement name="prm-themes" class="prm-seg">
+            <ui:VisualElement name="theme-0" class="prm-theme is-selected"><ui:VisualElement class="prm-theme__mark"><ui:VisualElement class="ds-icon ds-icon--check prm-theme__tick" /><ui:VisualElement class="ds-icon ds-icon--lock prm-theme__lock" /></ui:VisualElement><ui:VisualElement class="prm-swatch prm-swatch--phosphor" /><ui:Label text="PHOSPHOR" class="prm-theme__label" /></ui:VisualElement>
+            <ui:VisualElement name="theme-1" class="prm-theme"><ui:VisualElement class="prm-theme__mark"><ui:VisualElement class="ds-icon ds-icon--check prm-theme__tick" /><ui:VisualElement class="ds-icon ds-icon--lock prm-theme__lock" /></ui:VisualElement><ui:VisualElement class="prm-swatch prm-swatch--cold" /><ui:Label name="theme-1-label" text="COLD SIGNAL" class="prm-theme__label" /></ui:VisualElement>
+            <ui:VisualElement name="theme-2" class="prm-theme"><ui:VisualElement class="prm-theme__mark"><ui:VisualElement class="ds-icon ds-icon--check prm-theme__tick" /><ui:VisualElement class="ds-icon ds-icon--lock prm-theme__lock" /></ui:VisualElement><ui:VisualElement class="prm-swatch prm-swatch--bone" /><ui:Label name="theme-2-label" text="BONE" class="prm-theme__label" /></ui:VisualElement>
+            <ui:VisualElement name="theme-3" class="prm-theme is-locked"><ui:VisualElement class="prm-theme__mark"><ui:VisualElement class="ds-icon ds-icon--check prm-theme__tick" /><ui:VisualElement class="ds-icon ds-icon--lock prm-theme__lock" /></ui:VisualElement><ui:VisualElement class="prm-swatch prm-swatch--verdigris" /><ui:Label text="VERDIGRIS" class="prm-theme__label" /></ui:VisualElement>
+            <ui:VisualElement name="theme-4" class="prm-theme is-locked"><ui:VisualElement class="prm-theme__mark"><ui:VisualElement class="ds-icon ds-icon--check prm-theme__tick" /><ui:VisualElement class="ds-icon ds-icon--lock prm-theme__lock" /></ui:VisualElement><ui:VisualElement class="prm-swatch prm-swatch--ash" /><ui:Label text="ASH" class="prm-theme__label" /></ui:VisualElement>
+          </ui:VisualElement>
+          <ui:Label text="Themes are cosmetic. Earn more on the season track, or unlock one by choosing to watch an optional ad (never while the Hub is under threat)." class="prm-note" />
+          <ui:VisualElement class="row prm-actions">
+            <ui:VisualElement name="ad-1" class="ds-btn ds-btn--ghost grow prm-ad"><ui:Label name="ad-1-label" text="WATCH AD // COLD SIGNAL" class="ds-btn__label" /></ui:VisualElement>
+            <ui:VisualElement name="ad-2" class="ds-btn ds-btn--ghost grow prm-gap prm-ad"><ui:Label name="ad-2-label" text="WATCH AD // BONE" class="ds-btn__label" /></ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- convenience grants (doc 10 s1.1): never safety, defense, timer skips or combat power -->
+        <ui:VisualElement class="ds-section">
+          <ui:VisualElement class="ds-icon ds-icon--box ds-section__icon" />
+          <ui:Label text="OPTIONAL // SMALL EXTRAS" class="ds-section__title" />
+          <ui:VisualElement class="ds-section__rule" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ds-card prm-extras">
+          <ui:Label text="Watching is always your choice. These save a little time and never touch safety, defense or power." class="prm-note prm-note--first" />
+          <ui:VisualElement class="prm-actions prm-actions--tight">
+            <ui:VisualElement name="ad-3" class="ds-btn ds-btn--ghost prm-ad"><ui:Label name="ad-3-label" text="AD // SALVAGE +120 E +12 F (DAILY)" class="ds-btn__label" /></ui:VisualElement>
+            <ui:VisualElement name="ad-4" class="ds-btn ds-btn--ghost prm-stack prm-ad"><ui:Label name="ad-4-label" text="AD // STORAGE +15% FOR 24 H" class="ds-btn__label" /></ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="prm-season" class="ds-btn ds-btn--ai prm-season"><ui:VisualElement class="ds-icon ds-icon--star prm-season__icon" /><ui:Label name="prm-season-label" text="SEASON TRACK // RANK 0 / 20" class="ds-btn__label" /></ui:VisualElement>
+        <ui:Label name="prm-reason" text="" class="ds-body t-amber prm-reason" />
+      </ui:VisualElement>
+    </ui:ScrollView>
   </ui:VisualElement>
 </ui:UXML>

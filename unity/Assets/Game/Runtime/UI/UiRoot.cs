@@ -98,6 +98,7 @@ namespace Deadswitch.Game.UI
             el.style.flexGrow = 1;
             el.pickingMode = PickingMode.Ignore;
             Kit.Decorate(el);
+            Icons.Attach(el);
             return el;
         }
 
