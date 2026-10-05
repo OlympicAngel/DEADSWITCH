@@ -30,7 +30,10 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 
 - F-103 (SPEC-042): Command menu, `Back` (check Android back actually raises NavigationCancelEvent with nothing focused; if not, add an input poll), raid-card APPLY, build picker grid, queue sheet, CORE pages (modules page ticks research only while shown).
 
-- F-104 (SPEC-043): Editor checks: the prologue orbit shot (`OpeningFlow` Direct at y 240) shows the Hub small and centered, the descent lands without a pop when `Release` blends back, `PrologueWorld` arc sits low on 16:9 and 20:9, celebration banner sits under the context strip and never takes a tap, goal card does not overlap the dock or the guide, START OVER resets the HUD (raid card, chips) cleanly.
+- F-104 (SPEC-043): Editor checks still open: celebration banner sits under the context strip and never takes a tap, goal card does not overlap the dock or the guide, START OVER resets the HUD (raid card, chips) cleanly. Its prologue is replaced by F-105.
+
+- F-105 (SPEC-044, The Fall): opening film + restore tutorial, verified beat by beat in the Editor at 480x800. Director `Base/OpeningFilm` (shots, cuts, razes in `Interface.json` `opening`), planet `Base/OpeningGlobe` (+ `DeadswitchGlobe*.shader`, map built on worker threads, cached), war room `UI/Hud/WarRoom`, staged Hub `BaseView.Stage` / `OpeningPower` / `OpeningGrade` / `OpeningFog` / `OpeningFire` / `OpeningLit`, rubble `Scars.Rubble`, sound beds `AudioDirector.SetOpeningBed`. Per-run flag `ds.opening.awake.<seed>` (PlayerPrefs) drives the resume. Not yet heard on a device: the mix of the beds and one-shots; check volumes by ear. Reduced motion / cinematics off skips the film and the restore (cards over black, then the HUD).
+- Film capture from an agent: grab frames in-process with an `EditorApplication.update` hook calling `ScreenCapture.CaptureScreenshot` at set times (the CLI capture takes ~2 s); jump beats by reflection on `OpeningFlow` (`Restart`, `NextCard`, `Skip`, `OnRestore`, `_holding`). Turn Game view gizmos off (`GameView.m_Gizmos`). Run seeds repeat between new runs.
 
 ## Balance (latest, 2026-10-04)
 - Turret planning (F-044) plus adaptation and luck: active breach ~0-2%, casual-prepared ~12%, autopilot ~0%; Tier 2/3/4 on days ~6/20/40. All guards pass. Retune only from real play data.

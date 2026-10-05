@@ -43,7 +43,7 @@ Rules to protect the design:
 
 - **Command bar** — bottom navigation: Base, Map, AI Terminal, Operations.
 - **Living base view** — animated diorama you tap and pan, with no list-style menus.
-- **Gesture-driven** — swipe between layers, pinch to zoom the map, long-press for quick actions.
+- **Gesture-driven** — swipe between command layers, pan and pinch to zoom the full-screen sector map, tap a location for its contextual information/actions, and long-press a map pin for quick actions.
 - **One-handed play** — key actions reachable by thumb, minimal HUD, immersive full-screen.
 
 Always-visible essentials: next timers, energy balance, corruption, and the highest faction heat.

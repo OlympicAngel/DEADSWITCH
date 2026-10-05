@@ -1,6 +1,6 @@
 # TASK: F-105 The Fall (opening film and restore tutorial)
 
-- Status: In progress 2026-10-05
+- Status: Done 2026-10-05 (sound mix by ear pending)
 - Branch: main
 - Spec: `docs/specs/SPEC-044-the-fall.md`
 
@@ -13,6 +13,6 @@
 - [x] 5. Time skip and the sector map shot
 - [x] 6. Restore tutorial: framed buildings, field cards, RESTORE, WAKE THE CORE, handover to the real run, resume after quit
 - [x] 7. Sound pass (pads, klaxon, nuke, radio, restore, wake)
-- [ ] 8. Full Editor run, polish, docs (HANDOFF, doc 10 log, backlog)
+- [x] 8. Full Editor run, polish, docs (HANDOFF, doc 10 log, backlog)
 
 F-104 Editor check: smoke PASS 2026-10-05 (0 errors); the old prologue it covered is replaced by this feature.

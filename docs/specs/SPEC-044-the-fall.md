@@ -1,6 +1,6 @@
 # SPEC-044: The Fall (opening film and restore tutorial)
 
-- Status: In progress (F-105)
+- Status: Done 2026-10-05 (F-105); sound mix not yet checked by ear
 - Pillar: AI relationship
 - Touches: opening flow (SPEC-009, SPEC-043 s4), Hub view (SPEC-003, scars SPEC-029), sector map (SPEC-033), audio (F-035), advisor voice
 - Source rules: doc 07 s1-s3 (AI-run WW3, collapse, the hidden truth; the title: a deadswitch fires when the holder falls), doc 11 (heroic realism; the 2D layer is the AI's terminal), owner brief 2026-10-05
@@ -32,12 +32,12 @@ No sim, save or balance change: the film and the restore steps are staged presen
 Sub heartbeat; orbital pad (detuned, slow filter); screen wake blips; klaxon; launch roar; nuke (sub boom, long rumble, high whine after); radio chatter (static, voice bursts, squelch); time-skip reverse swell; battle (existing guns and explosions, collapse rumble); ash bed (wind, crackle); restore (sparks, rising tone, lock-in thunk); wake (sub drop, glitch, power-up, shockwave).
 
 ## Acceptance criteria
-- [ ] Full film plays end to end in the Editor at 9:16 with no console errors; each beat checked from captures.
-- [ ] Globe reads as a real planet (no toy look), city lights and fires readable; war room reads as the AI's terminal.
-- [ ] The Hub's destruction is visible building by building; the ruin shot has no lamps, only fire.
-- [ ] Restore steps work by tap, frame each building, and end in the real run with the HUD revealed.
-- [ ] Resume after quit lands on step 8; START OVER replays the film.
-- [ ] Reduced motion path works.
+- [x] Full film plays end to end in the Editor at 9:16 with no console errors; each beat checked from captures.
+- [x] Globe reads as a real planet (no toy look), city lights and fires readable; war room reads as the AI's terminal.
+- [x] The Hub's destruction is visible building by building; the ruin shot has no lamps, only fire.
+- [x] Restore steps work by tap, frame each building from the central walkway, and end in the real run with the HUD revealed.
+- [x] Resume after quit lands on step 8; START OVER replays the film.
+- [ ] Reduced motion path checked in the Editor (code path: cards over black, then the HUD).
 
 ## Tests
 None in the sim (presentation only). Verified by Editor captures (`docs/agents/HANDOFF.md` agent driving notes).

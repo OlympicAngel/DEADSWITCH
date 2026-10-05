@@ -16,7 +16,7 @@ The world should feel worn and physical; the interface should feel precise, purp
 - **Camera:** the AI's recon-drone view. High-angle isometric-style framing, narrow FOV, no depth-of-field blur (it reads as a miniature). Sensor effects (noise, edge chromatic aberration, faint scanline interference) are **barely noticeable** at default intensity, never cover gameplay, and scale with corruption and the effect-intensity setting.
 - **Machine:** field-terminal surfaces with depth (raised cards, light top edges), phosphor accents, telemetry, grids, and controlled scanline texture, plus a **restrained cyberpunk accent** (owner, 2026-10-05; SPEC-039): AI cyan for AI surfaces, focus and interactables, intel violet for story and intel. Bold, never wall-to-wall neon; the 3D world stays heroic realism.
 - **Base:** present it as a living diorama. Show power, population, damage, activity, and tier identity through landmarks; repairs visibly change persistent scars.
-- **Screens:** give each screen one primary focal area, a clear action hierarchy, and stable critical status. Keep touch targets clear and put secondary detail behind deliberate inspection.
+- **Screens:** the current UI is not an acceptable baseline for the redesign tracked in F-106. Do not treat confusing screens as a styling or panel-rearrangement problem: reconsider the information architecture and interaction model, and replace patterns that make players navigate just to understand CORE or other screens. Build a coherent strategy-game UI with one primary focal area/action, stable critical status, clear icon-plus-label controls, strongly grouped information, progressive disclosure, and reachable touch targets. Validate actual first-time tasks at phone size.
 - **Texture:** keep grime and distress off small text, icons, controls, maps, and important values.
 
 ## Master art direction (owner brief, locked 2026-10-03, restated 2026-10-04)
@@ -69,9 +69,10 @@ This brief is the style source for every 3D asset, render and preview. Read it a
 **How we build it (owner, 2026-10-04: procedural only, no imported assets):** procedural geometry (`src/Deadswitch.Art`) with real-world proportions and bevelled medium forms; a procedural PBR "salvage" material (world-space noise layers for macro variation, rust, chipped paint, dirt rising from the ground, soot, rain and rust run-off, wetness, edge wear and bump; gravel / soil / wet-mud ground) shared by Unity and the headless preview; soft shadows, AO, fog and warm practical lights. How-to: `docs/agents/environment-art.md`.
 
 ### Sector map (owner brief 2026-10-04, SPEC-033)
-- A 2.5D map, not a radar plot: one fixed recon angle (about 47 degrees, no free camera) over low-relief ruined ground in the same salvage shader (arid ground mode), with the base's time-of-day light.
+- A full-screen 2.5D map, not a radar plot: keep the fixed oblique recon angle (about 47 degrees) over low-relief ruined ground in the same salvage shader (arid ground mode), with the base's time-of-day light. Pan and zoom the camera so the map is the primary view without losing geographic orientation.
 - Sites are kit landmarks at map scale (`SectorLandmarks`), one silhouette per kind, faction beacons in faction colors; hazard zones are ground treatments at full size (glowing crater, quarantine camp, wreck field).
 - What the Hub knows is drawn, not built: faction territory tints, dashed routes (solid while a team is out), hatched fog of war over unscouted ground, fallout as drifting haze. The AI's estimates under the pins may flicker with corruption; effects intensity and reduced motion turn it off.
+- Tapping a location opens a contextual popover with its known information and available actions; map controls and status overlays stay secondary to the map.
 
 ## Prototype palette
 
