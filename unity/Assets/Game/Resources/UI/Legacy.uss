@@ -74,3 +74,7 @@
 .lgc-move__btn.is-armed { border-color: var(--c-red); background-color: var(--c-red-wash); }
 .lgc-move__btn.is-armed > .ds-btn__label { color: var(--c-red); }
 .lgc-reason { margin-top: var(--s-2); min-height: 40px; }
+
+/* pages */
+.lgc-perks__lead { margin-bottom: var(--s-3); white-space: normal; }
+.lgc-iron { margin-bottom: var(--s-4); }

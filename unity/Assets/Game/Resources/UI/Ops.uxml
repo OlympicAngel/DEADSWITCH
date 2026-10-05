@@ -13,6 +13,10 @@
 
     <ui:ScrollView name="ops-scroll" class="grow ops-scroll">
 
+      <ui:VisualElement name="ops-pager" class="ds-pager">
+      <ui:VisualElement name="page-threat" class="ds-page ops-page">
+        <ui:Label text="THREAT" class="ds-page__title" />
+        <ui:Label text="target" class="ds-page__glyph" />
       <!-- Threat: signature shape + label + color, timer, the AI's (uncertain) read -->
       <ui:VisualElement name="threat" class="ds-panel ds-panel--amber ds-card ops-threat">
         <ui:VisualElement class="row">
@@ -46,18 +50,6 @@
         </ui:VisualElement>
       </ui:VisualElement>
 
-      <!-- Yard wrecks (SPEC-018): burnt hulks slow regrowth until cleared -->
-      <ui:VisualElement name="yard" class="ds-card ops-yard">
-        <ui:VisualElement class="row">
-          <ui:VisualElement class="ds-card__well ops-yard__well"><ui:VisualElement class="ds-icon ds-icon--truck ds-card__icon ops-yard__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow ops-yard__text">
-            <ui:Label name="yard-title" text="YARD // 3 WRECKS" class="ds-label t-amber" />
-            <ui:Label name="yard-desc" text="Regrowth -30% while the wrecks stay." class="ds-body t-dim ops-yard__desc" />
-          </ui:VisualElement>
-          <ui:VisualElement name="yard-clear" class="ds-btn ds-btn--ghost ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 E" class="ds-btn__label" /></ui:VisualElement>
-        </ui:VisualElement>
-      </ui:VisualElement>
-
       <!-- Purge warning ladder (SPEC-015, doc 10): rumor -> staging -> ultimatum with three answers -->
       <ui:VisualElement name="purge" class="ds-panel ds-panel--red ds-card ds-card--red ops-purge">
         <ui:VisualElement class="row">
@@ -73,6 +65,22 @@
         </ui:VisualElement>
       </ui:VisualElement>
 
+      <!-- Yard wrecks (SPEC-018): burnt hulks slow regrowth until cleared -->
+      <ui:VisualElement name="yard" class="ds-card ds-card--fold ops-yard">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well ops-yard__well"><ui:VisualElement class="ds-icon ds-icon--truck ds-card__icon ops-yard__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles">
+            <ui:Label name="yard-title" text="YARD // 3 WRECKS" class="ds-label t-amber" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="yard-desc" text="Regrowth -30% while the wrecks stay." class="ds-body t-dim ops-yard__desc" />
+        <ui:VisualElement name="yard-clear" class="ds-btn ds-btn--ghost ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 E" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+
+      </ui:VisualElement>
+      <ui:VisualElement name="page-defend" class="ds-page ops-page">
+        <ui:Label text="DEFEND" class="ds-page__title" />
+        <ui:Label text="shield" class="ds-page__glyph" />
       <!-- Posture -->
       <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--shield ds-section__icon" /><ui:Label text="POSTURE" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ops-card">
@@ -123,7 +131,6 @@
       </ui:VisualElement>
 
       <!-- The AI's read of the setup -->
-      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--radar ds-section__icon" /><ui:Label text="FORCES // AI READ" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ds-card--holo ops-read">
         <ui:VisualElement class="row">
           <ui:VisualElement class="ops-read__conf">
@@ -157,8 +164,11 @@
         </ui:VisualElement>
       </ui:VisualElement>
 
+      </ui:VisualElement>
+      <ui:VisualElement name="page-autonomy" class="ds-page ops-page">
+        <ui:Label text="AUTONOMY" class="ds-page__title" />
+        <ui:Label text="chip" class="ds-page__glyph" />
       <!-- How much the AI runs (SPEC-004) -->
-      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--chip ds-section__icon" /><ui:Label text="AUTONOMY" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ops-card">
         <ui:VisualElement class="ops-seg">
           <ui:VisualElement name="deleg-manual" class="ops-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--hand ops-seg__icon" /><ui:Label text="MANUAL" class="ops-seg__label" /></ui:VisualElement>
@@ -168,8 +178,11 @@
         <ui:Label name="deleg-desc" text="I only advise. You run everything." class="ds-body t-dim ops-seg__desc" />
       </ui:VisualElement>
 
+      </ui:VisualElement>
+      <ui:VisualElement name="page-away" class="ds-page ops-page">
+        <ui:Label text="AWAY" class="ds-page__title" />
+        <ui:Label text="clock" class="ds-page__glyph" />
       <!-- Away protection (SPEC-015 rules 5-6) -->
-      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--clock ds-section__icon" /><ui:Label text="WHILE YOU ARE AWAY" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ops-card">
         <ui:VisualElement class="row ops-alerts is-first">
           <ui:VisualElement class="ops-alerts__well"><ui:VisualElement class="ds-icon ds-icon--shield ops-alerts__icon" /></ui:VisualElement>
@@ -195,6 +208,8 @@
           </ui:VisualElement>
           <ui:VisualElement name="alerts-toggle" class="ops-toggle"><ui:Label name="alerts-label" text="OFF" class="ops-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
+      </ui:VisualElement>
+      </ui:VisualElement>
       </ui:VisualElement>
       <ui:Label name="ops-reason" text="" class="ds-body ops-reason" />
     </ui:ScrollView>

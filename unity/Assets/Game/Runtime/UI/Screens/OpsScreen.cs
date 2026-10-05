@@ -38,7 +38,9 @@ namespace Deadswitch.Game.UI.Screens
         private readonly VisualElement _setGo;
         private readonly VisualElement _lockdown;
         private readonly Label _reason;
+        private readonly VisualElement _pager;
         private bool _visible;
+        private int _lastThreatId;
 
         public OpsScreen(System.Action<int> openReport)
         {
@@ -48,6 +50,7 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             Icons.Attach(tree);
             _ui = tree;
+            _pager = _ui.Q("ops-pager");
             _threat = Q("threat");
             _sockets = Q("sockets");
             _meter = Q("confidence-meter");
@@ -96,6 +99,7 @@ namespace Deadswitch.Game.UI.Screens
                 if (_visible)
                 {
                     Refresh();
+                    FocusThreat(_host.Sim.State);
                 }
             };
             UiRoot.Instance.Frame += _ =>
@@ -121,6 +125,7 @@ namespace Deadswitch.Game.UI.Screens
             _visible = true;
             _reason.text = string.Empty;
             Refresh();
+            FocusThreat(_host.Sim.State);
         }
 
         public void OnHide()
@@ -180,6 +185,7 @@ namespace Deadswitch.Game.UI.Screens
             Q<Label>("threat-time").EnableInClassList("t-red", red);
             RefreshPurge(s, c);
             RefreshAway(s, c);
+            Pager.Badge(_pager, "page-threat", raid || s.PurgeStage != PurgeStage.None ? 1 : 0);
             Q<Label>("threat-time").EnableInClassList("is-hidden", !raid);
             Q("threat-intel").EnableInClassList("is-hidden", !raid);
             Q("threat-quiet").EnableInClassList("is-hidden", raid);
@@ -275,6 +281,18 @@ namespace Deadswitch.Game.UI.Screens
             bool alerts = Notifications.LocalAlerts.Enabled;
             Q("alerts-toggle").EnableInClassList("is-on", alerts);
             Q<Label>("alerts-label").text = alerts ? "ON" : "OFF";
+        }
+
+        /// <summary>Jumps to the THREAT page once per new raid, siege or purge stage while the screen is open.</summary>
+        private void FocusThreat(GameState s)
+        {
+            int id = s.RaidId != 0 ? s.RaidId : (s.PurgeStage != PurgeStage.None ? -(int)s.PurgeStage : 0);
+            if (id != 0 && id != _lastThreatId)
+            {
+                Pager.Show(_pager, "page-threat");
+            }
+
+            _lastThreatId = id;
         }
 
         private void RefreshPurge(GameState s, SimConfig c)

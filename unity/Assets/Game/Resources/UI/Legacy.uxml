@@ -16,6 +16,10 @@
     <ui:ScrollView name="lgc-scroll" class="grow">
       <ui:VisualElement class="lgc-body">
 
+        <ui:VisualElement name="lgc-pager" class="ds-pager">
+        <ui:VisualElement name="page-score" class="ds-page">
+          <ui:Label text="SCORE" class="ds-page__title" />
+          <ui:Label text="star" class="ds-page__glyph" />
         <ui:VisualElement class="ds-card ds-card--violet lgc-score">
           <ui:VisualElement class="ds-card__head">
             <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--star ds-card__icon" /></ui:VisualElement>
@@ -52,21 +56,20 @@
           <ui:VisualElement class="row lgc-m"><ui:VisualElement class="lgc-m__pip"><ui:VisualElement class="ds-icon ds-icon--check lgc-m__check" /></ui:VisualElement><ui:Label text="REACH TIER 2 WITHOUT LOSING AN OUTPOST" class="lgc-m__label" /></ui:VisualElement>
         </ui:VisualElement>
 
-        <ui:VisualElement class="ds-section">
-          <ui:VisualElement class="ds-icon ds-icon--diamond ds-section__icon" />
-          <ui:Label text="PERKS // CARRIED TO EVERY NEW SITE" class="ds-section__title" />
-          <ui:VisualElement class="ds-section__rule" />
         </ui:VisualElement>
+        <ui:VisualElement name="page-perks" class="ds-page">
+          <ui:Label text="PERKS" class="ds-page__title" />
+          <ui:Label text="box" class="ds-page__glyph" />
+          <ui:Label text="CARRIED TO EVERY NEW SITE" class="ds-label t-dim lgc-perks__lead" />
         <ui:VisualElement name="lgc-perks" class="lgc-perks">
           <ui:VisualElement class="lgc-perk"><ui:VisualElement class="lgc-perk__well"><ui:VisualElement class="ds-icon ds-icon--box lgc-perk__icon" /></ui:VisualElement><ui:VisualElement class="lgc-perk__body"><ui:Label text="STARTING CACHE" class="lgc-perk__name" /><ui:Label text="+150 energy and +30 fuel per level at each new site.  LEVEL 1/3" class="lgc-perk__fx" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label text="BUY // 200 LP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
           <ui:VisualElement class="lgc-perk"><ui:VisualElement class="lgc-perk__well"><ui:VisualElement class="ds-icon ds-icon--hand lgc-perk__icon" /></ui:VisualElement><ui:VisualElement class="lgc-perk__body"><ui:Label text="SPARE OVERRIDE" class="lgc-perk__name" /><ui:Label text="+1 OVERRIDE charge per level.  LEVEL 0/3" class="lgc-perk__fx" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost lgc-perk__btn"><ui:Label text="BUY // 100 LP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
         </ui:VisualElement>
 
-        <ui:VisualElement class="ds-section">
-          <ui:VisualElement class="ds-icon ds-icon--alert ds-section__icon" />
-          <ui:Label text="RUN OPTIONS" class="ds-section__title" />
-          <ui:VisualElement class="ds-section__rule" />
         </ui:VisualElement>
+        <ui:VisualElement name="page-relocate" class="ds-page">
+          <ui:Label text="RELOCATE" class="ds-page__title" />
+          <ui:Label text="cycle" class="ds-page__glyph" />
         <ui:VisualElement name="lgc-iron" class="ds-card lgc-iron">
           <ui:VisualElement class="ds-card__head lgc-iron__head">
             <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--skull ds-card__icon" /></ui:VisualElement>
@@ -95,6 +98,8 @@
             <ui:VisualElement name="lgc-region-3" class="lgc-region"><ui:VisualElement class="lgc-region__tick"><ui:VisualElement class="ds-icon ds-icon--check lgc-region__tickicon" /></ui:VisualElement><ui:VisualElement class="ds-icon ds-icon--chip lgc-region__icon" /><ui:Label text="RUINS" class="lgc-region__name" /><ui:Label name="lgc-region-3-fx" text="COMPUTE +15%" class="lgc-region__fx" /></ui:VisualElement>
           </ui:VisualElement>
           <ui:VisualElement name="lgc-move-btn" class="ds-btn ds-btn--warn lgc-move__btn"><ui:Label name="lgc-move-label" text="RELOCATE // +486 LP" class="ds-btn__label" /></ui:VisualElement>
+        </ui:VisualElement>
+        </ui:VisualElement>
         </ui:VisualElement>
         <ui:Label name="lgc-reason" text="" class="ds-body t-amber lgc-reason" />
       </ui:VisualElement>

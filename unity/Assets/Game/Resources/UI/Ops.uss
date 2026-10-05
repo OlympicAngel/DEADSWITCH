@@ -5,7 +5,7 @@
     background-color: var(--c-scrim);
 }
 
-.ops-scroll > .unity-scroll-view__content-container { padding: var(--s-4) var(--s-5) var(--s-6) var(--s-5); }
+.ops-page { padding: var(--s-2) var(--s-5) var(--s-6) var(--s-5); }
 
 .ops-card__lead { white-space: normal; margin-bottom: var(--s-3); }
 
@@ -48,9 +48,8 @@
 .ops-yard.is-hidden { display: none; }
 .ops-yard__well { background-color: var(--c-amber-wash); border-color: var(--c-amber-dim); }
 .ops-yard__icon { --icon-color: var(--c-amber); }
-.ops-yard__text { flex-shrink: 1; }
 .ops-yard__desc { font-size: var(--fs-micro); margin-top: var(--s-1); white-space: normal; }
-.ops-yard__btn { min-width: 240px; margin-left: var(--s-3); }
+.ops-yard__btn { align-self: stretch; margin-top: var(--s-3); }
 
 /* Purge ladder card */
 .ops-purge { padding: var(--s-4); }
@@ -178,3 +177,8 @@
 
 /* Scroll children keep their natural height; the scroll view does the overflow */
 .ops-scroll .ds-card, .ops-scroll .ds-section, .ops-scroll .ops-reason { flex-shrink: 0; }
+
+/* pages: one topic per view; the cards inside keep a calm rhythm */
+.ops-threat { margin-bottom: var(--s-4); }
+.ops-purge { margin-bottom: var(--s-4); }
+.ops-yard { margin-bottom: var(--s-4); }

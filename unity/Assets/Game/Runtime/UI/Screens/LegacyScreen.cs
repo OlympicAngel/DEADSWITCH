@@ -168,6 +168,7 @@ namespace Deadswitch.Game.UI.Screens
             var l = c.Legacy;
             int score = LegacySystem.Score(s, c);
             int veterans = LegacySystem.Veterans(s, c);
+            int affordable = 0;
             _ui.Q<Label>("lgc-cycle").text = "CYCLE " + (s.Cycle + 1) + " // " + s.Region.ToString().ToUpperInvariant() + " // LEGACY ON RECORD " + Fmt.Num(s.LegacyTotal);
             for (int i = 0; i <= (int)Region.Ruins; i++)
             {
@@ -205,7 +206,10 @@ namespace Deadswitch.Game.UI.Screens
                 VisualElement buy = _ui.Q("p-" + i + "-buy");
                 Kit.SetButtonText(buy, max ? "MAX" : "BUY // " + price + " LP");
                 buy.EnableInClassList("is-disabled", max || s.LegacyPoints < price);
+                affordable += max || s.LegacyPoints < price ? 0 : 1;
             }
+
+            Pager.Badge(_ui.Q("lgc-pager"), "page-perks", affordable);
 
             bool choosing = s.Tick - s.CycleStartTick < (long)l.IronmanChooseHours * SimConfig.TicksPerHour;
             _ui.Q("lgc-iron").EnableInClassList("is-on", s.Ironman);
