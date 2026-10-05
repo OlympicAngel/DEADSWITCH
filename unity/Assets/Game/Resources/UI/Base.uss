@@ -184,3 +184,25 @@
 .pickup { position: absolute; flex-direction: row; align-items: center; translate: -50% -100%; }
 .pickup__label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-sm); color: var(--c-phosphor); text-shadow: 0 0 10px var(--c-phosphor-glow); }
 .pickup__icon { width: 30px; height: 30px; margin-right: 2px; --icon-color: var(--c-phosphor); }
+
+/* ---------- Command menu (SPEC-042 finding 1) ---------- */
+.cmenu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.cmenu.is-hidden { display: none; }
+.cmenu__backdrop { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-scrim); }
+.cmenu__drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 84%; padding: var(--s-8) var(--s-5) var(--s-6) var(--s-5); border-right-width: 1px; border-color: var(--c-cyan-line); border-top-right-radius: var(--r-xl); border-bottom-right-radius: var(--r-xl); background-color: var(--c-elev-1); --sheen-color: var(--c-cyan-wash); --sheen-reach: 0.3; }
+.cmenu__head { flex-direction: row; align-items: center; margin-bottom: var(--s-4); }
+.cmenu__titles { flex-grow: 1; }
+.cmenu__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: var(--ls-wide); color: var(--c-white); }
+.cmenu__status { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); }
+.cmenu__scroll { flex-grow: 1; }
+.cmenu__item { flex-direction: row; align-items: center; min-height: var(--touch); padding: var(--s-2) 0; border-bottom-width: 1px; border-color: var(--c-line); }
+.cmenu__item:active { background-color: var(--c-cyan-wash); }
+.cmenu__well { width: 72px; height: 72px; align-items: center; justify-content: center; margin-right: var(--s-4); border-radius: var(--r-lg); background-color: var(--c-cyan-wash); }
+.cmenu__icon { width: 40px; height: 40px; --icon-color: var(--c-cyan); }
+.cmenu__body { flex-grow: 1; flex-shrink: 1; }
+.cmenu__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-white); }
+.cmenu__meaning { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; }
+.cmenu__badge { min-width: 36px; height: 36px; padding: 0 var(--s-2); margin-left: var(--s-2); border-radius: 18px; align-items: center; justify-content: center; background-color: var(--c-amber); }
+.cmenu__badge.is-hidden { display: none; }
+.cmenu__badge-label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-world); }
+.cmenu__chev { width: 28px; height: 28px; margin-left: var(--s-2); --icon-color: var(--c-text-faint); }

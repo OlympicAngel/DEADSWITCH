@@ -28,6 +28,7 @@ namespace Deadswitch.Game.UI.Hud
         private readonly System.Collections.Generic.List<ResourcePod> _pods = new System.Collections.Generic.List<ResourcePod>();
         private ResourceSheet _resourceSheet;
         private AwaySummary _away;
+        private CommandMenu _menu;
         private AnimatedNumber _core;
         private AiOrb _orb;
         private AiWave _wave;
@@ -193,6 +194,30 @@ namespace Deadswitch.Game.UI.Hud
             _dispatchChip.RegisterCallback<ClickEvent>(_ => Router.Show("dispatch"));
             Q<Label>("feed-id").text = "DRONE_RECON_" + ((_host.Sim.Seed % 89) + 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
             Q<VisualElement>("heat-chip").RegisterCallback<ClickEvent>(_ => Router.Show("map"));
+            // back (SPEC-042): a secondary screen or another tab returns to BASE; layers above register later
+            Back.Install(_ui.Root);
+            Back.Register(() =>
+            {
+                if (Router.Current == null || Router.Current == "base")
+                {
+                    return false;
+                }
+
+                Router.Show("base");
+                return true;
+            });
+            Back.Register(() => _baseScreen.CloseFocus());
+            Back.Register(() =>
+            {
+                if (!_resourceSheet.IsOpen)
+                {
+                    return false;
+                }
+
+                _resourceSheet.Close();
+                return true;
+            });
+            BuildMenu(premium, season);
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));
             Router.BindTab("core", Q<VisualElement>("tab-core"));
@@ -571,6 +596,51 @@ namespace Deadswitch.Game.UI.Hud
             }
         }
 
+        /// <summary>The Command menu (SPEC-042 finding 1): every secondary destination in one place.</summary>
+        private void BuildMenu(PremiumScreen premium, SeasonScreen season)
+        {
+            _menu = new CommandMenu(_ui.Sheets);
+            _menu.Section("people", "THE HUB");
+            _menu.Add("people", "WORKFORCE", "Crews, loyalty and the hard choices.", () => Router.Show("workforce"));
+            _menu.Add("mail", "DISPATCH", "Ultimatums and dilemmas waiting for your answer.", () => Router.Show("dispatch"), () => _host.Sim.State.Ultimatum == UltimatumStage.Issued || _host.Sim.State.Dilemma != DilemmaKind.None ? 1 : 0);
+            _menu.Add("report", "LAST REPORT", "The latest fight, with the evidence.", () => OpenReport(_chipRaid > 0 ? _chipRaid : LatestRaid()), () => _reportChip.ClassListContains("is-hidden") ? 0 : 1);
+            _menu.Section("book", "RECORDS");
+            _menu.Add("book", "STORY", "Chapters and the memory fragments you recovered.", () => Router.Show("story"));
+            _menu.Add("cycle", "LEGACY", "This cycle's score, perks and relocation.", () => Router.Show("legacy"));
+            _menu.Section("gear", "ACCOUNT");
+            _menu.Add("star", "SEASON TRACK", "Cosmetic rewards earned by play.", () =>
+            {
+                season.ReturnTo("base");
+                Router.Show("season");
+            });
+            _menu.Add("diamond", "FULL GAME", "One payment. Nothing else is sold.", () =>
+            {
+                premium.ReturnTo("base");
+                Router.Show("premium");
+            });
+            _menu.Add("gear", "SETTINGS", "Comfort, accessibility, camera and backup.", () => Router.Show("settings"));
+            Q<VisualElement>("menu-btn").RegisterCallback<ClickEvent>(_ =>
+            {
+                GameState s = _host.Sim.State;
+                _menu.Open("HUB S-17 // TIER " + s.Tier + " // " + Fmt.Clock(s.Tick).Split(' ')[0] + " " + Fmt.Clock(s.Tick).Split(' ')[1]);
+            });
+        }
+
+        /// <summary>The newest resolved raid in the log (0 when none).</summary>
+        private int LatestRaid()
+        {
+            var events = _host.Sim.Log.Events;
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                if (events[i].Kind == EventKind.RaidResolved)
+                {
+                    return events[i].A;
+                }
+            }
+
+            return 0;
+        }
+
         private void OnCaughtUp(CatchUpReport report)
         {
             _away.Show(_host, report);
@@ -724,6 +794,12 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("map-badge").EnableInClassList("is-hidden", heat < HeatLevel.Hunted);
             Q<Label>("map-badge-label").text = "!";
             _frame.EnableInClassList("is-alarm", s.RaidId != 0);
+            if (_menu != null)
+            {
+                int pending = _menu.Refresh();
+                Q<VisualElement>("menu-badge").EnableInClassList("is-hidden", pending <= 0);
+                Q<Label>("menu-badge-label").text = pending.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
         }
 
         /// <summary>The red edge breathes while an attack is inbound (idea 45); still under reduced motion.</summary>

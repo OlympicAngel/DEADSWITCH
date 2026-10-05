@@ -77,6 +77,18 @@ namespace Deadswitch.Game.UI.Base
 
         public VisualElement Root { get; }
 
+        /// <summary>Back: closes the facility sheet and flies out; false when nothing was selected.</summary>
+        public bool CloseFocus()
+        {
+            if (!_sheet.IsOpen)
+            {
+                return false;
+            }
+
+            Select(-1);
+            return true;
+        }
+
         /// <summary>Selects a slot and frames it (resource shortcuts, suggestion chips); recommends a facility on an empty plot.</summary>
         public void Focus(int slot, Deadswitch.Sim.State.FacilityKind recommend)
         {

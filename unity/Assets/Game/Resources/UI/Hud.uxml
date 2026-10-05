@@ -72,6 +72,10 @@
 
     <!-- Context strip: time, the hottest faction, override charges -->
     <ui:VisualElement class="hud-context">
+      <ui:VisualElement name="menu-btn" class="hud-menu">
+        <ui:VisualElement class="ds-icon ds-icon--grid hud-menu__icon" />
+        <ui:VisualElement name="menu-badge" class="hud-menu__badge is-hidden"><ui:Label name="menu-badge-label" text="1" class="hud-menu__badge-label" /></ui:VisualElement>
+      </ui:VisualElement>
       <ui:VisualElement class="hud-context__rec" />
       <ui:Label name="feed-id" text="DRONE_RECON_07" class="hud-context__feed" />
       <ui:Label name="clock" text="DAY 03  14:22" class="hud-context__clock" />
@@ -177,7 +181,7 @@
         <ui:VisualElement name="tab-base" class="hud-tab is-active"><ui:VisualElement class="ds-icon ds-icon--base hud-tab__icon" /><ui:Label text="BASE" class="hud-tab__label" /><ui:VisualElement name="base-badge" class="ds-badge ds-badge--cyan is-hidden"><ui:Label name="base-badge-label" text="+" class="ds-badge__label" /></ui:VisualElement></ui:VisualElement>
         <ui:VisualElement name="tab-map" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--map hud-tab__icon" /><ui:Label text="MAP" class="hud-tab__label" /><ui:VisualElement name="map-badge" class="ds-badge is-hidden"><ui:Label name="map-badge-label" text="!" class="ds-badge__label" /></ui:VisualElement></ui:VisualElement>
         <ui:VisualElement name="tab-core" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--core hud-tab__icon" /><ui:Label text="CORE" class="hud-tab__label" /><ui:VisualElement name="core-dot" class="hud-tab__dot" /></ui:VisualElement>
-        <ui:VisualElement name="tab-ops" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--ops hud-tab__icon" /><ui:Label text="OPS" class="hud-tab__label" /><ui:VisualElement name="ops-badge" class="ds-badge ds-badge--red"><ui:Label name="ops-badge-label" text="!" class="ds-badge__label" /></ui:VisualElement></ui:VisualElement>
+        <ui:VisualElement name="tab-ops" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--shield hud-tab__icon" /><ui:Label text="DEFENSE" class="hud-tab__label" /><ui:VisualElement name="ops-badge" class="ds-badge ds-badge--red"><ui:Label name="ops-badge-label" text="!" class="ds-badge__label" /></ui:VisualElement></ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>

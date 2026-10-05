@@ -63,7 +63,13 @@
 .hud-core__band { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-tight); margin-top: -4px; }
 
 /* ---------- Context strip ---------- */
-.hud-context { flex-direction: row; align-items: center; padding: 0 var(--s-5); min-height: 52px; }
+.hud-context { flex-direction: row; align-items: center; padding: 0 var(--s-4); min-height: 72px; }
+.hud-menu { width: 72px; height: 64px; align-items: center; justify-content: center; margin-right: var(--s-3); border-radius: var(--r-lg); background-color: var(--c-scrim); }
+.hud-menu:active { background-color: var(--c-cyan-wash); }
+.hud-menu__icon { width: 34px; height: 34px; --icon-color: var(--c-cyan); }
+.hud-menu__badge { position: absolute; top: -4px; right: -4px; min-width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; background-color: var(--c-amber); }
+.hud-menu__badge.is-hidden { display: none; }
+.hud-menu__badge-label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-world); }
 .hud-context__rec { width: 12px; height: 12px; border-radius: 6px; margin-right: var(--s-2); background-color: var(--c-red); }
 .hud-context__feed { display: none; }
 .hud-context__clock { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-white); margin-right: var(--s-4); flex-shrink: 0; }
