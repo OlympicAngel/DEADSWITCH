@@ -285,6 +285,8 @@ namespace Deadswitch.Game.UI.Hud
                 float weight = GlitchText.BandWeight((int)trueBand) * _host.Settings.Effects;
                 Advisor.SetGlitch(weight);
                 _ui.SetGlitch(weight);
+                _orb.Stutter = weight;
+
             }
 
             if (band != _band)
@@ -297,6 +299,10 @@ namespace Deadswitch.Game.UI.Hud
                 _coreGaugeEl.EnableInClassList("ds-gauge--amber", band == CorruptionBand.Glitchy);
                 _coreGaugeEl.EnableInClassList("ds-gauge--red", band >= CorruptionBand.Unstable);
                 _coreDot.EnableInClassList("is-hidden", band == CorruptionBand.Stable);
+                // the orb wears the band the core reports; its stutter follows the true band (like the glitch)
+                VisualElement orbEl = Q<VisualElement>("advisor-orb");
+                orbEl.EnableInClassList("ai-orb--amber", band == CorruptionBand.Glitchy);
+                orbEl.EnableInClassList("ai-orb--red", band >= CorruptionBand.Unstable);
             }
 
             _clock.text = Fmt.Clock(s.Tick);

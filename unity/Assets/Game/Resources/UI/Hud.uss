@@ -347,3 +347,6 @@
 .screen-locked__state { margin-top: var(--s-2); margin-bottom: var(--s-5); letter-spacing: 6px; }
 .screen-locked__line { margin-bottom: var(--s-6); }
 .screen-locked__req { align-self: flex-start; min-height: 56px; }
+.ai-chip--urgent { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.ai-chip--urgent > .ai-chip__icon { --icon-color: var(--c-amber); }
+.ai-chip--urgent > .ai-chip__label { color: var(--c-amber); }
