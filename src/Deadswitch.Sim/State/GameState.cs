@@ -241,7 +241,7 @@ namespace Deadswitch.Sim.State
         /// <summary>The idle-cap extension runs until this tick.</summary>
         public long AdCapUntilTick;
 
-        /// <summary>Recovered data fragments held (SPEC-037); key modules need one each.</summary>
+        /// <summary>Memory fragments recovered: bit n for fragment n (12 in all). Survives every reboot.</summary>
         public int Fragments;
 
         /// <summary>Traded blueprints held (doc 10 s5).</summary>
@@ -300,7 +300,7 @@ namespace Deadswitch.Sim.State
         /// <summary>Payoff points earned since the twist.</summary>
         public int ChapterPoints;
 
-        /// <summary>Memory fragments recovered: bit n for fragment n (12 in all). Survives every reboot.</summary>
+        /// <summary>Recovered data fragments held (SPEC-037); key modules need one each.</summary>
         public int DataFragments;
 
         /// <summary>Faction under ceasefire (-1 = none, SPEC-023), until <see cref="CeasefireUntilTick"/>.</summary>

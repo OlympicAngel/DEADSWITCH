@@ -20,6 +20,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Turret planning (F-044) plus adaptation and luck: active breach ~0-2%, casual-prepared ~12%, autopilot ~0%; Tier 2/3/4 on days ~6/20/40. All guards pass. Retune only from real play data.
 
 ## Gotchas
+- Saves older than v32 cannot earn the first-lie mastery for a lie told before the upgrade; an attack in flight across the v31 upgrade fights without counters. Pre-release, no migration.
 - Saves that reached Tier 2 before F-023 have no district plots (no migration; pre-release).
 - Git LFS uploads fail from cloud sessions: binaries go in the non-LFS overrides at the end of `.gitattributes`.
 - New files under `src/Deadswitch.{Sim,Host,Art}` or `unity/Assets` need `python3 tools/gen_meta.py`.

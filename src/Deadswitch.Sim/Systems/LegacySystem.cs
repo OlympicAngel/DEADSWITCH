@@ -15,7 +15,7 @@ namespace Deadswitch.Sim.Systems
     public static class LegacySystem
     {
         public const int PerkCount = 5;
-        public const int MasteryCount = 7;
+        public const int MasteryCount = 8;
 
         public static int Veterans(GameState s, SimConfig c)
         {

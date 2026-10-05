@@ -67,6 +67,6 @@ Note (2026-10-03): with F-001..F-017 done, F-022 (climax) is pulled forward beca
 | F-061 | Recovered fragments: each field's capstone module needs a data fragment from a dead data center or ruins (SPEC-037) | M6 | Done 2026-10-05 | doc 03 s7 |
 | F-062 | Support facilities: Solar Field, Fuel Depot, Cooling Tower, Memory Restoration Chamber with models (SPEC-038) | M6 | Done 2026-10-05 | doc 02 s3+s6 |
 | F-063 | Rewarded-ad conveniences: daily salvage roll and storage extension as whitelisted sim commands (doc 10 s1.1, ADR-0006). A real ad network still needs the owner | M6 | Done 2026-10-05 | ADR-0006 |
-| F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | In progress: balance pass, ambushes, corruption visuals, HUD heat done; Editor and phone checks need the owner (no Unity in cloud sessions) | SPEC-014 |
+| F-099 | LAST: polish and balance pass (all tuning, visual detail, phone build checks), only after every feature is in (owner, 2026-10-04) | M5 | In progress: balance pass, ambushes, corruption visuals, HUD heat, night report stills done; Editor pass for F-055..F-063 and the phone run need the owner | SPEC-014 |
 | F-026 | Pacing retune: Tier 1 5-7 days, corruption from heavy compute use and proportional decay, launch max tier 2 (owner targets) | M1 | Done 2026-10-04 | SPEC-014, doc 10 corrections |
 | F-020 | Balance scenario runner: scripted profiles, 100 seeds x 30 days report | M1 | Done 2026-10-03 | fold into CLI |
