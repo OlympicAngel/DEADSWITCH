@@ -1,0 +1,40 @@
+{
+  "resources": {
+    "lowPct": 20,
+    "shortHours": 2,
+    "fullPct": 98
+  },
+  "focus": {
+    "zoom": 0.52,
+    "orbitDegrees": 16,
+    "seconds": 0.75,
+    "screenLift": 0.16
+  },
+  "camera": {
+    "minZoom": 0.45,
+    "maxZoom": 1.3,
+    "doubleTapZoom": 0.7,
+    "doubleTapSeconds": 0.3,
+    "inertiaDamping": 4.5,
+    "idleOrbitAfter": 20,
+    "idleOrbitDegreesPerSecond": 1.2
+  },
+  "cinematic": {
+    "letterboxPct": 11,
+    "titleSeconds": 2.2,
+    "gateSeconds": 2.8,
+    "dollySeconds": 3.0,
+    "pullbackSeconds": 1.6,
+    "aftermathSeconds": 3.2,
+    "shake": 0.35,
+    "fov": 32
+  },
+  "toast": {
+    "seconds": 2.8,
+    "max": 3
+  },
+  "orb": {
+    "ringSpeed": 0.35,
+    "wobble": 0.08
+  }
+}

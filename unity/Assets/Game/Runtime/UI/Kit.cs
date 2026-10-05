@@ -130,6 +130,130 @@ namespace Deadswitch.Game.UI
             return b;
         }
 
+        /// <summary>A grouped card (SPEC-039): icon well, title, optional subtitle; add content to the returned card.</summary>
+        public static VisualElement Card(string glyph, string title, string sub = null, string tone = null)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("ds-card");
+            if (!string.IsNullOrEmpty(tone))
+            {
+                card.AddToClassList("ds-card--" + tone);
+            }
+
+            var head = new VisualElement();
+            head.AddToClassList("ds-card__head");
+            var well = new VisualElement();
+            well.AddToClassList("ds-card__well");
+            well.Add(Icons.Create(glyph, "ds-card__icon"));
+            head.Add(well);
+            var titles = new VisualElement();
+            titles.AddToClassList("ds-card__titles");
+            titles.Add(Label(title, "ds-card__title"));
+            if (!string.IsNullOrEmpty(sub))
+            {
+                titles.Add(Label(sub, "ds-card__sub"));
+            }
+
+            head.Add(titles);
+            card.Add(head);
+            return card;
+        }
+
+        /// <summary>A section label with an icon and a rule.</summary>
+        public static VisualElement Section(string glyph, string title)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("ds-section");
+            row.Add(Icons.Create(glyph, "ds-section__icon"));
+            row.Add(Label(title, "ds-section__title"));
+            var rule = new VisualElement();
+            rule.AddToClassList("ds-section__rule");
+            row.Add(rule);
+            return row;
+        }
+
+        /// <summary>A rate pill (+12/h up, -30/h down, 0 flat) with a trend glyph.</summary>
+        public static VisualElement Delta(long perHour, string suffix = "/h")
+        {
+            var pill = new VisualElement();
+            pill.AddToClassList("ds-delta");
+            pill.Add(Icons.Create(perHour >= 0 ? "trendup" : "trenddown", "ds-delta__icon"));
+            pill.Add(Label(string.Empty, "ds-delta__label"));
+            SetDelta(pill, perHour, suffix);
+            return pill;
+        }
+
+        public static void SetDelta(VisualElement pill, long perHour, string suffix = "/h")
+        {
+            pill.EnableInClassList("ds-delta--down", perHour < 0);
+            pill.EnableInClassList("ds-delta--flat", perHour == 0);
+            Icons.SetGlyph(pill.Q(className: "ds-delta__icon"), perHour > 0 ? "trendup" : perHour < 0 ? "trenddown" : "minus");
+            pill.Q<Label>(className: "ds-delta__label").text = Presentation.Fmt.Signed(perHour) + suffix;
+        }
+
+        /// <summary>An icon-over-label action tile with an optional cost line.</summary>
+        public static VisualElement Tile(string glyph, string label, string cost, System.Action onClick, params string[] classes)
+        {
+            var t = new VisualElement();
+            t.AddToClassList("ds-tile");
+            foreach (string c in classes)
+            {
+                t.AddToClassList(c);
+            }
+
+            t.Add(Icons.Create(glyph, "ds-tile__icon"));
+            t.Add(Label(label, "ds-tile__label"));
+            if (!string.IsNullOrEmpty(cost))
+            {
+                t.Add(Label(cost, "ds-tile__cost"));
+            }
+
+            t.RegisterCallback<ClickEvent>(e =>
+            {
+                e.StopPropagation();
+                if (!t.ClassListContains("is-disabled"))
+                {
+                    onClick?.Invoke();
+                }
+                else
+                {
+                    Shake(t);
+                }
+            });
+            return t;
+        }
+
+        /// <summary>A progress bar; set the fill with <see cref="SetProgress"/>.</summary>
+        public static VisualElement Progress(string tone = null)
+        {
+            var bar = new VisualElement();
+            bar.AddToClassList("ds-progress");
+            if (!string.IsNullOrEmpty(tone))
+            {
+                bar.AddToClassList("ds-progress--" + tone);
+            }
+
+            var fill = new VisualElement();
+            fill.AddToClassList("ds-progress__fill");
+            bar.Add(fill);
+            return bar;
+        }
+
+        public static void SetProgress(VisualElement bar, float fill01)
+        {
+            VisualElement fill = bar.Q(className: "ds-progress__fill");
+            if (fill != null)
+            {
+                fill.style.width = Length.Percent(Mathf.Clamp01(fill01) * 100f);
+            }
+        }
+
+        /// <summary>A short refusal wiggle (no-op under reduced motion).</summary>
+        public static void Shake(VisualElement el)
+        {
+            Motion.To(el, 0.32f, Ease.Linear, t => el.style.translate = new Translate(Mathf.Sin(t * Mathf.PI * 6f) * (1f - t) * 10f, 0, 0), () => el.style.translate = new Translate(0, 0, 0));
+        }
+
         public static void SetButtonText(VisualElement button, string text)
         {
             Label l = button.Q<Label>(className: "ds-btn__label");

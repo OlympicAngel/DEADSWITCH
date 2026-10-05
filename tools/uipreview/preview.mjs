@@ -129,28 +129,16 @@ for (const el of document.querySelectorAll('.ds-sparkline')) {
   const poly = pts.map(p => p.join(',')).join(' ');
   el.innerHTML = '<svg width="'+w+'" height="'+h+'"><polygon points="0,'+h+' '+poly+' '+w+','+h+'" fill="'+v('--c-phosphor-glow')+'" opacity="0.35"/><polyline points="'+poly+'" fill="none" stroke="'+v('--c-phosphor')+'" stroke-width="3"/></svg>';
 }
-// Icons.cs mirror
-const poly = (n, r, cx = 0.5, cy = 0.5) => Array.from({ length: n + 1 }, (_, i) => [cx + Math.cos(Math.PI * 2 * i / n) * r, cy + Math.sin(Math.PI * 2 * i / n) * r]);
-const P = (...a) => a.reduce((acc, v, i) => (i % 2 ? acc[acc.length - 1].push(v) : acc.push([v]), acc), []);
-const GLYPHS = {
-  base: [P(0.1,0.9,0.1,0.45,0.5,0.15,0.9,0.45,0.9,0.9,0.1,0.9), P(0.4,0.9,0.4,0.62,0.6,0.62,0.6,0.9)],
-  map: [poly(6, 0.42), P(0.44,0.44,0.56,0.44,0.56,0.56,0.44,0.56,0.44,0.44)],
-  core: [poly(32, 0.4), P(0.5,0.3,0.7,0.5,0.5,0.7,0.3,0.5,0.5,0.3)],
-  bolt: [P(0.58,0.06,0.24,0.56,0.5,0.56,0.4,0.94,0.76,0.42,0.5,0.42,0.58,0.06)],
-  chip: [P(0.25,0.25,0.75,0.25,0.75,0.75,0.25,0.75,0.25,0.25), P(0.4,0.4,0.6,0.4,0.6,0.6,0.4,0.6,0.4,0.4), P(0.38,0.08,0.38,0.25), P(0.62,0.08,0.62,0.25), P(0.38,0.75,0.38,0.92), P(0.62,0.75,0.62,0.92), P(0.08,0.38,0.25,0.38), P(0.08,0.62,0.25,0.62), P(0.75,0.38,0.92,0.38), P(0.75,0.62,0.92,0.62)],
-  people: [poly(16, 0.15, 0.5, 0.3), P(0.18,0.92,0.22,0.66,0.36,0.54,0.64,0.54,0.78,0.66,0.82,0.92)],
-  cross: [P(0.38,0.1,0.62,0.1,0.62,0.38,0.9,0.38,0.9,0.62,0.62,0.62,0.62,0.9,0.38,0.9,0.38,0.62,0.1,0.62,0.1,0.38,0.38,0.38,0.38,0.1)],
-  battery: [P(0.12,0.3,0.82,0.3,0.82,0.7,0.12,0.7,0.12,0.3), P(0.82,0.42,0.92,0.42,0.92,0.58,0.82,0.58), P(0.24,0.42,0.24,0.58), P(0.4,0.42,0.4,0.58), P(0.56,0.42,0.56,0.58)],
-  ops: [poly(28, 0.3), P(0.5,0.02,0.5,0.25), P(0.5,0.75,0.5,0.98), P(0.02,0.5,0.25,0.5), P(0.75,0.5,0.98,0.5)],
-  shield: [P(0.5,0.08,0.86,0.2,0.82,0.55,0.5,0.92,0.18,0.55,0.14,0.2,0.5,0.08), P(0.5,0.24,0.5,0.74)],
-  dark: [P(0.08,0.5,0.3,0.3,0.5,0.24,0.7,0.3,0.92,0.5,0.7,0.7,0.5,0.76,0.3,0.7,0.08,0.5), P(0.16,0.86,0.84,0.14)],
-  evacuate: [P(0.55,0.15,0.15,0.15,0.15,0.85,0.55,0.85), P(0.4,0.5,0.92,0.5), P(0.75,0.32,0.92,0.5,0.75,0.68)],
-  hold: [poly(24, 0.36), P(0.3,0.5,0.7,0.5)],
-};
+// Icons.cs mirror: the same glyph file (Resources/UI/Icons.json)
+const GLYPH_SRC = ${JSON.stringify(JSON.parse(fs.readFileSync(path.join(UI, 'Icons.json'), 'utf8')).glyphs)};
+const arcPts = (r, cx, cy, d0, d1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = (d0 + (d1 - d0) * i / n) * Math.PI / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; });
+const parseLine = src => { const t = src.trim().split(' ').filter(Boolean); if (t[0] === 'o') return arcPts(+t[2], +t[3], +t[4], 0, 360, +t[1]); if (t[0] === 'a') return arcPts(+t[1], +t[2], +t[3], +t[4], +t[5], +t[6]);
+  const pts = []; for (let i = 0; i + 1 < t.length; i += 2) pts.push([+t[i], +t[i + 1]]); return pts; };
+const GLYPHS = Object.fromEntries(GLYPH_SRC.map(g => [g.name, g.lines.map(parseLine)]));
 for (const el of document.querySelectorAll('.ds-icon')) {
   const g = [...el.classList].find(c => c.startsWith('ds-icon--'))?.slice(9); if (!GLYPHS[g]) continue;
   const s = Math.min(el.clientWidth, el.clientHeight), col = getComputedStyle(el).getPropertyValue('--icon-color').trim();
-  el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="3" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
+  el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="'+Math.min(5,Math.max(2,s*0.07))+'" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
 }
 for (const el of document.querySelectorAll('.ds-gauge')) {
   const w = el.clientWidth, r = w / 2 - 8, c = w / 2, f = 0.23, a0 = Math.PI * 0.75, a1 = a0 + Math.PI * 1.5 * f, aEnd = a0 + Math.PI * 1.5;

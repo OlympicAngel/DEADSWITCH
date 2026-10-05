@@ -305,3 +305,220 @@
 .unity-scroller--vertical > .unity-scroller__slider { margin: 0; }
 .unity-scroller--vertical .unity-base-slider__tracker { left: 3px; right: 3px; border-width: 0; background-color: var(--c-line); }
 .unity-scroller--vertical .unity-base-slider__dragger { left: 0; width: 10px; border-width: 0; background-color: var(--c-line-strong); }
+
+/* =====================================================================================
+   SPEC-039 living interface kit: depth, grouping, icons, accents. Tokens only.
+   ===================================================================================== */
+
+/* ---------- Screen header: icon + title + one-line status ---------- */
+.ds-head {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--s-4) var(--s-5) var(--s-3) var(--s-5);
+    border-bottom-width: 1px;
+    border-color: var(--c-cyan-line);
+    background-color: var(--c-elev-1);
+}
+
+.ds-head__well {
+    width: 76px;
+    height: 76px;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--s-4);
+    border-width: 1px;
+    border-radius: var(--r-md);
+    border-color: var(--c-cyan-dim);
+    background-color: var(--c-cyan-wash);
+}
+
+.ds-head__icon { width: 44px; height: 44px; --icon-color: var(--c-cyan); }
+.ds-head__body { flex-grow: 1; flex-shrink: 1; }
+.ds-head__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: 4px; color: var(--c-text); }
+.ds-head__status { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-cyan); margin-top: 2px; }
+
+/* ---------- Card: a raised group with an icon header ---------- */
+.ds-card {
+    background-color: var(--c-elev-1);
+    border-width: 1px;
+    border-radius: var(--r-md);
+    border-color: var(--c-line);
+    border-top-color: var(--c-edge-hi);
+    border-bottom-color: var(--c-edge-lo);
+    padding: var(--s-4);
+    margin-bottom: var(--s-4);
+}
+
+.ds-card--raised { background-color: var(--c-elev-2); }
+.ds-card--holo { background-color: var(--c-glass); border-color: var(--c-cyan-line); border-top-color: var(--c-cyan-dim); }
+.ds-card--amber { border-color: var(--c-amber-dim); border-top-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.ds-card--red { border-color: var(--c-red-glow); border-top-color: var(--c-red); background-color: var(--c-red-wash); }
+.ds-card--violet { border-color: var(--c-violet-dim); border-top-color: var(--c-violet); background-color: var(--c-violet-wash); }
+
+.ds-card__head { flex-direction: row; align-items: center; margin-bottom: var(--s-3); }
+.ds-card__well {
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--s-3);
+    border-radius: var(--r-md);
+    background-color: var(--c-cyan-wash);
+    border-width: 1px;
+    border-color: var(--c-cyan-line);
+}
+
+.ds-card__icon { width: 34px; height: 34px; --icon-color: var(--c-cyan); }
+.ds-card--amber .ds-card__well { background-color: var(--c-amber-wash); border-color: var(--c-amber-dim); }
+.ds-card--amber .ds-card__icon { --icon-color: var(--c-amber); }
+.ds-card--red .ds-card__well { background-color: var(--c-red-wash); border-color: var(--c-red); }
+.ds-card--red .ds-card__icon { --icon-color: var(--c-red); }
+.ds-card--violet .ds-card__well { background-color: var(--c-violet-wash); border-color: var(--c-violet-dim); }
+.ds-card--violet .ds-card__icon { --icon-color: var(--c-violet); }
+
+.ds-card__titles { flex-grow: 1; flex-shrink: 1; }
+.ds-card__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-text); }
+.ds-card__sub { font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: 2px; }
+.ds-card__body { font-size: var(--fs-xs); color: var(--c-text); white-space: normal; margin-bottom: var(--s-3); }
+
+/* ---------- Section label between cards ---------- */
+.ds-section {
+    flex-direction: row;
+    align-items: center;
+    margin: var(--s-2) 0 var(--s-3) 0;
+}
+
+.ds-section__icon { width: 26px; height: 26px; margin-right: var(--s-2); --icon-color: var(--c-cyan-dim); }
+.ds-section__title { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 5px; color: var(--c-text-dim); }
+.ds-section__rule { flex-grow: 1; height: 1px; margin-left: var(--s-3); background-color: var(--c-cyan-line); }
+
+/* ---------- Progress bar with a glowing head ---------- */
+.ds-progress {
+    height: 14px;
+    border-radius: var(--r-sm);
+    background-color: var(--c-panel-sunken);
+    border-width: 1px;
+    border-color: var(--c-line);
+    overflow: hidden;
+}
+
+.ds-progress__fill {
+    height: 100%;
+    width: 40%;
+    background-color: var(--c-cyan-dim);
+    border-right-width: 4px;
+    border-color: var(--c-cyan);
+}
+
+.ds-progress--amber > .ds-progress__fill { background-color: var(--c-amber-dim); border-color: var(--c-amber); }
+.ds-progress--phosphor > .ds-progress__fill { background-color: var(--c-phosphor-dim); border-color: var(--c-phosphor); }
+.ds-progress--red > .ds-progress__fill { background-color: var(--c-red-glow); border-color: var(--c-red); }
+
+/* ---------- Delta pill: +12/h, -30/h ---------- */
+.ds-delta {
+    flex-direction: row;
+    align-items: center;
+    align-self: flex-start;
+    padding: 0 var(--s-2);
+    border-radius: var(--r-sm);
+    background-color: var(--c-phosphor-wash);
+}
+
+.ds-delta__icon { width: 20px; height: 20px; margin-right: 2px; --icon-color: var(--c-phosphor); }
+.ds-delta__label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-phosphor); }
+.ds-delta--down { background-color: var(--c-red-wash); }
+.ds-delta--down > .ds-delta__icon { --icon-color: var(--c-red); }
+.ds-delta--down > .ds-delta__label { color: var(--c-red); }
+.ds-delta--flat { background-color: var(--c-panel-sunken); }
+.ds-delta--flat > .ds-delta__icon { --icon-color: var(--c-text-dim); }
+.ds-delta--flat > .ds-delta__label { color: var(--c-text-dim); }
+
+/* ---------- Count badge ---------- */
+.ds-badge {
+    position: absolute;
+    top: 6px;
+    right: 18px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 var(--s-2);
+    border-radius: 17px;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--c-amber);
+}
+
+.ds-badge__label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-world); }
+.ds-badge--red { background-color: var(--c-red); }
+.ds-badge--cyan { background-color: var(--c-cyan); }
+.ds-badge.is-hidden { display: none; }
+
+/* ---------- Action tile: icon over a short label (quick actions, grids) ---------- */
+.ds-tile {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-height: var(--touch);
+    align-items: center;
+    justify-content: center;
+    margin: 0 var(--s-1);
+    padding: var(--s-2) var(--s-1);
+    border-width: 1px;
+    border-radius: var(--r-md);
+    border-color: var(--c-cyan-line);
+    border-top-color: var(--c-edge-hi);
+    background-color: var(--c-elev-2);
+    transition-property: scale, background-color, border-color;
+    transition-duration: 0.12s;
+    transition-timing-function: ease-out-cubic;
+}
+
+.ds-tile:active { scale: 0.95 0.95; background-color: var(--c-cyan-wash); }
+.ds-tile__icon { width: 44px; height: 44px; --icon-color: var(--c-cyan); }
+.ds-tile__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text); margin-top: var(--s-1); }
+.ds-tile__cost { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); }
+.ds-tile--primary { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.ds-tile--warn { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.ds-tile--warn > .ds-tile__icon { --icon-color: var(--c-amber); }
+.ds-tile.is-disabled { opacity: 0.4; }
+.ds-tile__cost.is-short { color: var(--c-red); }
+
+/* ---------- Toasts ---------- */
+.ds-toasts {
+    position: absolute;
+    left: var(--s-6);
+    right: var(--s-6);
+    top: 190px;
+    align-items: center;
+}
+
+.ds-toast {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--s-2);
+    padding: var(--s-2) var(--s-4) var(--s-2) var(--s-2);
+    border-width: 1px;
+    border-left-width: 4px;
+    border-radius: var(--r-md);
+    border-color: var(--c-cyan-line);
+    border-left-color: var(--c-cyan);
+    background-color: var(--c-elev-2);
+    transition-property: opacity, translate;
+    transition-duration: 0.24s;
+    transition-timing-function: ease-out-cubic;
+}
+
+.ds-toast.is-gone { opacity: 0; translate: 0 -24px; }
+.ds-toast__icon { width: 36px; height: 36px; margin-right: var(--s-2); --icon-color: var(--c-cyan); }
+.ds-toast__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-text); }
+.ds-toast--good { border-left-color: var(--c-phosphor); }
+.ds-toast--good > .ds-toast__icon { --icon-color: var(--c-phosphor); }
+.ds-toast--warn { border-left-color: var(--c-amber); }
+.ds-toast--warn > .ds-toast__icon { --icon-color: var(--c-amber); }
+.ds-toast--bad { border-left-color: var(--c-red); }
+.ds-toast--bad > .ds-toast__icon { --icon-color: var(--c-red); }
+
+/* ---------- Accent text and focus ---------- */
+.t-cyan { color: var(--c-cyan); text-shadow: 0 0 10px var(--c-cyan-glow); }
+.t-violet { color: var(--c-violet); }
+.ds-btn--ai { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.ds-btn--ai > .ds-btn__label { color: var(--c-cyan); }
+.ds-btn--ai:active { background-color: var(--c-cyan-line); }

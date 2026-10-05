@@ -14,7 +14,7 @@ The world should feel worn and physical; the interface should feel precise, purp
 
 - **World:** follows the master art direction below. Real-time 3D (Unity URP) with believable proportions and layered PBR material detail under a weathered, moderately colored grade with warm practical lights.
 - **Camera:** the AI's recon-drone view. High-angle isometric-style framing, narrow FOV, no depth-of-field blur (it reads as a miniature). Sensor effects (noise, edge chromatic aberration, faint scanline interference) are **barely noticeable** at default intensity, never cover gameplay, and scale with corruption and the effect-intensity setting.
-- **Machine:** restrained field-terminal surfaces, phosphor accents, telemetry, grids, and controlled scanline texture. Avoid generic neon cyberpunk.
+- **Machine:** field-terminal surfaces with depth (raised cards, light top edges), phosphor accents, telemetry, grids, and controlled scanline texture, plus a **restrained cyberpunk accent** (owner, 2026-10-05; SPEC-039): AI cyan for AI surfaces, focus and interactables, intel violet for story and intel. Bold, never wall-to-wall neon; the 3D world stays heroic realism.
 - **Base:** present it as a living diorama. Show power, population, damage, activity, and tier identity through landmarks; repairs visibly change persistent scars.
 - **Screens:** give each screen one primary focal area, a clear action hierarchy, and stable critical status. Keep touch targets clear and put secondary detail behind deliberate inspection.
 - **Texture:** keep grime and distress off small text, icons, controls, maps, and important values.

@@ -1,25 +1,26 @@
-# TASK: F-099 polish and balance pass (last)
+# TASK: F-100 Living interface (UI, camera, motion, VFX rework)
 
-- Status: In progress (owner steps). Every design feature buildable in a cloud session is in (F-001..F-063, 2026-10-05 gap audits clean).
-- Branch: claude/confident-heisenberg-m3gwju
+- Status: In progress
+- Branch: ccr-3e0227c3-c2kae3
+- Spec: `docs/specs/SPEC-039-living-interface.md` (the 60 ideas and their status)
+- Sources: owner direction 2026-10-05, doc 11 (amended: restrained cyberpunk accent on UI and AI tech), `docs/agents/quality-bar.md`
+- Previous task F-099 (polish pass) waits on the owner's Editor and phone run; its open items are in the backlog row and `docs/agents/HANDOFF.md`.
 
 ## Steps
-- [x] Balance pass with the runner (doc 10 corrections log, SPEC-014 findings)
-- [x] Missing doc 10 rules: ambushes, highest heat on the HUD
-- [x] Corruption visuals on the base; crewed glitches; dilemmas wait for the handler
-- [x] Play in the Unity Editor (UI layout, lighting, damage FX, report stills fixed; open items in docs/agents/HANDOFF.md)
-- [x] Night report stills readable (BaseLook.reportNightBoost)
-- [x] Smoke run (`Core/SmokeRun`, launch with `-ds-smoke`): walks every screen, map render + pins, backends, logged errors -> `smoke.txt`
-- [ ] Editor pass for F-055..F-063: run `-ds-smoke` first, then the visual checks (HANDOFF checklist: sector map render + MapRender URP path, pins, overlay, gestures, new facilities, OPS forces line, premium ad grants, mobile notifications package resolve)
-- [ ] Android phone run (owner)
-- [ ] Fix whatever the phone run finds; open Editor items: puddle reflections, ALLY/SABOTAGE/RECALL, reactor, themes
+- [ ] 1. Foundation: accent + depth tokens, shared icon data file (Unity + preview), new kit components (section header, card, progress, delta pill, toast)
+- [ ] 2. Resource pods: capacity bars, rate pills, FULL/LOW/SHORT states, time to full/empty
+- [ ] 3. Resource breakdown sheet with producers/drains and "how to get more" shortcuts
+- [ ] 4. Camera: fly-to focus (pan+zoom+orbit), inertia, double-tap zoom, idle orbit, settings toggles
+- [ ] 5. Focus mode: dimmed labels, quick-action ring, plot markers, build-complete moment
+- [ ] 6. JARVIS layer: core orb + waveform, comms panel with suggestion chips, toasts
+- [ ] 7. Attack cinematic: letterbox, title card, shot sequence, shake, impacts, siren, aftermath stamp
+- [ ] 8. Screen rework: OPS regrouped into titled cards, CORE with the orb as hero, command bar badges
+- [ ] 9. 3D accents: data links to the core, raid edge vignette
+- [ ] 10. Remaining screens to the new kit (Workforce, Map sheet, Dispatch, Settings), docs, spec statuses
 
-## Needs the owner (accounts, services or native tooling)
-Code is in; each service compiles only once its package is installed (package-gated asmdefs).
-- Cloud backup (doc 10 s2): install `com.unity.services.cloudsave` and link the Unity Cloud project (`Cloud/Services`).
-- Store and ads (ADR-0006): install `com.unity.purchasing` and `com.unity.ads`, fill `Resources/Store/StoreIds.json` (product ids, ad game ids).
-- Widget (doc 08 s5): copy `unity/NativeWidgets~` into place per its README (Android androidlib; iOS widget extension + App Group).
-- Editor resolve and device tests for all of the above.
+## Notes
+- Presentation only: no `GameState` fields, no sim changes.
+- Verify with `tools/check.sh` (includes the Unity compile check) and `node tools/uipreview/preview.mjs`.
 
 ## Blocked / questions
-- See "Needs the owner".
+- Camera, cinematic and 3D accents compile and follow the existing patterns, but need the owner's Editor run to tune timings and framing.
