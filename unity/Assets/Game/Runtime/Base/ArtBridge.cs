@@ -159,6 +159,16 @@ namespace Deadswitch.Game.Base
                 m.SetVector("_EmissionColor", Vector4.zero);
             }
 
+            if (d.Opacity < 1f)
+            {
+                // see-through (puddles): blend over what is under it, drawn after the opaque world
+                m.SetVector("_BaseColor", Linear(d.BaseColor.X, d.BaseColor.Y, d.BaseColor.Z, d.Opacity));
+                m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                m.SetFloat("_ZWrite", 0f);
+                m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent - 10;
+            }
+
             return m;
         }
 

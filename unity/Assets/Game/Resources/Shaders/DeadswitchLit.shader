@@ -15,6 +15,9 @@ Shader "Deadswitch/VertexColorLit"
         _WearB("Bump Scale Ground Procedural", Vector) = (0, 1, 0, 0)
         _Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5
         [HideInInspector] _DsDamage("Damage glow (rgb, flat share)", Vector) = (0, 0, 0, 0)
+        [HideInInspector] _SrcBlend("Src", Float) = 1
+        [HideInInspector] _DstBlend("Dst", Float) = 0
+        [HideInInspector] _ZWrite("ZWrite", Float) = 1
     }
 
     SubShader
@@ -25,6 +28,9 @@ Shader "Deadswitch/VertexColorLit"
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
+            // opaque by default; water blends (base colour alpha) so the ground shows through a puddle
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -139,6 +145,7 @@ Shader "Deadswitch/VertexColorLit"
 
                 half4 c = UniversalFragmentPBR(inputData, s);
                 c.rgb = MixFog(c.rgb, inputData.fogCoord);
+                c.a = _BaseColor.a;
                 return c;
             }
             ENDHLSL

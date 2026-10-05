@@ -10,7 +10,7 @@
 - [x] 3. Base camera: drag/pan and zoom, back to the overview after 15 s idle (not during a selection or an open panel; `Interface.json` camera.returnAfter)
 - [x] 4. One build prompt at a time on the next empty plot, advancing after construction; any empty plot opens the picker
 - [x] 5. Every facility type in every plot (the sim already allows it), slot-aware orientation: defenses face outward
-- [ ] 6. Night puddles: wet, slightly transparent, restrained reflection
+- [x] 6. Night puddles: see-through water (55%), non-metallic, lamp glints; no black holes
 - [ ] 7. Space buildings and dressing a little farther apart; reframe the drone and the cutscene cameras
 
 Previous: F-109 done; F-105 The Fall done (sound mix by ear pending).

@@ -9,8 +9,9 @@ namespace Deadswitch.Art.Geometry
     /// </summary>
     public readonly struct MaterialDef
     {
-        public MaterialDef(string name, uint rgb, float metallic, float smoothness, Wear wear, uint emissionRgb = 0, float emission = 0f, bool isLamp = false)
+        public MaterialDef(string name, uint rgb, float metallic, float smoothness, Wear wear, uint emissionRgb = 0, float emission = 0f, bool isLamp = false, float opacity = 1f)
         {
+            Opacity = opacity;
             Name = name;
             BaseColor = Rgb(rgb);
             Metallic = metallic;
@@ -37,6 +38,9 @@ namespace Deadswitch.Art.Geometry
 
         /// <summary>Lamps switch off when their facility is unpowered.</summary>
         public bool IsLamp { get; }
+
+        /// <summary>Below 1 the surface is see-through (water over ground); Unity blends it, the preview draws it solid.</summary>
+        public float Opacity { get; }
 
         internal static Vector3 Rgb(uint rgb)
         {
@@ -120,7 +124,8 @@ namespace Deadswitch.Art.Geometry
             new MaterialDef("PaintWhite", 0xB5B0A2, 0.05f, 0.26f, Markings),
             new MaterialDef("PaintGreen", 0x4A8656, 0.05f, 0.3f, Markings),
             new MaterialDef("Foliage", 0x2E4224, 0f, 0.1f, new Wear(0f, 0f, 0.2f, 0f, 0.6f, 3f, 0x2C3527)),
-            new MaterialDef("Water", 0x3A4446, 0.2f, 0.96f, Wear.None),
+            // a thin sheet of rain water: the ground shows through, lamps glint in it (F-108)
+            new MaterialDef("Water", 0x4C5658, 0f, 0.9f, Wear.None, opacity: 0.55f),
             new MaterialDef("Skin", 0x9C7860, 0f, 0.3f, Wear.None),
             new MaterialDef("Interior", 0x3A2E1E, 0f, 0.4f, Wear.None, 0xFFB86A, 1.6f, true),
             new MaterialDef("Rock", 0x5A564E, 0f, 0.12f, new Wear(0f, 0.05f, 0.45f, 0.3f, 0.9f, 1.1f, 0x46433D)),
