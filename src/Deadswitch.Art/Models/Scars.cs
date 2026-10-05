@@ -191,6 +191,91 @@ namespace Deadswitch.Art.Models
         }
 
         /// <summary>Irregular burnt patch flat on the ground (a jagged fan of soot).</summary>
+        /// <summary>
+        /// A facility brought down (SPEC-044): over the footprint it stood on (<paramref name="min"/>/<paramref name="max"/>),
+        /// broken wall stumps, a pile of concrete slabs and rubble, a fallen roof sheet, bent rebar, fires in the pile and
+        /// a heavy plume. Heavy and settled: everything rests on the ground or leans on something.
+        /// </summary>
+        public static ScarSet Rubble(Vector3 min, Vector3 max, uint seed)
+        {
+            var set = new ScarSet();
+            var b = new MeshBuilder(seed) { GroundOffset = 0f };
+            var rng = new ArtRandom(seed ^ 0x2B0B1E5u);
+            float y = Facilities.PadTop;
+            float w = Math.Max(1.6f, max.X - min.X);
+            float d = Math.Max(1.6f, max.Z - min.Z);
+            float h = Math.Clamp(max.Y, 1.2f, 4f);
+            var center = new Vector3((min.X + max.X) * 0.5f, 0, (min.Z + max.Z) * 0.5f);
+
+            Scorch(b, new Vector3(center.X, y + 0.012f, center.Z), (w * 0.55f) + 0.6f, (d * 0.55f) + 0.6f, rng);
+
+            // wall stumps: what is left of two or three walls, torn at uneven heights
+            int stumps = 2 + (int)(rng.Next() * 2f);
+            for (int i = 0; i < stumps; i++)
+            {
+                bool alongX = i % 2 == 0;
+                float len = (alongX ? w : d) * rng.Range(0.35f, 0.7f);
+                float sh = h * rng.Range(0.25f, 0.6f);
+                var at = alongX
+                    ? new Vector3(center.X + rng.Range(-w * 0.2f, w * 0.2f), y, i == 0 ? min.Z + 0.1f : max.Z - 0.1f)
+                    : new Vector3(rng.Next() < 0.5f ? min.X + 0.1f : max.X - 0.1f, y, center.Z + rng.Range(-d * 0.2f, d * 0.2f));
+                b.Push(Matrix4x4.CreateRotationZ(MeshBuilder.Deg(rng.Range(-4f, 4f))) * Matrix4x4.CreateRotationY(MeshBuilder.Deg(alongX ? 0f : 90f)) * Matrix4x4.CreateTranslation(at));
+                b.Box(new Vector3(0, sh * 0.5f, 0), new Vector3(len, sh, 0.22f), Mat.ConcreteDark, 0.02f);
+                // a jagged top: two broken teeth
+                b.Box(new Vector3(-len * 0.25f, sh + 0.18f, 0), new Vector3(len * 0.22f, 0.36f, 0.2f), Mat.ConcreteDark, 0.02f);
+                b.Box(new Vector3(len * 0.3f, sh + 0.1f, 0), new Vector3(len * 0.15f, 0.2f, 0.2f), Mat.Char, 0.02f);
+                b.Pop();
+                Soot(b, at + new Vector3(0, 0, -0.13f), len * 0.6f, sh, rng);
+            }
+
+            // the collapsed mass: slabs piled at angles, rubble around them
+            int slabs = 5 + (int)(w * d * 0.25f);
+            for (int i = 0; i < slabs; i++)
+            {
+                float tilt = rng.Range(8f, 34f);
+                var p = new Vector3(center.X + rng.Range(-w * 0.35f, w * 0.35f), y + (0.12f * (i % 3)), center.Z + rng.Range(-d * 0.35f, d * 0.35f));
+                b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(tilt)) * Matrix4x4.CreateRotationY(MeshBuilder.Deg(rng.Range(0f, 180f))) * Matrix4x4.CreateTranslation(p));
+                b.Box(new Vector3(0, 0.1f, 0), new Vector3(rng.Range(0.7f, 1.5f), 0.18f, rng.Range(0.5f, 1.1f)), i % 4 == 0 ? Mat.Char : Mat.ConcreteDark, 0.02f);
+                b.Pop();
+            }
+
+            int stones = 10 + (int)(w * d * 0.6f);
+            for (int i = 0; i < stones; i++)
+            {
+                var p = new Vector3(center.X + rng.Range(-w * 0.6f, w * 0.6f), y, center.Z + rng.Range(-d * 0.6f, d * 0.6f));
+                float r = rng.Range(0.1f, 0.3f);
+                Props.Boulder(b, p + new Vector3(0, r * 0.35f, 0), new Vector3(r * 1.3f, r * 0.7f, r), seed + (uint)(i * 23), i % 3 == 0 ? Mat.Char : Mat.ConcreteDark);
+            }
+
+            // the roof came down in one sheet, leaning on a stump
+            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(rng.Range(18f, 30f))) * Matrix4x4.CreateRotationY(MeshBuilder.Deg(rng.Range(-20f, 20f))) * Matrix4x4.CreateTranslation(new Vector3(center.X + rng.Range(-0.4f, 0.4f), y + 0.5f, center.Z)));
+            b.Box(Vector3.Zero, new Vector3(w * 0.7f, 0.06f, d * 0.55f), Mat.Rust, 0.01f);
+            b.Pop();
+
+            // bent rebar and struts sticking out of the pile
+            for (int i = 0; i < 4; i++)
+            {
+                var s0 = new Vector3(center.X + rng.Range(-w * 0.3f, w * 0.3f), y + 0.2f, center.Z + rng.Range(-d * 0.3f, d * 0.3f));
+                var s1 = s0 + new Vector3(rng.Range(-0.5f, 0.5f), rng.Range(0.7f, 1.4f), rng.Range(-0.5f, 0.5f));
+                b.Strut(s0, s1, 0.035f, Mat.DarkSteel);
+                b.Strut(s1, s1 + new Vector3(rng.Range(-0.4f, 0.4f), -0.25f, rng.Range(-0.4f, 0.4f)), 0.035f, Mat.DarkSteel);
+            }
+
+            // it still burns in the pile
+            for (int i = 0; i < 2; i++)
+            {
+                var f = new Vector3(center.X + rng.Range(-w * 0.25f, w * 0.25f), y + 0.25f, center.Z + rng.Range(-d * 0.25f, d * 0.25f));
+                Embers(b, f, 0.45f, rng);
+                set.Fires.Add(f + new Vector3(0, 0.1f, 0));
+                set.Model.Lights.Add(new LightSpec(f + new Vector3(0, 0.6f, 0), Model.FireColor, 3.4f, 8f, LightRole.Fire));
+            }
+
+            set.Smokes.Add(new Vector3(center.X, y + 1f, center.Z));
+            set.SmokeLevel = 3;
+            set.Model.Static = b.Mesh;
+            return set;
+        }
+
         private static void Scorch(MeshBuilder b, Vector3 c, float rx, float rz, ArtRandom rng)
         {
             const int n = 14;

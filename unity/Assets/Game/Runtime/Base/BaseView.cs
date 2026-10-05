@@ -45,6 +45,7 @@ namespace Deadswitch.Game.Base
         private float _powerRadius;
         private float _powerLevel = 1f;
         private Color _grade;
+        private Staging _stage;
         private float _gradeAmount;
 
         private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
@@ -103,6 +104,30 @@ namespace Deadswitch.Game.Base
         {
             _openingPower = false;
             _gradeAmount = 0f;
+        }
+
+        /// <summary>
+        /// A scripted Hub for the opening film (SPEC-044): the view shows <paramref name="stage"/> instead of the sim
+        /// (layout, tier, yard, people) until it is cleared with null. Presentation only; the sim never sees it.
+        /// </summary>
+        public void Stage(Staging stage)
+        {
+            _stage = stage;
+            if (_host != null && _host.IsReady)
+            {
+                Sync();
+            }
+        }
+
+        /// <summary>What a staged Hub shows (SPEC-044). <see cref="Razed"/> plots are rubble on fire.</summary>
+        public sealed class Staging
+        {
+            public SlotView[] Slots = new SlotView[0];
+            public bool[] Razed = new bool[0];
+            public int Tier = 1;
+            public int Wreckage;
+            public bool Burning;
+            public int People = 12;
         }
 
         /// <summary>The opening's sky: fog and ambient pulled toward <paramref name="color"/> by <paramref name="amount"/> (the war's red glow).</summary>
@@ -173,7 +198,7 @@ namespace Deadswitch.Game.Base
 
             Spawn("Terrain", new Model { Static = HubScene.Terrain(Seed) }, Vector3.zero, 0f, _world, true);
             Spawn("Bunker", Deadswitch.Art.Models.Core.Build(Seed), Vector3.zero, 0f, _world, true);
-            Layout();
+            Layout(_host.Sim.State.Slots.Count, _host.Sim.State.Tier);
             _host.Ticked += Sync;
             Sync();
         }
@@ -182,17 +207,15 @@ namespace Deadswitch.Game.Base
         /// Builds the surroundings for the current tier and one object per slot. Runs again when a tier-up adds
         /// plots (SPEC-013): the surroundings are replaced, existing slot objects are kept.
         /// </summary>
-        private void Layout()
+        private void Layout(int slots, int tier)
         {
-            GameState s = _host.Sim.State;
-            int slots = s.Slots.Count;
             if (_surroundings != null)
             {
                 Destroy(_surroundings);
             }
 
-            _tier = s.Tier;
-            _surroundings = Spawn("Surroundings", HubScene.Surroundings(Seed, slots, s.Tier), Vector3.zero, 0f, _world, true);
+            _tier = tier;
+            _surroundings = Spawn("Surroundings", HubScene.Surroundings(Seed, slots, tier), Vector3.zero, 0f, _world, true);
             // a relocation (SPEC-022) starts a smaller site: drop plots that no longer exist
             while (_slots.Count > slots)
             {
@@ -280,10 +303,12 @@ namespace Deadswitch.Game.Base
         private void Sync()
         {
             GameState s = _host.Sim.State;
-            if (s.Slots.Count != _slots.Count || s.Tier != _tier)
+            int count = _stage != null ? _stage.Slots.Length : s.Slots.Count;
+            int tier = _stage != null ? _stage.Tier : s.Tier;
+            if (count != _slots.Count || tier != _tier)
             {
-                bool grew = s.Tier > _tier;
-                Layout();
+                bool grew = _stage == null && tier > _tier;
+                Layout(count, tier);
                 if (grew && DroneCamera.Instance != null)
                 {
                     // show the payoff: glide over the new district (SPEC-013)
@@ -295,17 +320,28 @@ namespace Deadswitch.Game.Base
             bool fxChanged = !Mathf.Approximately(_fxEffects, _host.Settings.Effects) || _fxReduced != _host.Settings.ReducedMotion;
             _fxEffects = _host.Settings.Effects;
             _fxReduced = _host.Settings.ReducedMotion;
-            SyncYard(s, fxChanged);
-            for (int i = 0; i < _slots.Count && i < s.Slots.Count; i++)
+            if (_stage != null)
             {
-                SlotView v = SlotView.From(s, i);
-                bool slotFx = fxChanged && v.Damage > 0;
+                SyncYard(_stage.Wreckage, _stage.Burning, fxChanged);
+            }
+            else
+            {
+                bool burning = s.ScarredAtTick > 0 && s.Tick - s.ScarredAtTick < (long)_host.Sim.Config.Scars.BurnHours * SimConfig.TicksPerHour;
+                SyncYard(s.Wreckage, burning, fxChanged);
+            }
+
+            for (int i = 0; i < _slots.Count && i < count; i++)
+            {
+                SlotView v = _stage != null ? _stage.Slots[i] : SlotView.From(s, i);
+                bool razed = _stage != null && i < _stage.Razed.Length && _stage.Razed[i];
+                bool slotFx = fxChanged && (v.Damage > 0 || razed);
                 SlotObject o = _slots[i];
-                bool shapeChanged = !o.Built || v.Kind != o.View.Kind || v.Level != o.View.Level || v.UnderConstruction != o.View.UnderConstruction || v.Damage != o.View.Damage || slotFx;
+                bool shapeChanged = !o.Built || v.Kind != o.View.Kind || v.Level != o.View.Level || v.UnderConstruction != o.View.UnderConstruction || v.Damage != o.View.Damage || razed != o.Razed || slotFx;
                 if (shapeChanged)
                 {
                     bool first = !o.Built;
                     SlotView before = o.View;
+                    o.Razed = razed;
                     Rebuild(o, v, i);
                     if (!first)
                     {
@@ -320,7 +356,7 @@ namespace Deadswitch.Game.Base
                 o.View = v;
             }
 
-            int people = Mathf.Clamp(s.People / 3, 2, _walkPoints.Length);
+            int people = Mathf.Clamp((_stage != null ? _stage.People : s.People) / 3, 2, _walkPoints.Length);
             while (_walkers.Count < people)
             {
                 _walkers.Add(NewWalker(_walkers.Count));
@@ -423,7 +459,16 @@ namespace Deadswitch.Game.Base
             o.Built = true;
             o.Height = 0.5f;
 
-            Spawn("Pad", new Model { Static = Facilities.Pad(Seed + (uint)slot, v.Kind == FacilityKind.None && !v.UnderConstruction) }, Vector3.zero, 0f, o.Root, true);
+            Spawn("Pad", new Model { Static = Facilities.Pad(Seed + (uint)slot, (v.Kind == FacilityKind.None && !v.UnderConstruction) || o.Razed) }, Vector3.zero, 0f, o.Root, true);
+            if (o.Razed)
+            {
+                // the opening's ruin (SPEC-044): the facility came down, a burning pile on its footprint
+                Facilities.Build(v.Kind == FacilityKind.None ? FacilityKind.LifeSupport : v.Kind, Mathf.Max(1, v.Level), Seed + (uint)(slot * 31)).Static.Bounds(out System.Numerics.Vector3 min, out System.Numerics.Vector3 max);
+                SpawnScars(Scars.Rubble(min, max, Seed + (uint)(slot * 71)), o.Root);
+                o.Height = 1.5f;
+                return;
+            }
+
             if (v.Kind != FacilityKind.None)
             {
                 Model model = Facilities.Build(v.Kind, v.Level, Seed + (uint)(slot * 31));
@@ -466,11 +511,9 @@ namespace Deadswitch.Game.Base
         }
 
         /// <summary>Yard wrecks (SPEC-018): burnt hulks and craters at fixed spots; the newest burn while fresh.</summary>
-        private void SyncYard(GameState s, bool force)
+        private void SyncYard(int wreckage, bool burning, bool force)
         {
-            SimConfig c = _host.Sim.Config;
-            int wrecks = Mathf.Min(s.Wreckage, Scars.SpotCount);
-            bool burning = s.ScarredAtTick > 0 && s.Tick - s.ScarredAtTick < (long)c.Scars.BurnHours * SimConfig.TicksPerHour;
+            int wrecks = Mathf.Min(wreckage, Scars.SpotCount);
             if (!force && wrecks == _yardWrecks && burning == _yardBurning)
             {
                 return;
@@ -844,6 +887,7 @@ namespace Deadswitch.Game.Base
             public bool Built;
             public float Height;
             public bool Glowing;
+            public bool Razed;
             public readonly List<PartState> Parts = new List<PartState>();
             public readonly List<Light> Beacons = new List<Light>();
             public readonly List<Light> StatusLights = new List<Light>();
