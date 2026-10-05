@@ -89,7 +89,7 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 56. Toasts: short stacked confirmations with icons (built, upgraded, refused + reason). *Done*
 57. Contextual header line under each screen title ("2 alerts // 1 job running"). *Done*
 58. Badges on BASE for idle builders and full storage. *Done*
-59. Long-press any value to see its explanation (tooltip card). *Planned*
+59. Long-press any value to see its explanation (tooltip card). *Done*
 60. Settings: "camera cinematics" and "focus fly-in" toggles beside reduced motion. *Done*
 
 ## Screenshots

@@ -106,6 +106,14 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("advisor-orb").parent.RegisterCallback<ClickEvent>(_ => Router.Show("core"));
             Toasts.Mount(_ui.Hud);
             _away = new AwaySummary(_ui.Sheets);
+            Hints.Mount(_ui.Sheets);
+            Hints.Attach(Q<VisualElement>("energy-cell"), "ENERGY", "Everything runs on it. Value / storage, net change per hour, and when it fills or runs dry. Tap for sources, drains and how to get more.");
+            Hints.Attach(Q<VisualElement>("compute-cell"), "COMPUTE", "What I think with: research, audits, hacks. Heavy use corrupts me. Tap for the breakdown.");
+            Hints.Attach(Q<VisualElement>("people-cell"), "PEOPLE", "Survivors / room for them, and crew on duty. Unstaffed facilities run on me, at lower output. Tap for more.");
+            Hints.Attach(Q<VisualElement>("fuel-cell"), "FUEL", "Raids, vehicles and the reactor burn it. It comes from the map. Tap for the breakdown.");
+            Hints.Attach(Q<VisualElement>("core-cell"), "CORE CORRUPTION", "What I report about my own state. Audit me in CORE to see what I am not telling you.");
+            Hints.Attach(Q<VisualElement>("heat-chip"), "HEAT", "The faction watching us hardest. More heat, bigger and more frequent attacks.");
+            Hints.Attach(Q<VisualElement>("override-pips").parent, "OVERRIDE", "Charges to force my hand: lockdowns, silencing me, cancelling what I do.");
             if (_host.LastCatchUp.HasValue)
             {
                 _away.Show(_host, _host.LastCatchUp.Value);

@@ -523,3 +523,9 @@
 .ds-btn--ai { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
 .ds-btn--ai > .ds-btn__label { color: var(--c-cyan); }
 .ds-btn--ai:active { background-color: var(--c-cyan-line); }
+
+/* ---------- Long-press hint card (SPEC-039 idea 59) ---------- */
+.hint { position: absolute; width: 600px; padding: var(--s-3) var(--s-4); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan); background-color: var(--c-elev-2); }
+.hint.is-hidden { display: none; }
+.hint__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-cyan); }
+.hint__body { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: var(--s-1); }
