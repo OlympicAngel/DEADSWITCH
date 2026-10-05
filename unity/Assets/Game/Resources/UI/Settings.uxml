@@ -8,7 +8,7 @@
         <ui:Label text="SETTINGS" class="ds-head__title" />
         <ui:Label text="COMFORT // ACCESSIBILITY // BACKUP" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="set-close" class="set-close"><ui:VisualElement class="ds-icon ds-icon--close set-close__icon" /><ui:Label text="X" class="set-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="set-close" class="ds-iconbtn set-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="set-scroll" class="grow set-scroll">
@@ -19,26 +19,26 @@
           <ui:VisualElement class="ds-card__titles"><ui:Label text="DISPLAY AND SOUND" class="ds-card__title" /><ui:Label text="How loud and how busy the screen feels." class="ds-card__sub" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:Label text="EFFECTS" class="set-subhead" />
-        <ui:VisualElement name="seg-effects" class="set-seg">
-          <ui:VisualElement class="set-seg__item"><ui:Label text="0%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="25%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="50%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="75%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="seg-effects" class="ds-seg set-seg">
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="0%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="25%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="50%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="75%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label text="Glitches, scanlines and noise. Never on values, warnings or controls." class="set-note set-note--pad" />
+        <ui:Label text="Glitches, scanlines and noise. Never on values, warnings or controls." class="ds-prose set-note set-note--pad" />
         <ui:Label text="SOUND" class="set-subhead" />
-        <ui:VisualElement name="seg-sound" class="set-seg">
-          <ui:VisualElement class="set-seg__item"><ui:Label text="OFF" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="25%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="50%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="75%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="seg-sound" class="ds-seg set-seg">
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="OFF" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="25%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="50%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item is-selected"><ui:Label text="75%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="set-row">
+        <ui:VisualElement class="ds-row set-row is-last">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--signal set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="MUSIC" class="set-row__title" /><ui:Label text="Tension music. Alarms and the AI's voice stay on." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-music" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="MUSIC" class="set-row__title" /><ui:Label text="Tension music. Alarms and the AI's voice stay on." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-music" class="ds-switch set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
 
@@ -48,21 +48,21 @@
           <ui:VisualElement class="ds-card__titles"><ui:Label text="ACCESSIBILITY" class="ds-card__title" /><ui:Label text="Readable and calm, on your terms." class="ds-card__sub" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:Label text="TEXT SIZE" class="set-subhead" />
-        <ui:VisualElement name="seg-text" class="set-seg">
-          <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="115%" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="130%" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="seg-text" class="ds-seg set-seg">
+          <ui:VisualElement class="ds-seg__item set-seg__item is-selected"><ui:Label text="100%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="115%" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="130%" class="set-seg__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label text="Scales type and touch targets together." class="set-note set-note--pad" />
-        <ui:VisualElement class="set-row">
+        <ui:Label text="Scales type and touch targets together." class="ds-prose set-note set-note--pad" />
+        <ui:VisualElement class="ds-row set-row">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--hold set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="REDUCED MOTION" class="set-row__title" /><ui:Label text="No typing, staggering, pulsing or camera drift." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-motion" class="set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="REDUCED MOTION" class="set-row__title" /><ui:Label text="No typing, staggering, pulsing or camera drift." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-motion" class="ds-switch set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="set-row">
+        <ui:VisualElement class="ds-row set-row is-last">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--bolt set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="HAPTICS" class="set-row__title" /><ui:Label text="Short pulses for raid warnings and confirmations." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-haptics" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="HAPTICS" class="set-row__title" /><ui:Label text="Short pulses for raid warnings and confirmations." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-haptics" class="ds-switch set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
 
@@ -71,20 +71,20 @@
           <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--drone ds-card__icon" /></ui:VisualElement>
           <ui:VisualElement class="ds-card__titles"><ui:Label text="CAMERA AND ALERTS" class="ds-card__title" /><ui:Label text="What the world shows you, and when it calls." class="ds-card__sub" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="set-row">
+        <ui:VisualElement class="ds-row set-row">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--eye set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="ATTACK CINEMATICS" class="set-row__title" /><ui:Label text="Short camera shots when an attack makes contact. Tap to skip." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-cine" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="ATTACK CINEMATICS" class="set-row__title" /><ui:Label text="Short camera shots when an attack makes contact. Tap to skip." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-cine" class="ds-switch set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="set-row">
+        <ui:VisualElement class="ds-row set-row">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--drone set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="FOCUS FLY-IN" class="set-row__title" /><ui:Label text="The drone flies in to frame a facility you select." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-flyin" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="FOCUS FLY-IN" class="set-row__title" /><ui:Label text="The drone flies in to frame a facility you select." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-flyin" class="ds-switch set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="set-row">
+        <ui:VisualElement class="ds-row set-row is-last">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--alert set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="ALERTS WHILE AWAY" class="set-row__title" /><ui:Label text="Raids, finished work and power loss, forecast when you leave." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-alerts" class="set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="ALERTS WHILE AWAY" class="set-row__title" /><ui:Label text="Raids, finished work and power loss, forecast when you leave." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-alerts" class="ds-switch set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
 
@@ -94,10 +94,10 @@
           <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--server ds-card__icon" /></ui:VisualElement>
           <ui:VisualElement class="ds-card__titles"><ui:Label text="CLOUD BACKUP" class="ds-card__title" /><ui:Label text="Optional. Your run stays yours." class="ds-card__sub" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="set-row">
+        <ui:VisualElement class="ds-row set-row is-last">
           <ui:VisualElement class="set-row__well"><ui:VisualElement class="ds-icon ds-icon--lock set-row__icon" /></ui:VisualElement>
-          <ui:VisualElement class="grow set-row__text"><ui:Label text="CLOUD BACKUP" class="set-row__title" /><ui:Label name="cloud-note" text="Backs the run up when you leave. Never required to play." class="set-note" /></ui:VisualElement>
-          <ui:VisualElement name="tog-cloud" class="set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
+          <ui:VisualElement class="grow set-row__text"><ui:Label text="CLOUD BACKUP" class="set-row__title" /><ui:Label name="cloud-note" text="Backs the run up when you leave. Never required to play." class="ds-prose set-note" /></ui:VisualElement>
+          <ui:VisualElement name="tog-cloud" class="ds-switch set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="row set-btnrow">
           <ui:VisualElement name="cloud-now" class="ds-btn ds-btn--ai set-btn grow"><ui:Label text="BACK UP NOW" class="ds-btn__label" /></ui:VisualElement>
@@ -116,11 +116,11 @@
 
       <ui:VisualElement name="dev" class="ds-card set-dev">
         <ui:Label text="DEVELOPMENT // TIME SCALE" class="set-subhead" />
-        <ui:VisualElement name="seg-time" class="set-seg">
-          <ui:VisualElement class="set-seg__item is-selected"><ui:Label text="1X" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="10X" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="60X" class="set-seg__label" /></ui:VisualElement>
-          <ui:VisualElement class="set-seg__item"><ui:Label text="600X" class="set-seg__label" /></ui:VisualElement>
+        <ui:VisualElement name="seg-time" class="ds-seg set-seg">
+          <ui:VisualElement class="ds-seg__item set-seg__item is-selected"><ui:Label text="1X" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="10X" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="60X" class="set-seg__label" /></ui:VisualElement>
+          <ui:VisualElement class="ds-seg__item set-seg__item"><ui:Label text="600X" class="set-seg__label" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
 

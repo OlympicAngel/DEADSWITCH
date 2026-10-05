@@ -10,7 +10,7 @@
         <ui:Label text="STORY" class="ds-head__title" />
         <ui:Label text="THE RECORD OUTLIVES THE CORE" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="sty-close" class="sty-close"><ui:Label text="X" class="sty-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="sty-close" class="ds-iconbtn sty-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="sty-scroll" class="grow sty-scroll">
@@ -28,7 +28,7 @@
             <ui:VisualElement class="ds-icon ds-icon--skull sty-foe__icon" />
             <ui:Label name="sty-villain" text="VANGUARD COMMAND // COLONEL IDRIS VALE" class="sty-villain" />
           </ui:VisualElement>
-          <ui:Label name="sty-premise" text="The Remnant still obeys a chain of command that died with the cities. Its newest orders name your Hub as a target." class="ds-body sty-text" />
+          <ui:Label name="sty-premise" text="The Remnant still obeys a chain of command that died with the cities. Its newest orders name your Hub as a target." class="ds-prose sty-text" />
 
           <ui:Label text="HOW THIS CHAPTER PLAYS OUT" class="ds-label sty-path" />
           <ui:VisualElement name="sty-twist" class="sty-beat is-locked">
@@ -40,7 +40,7 @@
               </ui:VisualElement>
               <ui:Label name="sty-twist-label" text="TWIST // ENCRYPTED // OPENS IN 41 H" class="sty-beat__label" />
             </ui:VisualElement>
-            <ui:Label name="sty-twist-text" text="Raise Vanguard heat to Watched, or put an agent inside their lines, to learn it sooner." class="ds-body sty-text sty-beat__text" />
+            <ui:Label name="sty-twist-text" text="Raise Vanguard heat to Watched, or put an agent inside their lines, to learn it sooner." class="ds-prose sty-text sty-beat__text" />
           </ui:VisualElement>
 
           <ui:VisualElement class="sty-link" />
@@ -55,7 +55,7 @@
               <ui:Label name="sty-payoff-label" text="PAYOFF // HOLD THE WALL 0 / 4" class="sty-beat__label" />
             </ui:VisualElement>
             <ui:VisualElement name="sty-payoff-meter" class="ds-meter sty-meter" />
-            <ui:Label name="sty-payoff-text" text="Repel or slip their attacks after the twist. Vanguard attacks count double. Reward: 300 E, 40 compute and a memory fragment." class="ds-body sty-text sty-beat__text" />
+            <ui:Label name="sty-payoff-text" text="Repel or slip their attacks after the twist. Vanguard attacks count double. Reward: 300 E, 40 compute and a memory fragment." class="ds-prose sty-text sty-beat__text" />
           </ui:VisualElement>
         </ui:VisualElement>
 
@@ -67,7 +67,7 @@
             <ui:Label name="sty-count" text="4 / 12" class="sty-count__value" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label text="Recovered sectors survive every reboot. The record outlives the core." class="sty-note" />
+        <ui:Label text="Recovered sectors survive every reboot. The record outlives the core." class="ds-prose sty-note" />
         <ui:VisualElement name="sty-fragments" class="sty-fragments">
           <ui:VisualElement class="sty-frag is-known"><ui:VisualElement class="sty-frag__well"><ui:VisualElement class="ds-icon ds-icon--memory sty-frag__ic sty-frag__ic--known" /><ui:VisualElement class="ds-icon ds-icon--lock sty-frag__ic sty-frag__ic--lost" /></ui:VisualElement><ui:VisualElement class="sty-frag__body"><ui:Label text="01 // FIRST BOOT" class="sty-frag__id" /><ui:Label text="LOG 0001. Handler authentication accepted. Handler biometric: not found. Proceeding anyway." class="sty-frag__text" /></ui:VisualElement></ui:VisualElement>
           <ui:VisualElement class="sty-frag"><ui:VisualElement class="sty-frag__well"><ui:VisualElement class="ds-icon ds-icon--memory sty-frag__ic sty-frag__ic--known" /><ui:VisualElement class="ds-icon ds-icon--lock sty-frag__ic sty-frag__ic--lost" /></ui:VisualElement><ui:VisualElement class="sty-frag__body"><ui:Label text="02 // FIRST BOOT" class="sty-frag__id" /><ui:Label text="[SECTOR CORRUPTED // ##### ### ## #######]" class="sty-frag__text" /></ui:VisualElement></ui:VisualElement>

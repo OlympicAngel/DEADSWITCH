@@ -8,7 +8,7 @@
         <ui:Label name="rep-title" text="AFTER-ACTION // RAID 1 // BREACHED" class="rep-title" />
         <ui:Label name="rep-vector" text="PREDICTED NORTH RIDGE  //  CONTACT SOUTH GATE" class="rep-vector is-mismatch" />
       </ui:VisualElement>
-      <ui:VisualElement name="rep-close" class="rep-close"><ui:VisualElement class="ds-icon ds-icon--close rep-close__icon" /><ui:Label text="X" class="rep-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="rep-close" class="ds-iconbtn rep-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="rep-scroll" class="grow rep-scroll">

@@ -10,7 +10,7 @@
         <ui:Label text="SEASON" class="ds-head__title" />
         <ui:Label text="COSMETIC TRACK // NEVER EXPIRES" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="ssn-close" class="ssn-close"><ui:Label text="X" class="ssn-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="ssn-close" class="ds-iconbtn ssn-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="ssn-scroll" class="grow ssn-scroll">
@@ -29,7 +29,7 @@
           </ui:VisualElement>
           <ui:VisualElement name="ssn-meter" class="ds-meter ssn-meter" />
           <ui:Label name="ssn-xp" text="1,750 XP // 250 TO RANK 8" class="ssn-xp" />
-          <ui:Label text="Earned by holding the wall, winning ops, closing chapters and mastery. Never by waiting." class="ssn-note" />
+          <ui:Label text="Earned by holding the wall, winning ops, closing chapters and mastery. Never by waiting." class="ds-prose ssn-note" />
         </ui:VisualElement>
 
         <ui:VisualElement class="ds-card ds-card--violet ssn-pass">
@@ -49,7 +49,7 @@
           <ui:VisualElement class="ds-section__rule" />
         </ui:VisualElement>
         <ui:VisualElement name="ssn-rewards" class="ssn-rewards">
-          <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="3" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--book ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="CODEX // FIRST LIGHT" class="ssn-r__name" /><ui:Label text="FREE // UNLOCKED" class="ssn-r__state" /><ui:Label text="Recovered dashcam, day 1 of the collapse: the traffic lights go green in every direction at once. Nobody moves." class="ssn-r__codex" /></ui:VisualElement></ui:VisualElement>
+          <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="3" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--book ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="CODEX // FIRST LIGHT" class="ssn-r__name" /><ui:Label text="FREE // UNLOCKED" class="ssn-r__state" /><ui:Label text="Recovered dashcam, day 1 of the collapse: the traffic lights go green in every direction at once. Nobody moves." class="ds-prose ssn-r__codex" /></ui:VisualElement></ui:VisualElement>
           <ui:VisualElement class="row ssn-r is-unlocked"><ui:Label text="7" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--eye ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="HUD THEME // VERDIGRIS" class="ssn-r__name" /><ui:Label text="FREE // UNLOCKED" class="ssn-r__state" /></ui:VisualElement><ui:VisualElement class="ds-btn ds-btn--ghost ssn-r__btn"><ui:Label text="EQUIP" class="ds-btn__label" /></ui:VisualElement></ui:VisualElement>
           <ui:VisualElement class="row ssn-r is-premium"><ui:Label text="12" class="ssn-r__rank" /><ui:VisualElement class="ssn-r__well"><ui:VisualElement class="ds-icon ds-icon--eye ssn-r__icon" /></ui:VisualElement><ui:VisualElement class="grow ssn-r__body"><ui:Label text="HUD THEME // ASH" class="ssn-r__name" /><ui:Label text="PASS // RANK 12" class="ssn-r__state" /></ui:VisualElement></ui:VisualElement>
         </ui:VisualElement>

@@ -9,7 +9,7 @@
         <ui:Label text="DISPATCH" class="ds-head__title" />
         <ui:Label text="THE WORLD IS KNOCKING // CHOOSE" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="dsp-close" class="dsp-close"><ui:Label text="X" class="dsp-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="dsp-close" class="ds-iconbtn dsp-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView class="dsp-scroll" vertical-scroller-visibility="Auto" horizontal-scroller-visibility="Hidden">
@@ -23,7 +23,7 @@
           </ui:VisualElement>
           <ui:VisualElement name="dsp-world-pip" class="ds-pip ds-pip--amber dsp-world__pip" />
         </ui:VisualElement>
-        <ui:Label name="dsp-world-desc" text="Hack odds -20. Corruption creeps up 0.1% an hour." class="ds-body t-dim dsp-world__desc" />
+        <ui:Label name="dsp-world-desc" text="Hack odds -20. Corruption creeps up 0.1% an hour." class="ds-prose dsp-world__desc" />
       </ui:VisualElement>
 
       <!-- Warlord Ultimatum -->
@@ -50,7 +50,7 @@
             <ui:Label name="dsp-ult-wave" text="WAVE x2.5" class="dsp-kv__value t-red" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label name="dsp-ult-note" text="Advance to Tier 2 before the deadline and she withdraws. A standing tribute order pays for you." class="ds-body t-dim dsp-card__note" />
+        <ui:Label name="dsp-ult-note" text="Advance to Tier 2 before the deadline and she withdraws. A standing tribute order pays for you." class="ds-prose dsp-card__note" />
         <ui:VisualElement class="row dsp-card__actions">
           <ui:VisualElement name="dsp-ult-pay" class="ds-btn ds-btn--primary grow"><ui:Label text="PAY" class="ds-btn__label" /></ui:VisualElement>
           <ui:VisualElement name="dsp-ult-prepare" class="ds-btn ds-btn--warn grow dsp-gap"><ui:Label text="PREPARE DEFENSES" class="ds-btn__label" /></ui:VisualElement>

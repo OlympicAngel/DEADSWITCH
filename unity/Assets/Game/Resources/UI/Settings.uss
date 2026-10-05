@@ -1,32 +1,21 @@
-/* SETTINGS (F-024, SPEC-039). Tokens only. Header, then grouped icon cards. */
+/* SETTINGS (F-024, SPEC-039/041). Tokens only. Header, then grouped icon cards; no outlined boxes. */
 
 .set { flex-grow: 1; background-color: var(--c-world); }
 .set-scroll { padding: var(--s-4) var(--s-5) var(--s-2) var(--s-5); }
-.set-close { width: var(--touch); height: var(--touch); align-items: center; justify-content: center; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-elev-2); }
-.set-close__icon { width: 40px; height: 40px; --icon-color: var(--c-text-dim); }
-.set-close__x { display: none; }
 
-.set-subhead { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-text-dim); margin-top: var(--s-2); margin-bottom: var(--s-2); }
-.set-note { font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: 2px; }
+.set-subhead { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-text-dim); margin-top: var(--s-3); margin-bottom: var(--s-2); }
+.set-note { margin-top: 2px; }
 .set-note--pad { margin-top: var(--s-2); margin-bottom: var(--s-2); }
 
-.set-seg { flex-direction: row; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); overflow: hidden; }
-.set-seg__item { flex-grow: 1; flex-basis: 0; min-height: var(--touch); align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-line-mid); }
-.set-seg__item.is-last { border-right-width: 0; }
-.set-seg__item.is-selected { background-color: var(--c-cyan-wash); border-bottom-width: 4px; border-bottom-color: var(--c-cyan); }
-.set-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
-.set-seg__item.is-selected > .set-seg__label { color: var(--c-cyan); }
+.set-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); }
 
-.set-row { flex-direction: row; align-items: center; margin-top: var(--s-3); padding: var(--s-3); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-line); background-color: var(--c-panel-sunken); }
-.set-row__well { width: 56px; height: 56px; align-items: center; justify-content: center; margin-right: var(--s-3); border-radius: var(--r-md); border-width: 1px; border-color: var(--c-cyan-line); background-color: var(--c-cyan-wash); }
+.set-row { margin-top: var(--s-1); }
+.set-row__well { width: 56px; height: 56px; align-items: center; justify-content: center; margin-right: var(--s-3); border-width: 0; border-radius: var(--r-md); background-color: var(--c-cyan-wash); }
 .set-row__icon { width: 34px; height: 34px; --icon-color: var(--c-cyan); }
 .set-row__text { flex-shrink: 1; }
 .set-row__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text); }
 
-.set-toggle { width: 160px; min-height: var(--touch); margin-left: var(--s-3); align-items: center; justify-content: center; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-elev-1); }
-.set-toggle.is-on { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
-.set-toggle__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
-.set-toggle.is-on > .set-toggle__label { color: var(--c-phosphor); }
+.set-toggle { margin-left: var(--s-3); }
 
 .set-btnrow { margin-top: var(--s-3); }
 .set-btn { margin-top: var(--s-2); }

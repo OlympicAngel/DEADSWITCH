@@ -9,7 +9,7 @@
         <ui:Label text="WORKFORCE" class="ds-head__title" />
         <ui:Label text="PEOPLE // LOYALTY // HARD CHOICES" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="wf-close" class="wf-close"><ui:Label text="X" class="wf-close__x" /></ui:VisualElement>
+      <ui:VisualElement name="wf-close" class="ds-iconbtn wf-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView class="wf-scroll" vertical-scroller-visibility="Auto" horizontal-scroller-visibility="Hidden">
@@ -53,7 +53,7 @@
           <ui:Label name="wf-loyalty-pct" text="52%" class="wf-loyalty__pct t-amber" />
         </ui:VisualElement>
         <ui:VisualElement name="wf-loyalty-meter" class="ds-meter ds-meter--amber" />
-        <ui:Label name="wf-loyalty-fx" text="Generator and Server Rack output -10%. Recovers 0.4% per hour without a surge." class="ds-body t-dim wf-note" />
+        <ui:Label name="wf-loyalty-fx" text="Generator and Server Rack output -10%. Recovers 0.4% per hour without a surge." class="ds-prose wf-note" />
         <ui:Label name="wf-surge" text="SURGE RUNNING // +40% OUTPUT // 4:12:00 LEFT" class="ds-label t-amber wf-surge" />
       </ui:VisualElement>
 
@@ -63,7 +63,7 @@
         <ui:Label text="HARD CHOICES" class="ds-section__title" />
         <ui:VisualElement class="ds-section__rule" />
       </ui:VisualElement>
-      <ui:Label text="Every one costs lives and makes me colder. Tap once to see it, again to confirm." class="ds-body t-dim wf-lead" />
+      <ui:Label text="Every one costs lives and makes me colder. Tap once to see it, again to confirm." class="ds-prose wf-lead" />
 
       <ui:VisualElement name="wf-forced" class="ds-card ds-card--red wf-choice">
         <ui:VisualElement class="ds-card__head">

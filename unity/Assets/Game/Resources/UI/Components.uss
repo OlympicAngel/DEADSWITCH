@@ -144,7 +144,7 @@
 .ds-btn--primary:hover { background-color: var(--c-cyan); }
 .ds-btn--primary > .ds-btn__label { color: var(--c-world); }
 
-.ds-btn--warn { background-color: var(--c-amber-wash); border-left-width: 6px; border-color: var(--c-amber); }
+.ds-btn--warn { background-color: var(--c-amber-wash); --sheen-color: var(--c-amber-wash); }
 .ds-btn--warn > .ds-btn__label { color: var(--c-amber); }
 
 .ds-btn--ghost { background-color: rgba(0, 0, 0, 0); border-width: 1px; border-color: var(--c-line-mid); --sheen-color: rgba(0, 0, 0, 0); }
