@@ -246,10 +246,12 @@ namespace Deadswitch.Game.UI.Screens
                 RenderMap(false);
             }
 
-            if (!reduced && s.FalloutSite >= 0)
+            if (!reduced && s.FalloutSite >= 0 && _layer != null && MapView.Instance != null)
             {
+                // only the haze moves; the rest of the layer waits for a state change
                 _hazeTime += 0.12f;
-                RefreshLayer(s);
+                _layer.Redrift(s, MapView.Instance.Pose, MapView.Instance.Aspect, BaseView.Seed, _hazeTime);
+                _overlay.MarkDirtyRepaint();
             }
 
             if (!reduced && GlitchWeight(s) > 0f)

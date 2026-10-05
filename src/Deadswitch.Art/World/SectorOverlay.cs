@@ -56,6 +56,9 @@ namespace Deadswitch.Art.World
             GroundAnchors = new Vector2[sites];
         }
 
+        private int _hazeStart;
+        private int _hazeCount;
+
         public List<OverlayShape> Shapes { get; } = new List<OverlayShape>();
 
         /// <summary>Where each site's marker floats (well above its landmark), picture coordinates.</summary>
@@ -125,19 +128,9 @@ namespace Deadswitch.Art.World
             }
 
             // the fallout front: overlapping haze that turns slowly over its site
-            if (s.FalloutSite >= 0 && s.FalloutSite < count)
-            {
-                Vector3 c = SectorScene.SitePosition(s.FalloutSite, seed);
-                for (int k = 0; k < 7; k++)
-                {
-                    float a = (k * 0.9f) + (time * 0.05f * (k % 2 == 0 ? 1f : -1f));
-                    float rr = 4f + (k * 1.6f);
-                    var at = c + new Vector3((float)Math.Cos(a) * rr, 0, (float)Math.Sin(a) * rr * 0.8f);
-                    o.Blob(cam, aspect, at, 9f + (k * 1.4f), seed + 500 + (uint)k, new Vector4(Fallout, 0.11f));
-                }
-
-                o.FalloutAnchor = P(c + new Vector3(0, 2f, -12f));
-            }
+            o._hazeStart = o.Shapes.Count;
+            o.AddHaze(s, cam, aspect, seed, time);
+            o._hazeCount = o.Shapes.Count - o._hazeStart;
 
             for (int i = 0; i < count; i++)
             {
@@ -222,6 +215,38 @@ namespace Deadswitch.Art.World
             float w = Math.Min(a.Z, b.Z) - Math.Max(a.X, b.X);
             float h = Math.Min(a.W, b.W) - Math.Max(a.Y, b.Y);
             return w > 0f && h > 0f ? w * h : 0f;
+        }
+
+        /// <summary>
+        /// Moves only the fallout haze to a new time (the rest of the layer is static until the state changes): cheap
+        /// enough to call several times a second while the map is open.
+        /// </summary>
+        public void Redrift(GameState s, CameraPose cam, float aspect, uint seed, float time)
+        {
+            var rest = Shapes.GetRange(_hazeStart + _hazeCount, Shapes.Count - _hazeStart - _hazeCount);
+            Shapes.RemoveRange(_hazeStart, Shapes.Count - _hazeStart);
+            AddHaze(s, cam, aspect, seed, time);
+            _hazeCount = Shapes.Count - _hazeStart;
+            Shapes.AddRange(rest);
+        }
+
+        private void AddHaze(GameState s, CameraPose cam, float aspect, uint seed, float time)
+        {
+            if (s.FalloutSite < 0 || s.FalloutSite >= SiteAnchors.Length)
+            {
+                return;
+            }
+
+            Vector3 c = SectorScene.SitePosition(s.FalloutSite, seed);
+            for (int k = 0; k < 7; k++)
+            {
+                float a = (k * 0.9f) + (time * 0.05f * (k % 2 == 0 ? 1f : -1f));
+                float rr = 4f + (k * 1.6f);
+                var at = c + new Vector3((float)Math.Cos(a) * rr, 0, (float)Math.Sin(a) * rr * 0.8f);
+                Blob(cam, aspect, at, 9f + (k * 1.4f), seed + 500 + (uint)k, new Vector4(Fallout, 0.11f));
+            }
+
+            FalloutAnchor = cam.Project(c + new Vector3(0, 2f, -12f), aspect);
         }
 
         /// <summary>A hand-drawn blob: a ground circle with a wobbling edge, projected.</summary>
