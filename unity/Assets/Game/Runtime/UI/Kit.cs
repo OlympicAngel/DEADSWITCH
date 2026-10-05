@@ -19,6 +19,7 @@ namespace Deadswitch.Game.UI
             root.Query().ForEach(MarkEnds);
             Pager.Decorate(root);
             Sheen.Decorate(root);
+            root.Query(className: "ds-switch").ForEach(AddKnob);
         }
 
         /// <summary>
@@ -43,6 +44,19 @@ namespace Deadswitch.Game.UI
 
             first?.AddToClassList("is-first");
             last?.AddToClassList("is-last");
+        }
+
+        /// <summary>The sliding knob of a <c>.ds-switch</c> (its position follows <c>is-on</c> in USS).</summary>
+        public static void AddKnob(VisualElement sw)
+        {
+            if (sw.Q(className: "ds-switch__knob") != null)
+            {
+                return;
+            }
+
+            var knob = new VisualElement { pickingMode = PickingMode.Ignore };
+            knob.AddToClassList("ds-switch__knob");
+            sw.Add(knob);
         }
 
         public static void AddCorners(VisualElement panel)

@@ -561,3 +561,35 @@
 /* ---------- Depth: sheen and scrims (SPEC-041, drawn by UI/Sheen) ---------- */
 .ds-sheen { --sheen-reach: 0.6; }
 .ds-scrim { position: absolute; left: 0; right: 0; --sheen-color: var(--c-scrim-edge); --sheen-reach: 1; }
+
+/* =====================================================================================
+   SPEC-041 controls: switch, segmented track, icon button, list row (no outlined boxes)
+   ===================================================================================== */
+
+/* Switch: a pill track with a knob (Kit adds .ds-switch__knob); the ON/OFF word stays for accessibility */
+.ds-switch { width: 132px; height: 64px; min-height: 64px; flex-direction: row; align-items: center; justify-content: flex-end; padding: 0 var(--s-4); border-width: 0; border-radius: 32px; background-color: var(--c-panel-sunken); transition-property: background-color; transition-duration: 0.2s; }
+.ds-switch > .unity-label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-faint); }
+.ds-switch__knob { position: absolute; left: 6px; top: 6px; width: 52px; height: 52px; border-radius: 26px; background-color: var(--c-text-dim); transition-property: left, background-color; transition-duration: 0.22s; transition-timing-function: ease-out-back; }
+.ds-switch.is-on { justify-content: flex-start; background-color: var(--c-cyan-line); }
+.ds-switch.is-on > .unity-label { color: var(--c-cyan); }
+.ds-switch.is-on > .ds-switch__knob { left: 74px; background-color: var(--c-cyan); }
+
+/* Segmented track: one sunken rail, the chosen item is a lit raised pill */
+.ds-seg { flex-direction: row; padding: 6px; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); }
+.ds-seg__item { flex-grow: 1; flex-basis: 0; min-height: 84px; align-items: center; justify-content: center; margin: 0; border-width: 0; border-radius: var(--r-md); background-color: rgba(0, 0, 0, 0); transition-property: background-color; transition-duration: 0.18s; }
+.ds-seg__item .unity-label { color: var(--c-text-dim); }
+.ds-seg__item.is-selected, .ds-seg__item.is-on, .ds-seg__item.is-active { background-color: var(--c-elev-2); border-top-width: 1px; border-color: var(--c-cyan-dim); }
+.ds-seg__item.is-selected .unity-label, .ds-seg__item.is-on .unity-label, .ds-seg__item.is-active .unity-label { color: var(--c-cyan); }
+
+/* Icon button: round, borderless (close, back, info) */
+.ds-iconbtn { width: 88px; height: 88px; align-items: center; justify-content: center; border-width: 0; border-radius: 44px; background-color: var(--c-panel-sunken); }
+.ds-iconbtn:active { background-color: var(--c-cyan-wash); scale: 0.94 0.94; }
+.ds-iconbtn__icon { width: 36px; height: 36px; --icon-color: var(--c-text-dim); }
+
+/* List row: content on the surface, a hairline divider between rows instead of a box per row */
+.ds-row { flex-direction: row; align-items: center; min-height: 72px; padding: var(--s-2) 0; border-width: 0; border-bottom-width: 1px; border-color: var(--c-line); background-color: rgba(0, 0, 0, 0); }
+.ds-row.is-last { border-bottom-width: 0; }
+.ds-row__icon { width: 34px; height: 34px; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
+
+/* Readable prose: mixed case in the regular face */
+.ds-prose { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; letter-spacing: 0; }

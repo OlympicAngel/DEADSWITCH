@@ -159,6 +159,7 @@ for (const el of document.querySelectorAll('.ds-icon')) {
   const s = Math.min(el.clientWidth, el.clientHeight), col = getComputedStyle(el).getPropertyValue('--icon-color').trim();
   el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="'+Math.min(5,Math.max(2,s*0.07))+'" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
 }
+for (const sw of document.querySelectorAll('.ds-switch')) { const k = document.createElement('div'); k.className = 'ui-ve ds-switch__knob'; sw.appendChild(k); }
 // Sheen.cs mirror: top light on surfaces, edge darkening on scrims
 for (const sel of ['.ds-card', '.ds-tile', '.ds-btn', '.pod', '.hud-advisor', '.ds-sheet', '.ds-scrim']) for (const el of document.querySelectorAll(sel)) {
   const st = getComputedStyle(el); const col = st.getPropertyValue('--sheen-color').trim(); if (!col) continue;
