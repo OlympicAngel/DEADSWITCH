@@ -92,6 +92,7 @@ namespace Deadswitch.Sim
                 PeopleChoices.Hourly(ctx);
                 WorldSystem.Hourly(ctx);
                 HazardSystem.Hourly(ctx);
+                UnitSystem.Hourly(ctx);
                 LivingSystem.Hourly(ctx);
                 IntelSystem.Hourly(ctx);
                 GlitchSystem.Hourly(ctx);

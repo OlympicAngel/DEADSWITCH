@@ -326,6 +326,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The handler tore down exposed nodes. A: nodes, B: compute salvaged.</summary>
         SecretDismantled = 106,
+
+        /// <summary>The warning names the attacking forces (SPEC-035). A: raid id, B: infantry %, C: drones %, D: vehicles %.</summary>
+        RaidForces = 107,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

@@ -64,9 +64,9 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
-            if (slot.Kind == FacilityKind.Reactor && !s.ReactorFueled)
+            if ((slot.Kind == FacilityKind.Reactor && !s.ReactorFueled) || (slot.Kind == FacilityKind.MotorPool && s.Fuel <= 0))
             {
-                // scrammed for lack of fuel (SPEC-029)
+                // scrammed for lack of fuel (SPEC-029); vehicles without fuel do not move (SPEC-035)
                 return 0;
             }
 

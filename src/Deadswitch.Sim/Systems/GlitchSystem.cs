@@ -138,7 +138,7 @@ namespace Deadswitch.Sim.Systems
             {
                 int i = (int)((n + (h >> 8)) % (uint)s.Slots.Count);
                 FacilitySlot f = s.Slots[i];
-                if (f.Kind == FacilityKind.Turret && Economy.IsRunning(f) && !f.Staffed)
+                if (UnitSystem.IsWarMachine(f.Kind) && Economy.IsRunning(f) && !f.Staffed)
                 {
                     int guns = Economy.EffectiveOutput(s, c, f);
                     defense = System.Math.Max(0, defense - guns);

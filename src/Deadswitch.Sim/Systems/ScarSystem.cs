@@ -16,7 +16,7 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Damage only slows facilities that produce (Generator, Server Rack, Turret).</summary>
         public static bool Affects(FacilityKind kind)
         {
-            return kind == FacilityKind.Generator || kind == FacilityKind.ServerRack || kind == FacilityKind.Turret || kind == FacilityKind.Reactor;
+            return kind == FacilityKind.Generator || kind == FacilityKind.ServerRack || UnitSystem.IsWarMachine(kind) || kind == FacilityKind.Reactor;
         }
 
         public static bool Repairing(GameState s, FacilitySlot slot)

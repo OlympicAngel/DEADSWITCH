@@ -192,6 +192,36 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void UnitFamilies_CounterTheRaidMix()
+        {
+            // SPEC-035: drones beat infantry, vehicles beat drones; no counters without an attack
+            var sim = new Simulation(7UL);
+            GameState s = sim.State;
+            FacilitySlot bay = s.Slots[2];
+            bay.Kind = FacilityKind.DroneBay;
+            bay.Level = 1;
+            bay.Enabled = true;
+            bay.Powered = true;
+            bay.Staffed = true;
+            int plain = Defense.Family(s, sim.Config, UnitFamily.Drones, 0);
+            Assert.Equal(sim.Config.DroneBay.Output[0], plain);
+            s.RaidId = 99;
+            s.RaidInfantryPct = 80;
+            s.RaidDronePct = 10;
+            s.RaidVehiclePct = 10;
+            Assert.True(Defense.Family(s, sim.Config, UnitFamily.Drones, 0) > plain);
+            s.RaidInfantryPct = 10;
+            s.RaidVehiclePct = 80;
+            Assert.True(Defense.Family(s, sim.Config, UnitFamily.Drones, 0) < plain);
+
+            // a real raid names its forces, and the mix always sums to 100
+            var run = new Simulation(11UL);
+            run.Run(3L * SimConfig.TicksPerDay);
+            SimEvent forces = run.Log.Events.First(e => e.Kind == EventKind.RaidForces);
+            Assert.Equal(100, forces.B + forces.C + forces.D);
+        }
+
+        [Fact]
         public void Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly()
         {
             var sim = new Simulation(51UL);

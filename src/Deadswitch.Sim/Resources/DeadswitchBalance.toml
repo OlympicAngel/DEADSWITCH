@@ -1304,6 +1304,34 @@ fallout_fuel_pct = 50
 fallout_outpost_pct = 25
 
 # --------------------------------------------------------------------------------------------------
+# Unit families (SPEC-035): infantry (garrison), drones (Drone Bays), vehicles (Motor Pools). Drones beat infantry, vehicles beat drones, infantry beat vehicles (doc 10 s4). Mixes are infantry / drones / vehicles %. All (tune).
+[units]
+
+# A defender family gains this % x the share of attackers it beats, and loses it x the share that beats it. [0..100]
+counter_pct = 40
+
+# Each attack's drone and vehicle shares vary by up to this many points from the faction profile. [0..50]
+mix_jitter_pct = 15
+
+# Tier needed to build a Motor Pool. [1..4]
+motor_pool_min_tier = 2
+
+# Fuel a running Motor Pool burns per game hour, per level; without fuel its vehicles do not fight. [1..20 items, each 0..1000]
+motor_pool_fuel_per_hour = [2, 3, 4]
+
+# Rustborn force mix: scavenger militia and technicals. [3..3 items, each 0..100]
+mix_rustborn = [60, 10, 30]
+
+# Vanguard Command force mix: soldiers and armour. [3..3 items, each 0..100]
+mix_vanguard = [40, 15, 45]
+
+# Church of the Last Signal force mix: machine swarms. [3..3 items, each 0..100]
+mix_church = [25, 65, 10]
+
+# Halcyon Dynamics force mix: corporate drones and escorts. [3..3 items, each 0..100]
+mix_holdouts = [15, 55, 30]
+
+# --------------------------------------------------------------------------------------------------
 # The AI builds in secret (SPEC-034, doc 03 s5): hidden nodes paid with skimmed compute speed its project and drain energy off the books until an Audit exposes them. Project is milli: 100000 = 100%. All (tune).
 [secrets]
 
@@ -1500,3 +1528,47 @@ leak_damage = 2
 
 # People lost each midnight while it leaks (never below the people floor). [0..1000]
 leak_people_per_day = 3
+
+# --------------------------------------------------------------------------------------------------
+# Drone Bay: reprogrammed rogue machines (doc 02 s6, SPEC-035). Output = drone defense rating while powered. Drones beat infantry, lose to vehicles.
+[facility_drone_bay]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [220, 380, 620, 1000]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [20, 40, 70, 110]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [40, 90, 180, 360]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [70, 110, 160, 230]
+
+# Drone defense rating per level. [1..20 items, each 0..1000000]
+output = [24, 38, 56, 80]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [2, 3, 4, 5]
+
+# --------------------------------------------------------------------------------------------------
+# Motor Pool: armour and gun trucks (doc 02 s6 vehicle factory, SPEC-035). Output = vehicle defense rating while powered and fuelled. Vehicles beat drones, lose to infantry in the ruins.
+[facility_motor_pool]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [500, 850, 1350]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [30, 60, 100]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [120, 240, 480]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [40, 60, 90]
+
+# Vehicle defense rating per level. [1..20 items, each 0..1000000]
+output = [45, 70, 100]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [3, 4, 6]

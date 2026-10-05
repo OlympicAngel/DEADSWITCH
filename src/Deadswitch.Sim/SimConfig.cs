@@ -45,6 +45,7 @@ namespace Deadswitch.Sim
         public AdaptConfig Adapt = new AdaptConfig();
         public LuckConfig Luck = new LuckConfig();
         public HazardConfig Hazards = new HazardConfig();
+        public UnitConfig Units = new UnitConfig();
         public SecretConfig Secrets = new SecretConfig();
         public HostConfig Host = new HostConfig();
 
@@ -72,6 +73,28 @@ namespace Deadswitch.Sim
             crew: new[] { 4, 6, 8 });
 
         public ReactorConfig ReactorRules = new ReactorConfig();
+
+        public FacilityConfig DroneBay = new FacilityConfig(
+            "facility_drone_bay",
+            "Drone Bay: reprogrammed rogue machines (doc 02 s6, SPEC-035). Output = drone defense rating while powered. Drones beat infantry, lose to vehicles.",
+            "Drone defense rating per level.").Set(
+            costEnergy: new[] { 220, 380, 620, 1000 },
+            costCompute: new[] { 20, 40, 70, 110 },
+            buildMinutes: new[] { 40, 90, 180, 360 },
+            upkeepPerHour: new[] { 70, 110, 160, 230 },
+            output: new[] { 24, 38, 56, 80 },
+            crew: new[] { 2, 3, 4, 5 });
+
+        public FacilityConfig MotorPool = new FacilityConfig(
+            "facility_motor_pool",
+            "Motor Pool: armour and gun trucks (doc 02 s6 vehicle factory, SPEC-035). Output = vehicle defense rating while powered and fuelled. Vehicles beat drones, lose to infantry in the ruins.",
+            "Vehicle defense rating per level.").Set(
+            costEnergy: new[] { 500, 850, 1350 },
+            costCompute: new[] { 30, 60, 100 },
+            buildMinutes: new[] { 120, 240, 480 },
+            upkeepPerHour: new[] { 40, 60, 90 },
+            output: new[] { 45, 70, 100 },
+            crew: new[] { 3, 4, 6 });
 
         public FacilityConfig Turret = new FacilityConfig(
             "facility_turret",
@@ -170,6 +193,7 @@ namespace Deadswitch.Sim
             Adapt.Visit(visitor);
             Luck.Visit(visitor);
             Hazards.Visit(visitor);
+            Units.Visit(visitor);
             Secrets.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
@@ -179,6 +203,8 @@ namespace Deadswitch.Sim
             Turret.Visit(visitor);
             Reactor.Visit(visitor);
             ReactorRules.Visit(visitor);
+            DroneBay.Visit(visitor);
+            MotorPool.Visit(visitor);
         }
 
         /// <summary>Table for a facility kind, or null for <see cref="State.FacilityKind.None"/> and unknown values.</summary>
@@ -198,6 +224,10 @@ namespace Deadswitch.Sim
                     return Turret;
                 case State.FacilityKind.Reactor:
                     return Reactor;
+                case State.FacilityKind.DroneBay:
+                    return DroneBay;
+                case State.FacilityKind.MotorPool:
+                    return MotorPool;
                 default:
                     return null;
             }
@@ -207,7 +237,7 @@ namespace Deadswitch.Sim
         public System.Collections.Generic.List<string> Validate()
         {
             var problems = new System.Collections.Generic.List<string>();
-            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret, Reactor })
+            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret, Reactor, DroneBay, MotorPool })
             {
                 int n = f.Output.Length;
                 if (f.CostEnergy.Length != n || f.CostCompute.Length != n || f.BuildMinutes.Length != n || f.UpkeepPerHour.Length != n || f.Crew.Length != n)

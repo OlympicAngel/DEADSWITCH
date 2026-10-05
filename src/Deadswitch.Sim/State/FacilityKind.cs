@@ -12,5 +12,11 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Compact fission plant (doc 02 s3 risky power): huge output for fuel; raiders go for it (SPEC-029).</summary>
         Reactor = 6,
+
+        /// <summary>Drone Bay (doc 02 s6 Military, SPEC-035): reprogrammed machines; drones beat infantry.</summary>
+        DroneBay = 7,
+
+        /// <summary>Motor Pool (vehicle factory): armour that burns fuel; vehicles beat drones.</summary>
+        MotorPool = 8,
     }
 }

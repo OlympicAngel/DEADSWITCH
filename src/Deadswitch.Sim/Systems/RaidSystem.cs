@@ -215,6 +215,8 @@ namespace Deadswitch.Sim.Systems
 
             ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate, (int)kind);
             ctx.Emit(EventKind.AttackerIdentified, s.RaidId, (int)s.RaidFaction);
+            UnitSystem.RollMix(ctx);
+            UnitSystem.Announce(ctx, s.RaidEstimate > 0);
             ReportGate(ctx, gateRoll, ambush);
             AiSystem.OnRaidWarning(ctx);
         }

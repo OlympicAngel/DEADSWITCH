@@ -34,8 +34,8 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Defense rating the Hub would have with another posture and garrison (setup previews, advice).</summary>
         public static int Rating(GameState s, SimConfig c, Posture posture, int garrison, bool turrets = true)
         {
-            int perDefender = c.Defense.DefensePerDefender + (Modules.Has(s, ModuleNode.WF2A) ? c.Modules.MilitiaPerDefender : 0);
-            int total = garrison * perDefender;
+            // unit families (SPEC-035): garrison = infantry, Drone Bays, Motor Pools, each countered by the attack's mix
+            int total = Family(s, c, UnitFamily.Infantry, garrison) + Family(s, c, UnitFamily.Drones, garrison) + Family(s, c, UnitFamily.Vehicles, garrison);
             int fireControl = Modules.Has(s, ModuleNode.WF1) ? c.Modules.FireControlPct : 0;
             foreach (FacilitySlot slot in s.Slots)
             {
@@ -56,6 +56,29 @@ namespace Deadswitch.Sim.Systems
             }
 
             return total;
+        }
+
+        /// <summary>One family's share of the defense, after counters against the current attack's mix (SPEC-035).</summary>
+        public static int Family(GameState s, SimConfig c, UnitFamily family, int garrison)
+        {
+            int raw = 0;
+            if (family == UnitFamily.Infantry)
+            {
+                raw = garrison * (c.Defense.DefensePerDefender + (Modules.Has(s, ModuleNode.WF2A) ? c.Modules.MilitiaPerDefender : 0));
+            }
+            else
+            {
+                FacilityKind kind = family == UnitFamily.Drones ? FacilityKind.DroneBay : FacilityKind.MotorPool;
+                foreach (FacilitySlot slot in s.Slots)
+                {
+                    if (slot.Kind == kind && Economy.IsRunning(slot))
+                    {
+                        raw += Economy.EffectiveOutput(s, c, slot);
+                    }
+                }
+            }
+
+            return SimMath.PctFloor(raw, System.Math.Max(0, 100 + UnitSystem.CounterPts(s, c, family)));
         }
 
         /// <summary>True when the offline activity penalty applies (doc 04 s2).</summary>

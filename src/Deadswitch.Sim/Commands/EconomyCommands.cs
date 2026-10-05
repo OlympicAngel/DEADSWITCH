@@ -23,7 +23,8 @@ namespace Deadswitch.Sim.Commands
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
 
-            if (kind == FacilityKind.Reactor && (s.Tier < c.ReactorRules.MinTier || Economy.CountOfKind(s, kind) >= c.ReactorRules.MaxCount))
+            if ((kind == FacilityKind.Reactor && (s.Tier < c.ReactorRules.MinTier || Economy.CountOfKind(s, kind) >= c.ReactorRules.MaxCount))
+                || (kind == FacilityKind.MotorPool && s.Tier < c.Units.MotorPoolMinTier))
             {
                 return CommandResult.Reject(RejectReason.Locked);
             }
