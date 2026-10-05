@@ -27,6 +27,7 @@ namespace Deadswitch.Game.UI.Screens
         private readonly VisualElement _orbEl;
         private bool _visible;
         private bool _showModules;
+        private bool _crisisSeen;
 
         public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium, System.Action openLegacy, System.Action openStory)
         {
@@ -127,7 +128,16 @@ namespace Deadswitch.Game.UI.Screens
             var g = c.Glitch;
             bool takeover = GlitchSystem.TakenOver(s);
             bool flushing = GlitchSystem.Flushing(s);
-            _ui.Q("core-crisis").EnableInClassList("is-hidden", !takeover && !flushing);
+            bool crisis = takeover || flushing;
+            _ui.Q("core-crisis").EnableInClassList("is-hidden", !crisis);
+            VisualElement statusPager = _ui.Q("status-pager");
+            Pager.Badge(statusPager, "page-actions", crisis ? 1 : 0);
+            if (crisis && !_crisisSeen)
+            {
+                Pager.Show(statusPager, "page-actions");
+            }
+
+            _crisisSeen = crisis;
             _ui.Q<Label>("core-crisis-title").text = (takeover ? "AI TAKEOVER // " : "CORE FLUSHED // ") + Fmt.Countdown(_host.SecondsUntilTick(takeover ? s.TakeoverUntilTick : s.FlushUntilTick));
             _ui.Q<Label>("core-crisis-desc").text = takeover
                 ? "I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me."

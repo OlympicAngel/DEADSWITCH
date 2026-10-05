@@ -1,11 +1,16 @@
-/* SECTOR MAP (F-019, SPEC-039): header, render plot, one scroll (site, ops, factions). Tokens only. */
+/* SECTOR MAP (F-019, SPEC-039): header, render plot, pager (site, ops, trade, factions). Tokens only. */
 
 .map { flex-grow: 1; background-color: var(--c-scrim); }
 /* Header, event and plot keep their size; the plot gives up height first on short screens, the scroll takes the rest. */
 .map > * { flex-shrink: 0; }
 .map > .map-plot { flex-shrink: 1; }
-.map > .map-scroll { flex-shrink: 1; flex-grow: 1; flex-basis: 0; min-height: 320px; }
-.map-scroll > .unity-scroll-view__content-container { padding: var(--s-4) var(--s-5) var(--s-6) var(--s-5); }
+.map > .map-pager { flex-shrink: 1; flex-grow: 1; flex-basis: 0; min-height: 320px; padding: var(--s-3) var(--s-5) 0 var(--s-5); }
+.map-pager > .map-page { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
+.map-page > .map-scroll { flex-grow: 1; flex-basis: 0; }
+.map-scroll > .unity-scroll-view__content-container { padding: 0 0 var(--s-6) 0; flex-shrink: 0; }
+.map-empty { font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; padding: var(--s-4) 0; }
+.map-empty.is-hidden { display: none; }
+.map-trade__with { margin-bottom: var(--s-1); }
 /* Scroll children keep their natural height; the scroll view does the overflow */
 .map-scroll .ds-card, .map-scroll .map-ops, .map-scroll .map-heat, .map-scroll .ds-section { flex-shrink: 0; }
 
@@ -104,11 +109,11 @@
 .map-op__time { flex-shrink: 0; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-amber); margin-left: var(--s-2); }
 .map-op__recall { min-width: 150px; min-height: var(--touch); margin-left: var(--s-2); }
 
-/* ---------- factions: 2 x 2 cards, one accent each ---------- */
+/* ---------- factions: one stacked foldable card per faction, one accent each ---------- */
 .map-section { margin-top: var(--s-2); }
 .map-heat { flex-wrap: wrap; justify-content: space-between; align-items: stretch; }
-.map-heat__cell { width: 49%; margin-bottom: var(--s-3); padding: var(--s-3); border-left-width: 6px; }
-.map-heat__head { align-items: center; }
+.map-heat__cell { width: 100%; margin-bottom: var(--s-3); padding: var(--s-3); border-left-width: 6px; }
+.map-heat__cell > .map-heat__head { align-items: center; margin-bottom: 0; min-height: var(--touch); }
 .map-heat__icon { width: 30px; height: 30px; margin-right: var(--s-2); }
 .map-heat__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text); }
 .map-heat__level { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); }

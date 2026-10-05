@@ -23,8 +23,8 @@ A screen shows one topic at a time; detail is one deliberate tap away. Motion te
 67. Sliding tab indicator and tab icon punch. *Done*
 68. Status rail with expandable pills. *Done*
 69. Comms panel auto-compact. *Done*
-70. Page tabs (`ds-pager`) for OPS, CORE, LEGACY, MAP. *Planned*
-71. Foldable cards with remembered state. *Planned*
+70. Page tabs (`ds-pager`) for OPS, CORE, LEGACY, MAP. *Done*
+71. Foldable cards with remembered state. *Done*
 72. Value punch when a pod rises; flash red when it drops sharply. *Done*
 73. Construction rises from the ground with dust; build-complete punch. *Planned*
 74. Hit flash on facilities damaged in a raid. *Planned*

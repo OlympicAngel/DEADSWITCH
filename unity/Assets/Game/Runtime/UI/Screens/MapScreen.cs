@@ -155,6 +155,7 @@ namespace Deadswitch.Game.UI.Screens
 
                     _selected = index;
                     _reason.text = string.Empty;
+                    Pager.Show(_ui.Q("map-pager"), "page-site");
                     Refresh();
                 });
 
@@ -525,6 +526,8 @@ namespace Deadswitch.Game.UI.Screens
             SimConfig c = _host.Sim.Config;
 
             _ui.Q<Label>("map-ops-count").text = "OPS " + s.Ops.Count + "/" + WorldSystem.MaxOps(s, c) + " // FUEL " + Fmt.Num(s.Fuel);
+            Pager.Badge(_ui.Q("map-pager"), "page-ops", s.Ops.Count);
+            _ui.Q("map-ops-empty").EnableInClassList("is-hidden", s.Ops.Count > 0);
             for (int f = 0; f < WorldSystem.FactionCount; f++)
             {
                 HeatLevel level = WorldSystem.Level(s.Heat[f]);
@@ -626,6 +629,7 @@ namespace Deadswitch.Game.UI.Screens
             bool wild = HazardSystem.Wild(WorldSystem.Sites[_selected].Kind);
             bool hostile = level == HeatLevel.Marked || wild;
             int left = System.Math.Max(0, c.Living.TradesPerDay - s.TradesToday[(int)owner]);
+            _ui.Q<Label>("trade-with").text = (wild ? "NO OWNER" : Names.Faction(owner)) + " // " + WorldSystem.Sites[_selected].Name;
             _ui.Q<Label>("trade-left").text = wild ? "NOBODY OUT THERE TO TRADE WITH" : hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant() + " // BLUEPRINTS " + s.Blueprints + "/" + c.Living.BlueprintMax;
             for (int g = 0; g <= (int)TradeGood.Blueprints; g++)
             {
