@@ -25,7 +25,7 @@ namespace Deadswitch.Sim.State
         /// <summary>Complete a tier with delegation on Manual.</summary>
         ManualTier = 3,
 
-        /// <summary>Catch one of the AI's lies with Verify.</summary>
+        /// <summary>Catch the AI's first lie with Verify within 24 hours of it (doc 10 s6).</summary>
         CatchLie = 4,
 
         /// <summary>Keep corruption under 40% for a full tier.</summary>
@@ -33,6 +33,9 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Relocate at peak power.</summary>
         RelocatePeak = 6,
+
+        /// <summary>Survive a collapse crisis without a forced rollback (no Rollback crisis, no forced reboot) until it passes.</summary>
+        CollapseSurvived = 7,
     }
 
     /// <summary>Why a cycle ended. Stored in events.</summary>

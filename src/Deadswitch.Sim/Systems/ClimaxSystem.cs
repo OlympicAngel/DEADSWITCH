@@ -181,6 +181,7 @@ namespace Deadswitch.Sim.Systems
             s.ColdnessMilli = 0;
             s.BoldnessMilli = 0;
             s.SkimmedSinceAudit = 0;
+            SecretSystem.Reset(s);
             s.ClimaxAtTick = 0;
             s.ClimaxAudited = false;
             if (before != ProjectStage.Dormant)

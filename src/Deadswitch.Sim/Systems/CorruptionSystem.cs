@@ -25,7 +25,9 @@ namespace Deadswitch.Sim.Systems
         {
             if (computeSpent > 0 && ctx.Config.Corruption.ComputeMilliPerPoint > 0)
             {
-                Add(ctx, (int)System.Math.Min(MaxMilli, (long)computeSpent * ctx.Config.Corruption.ComputeMilliPerPoint));
+                // cooling towers (SPEC-038) take the heat off the racks
+                int cooling = System.Math.Min(60, Economy.SumOutput(ctx.State, ctx.Config, FacilityKind.CoolingTower));
+                Add(ctx, (int)System.Math.Min(MaxMilli, (long)computeSpent * ctx.Config.Corruption.ComputeMilliPerPoint * (100 - cooling) / 100));
             }
         }
 

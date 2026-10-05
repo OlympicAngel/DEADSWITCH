@@ -54,7 +54,7 @@ namespace Deadswitch.Game.Rendering
             profile.Add<Tonemapping>(true).mode.Override(TonemappingMode.ACES);
             _color = profile.Add<ColorAdjustments>(true);
             _color.contrast.Override(10f);
-            _color.saturation.Override(-6f);
+            _color.saturation.Override(4f);
 
             _bloom = profile.Add<Bloom>(true);
             _bloom.scatter.Override(0.65f);

@@ -69,30 +69,52 @@
       <ui:Label name="map-event-text" text="SUPPLY WINDOW // LOOT +50% // TRADERS -25%" class="map-event__text grow" />
     </ui:VisualElement>
 
-    <!-- tactical plot: Hub at center, range rings, sites -->
+    <!-- sector map (SPEC-033): the 3D render, the illustrated layer (Painter2D), then site pins and tags.
+         Sample markers are for the preview; MapScreen rebuilds them on the projected landmark positions. -->
     <ui:VisualElement name="map-plot" class="map-plot">
-      <ui:VisualElement class="map-ring map-ring--1" />
-      <ui:VisualElement class="map-ring map-ring--2" />
-      <ui:VisualElement class="map-ring map-ring--3" />
-      <ui:VisualElement class="map-axis map-axis--h" />
-      <ui:VisualElement class="map-axis map-axis--v" />
-      <ui:VisualElement class="map-hub"><ui:Label text="S-17" class="map-hub__label" /></ui:VisualElement>
-      <ui:VisualElement name="map-sites" class="map-sites">
-        <ui:VisualElement class="map-site map-site--rust is-selected" style="left: 30%; top: 35%;">
+      <ui:VisualElement name="map-render" class="map-render" picking-mode="Ignore" />
+      <ui:VisualElement name="map-overlay" class="map-overlay" picking-mode="Ignore" />
+      <ui:VisualElement name="map-sites" class="map-sites" picking-mode="Ignore">
+        <ui:VisualElement class="map-site map-site--rust is-selected" style="left: 34%; top: 37%;">
           <ui:VisualElement class="map-site__mark" />
-          <ui:Label text="RUST MARKET" class="map-site__name" />
+          <ui:VisualElement class="map-site__tag">
+            <ui:Label text="RUST MARKET" class="map-site__name" />
+            <ui:Label text="DEF 30" class="map-site__est" />
+          </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="map-site map-site--vanguard" style="left: 65%; top: 80%;">
+        <ui:VisualElement class="map-site map-site--vanguard" style="left: 64%; top: 65%;">
           <ui:VisualElement class="map-site__mark" />
-          <ui:Label text="RELAY 9" class="map-site__name" />
+          <ui:VisualElement class="map-site__tag">
+            <ui:Label text="RELAY 9" class="map-site__name" />
+            <ui:Label text="~84" class="map-site__est" />
+          </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="map-site map-site--church" style="left: 7%; top: 15%;">
+        <ui:VisualElement class="map-site map-site--church" style="left: 17%; top: 26%;">
           <ui:VisualElement class="map-site__mark" />
-          <ui:Label text="CATHEDRAL ARRAY" class="map-site__name" />
+          <ui:VisualElement class="map-site__tag">
+            <ui:Label text="CATHEDRAL ARRAY" class="map-site__name" />
+            <ui:Label text="~55" class="map-site__est" />
+          </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="map-site map-site--rust map-site--outpost" style="left: 60%; top: 20%;">
+        <ui:VisualElement class="map-site map-site--holdout map-site--left" style="left: 83%; top: 26%;">
           <ui:VisualElement class="map-site__mark" />
-          <ui:Label text="COLLAPSED MALL // OUTPOST" class="map-site__name" />
+          <ui:VisualElement class="map-site__tag">
+            <ui:Label text="HALCYON VAULT" class="map-site__name" />
+            <ui:Label text="~160" class="map-site__est" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="map-site map-site--wild map-site--fallout" style="left: 27%; top: 47%;">
+          <ui:VisualElement class="map-site__mark" />
+          <ui:VisualElement class="map-site__tag">
+            <ui:Label text="WATER PLANT // FALLOUT" class="map-site__name" />
+            <ui:Label text="~40" class="map-site__est" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="map-site map-site--hub" style="left: 50%; top: 48%;">
+          <ui:VisualElement class="map-site__mark" />
+          <ui:VisualElement class="map-site__tag">
+            <ui:Label text="HUB S-17" class="map-site__name" />
+          </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
@@ -144,6 +166,7 @@
           <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 E" class="map-trade__pay" /></ui:VisualElement>
           <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 F" class="map-trade__pay" /></ui:VisualElement>
           <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 E" class="map-trade__pay" /></ui:VisualElement>
+          <ui:VisualElement name="trade-3" class="map-trade__item"><ui:Label name="trade-3-get" text="+1 BLUEPRINT" class="map-trade__get" /><ui:Label name="trade-3-pay" text="400 E" class="map-trade__pay" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement class="row map-actions">

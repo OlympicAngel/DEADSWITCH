@@ -17,6 +17,12 @@ namespace Deadswitch.Game.Presentation
                 case FacilityKind.LifeSupport: return "+" + Fmt.Num(value) + " PEOPLE CAP";
                 case FacilityKind.BatteryBank: return "+" + Fmt.Num(value) + " ENERGY STORAGE";
                 case FacilityKind.Turret: return Fmt.Num(value) + " DEFENSE";
+                case FacilityKind.DroneBay: return Fmt.Num(value) + " DRONE DEFENSE";
+                case FacilityKind.MotorPool: return Fmt.Num(value) + " VEHICLE DEFENSE";
+                case FacilityKind.SolarField: return "+" + Fmt.Num(value) + " ENERGY/H BY DAY";
+                case FacilityKind.FuelDepot: return "+" + Fmt.Num(value) + " FUEL STORAGE";
+                case FacilityKind.CoolingTower: return "-" + Fmt.Num(value) + "% COMPUTE STRAIN";
+                case FacilityKind.MemoryChamber: return Fmt.Num(value) + "% FASTER MEMORY";
                 default: return string.Empty;
             }
         }
@@ -33,6 +39,7 @@ namespace Deadswitch.Game.Presentation
                 case RejectReason.TradeCap: return "They have traded enough with us today.";
                 case RejectReason.StorageFull: return "No room for it. Storage or beds are full.";
                 case RejectReason.NotDamaged: return "Nothing there needs repair.";
+                case RejectReason.NeedsFragment: return "That one I cannot rebuild from nothing. Bring me a data fragment from a dead data center.";
                 case RejectReason.AiTakeover: return "I have the controls. Flush me if you want them back.";
                 case RejectReason.QueueFull: return "Construction crew is busy. One job at a time.";
                 case RejectReason.JobInProgress: return "Work already underway on this plot.";

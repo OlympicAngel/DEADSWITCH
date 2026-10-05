@@ -1,5 +1,8 @@
 using Deadswitch.Game.Core;
+using Deadswitch.Game.Presentation;
+using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 
 namespace Deadswitch.Game.Store
 {
@@ -14,6 +17,22 @@ namespace Deadswitch.Game.Store
 
         /// <summary>Bone-white HUD accent (cosmetic).</summary>
         ThemeBone = 2,
+
+        /// <summary>One extra salvage roll per day (a sim command: AdGrant.SalvageRoll).</summary>
+        SalvageRoll = 3,
+
+        /// <summary>A short idle-cap extension (a sim command: AdGrant.IdleCap).</summary>
+        IdleCap = 4,
+    }
+
+    /// <summary>Platform ad network. The ad service assembly replaces the default when its package is installed.</summary>
+    public interface IAdBackend
+    {
+        /// <summary>True when an ad can be shown now.</summary>
+        bool Ready { get; }
+
+        /// <summary>Shows a rewarded ad; calls back true only when the viewer watched it to the end.</summary>
+        void Show(System.Action<bool> completed);
     }
 
     /// <summary>
@@ -22,25 +41,53 @@ namespace Deadswitch.Game.Store
     /// </summary>
     public static class RewardedAds
     {
+        /// <summary>Set by the ad service assembly; development builds simulate a completed view.</summary>
+        public static IAdBackend Backend { get; set; }
+
         /// <summary>Why an ad cannot be offered now, or null when it can.</summary>
         public static string Blocked()
         {
             GameState s = GameHost.Instance.Sim.State;
+            if (Entitlements.Instance.HasPremium)
+            {
+                return "The full game has no ads.";
+            }
+
             if (s.RaidId != 0 || s.PurgeStage != PurgeStage.None || s.Ultimatum == UltimatumStage.Issued || s.ClimaxAtTick != 0)
             {
                 return "Not while the Hub is under threat.";
             }
 
-            return Entitlements.StoreAvailable ? null : "Ads are not available in this build.";
+            bool network = Backend != null && Backend.Ready;
+            return network || UnityEngine.Debug.isDebugBuild || UnityEngine.Application.isEditor ? null : "Ads are not available in this build.";
         }
 
-        /// <summary>Shows an ad and grants the whitelisted reward when it completes. Returns a player-facing line.</summary>
-        public static string Watch(ConvenienceGrant grant)
+        /// <summary>Shows an ad and grants the whitelisted reward only when it completes; calls back with a line.</summary>
+        public static void Watch(ConvenienceGrant grant, System.Action<string> done)
         {
             string blocked = Blocked();
             if (blocked != null)
             {
-                return blocked;
+                done(blocked);
+                return;
+            }
+
+            if (Backend != null && Backend.Ready)
+            {
+                Backend.Show(completed => done(completed ? Grant(grant) : "The ad did not finish. Nothing granted."));
+                return;
+            }
+
+            // development builds: no ad network linked, simulate a completed view
+            done(Grant(grant));
+        }
+
+        private static string Grant(ConvenienceGrant grant)
+        {
+            if (grant == ConvenienceGrant.SalvageRoll || grant == ConvenienceGrant.IdleCap)
+            {
+                CommandResult r = GameHost.Instance.Execute(Command.ClaimAdGrant(grant == ConvenienceGrant.SalvageRoll ? AdGrant.SalvageRoll : AdGrant.IdleCap));
+                return r.Accepted ? "Thanks for watching. " + Name(grant) + "." : Texts.Reason(r.Reason);
             }
 
             Entitlements.Instance.GrantCosmetic(Id(grant));
@@ -54,7 +101,13 @@ namespace Deadswitch.Game.Store
 
         public static string Name(ConvenienceGrant grant)
         {
-            return grant == ConvenienceGrant.ThemeCold ? "COLD SIGNAL THEME" : "BONE THEME";
+            switch (grant)
+            {
+                case ConvenienceGrant.SalvageRoll: return "EXTRA SALVAGE ROLL";
+                case ConvenienceGrant.IdleCap: return "STORAGE EXTENSION";
+                case ConvenienceGrant.ThemeCold: return "COLD SIGNAL THEME";
+                default: return "BONE THEME";
+            }
         }
     }
 }

@@ -54,6 +54,18 @@ namespace Deadswitch.Sim.State
 
         /// <summary>The wastes go quiet: attacks come less often.</summary>
         DeadWeek = 3,
+
+        /// <summary>Breakdown phase (SPEC-036): fallout rolls over the sector; outposts falter, the crater is rich.</summary>
+        FalloutWave = 4,
+
+        /// <summary>Breakdown phase: plague; regrowth stops, squads bring infection home.</summary>
+        PlagueOutbreak = 5,
+
+        /// <summary>Breakdown phase: the old grid fails in rolling waves; generation drops.</summary>
+        RollingBlackouts = 6,
+
+        /// <summary>Breakdown phase: rogue machines wake; attackers bring more drones, unmanned machines turn.</summary>
+        MachineSurge = 7,
     }
 
     /// <summary>What the Hub can buy from a faction (doc 10 s5; people are never tradeable). Stored in commands and events.</summary>
@@ -67,5 +79,8 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Compute fragments, paid in energy.</summary>
         Compute = 2,
+
+        /// <summary>Blueprints, paid in energy: one makes the next field research cheaper (doc 10 s5).</summary>
+        Blueprints = 3,
     }
 }

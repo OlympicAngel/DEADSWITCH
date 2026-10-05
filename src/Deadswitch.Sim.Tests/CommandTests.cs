@@ -10,6 +10,21 @@ namespace Deadswitch.Sim.Tests
     public class CommandTests
     {
         [Fact]
+        public void AdGrants_AreConvenienceOnly_OncePerDay_AndTierOneOnly()
+        {
+            // doc 10 s1.1, ADR-0006: an extra salvage roll per day, a short idle-cap extension; never at Tier 2+
+            var sim = new Simulation(4UL);
+            int cap = Systems.Economy.EnergyCap(sim.State, sim.Config);
+            Assert.True(sim.Execute(Command.ClaimAdGrant(Systems.AdGrant.SalvageRoll)).Accepted);
+            Assert.Equal(RejectReason.OnCooldown, sim.Execute(Command.ClaimAdGrant(Systems.AdGrant.SalvageRoll)).Reason);
+            Assert.True(sim.Execute(Command.ClaimAdGrant(Systems.AdGrant.IdleCap)).Accepted);
+            Assert.True(Systems.Economy.EnergyCap(sim.State, sim.Config) > cap);
+            sim.State.Tier = 2;
+            sim.Run(SimConfig.TicksPerDay);
+            Assert.Equal(RejectReason.Locked, sim.Execute(Command.ClaimAdGrant(Systems.AdGrant.SalvageRoll)).Reason);
+        }
+
+        [Fact]
         public void SetDelegation_AppliesRecordsAndEmits()
         {
             var sim = new Simulation(1UL);

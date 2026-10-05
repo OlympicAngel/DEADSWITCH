@@ -24,6 +24,12 @@ namespace Deadswitch.Game.Presentation
                 case FacilityKind.LifeSupport: return "Air, water, heat. Raises how many people the Hub can hold.";
                 case FacilityKind.BatteryBank: return "Stores surplus. A bigger buffer for nights and raids.";
                 case FacilityKind.Turret: return "Automated defense. Needs power and a crew to aim well.";
+                case FacilityKind.DroneBay: return "Rogue machines, rewired. Drones shred infantry in the open; armour swats them. Unmanned, they are mine.";
+                case FacilityKind.MotorPool: return "Armour and gun trucks. Vehicles crush drones; people with charges in the ruins stop them. They drink fuel.";
+                case FacilityKind.SolarField: return "Cracked panels on salvaged frames. Free power while the sun is up, nothing at night, and they shatter easily.";
+                case FacilityKind.FuelDepot: return "Tank farm. More fuel on hand for raids, vehicles and the reactor.";
+                case FacilityKind.CoolingTower: return "Takes the heat off my racks. Heavy thinking corrupts me less.";
+                case FacilityKind.MemoryChamber: return "Where I piece myself back together. The memory sectors restore faster.";
                 case FacilityKind.Reactor: return "Pre-war fission core. More power than anything else, if we can feed it fuel. Raiders want it. Do not let it crack.";
                 default: return "Unused ground inside the perimeter.";
             }

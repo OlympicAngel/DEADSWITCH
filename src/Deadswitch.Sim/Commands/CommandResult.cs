@@ -153,6 +153,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No op the AI launched with that id is out.</summary>
         NoSuchOp = 50,
+
+        /// <summary>A key module needs a recovered data fragment (SPEC-037).</summary>
+        NeedsFragment = 51,
     }
 
     public readonly struct CommandResult

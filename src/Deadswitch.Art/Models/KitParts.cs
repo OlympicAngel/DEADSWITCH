@@ -212,7 +212,7 @@ namespace Deadswitch.Art.Models
         public static void SolarModule(MeshBuilder b, float w, float d, bool cracked = false)
         {
             b.Box(new Vector3(0, -0.05f, 0), new Vector3(w, 0.05f, d), Mat.DarkSteel, 0.01f);
-            b.Box(Vector3.Zero, new Vector3(w - 0.08f, 0.035f, d - 0.08f), Mat.Glass, 0.004f);
+            b.Box(Vector3.Zero, new Vector3(w - 0.08f, 0.035f, d - 0.08f), Mat.SolarCell, 0.004f);
             const float cell = 0.16f;
             for (float x = (-w * 0.5f) + 0.04f + cell; x < (w * 0.5f) - 0.06f; x += cell)
             {

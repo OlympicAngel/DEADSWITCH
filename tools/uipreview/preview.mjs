@@ -5,6 +5,7 @@
 // to review hierarchy, spacing, typography and color without the Editor. See docs/agents/quality-bar.md.
 //
 // usage: node tools/uipreview/preview.mjs <screen.uxml> [--out file.png] [--bg image.png] [--height 2340] [--scale 0.5]
+//        [--img element-name=image.png] (a runtime texture, e.g. the sector map render; prints the element's size)
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -163,6 +164,14 @@ fs.writeFileSync(out.replace(/\.png$/, '.html'), html);
 const browser = await playwright.chromium.launch({ executablePath: fs.existsSync('/opt/pw-browsers/chromium') ? undefined : undefined });
 const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
 await page.setContent(html, { waitUntil: 'load' });
+// --img name=file: stand-ins for runtime textures (MapScreen's 3D render); the element's size is printed for matching renders
+for (let i = 0; i < args.length; i++) {
+  if (args[i] !== '--img') continue;
+  const [name, file] = args[i + 1].split('=');
+  const data = fs.existsSync(file) ? fs.readFileSync(file).toString('base64') : null;
+  const size = await page.evaluate(([n, d]) => { const el = document.getElementById(n); if (!el) return null; if (d) el.style.background = `url(data:image/png;base64,${d}) center/100% 100%`; return [el.clientWidth, el.clientHeight]; }, [name, data]);
+  console.log(name + ' size ' + JSON.stringify(size));
+}
 await page.waitForTimeout(150);
 // Unity shrinks flex children (flex-shrink: 1) instead of overflowing, so text that needs more height than it
 // got overlaps its neighbours in the Editor. Report it; long screens belong in a ScrollView.

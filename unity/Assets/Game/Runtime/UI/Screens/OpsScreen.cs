@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Host.Narrative;
 using Deadswitch.Host.Reports;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
 using UnityEngine.UIElements;
@@ -208,7 +210,8 @@ namespace Deadswitch.Game.UI.Screens
             int ce = AdaptSystem.Counter(s, c, Posture.Evacuate);
             Q<Label>("posture-turtle-fx").text = "+" + System.Math.Max(0, c.Defense.TurtleDefensePct - ct) + "% DEFENSE" + (ct > 0 ? " // THEY BRING CHARGES" : string.Empty);
             Q<Label>("posture-dark-fx").text = System.Math.Max(0, c.Defense.DarkMissPct - cd) + "% MISS // -" + Fmt.Num(c.Defense.DarkUpkeepPerHour) + "/H ENERGY" + (cd > 0 ? " // THEY SWEEP" : string.Empty);
-            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + System.Math.Min(100, c.Defense.EvacuateLootPct + ce) + "%" + (ce > 0 ? " // THEY HUNT CACHES" : string.Empty);
+            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + System.Math.Min(300, c.Defense.EvacuateLootPct + ce) + "%" + (ce > 0 ? " // THEY HUNT CACHES" : string.Empty)
+                + (HeldOutposts(s) > 0 ? " // AN OUTPOST COVERS THE HUB" : string.Empty);
             Q<Label>("posture-turtle-fx").EnableInClassList("t-amber", ct > 0);
             Q<Label>("posture-dark-fx").EnableInClassList("t-amber", cd > 0);
             Q<Label>("posture-evacuate-fx").EnableInClassList("t-amber", ce > 0);
@@ -247,6 +250,13 @@ namespace Deadswitch.Game.UI.Screens
                 SetTone(band, _meter, "dim");
                 Kit.SetMeter(_meter, 0f);
             }
+
+            // forces and counters (SPEC-035): the mix once the warning names it, our line by family
+            bool forces = raid && ForcesKnown(s);
+            Q<Label>("forces").text = !raid ? "FORCES // NO CONTACT" : forces
+                ? "FORCES // " + s.RaidInfantryPct + "% INFANTRY  " + s.RaidDronePct + "% DRONES  " + s.RaidVehiclePct + "% VEHICLES"
+                : "FORCES // UNKNOWN";
+            Q<Label>("forces-line").text = "OUR LINE // " + Line(s, c, UnitFamily.Infantry, "GARRISON", forces) + "  " + Line(s, c, UnitFamily.Drones, "DRONES", forces) + "  " + Line(s, c, UnitFamily.Vehicles, "VEHICLES", forces);
 
             AiSystem.Recommend(s, c, out Posture rec, out int recGarrison);
             Q<Label>("recommend").text = !raid ? "NOTHING TO DEFEND AGAINST"
@@ -365,6 +375,45 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             band.EnableInClassList("t-dim", tone == "dim");
+        }
+
+        private static int HeldOutposts(GameState s)
+        {
+            int n = 0;
+            foreach (SiteState site in s.Sites)
+            {
+                n += site.Outpost ? 1 : 0;
+            }
+
+            return n;
+        }
+
+        /// <summary>True when the warning for the current attack named its forces (SPEC-035).</summary>
+        private bool ForcesKnown(GameState s)
+        {
+            IReadOnlyList<SimEvent> log = _host.Sim.Log.Events;
+            for (int i = log.Count - 1; i >= 0; i--)
+            {
+                SimEvent e = log[i];
+                if (e.Kind == EventKind.RaidForces && e.A == s.RaidId)
+                {
+                    return true;
+                }
+
+                if (e.Kind == EventKind.RaidWarning && e.A == s.RaidId)
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private static string Line(GameState s, SimConfig c, UnitFamily family, string name, bool countered)
+        {
+            int value = Defense.Family(s, c, family, s.Garrison);
+            int pts = UnitSystem.CounterPts(s, c, family);
+            return name + " " + Fmt.Num(value) + (countered && value > 0 && pts != 0 ? " (" + (pts > 0 ? "+" : string.Empty) + pts + "%)" : string.Empty);
         }
     }
 }

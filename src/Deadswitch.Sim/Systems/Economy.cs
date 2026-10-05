@@ -64,19 +64,53 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
-            if (slot.Kind == FacilityKind.Reactor && !s.ReactorFueled)
+            if ((slot.Kind == FacilityKind.Reactor && !s.ReactorFueled) || (slot.Kind == FacilityKind.MotorPool && s.Fuel <= 0))
             {
-                // scrammed for lack of fuel (SPEC-029)
+                // scrammed for lack of fuel (SPEC-029); vehicles without fuel do not move (SPEC-035)
                 return 0;
             }
 
-            return SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind) - ScarSystem.PenaltyPct(s, c, slot) - GlitchSystem.PenaltyPct(s, slot)));
+            int output = SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind) - ScarSystem.PenaltyPct(s, c, slot) - GlitchSystem.PenaltyPct(s, slot)));
+            if (slot.Kind == FacilityKind.SolarField)
+            {
+                output = SimMath.PctFloor(output, DaylightPct(s.Tick));
+            }
+
+            return IsSource(slot.Kind) ? SimMath.PctFloor(output, PhaseSystem.GenerationPct(s, c)) : output;
         }
 
         /// <summary>Power sources (generator, reactor): they feed the grid and net their own upkeep from output.</summary>
         public static bool IsSource(FacilityKind kind)
         {
-            return kind == FacilityKind.Generator || kind == FacilityKind.Reactor;
+            return kind == FacilityKind.Generator || kind == FacilityKind.Reactor || kind == FacilityKind.SolarField;
+        }
+
+        /// <summary>Daylight share of a solar field's output at a tick (SPEC-038): full 07-18, half at 06 and 18, none at night.</summary>
+        public static int DaylightPct(long tick)
+        {
+            long hour = (tick % SimConfig.TicksPerDay) / SimConfig.TicksPerHour;
+            return hour >= 7 && hour < 18 ? 100 : hour == 6 || hour == 18 ? 50 : 0;
+        }
+
+        /// <summary>Fuel storage: the base cap plus running depots (SPEC-038).</summary>
+        public static int FuelCap(GameState s, SimConfig c)
+        {
+            return c.Fuel.Cap + SumOutput(s, c, FacilityKind.FuelDepot);
+        }
+
+        /// <summary>Total effective output of running facilities of one kind.</summary>
+        public static int SumOutput(GameState s, SimConfig c, FacilityKind kind)
+        {
+            int n = 0;
+            foreach (FacilitySlot slot in s.Slots)
+            {
+                if (slot.Kind == kind && IsRunning(slot))
+                {
+                    n += EffectiveOutput(s, c, slot);
+                }
+            }
+
+            return n;
         }
 
         /// <summary>Module output bonus for a facility kind, in percentage points.</summary>
@@ -165,6 +199,12 @@ namespace Deadswitch.Sim.Systems
                 {
                     cap += EffectiveOutput(s, c, slot);
                 }
+            }
+
+            // a rewarded-ad idle-cap extension (doc 10 s1.1): storage only, never safety or power
+            if (s.Tick < s.AdCapUntilTick)
+            {
+                cap = SimMath.PctFloor(cap, 100 + c.Ads.CapPct);
             }
 
             return cap;

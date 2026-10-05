@@ -29,3 +29,6 @@
 .prm-season { margin-top: var(--s-4); }
 .prm-note { margin-top: var(--s-2); font-size: var(--fs-micro); }
 .prm-reason { margin-top: var(--s-3); min-height: 40px; }
+
+/* stacked convenience grants (doc 10 s1.1) */
+.prm-stack { margin-top: var(--s-2); }

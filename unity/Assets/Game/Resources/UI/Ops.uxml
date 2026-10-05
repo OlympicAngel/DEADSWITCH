@@ -130,6 +130,11 @@
           </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="confidence-meter" class="ds-meter ds-meter--amber" />
+        <!-- forces and counters (SPEC-035): what is coming, and how each part of our line fares against it -->
+        <ui:VisualElement class="ops-forces">
+          <ui:Label name="forces" text="FORCES // 60% INFANTRY  10% DRONES  30% VEHICLES" class="ds-label t-amber" />
+          <ui:Label name="forces-line" text="OUR LINE // GARRISON 48 (+8%)  DRONES 24 (+20%)  VEHICLES 0" class="ds-body t-dim ops-forces__line" />
+        </ui:VisualElement>
         <ui:VisualElement class="row ops-go">
           <ui:VisualElement class="grow">
             <ui:Label text="AI RECOMMENDS" class="ds-label" />

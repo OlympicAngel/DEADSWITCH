@@ -28,8 +28,9 @@ namespace Deadswitch.Sim.Systems
                 s.SkimmedSinceAudit += skim;
             }
 
+            int secret = SecretSystem.Hourly(ctx, skim);
             ProjectStage before = Stage(c, s.ProjectMilli);
-            long growth = ((long)s.BoldnessMilli * p.GrowthPerHourAtFullBoldness / 100_000) + ((long)skim * p.MilliPerSkimmedCompute);
+            long growth = ((long)s.BoldnessMilli * p.GrowthPerHourAtFullBoldness / 100_000) + ((long)skim * p.MilliPerSkimmedCompute) + secret;
             s.ProjectMilli = (int)System.Math.Min(100_000L, s.ProjectMilli + growth);
             ProjectStage after = Stage(c, s.ProjectMilli);
             if (after != before)

@@ -86,7 +86,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  verify --save PATH [--config PATH]   replay a save from its seed; exit 0 when it reproduces");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
-            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last] [--faction N]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last] [--faction N] [--map [--aspect W/H]]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -231,6 +231,31 @@ namespace Deadswitch.Cli
             int wreckage = int.Parse(ValueAfter(rest, "--wreckage") ?? sim.State.Wreckage.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
             bool burning = rest.Contains("--burning");
             int faction = int.Parse(ValueAfter(rest, "--faction") ?? "-1", CultureInfo.InvariantCulture);
+            if (rest.Contains("--map"))
+            {
+                float aspect = float.Parse(ValueAfter(rest, "--aspect") ?? "1", CultureInfo.InvariantCulture);
+
+                // preview states: --scouted 0,3,5  --fallout SITE  --op SITE (a raid in the field)
+                foreach (string id in (ValueAfter(rest, "--scouted") ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    sim.State.Sites[int.Parse(id, CultureInfo.InvariantCulture)].Scouted = true;
+                }
+
+                if (ValueAfter(rest, "--fallout") is string fallout)
+                {
+                    sim.State.FalloutSite = int.Parse(fallout, CultureInfo.InvariantCulture);
+                }
+
+                if (ValueAfter(rest, "--op") is string op)
+                {
+                    sim.State.Ops.Add(new Operation { Id = 999, Site = int.Parse(op, CultureInfo.InvariantCulture), Kind = OpKind.Raid, Squad = 4, ReturnTick = sim.State.Tick + 600 });
+                }
+
+                ArtExport.WriteMap(sim, outPath, (uint)seed, aspect);
+                Console.WriteLine("wrote " + outPath + " (sector map, day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
+                return 0;
+            }
+
             ArtExport.Write(sim, outPath, (uint)seed, layout, report, tier, wreckage, burning, faction);
             Console.WriteLine("wrote " + outPath + " (day " + (sim.State.Tick / SimConfig.TicksPerDay) + ")");
             for (int i = 0; i < sim.State.Slots.Count; i++)

@@ -187,6 +187,9 @@ turtle_defense_pct = 50
 # Dark posture: chance a raid fails to find the Hub. [0..100]
 dark_miss_pct = 40
 
+# Dark posture: every faction's heat cools this % faster (doc 05 s2: lying low). [0..1000]
+dark_heat_decay_pct = 50
+
 # Dark posture: extra energy per game hour (signal masking). [0..100000]
 dark_upkeep_per_hour = 120
 
@@ -298,6 +301,15 @@ audit_cooldown_hours = 12
 # --------------------------------------------------------------------------------------------------
 # AI module research (SPEC-008). Lists follow the catalog order: M1-M3, then each field (LG, WF, CY, ST) as 1, 2A, 2B, 3, 4, 5A, 5B, 6. All (tune).
 [modules]
+
+# Chance a won raid or hack on a dead data center recovers a data fragment (SPEC-037). [0..100]
+fragment_pct_data_center = 60
+
+# Chance a won raid on ruins recovers a data fragment. [0..100]
+fragment_pct_ruins = 25
+
+# Data fragments the Hub can hold. Each field's capstone module (node 6) needs one to start. [0..20]
+fragment_max = 4
 
 # Energy cost per node. [35..35 items, each 0..100000]
 research_energy = [450, 1200, 2400, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900, 180, 300, 300, 600, 700, 650, 650, 900]
@@ -834,6 +846,15 @@ trade_price_pct_by_level = [80, 100, 150]
 # Trades per faction per day. [0..100]
 trades_per_day = 3
 
+# Base energy price of one blueprint (doc 10 s5). [0..100000]
+trade_blueprint_price = 500
+
+# Blueprints the Hub can hold. [0..20]
+blueprint_max = 3
+
+# A blueprint takes this % off the energy and compute of the next field research it is spent on. [0..100]
+blueprint_discount_pct = 35
+
 # Day of the first world event. [1..1000]
 world_event_first_day = 2
 
@@ -1255,6 +1276,167 @@ regroup_hours = 8
 regroup_defense_pct = 25
 
 # --------------------------------------------------------------------------------------------------
+# Hazard zones (radiation, plague, machine graveyard) and the drifting fallout front (SPEC-032, doc 05 s6-7). All (tune).
+[hazards]
+
+# A raided zone has nothing left to take for this long. [0..1000]
+zone_cooldown_hours = 48
+
+# A scouted zone's sickness and infection chances are this % of normal. [0..100]
+prepared_risk_pct = 50
+
+# Extra fuel % to enter a radiation zone. [0..1000]
+radiation_fuel_pct = 50
+
+# Chance a squad back from radiation (or fallout) is sick. [0..100]
+radiation_sick_pct = 40
+
+# Share of a sick squad's survivors lost (at least 1). [0..100]
+radiation_casualty_pct = 25
+
+# Survivors a won plague raid brings home (up to the population cap). [0..100]
+plague_people = 3
+
+# Chance a squad back from a plague zone carries infection home. [0..100]
+plague_infection_pct = 35
+
+# People at home lost to an infection (never under the people floor). [0..100]
+plague_infected = 2
+
+# Damage points a won graveyard raid repairs for free (most damaged facility). [0..20]
+graveyard_repair_points = 2
+
+# Extra share of the squad lost to drone nests on a failed graveyard raid. [0..100]
+graveyard_nest_pct = 20
+
+# Day the fallout front first settles over a site. [0..1000]
+fallout_first_day = 3
+
+# Hours between fallout drifts. [1..1000]
+fallout_drift_hours = 60
+
+# Up to this many extra hours before each drift (hash). [0..1000]
+fallout_jitter_hours = 24
+
+# Extra fuel % for an op to a site under fallout. [0..1000]
+fallout_fuel_pct = 50
+
+# An outpost under fallout sends this % of its output. [0..100]
+fallout_outpost_pct = 25
+
+# --------------------------------------------------------------------------------------------------
+# Unit families (SPEC-035): infantry (garrison), drones (Drone Bays), vehicles (Motor Pools). Drones beat infantry, vehicles beat drones, infantry beat vehicles (doc 10 s4). Mixes are infantry / drones / vehicles %. All (tune).
+[units]
+
+# A defender family gains this % x the share of attackers it beats, and loses it x the share that beats it. [0..100]
+counter_pct = 40
+
+# Each attack's drone and vehicle shares vary by up to this many points from the faction profile. [0..50]
+mix_jitter_pct = 15
+
+# Tier needed to build a Motor Pool. [1..4]
+motor_pool_min_tier = 2
+
+# Fuel a running Motor Pool burns per game hour, per level; without fuel its vehicles do not fight. [1..20 items, each 0..1000]
+motor_pool_fuel_per_hour = [2, 3, 4]
+
+# Rustborn force mix: scavenger militia and technicals. [3..3 items, each 0..100]
+mix_rustborn = [60, 10, 30]
+
+# Vanguard Command force mix: soldiers and armour. [3..3 items, each 0..100]
+mix_vanguard = [40, 15, 45]
+
+# Church of the Last Signal force mix: machine swarms. [3..3 items, each 0..100]
+mix_church = [25, 65, 10]
+
+# Halcyon Dynamics force mix: corporate drones and escorts. [3..3 items, each 0..100]
+mix_holdouts = [15, 55, 30]
+
+# --------------------------------------------------------------------------------------------------
+# Breakdown phases (SPEC-036, doc 07 s1): fallout waves, plague outbreaks, rolling blackouts and machine surges join the world-event rotation; the handler's own actions build pressure that brings a matching phase next. All (tune).
+[phases]
+
+# Fallout wave: outposts send this % of their output. [0..100]
+fallout_outpost_pct = 50
+
+# Fallout wave: raids on the radiation zone bring back this % more. [0..1000]
+fallout_salvage_pct = 50
+
+# Plague outbreak: any returning squad carries infection with at least this chance; regrowth stops. [0..100]
+plague_infection_pct = 25
+
+# Rolling blackouts: generators and reactors lose this % of output. [0..100]
+blackout_generation_pct = 25
+
+# Machine surge: attackers bring this many more drone points in their mix. [0..100]
+surge_drone_pts = 20
+
+# Machine surge: added chance an unmanned war machine turns on the Hub. [0..100]
+surge_defection_pct = 15
+
+# Pressure at which the matching phase comes next (a warning at half). [1..10000]
+pressure_threshold = 100
+
+# Pressure toward a fallout wave per raid on the radiation zone. [0..1000]
+radiation_raid_pts = 35
+
+# Fallout pressure per hour a reactor leaks. [0..1000]
+leak_pts_per_hour = 5
+
+# Pressure toward an outbreak per raid on the plague zone. [0..1000]
+plague_raid_pts = 35
+
+# Pressure toward a machine surge per raid on the graveyard. [0..1000]
+graveyard_raid_pts = 30
+
+# Surge pressure per hour per unmanned war machine running. [0..1000]
+unmanned_pts_per_hour = 1
+
+# Pressure toward rolling blackouts per hour of grid blackout. [0..1000]
+blackout_pts_per_hour = 8
+
+# --------------------------------------------------------------------------------------------------
+# Rewarded-ad convenience grants (doc 10 s1.1, ADR-0006): Tier 1 only, never during a threat. All (tune).
+[ads]
+
+# Extra salvage roll (once per day): energy. [0..10000]
+salvage_energy = 120
+
+# Extra salvage roll: fuel. [0..10000]
+salvage_fuel = 12
+
+# Idle-cap extension: energy storage +this % while it runs. [0..100]
+cap_pct = 15
+
+# How long the idle-cap extension runs (game hours). [1..1000]
+cap_hours = 24
+
+# --------------------------------------------------------------------------------------------------
+# The AI builds in secret (SPEC-034, doc 03 s5): hidden nodes paid with skimmed compute speed its project and drain energy off the books until an Audit exposes them. Project is milli: 100000 = 100%. All (tune).
+[secrets]
+
+# The AI pours skimmed compute into hidden nodes while Boldness is at least this %. [0..100]
+from_boldness_pct = 55
+
+# Skimmed compute one hidden node costs. [1..100000]
+node_compute = 120
+
+# Hidden nodes at most. [0..20]
+max_nodes = 3
+
+# Project progress per node per game hour. [0..100000]
+node_growth_per_hour = 40
+
+# Energy each node draws per game hour, off the books (the drift the handler can notice). [0..10000]
+node_energy_per_hour = 12
+
+# Project progress lost per exposed node dismantled. [0..100000]
+dismantle_project_milli = 6000
+
+# Compute salvaged per dismantled node (up to the cap). [0..100000]
+dismantle_compute = 40
+
+# --------------------------------------------------------------------------------------------------
 # Host timing: offline catch-up and saving (ADR-0004). Real time: 1 tick = 1 real minute.
 [host]
 
@@ -1426,3 +1608,135 @@ leak_damage = 2
 
 # People lost each midnight while it leaks (never below the people floor). [0..1000]
 leak_people_per_day = 3
+
+# --------------------------------------------------------------------------------------------------
+# Drone Bay: reprogrammed rogue machines (doc 02 s6, SPEC-035). Output = drone defense rating while powered. Drones beat infantry, lose to vehicles.
+[facility_drone_bay]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [220, 380, 620, 1000]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [20, 40, 70, 110]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [40, 90, 180, 360]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [70, 110, 160, 230]
+
+# Drone defense rating per level. [1..20 items, each 0..1000000]
+output = [24, 38, 56, 80]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [2, 3, 4, 5]
+
+# --------------------------------------------------------------------------------------------------
+# Motor Pool: armour and gun trucks (doc 02 s6 vehicle factory, SPEC-035). Output = vehicle defense rating while powered and fuelled. Vehicles beat drones, lose to infantry in the ruins.
+[facility_motor_pool]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [500, 850, 1350]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [30, 60, 100]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [120, 240, 480]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [40, 60, 90]
+
+# Vehicle defense rating per level. [1..20 items, each 0..1000000]
+output = [45, 70, 100]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [3, 4, 6]
+
+# --------------------------------------------------------------------------------------------------
+# Solar Field: scavenged panels (doc 02 s3, SPEC-038). Output = energy per game hour in daylight (full 07:00-18:00, half in the hour either side, none at night). No fuel, no upkeep.
+[facility_solar_field]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [260, 420, 650]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 10, 20]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [60, 120, 240]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 0]
+
+# Energy per game hour in full daylight, per level. [1..20 items, each 0..1000000]
+output = [90, 150, 220]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [0, 1, 1]
+
+# --------------------------------------------------------------------------------------------------
+# Fuel Depot: tank farm (doc 02 s6 Power & fuel, SPEC-038). Output = extra fuel storage while running.
+[facility_fuel_depot]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [200, 350, 550]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 0, 10]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [45, 90, 180]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [10, 15, 20]
+
+# Fuel storage added, per level. [1..20 items, each 0..1000000]
+output = [120, 250, 400]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 1, 2]
+
+# --------------------------------------------------------------------------------------------------
+# Cooling Tower: heat exchangers for the racks (doc 02 s6 AI core, SPEC-038). Output = % less corruption from compute use (all towers together at most 60%).
+[facility_cooling_tower]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [300, 500, 800]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [20, 40, 70]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [60, 150, 300]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [40, 60, 90]
+
+# Percent less corruption from compute use, per level. [1..20 items, each 0..1000000]
+output = [15, 25, 35]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 2, 2]
+
+# --------------------------------------------------------------------------------------------------
+# Memory Restoration Chamber (doc 02 s6 AI core, SPEC-038). Output = % faster memory-lane restoration (M1-M3; all chambers together at most 60%).
+[facility_memory_chamber]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [400, 700, 1100]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [40, 80, 140]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [120, 240, 480]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [50, 80, 120]
+
+# Percent faster memory restoration, per level. [1..20 items, each 0..1000000]
+output = [15, 25, 35]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 2, 3]

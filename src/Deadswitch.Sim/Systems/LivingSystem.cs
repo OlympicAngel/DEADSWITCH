@@ -13,7 +13,11 @@ namespace Deadswitch.Sim.Systems
     public static class LivingSystem
     {
         private const int DilemmaKinds = 5;
-        private const int WorldEventKinds = 3;
+        /// <summary>The random rotation; rolling blackouts come only as an after-effect (SPEC-036 rule 3).</summary>
+        private static readonly WorldEventKind[] Rotation =
+        {
+            WorldEventKind.SignalStorm, WorldEventKind.SupplyWindow, WorldEventKind.DeadWeek, WorldEventKind.FalloutWave, WorldEventKind.PlagueOutbreak, WorldEventKind.MachineSurge,
+        };
 
         /// <summary>True while the given world event runs.</summary>
         public static bool Active(GameState s, WorldEventKind kind)
@@ -31,7 +35,7 @@ namespace Deadswitch.Sim.Systems
                 return -1;
             }
 
-            int basePrice = good == TradeGood.Fuel ? l.TradeFuelPrice : good == TradeGood.EnergyCells ? l.TradeEnergyPrice : l.TradeComputePrice;
+            int basePrice = good == TradeGood.Fuel ? l.TradeFuelPrice : good == TradeGood.EnergyCells ? l.TradeEnergyPrice : good == TradeGood.Blueprints ? l.TradeBlueprintPrice : l.TradeComputePrice;
             int price = SimMath.PctFloor(basePrice, l.TradePricePctByLevel[(int)level]);
             if (DiplomacySystem.Ceasefire(s, f) || DiplomacySystem.Allied(s, f))
             {
@@ -44,7 +48,7 @@ namespace Deadswitch.Sim.Systems
         public static int Lot(SimConfig c, TradeGood good)
         {
             LivingConfig l = c.Living;
-            return good == TradeGood.Fuel ? l.TradeFuelLot : good == TradeGood.EnergyCells ? l.TradeEnergyLot : l.TradeComputeLot;
+            return good == TradeGood.Fuel ? l.TradeFuelLot : good == TradeGood.EnergyCells ? l.TradeEnergyLot : good == TradeGood.Blueprints ? 1 : l.TradeComputeLot;
         }
 
         public static void Hourly(SimContext ctx)
@@ -121,7 +125,7 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
-            if (cmd.A < 0 || cmd.A >= WorldSystem.FactionCount || cmd.B < 0 || cmd.B > (int)TradeGood.Compute || cmd.C != 0)
+            if (cmd.A < 0 || cmd.A >= WorldSystem.FactionCount || cmd.B < 0 || cmd.B > (int)TradeGood.Blueprints || cmd.C != 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
@@ -164,7 +168,7 @@ namespace Deadswitch.Sim.Systems
                 }
 
                 s.Energy -= price;
-                got = good == TradeGood.Fuel ? AddFuel(s, c, lot) : AddCompute(s, c, lot);
+                got = good == TradeGood.Fuel ? AddFuel(s, c, lot) : good == TradeGood.Blueprints ? AddBlueprints(s, c, lot) : AddCompute(s, c, lot);
             }
 
             s.TradesToday[cmd.A]++;
@@ -377,7 +381,9 @@ namespace Deadswitch.Sim.Systems
             }
 
             uint h = SimMath.Hash((uint)(s.Tick / hour) ^ 0x3E7Eu, (uint)(s.Rng.State >> 32));
-            s.WorldEvent = (WorldEventKind)(1 + (int)(h % WorldEventKinds));
+            // a phase the handler's own actions brought on comes first (SPEC-036); otherwise the wastes roll
+            WorldEventKind due = PhaseSystem.Due(ctx);
+            s.WorldEvent = due != WorldEventKind.None ? due : Rotation[(int)(h % (uint)Rotation.Length)];
             s.WorldEventUntilTick = s.Tick + (l.WorldEventHours * hour);
             s.NextWorldEventTick = s.Tick + (l.WorldEventEveryHours * hour);
 
@@ -390,10 +396,32 @@ namespace Deadswitch.Sim.Systems
             ctx.Emit(EventKind.WorldEventStarted, (int)s.WorldEvent, l.WorldEventHours, (int)busy);
         }
 
+        /// <summary>A breakdown phase starts now, replacing whatever the wastes were doing (a collapse crisis, doc 03 s3).</summary>
+        public static void StartPhase(SimContext ctx, WorldEventKind phase)
+        {
+            GameState s = ctx.State;
+            LivingConfig l = ctx.Config.Living;
+            if (s.WorldEvent != WorldEventKind.None)
+            {
+                ctx.Emit(EventKind.WorldEventEnded, (int)s.WorldEvent);
+            }
+
+            s.WorldEvent = phase;
+            s.WorldEventUntilTick = s.Tick + ((long)l.WorldEventHours * SimConfig.TicksPerHour);
+            ctx.Emit(EventKind.WorldEventStarted, (int)phase, l.WorldEventHours, (int)WorldSystem.Hottest(s));
+        }
+
         /// <summary>How much of a good the Hub can still store.</summary>
         private static int Room(GameState s, SimConfig c, TradeGood good)
         {
-            return good == TradeGood.Fuel ? c.Fuel.Cap - s.Fuel : good == TradeGood.EnergyCells ? Economy.EnergyCap(s, c) - s.Energy : c.Compute.Cap - s.Compute;
+            return good == TradeGood.Fuel ? Economy.FuelCap(s, c) - s.Fuel : good == TradeGood.EnergyCells ? Economy.EnergyCap(s, c) - s.Energy : good == TradeGood.Blueprints ? c.Living.BlueprintMax - s.Blueprints : c.Compute.Cap - s.Compute;
+        }
+
+        private static int AddBlueprints(GameState s, SimConfig c, int amount)
+        {
+            int got = System.Math.Max(0, System.Math.Min(amount, c.Living.BlueprintMax - s.Blueprints));
+            s.Blueprints += got;
+            return got;
         }
 
         private static int AddEnergy(GameState s, SimConfig c, int amount)
@@ -405,7 +433,7 @@ namespace Deadswitch.Sim.Systems
 
         private static int AddFuel(GameState s, SimConfig c, int amount)
         {
-            int got = System.Math.Max(0, System.Math.Min(amount, c.Fuel.Cap - s.Fuel));
+            int got = System.Math.Max(0, System.Math.Min(amount, Economy.FuelCap(s, c) - s.Fuel));
             s.Fuel += got;
             return got;
         }

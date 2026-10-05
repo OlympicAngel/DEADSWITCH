@@ -49,5 +49,17 @@ namespace Deadswitch.Art.Geometry
 
         /// <summary>Dark recessed bunker portal; its phosphor glow reads only at night (emissive).</summary>
         Portal = 33,
+
+        /// <summary>Open wasteland ground of the sector map (SPEC-033): the ground shader in its arid mode.</summary>
+        MapGround = 34,
+
+        /// <summary>Photovoltaic cells under glass: deep blue, glossy.</summary>
+        SolarCell = 35,
+
+        /// <summary>Blue paint (drums, marked crates).</summary>
+        PaintBlue = 36,
+
+        /// <summary>Hazard yellow paint (drums, marked crates).</summary>
+        PaintYellow = 37,
     }
 }

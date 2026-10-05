@@ -1,4 +1,6 @@
+using Deadswitch.Game.Core;
 using Deadswitch.Game.Store;
+using Deadswitch.Sim.Systems;
 using UnityEngine.UIElements;
 
 namespace Deadswitch.Game.UI.Screens
@@ -21,8 +23,8 @@ namespace Deadswitch.Game.UI.Screens
             _ui = tree;
             _reason = _ui.Q<Label>("prm-reason");
             _ui.Q("prm-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
-            _ui.Q("prm-buy").RegisterCallback<ClickEvent>(_ => Say(Entitlements.Instance.BuyPremium()));
-            _ui.Q("prm-restore").RegisterCallback<ClickEvent>(_ => Say(Entitlements.Instance.Restore()));
+            _ui.Q("prm-buy").RegisterCallback<ClickEvent>(_ => Entitlements.Instance.BuyPremium(Say));
+            _ui.Q("prm-restore").RegisterCallback<ClickEvent>(_ => Entitlements.Instance.Restore(Say));
             for (int i = 0; i < Theme.Count; i++)
             {
                 int theme = i;
@@ -39,8 +41,10 @@ namespace Deadswitch.Game.UI.Screens
                 });
             }
 
-            _ui.Q("ad-1").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.ThemeCold)));
-            _ui.Q("ad-2").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.ThemeBone)));
+            _ui.Q("ad-1").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.ThemeCold, Say));
+            _ui.Q("ad-2").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.ThemeBone, Say));
+            _ui.Q("ad-3").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.SalvageRoll, Say));
+            _ui.Q("ad-4").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.IdleCap, Say));
             _ui.Q("prm-season").RegisterCallback<ClickEvent>(_ => openSeason());
             SeasonPass.Changed += Refresh;
             Entitlements.Instance.Changed += Refresh;
@@ -94,6 +98,16 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q("ad-" + i).EnableInClassList("is-disabled", owned || blocked != null);
                 Kit.SetButtonText(_ui.Q("ad-" + i), owned ? RewardedAds.Name((ConvenienceGrant)i) + " OWNED" : "WATCH AD // " + (i == 1 ? "COLD SIGNAL" : "BONE"));
             }
+
+            // convenience grants (doc 10 s1.1): the sim decides when they are allowed
+            Deadswitch.Sim.State.GameState gs = GameHost.Instance.Sim.State;
+            Deadswitch.Sim.SimConfig gc = GameHost.Instance.Sim.Config;
+            bool salvage = blocked == null && AdSystem.Available(gs, AdGrant.SalvageRoll) == Deadswitch.Sim.Commands.RejectReason.None;
+            bool storage = blocked == null && AdSystem.Available(gs, AdGrant.IdleCap) == Deadswitch.Sim.Commands.RejectReason.None;
+            _ui.Q("ad-3").EnableInClassList("is-disabled", !salvage);
+            _ui.Q("ad-4").EnableInClassList("is-disabled", !storage);
+            Kit.SetButtonText(_ui.Q("ad-3"), "AD // SALVAGE +" + gc.Ads.SalvageEnergy + " E +" + gc.Ads.SalvageFuel + " F (DAILY)");
+            Kit.SetButtonText(_ui.Q("ad-4"), "AD // STORAGE +" + gc.Ads.CapPct + "% FOR " + gc.Ads.CapHours + " H");
         }
     }
 }

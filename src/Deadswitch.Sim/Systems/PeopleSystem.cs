@@ -13,7 +13,7 @@ namespace Deadswitch.Sim.Systems
             GameState s = ctx.State;
             // people away on operations and in faction camps still hold their place (F-019, SPEC-019)
             int cap = Economy.PopulationCap(s, ctx.Config) - WorldSystem.Away(s) - IntelSystem.Away(s, ctx.Config);
-            if (!s.Blackout && s.People < cap)
+            if (!s.Blackout && !PhaseSystem.RegrowthHalted(s) && s.People < cap)
             {
                 int gap = cap - s.People;
                 // wrecks in the yard slow regrowth (SPEC-018)

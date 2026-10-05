@@ -36,30 +36,35 @@
 .map-spy__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 16px; letter-spacing: 1px; color: var(--c-text-dim); }
 .map-heat__cell.is-hot .map-heat__level { color: var(--c-red); }
 
-/* plot: square, Hub at the center */
-.map-plot { flex-grow: 1; flex-shrink: 1; min-height: 360px; max-height: 860px; border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); overflow: hidden; }
-.map-ring { position: absolute; border-width: 1px; border-color: var(--c-line); border-radius: 50%; }
-.map-ring--1 { left: 37.5%; top: 37.5%; width: 25%; height: 25%; }
-.map-ring--2 { left: 25%; top: 25%; width: 50%; height: 50%; }
-.map-ring--3 { left: 12.5%; top: 12.5%; width: 75%; height: 75%; }
-.map-axis { position: absolute; background-color: var(--c-line); }
-.map-axis--h { left: 0; right: 0; top: 50%; height: 1px; }
-.map-axis--v { top: 0; bottom: 0; left: 50%; width: 1px; }
-.map-hub { position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; margin-left: -18px; margin-top: -18px; border-width: var(--bw); border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.18); rotate: 45deg; }
-.map-hub__label { position: absolute; left: 44px; top: -8px; rotate: -45deg; -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-phosphor); }
+/* sector map (SPEC-033): render behind, illustrated layer, then pins with tags */
+.map-plot { flex-grow: 1; flex-shrink: 1; min-height: 360px; max-height: 960px; border-width: var(--bw); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); overflow: hidden; }
+.map-render { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: stretch-to-fill; }
+.map-overlay { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .map-sites { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 
-.map-site { position: absolute; flex-direction: row; align-items: center; margin-left: -16px; margin-top: -16px; }
-.map-site__mark { width: 32px; height: 32px; border-width: var(--bw); border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.18); }
-.map-site--vanguard > .map-site__mark { border-color: var(--c-blue); background-color: rgba(130, 174, 182, 0.18); rotate: 45deg; }
-.map-site--holdout > .map-site__mark { border-color: var(--c-white); background-color: rgba(240, 235, 221, 0.14); border-radius: 10px; rotate: 45deg; width: 26px; height: 26px; }
-.map-site--church > .map-site__mark { border-color: var(--c-magenta); background-color: rgba(193, 118, 180, 0.18); border-radius: 50%; }
+/* a pin is a 56 px touch target centred on its point; the tag hangs beside it */
+.map-site { position: absolute; width: 56px; height: 56px; margin-left: -28px; margin-top: -28px; align-items: center; justify-content: center; }
+.map-site__mark { width: 22px; height: 22px; border-width: var(--bw); border-color: var(--c-amber); background-color: rgba(12, 14, 13, 0.72); }
+.map-site__tag { position: absolute; left: 46px; top: 4px; padding: 2px var(--s-2); background-color: rgba(12, 14, 13, 0.66); }
+.map-site--left > .map-site__tag { left: auto; right: 46px; }
+.map-site--low > .map-site__tag { top: 40px; }
+.map-site__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text); white-space: nowrap; }
+.map-site__est { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-amber); white-space: nowrap; }
+.map-site__est.is-known { color: var(--c-text-dim); }
+.map-site__est.is-hidden { display: none; }
+.map-site--vanguard > .map-site__mark { border-color: var(--c-blue); rotate: 45deg; }
+.map-site--holdout > .map-site__mark { border-color: var(--c-white); rotate: 45deg; border-radius: 6px; }
+.map-site--church > .map-site__mark { border-color: var(--c-magenta); border-radius: 50%; }
+.map-site--wild > .map-site__mark { border-color: rgb(158, 217, 204); border-radius: 4px; }
+.map-site--hub > .map-site__mark { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.3); rotate: 45deg; }
+.map-site--hub .map-site__name { color: var(--c-phosphor); }
+.map-site--fallout > .map-site__mark { border-color: var(--c-red); background-color: rgba(216, 91, 82, 0.3); }
+.map-site--fallout .map-site__name { color: var(--c-red); }
 .map-site--outpost > .map-site__mark { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.4); }
 .map-site--cooldown > .map-site__mark { opacity: 0.45; }
-.map-site__name { margin-left: var(--s-2); -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
-.map-site.is-selected > .map-site__mark { border-width: 4px; scale: 1.25 1.25; }
-.map-site.is-selected > .map-site__name { color: var(--c-text); }
-.map-site--op > .map-site__name { color: var(--c-amber); }
+.map-site.is-selected > .map-site__mark { border-width: 4px; scale: 1.3 1.3; }
+.map-site.is-selected > .map-site__tag { border-left-width: 3px; border-left-color: var(--c-text); }
+.map-site--op .map-site__name { color: var(--c-amber); }
 
 .map-ops { margin-top: var(--s-2); }
 .map-op { padding: var(--s-1) 0; border-bottom-width: 1px; border-color: var(--c-line); }

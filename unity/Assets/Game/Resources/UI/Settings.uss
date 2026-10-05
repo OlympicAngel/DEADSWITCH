@@ -23,3 +23,6 @@
 .set-btn { margin-top: var(--s-6); }
 .set-dev.is-hidden { display: none; }
 .set-about { margin-top: var(--s-6); font-size: var(--fs-micro); }
+
+/* cloud backup row (doc 10 s2) */
+.set-gap { margin-left: var(--s-2); }

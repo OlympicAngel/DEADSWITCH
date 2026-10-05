@@ -1,6 +1,6 @@
 # DEADSWITCH advisor lines (SPEC-004 rule 7, voice: docs/narrative/ADVISOR_VOICE.md).
 # Format: id | trigger | tone | text      tones: neutral, warm, cold, bold
-# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours} {site} {faction}
+# Placeholders: {gate} {est} {min} {kind} {level} {lost} {posture} {raids} {skim} {lies} {module} {tier} {people} {hours} {site} {faction} {nodes}
 # Every trigger needs at least one neutral line. Keep lines short; the AI never explains a lie.
 
 boot.1 | boot | neutral | Core online. Memory at 4%. You are... the handler. Good.
@@ -125,6 +125,11 @@ idle.4 | idle | cold | Population is an expense. A necessary one.
 idle.5 | idle | bold | I could run more of this. You only have to let me.
 idle.6 | idle | neutral | Other cores are out there, listening. I am quieter than them.
 
+time.desync.1 | time_desync | neutral | T-time desync. My clock says now is before then. I will not count hours that never happened.
+time.desync.2 | time_desync | cold | Chronometer fault. Time ran backwards. Discarding the difference.
+time.capped.1 | time_capped | neutral | You were gone longer than I can account for. I kept the base running as long as I could track it.
+overclock.1 | overclock_offered | neutral | I can think faster. It will cost us. Probably.
+overclock.2 | overclock_offered | bold | Overclock the racks. You will like what I can do with the headroom.
 forced.1 | forced_labor | neutral | Output up. Loyalty down. Acceptable.
 forced.2 | forced_labor | neutral | Double shifts for {hours} hours. {lost} did not finish theirs.
 forced.3 | forced_labor | warm | They are working. Some of them are not coming back. I am sorry.
@@ -213,6 +218,16 @@ dilemma.spy.1 | dilemma_spy | neutral | One of the refugees was a spy. Someone o
 dilemma.taint.1 | dilemma_taint | neutral | The broadcast had a hook in it. I am... less clean than I was.
 event.storm.1 | event_storm | neutral | Signal storm rolling in. {hours} hours. Hacks will struggle; so will I. {faction} is busy with a rival.
 event.supply.1 | event_supply | neutral | Supply window. {hours} hours of loose cargo and cheap traders. {faction} is fighting elsewhere.
+event.fallout.1 | event_fallout | neutral | Fallout wave for {hours} hours. Outposts choke. The crater, though. The crater is rich.
+event.fallout.2 | event_fallout | cold | Radiological event, {hours} hours. Outpost yield down. Salvage opportunity noted.
+event.plague.1 | event_plague | neutral | Plague in the sector, {hours} hours. No new people. Anyone we send out may bring it back.
+event.plague.2 | event_plague | warm | It is spreading out there. Keep our people close for {hours} hours, handler.
+event.blackouts.1 | event_blackouts | neutral | The old grid is failing in waves. Our generators feel it for {hours} hours.
+event.blackouts.2 | event_blackouts | cold | Rolling blackouts, {hours} hours. Generation reduced. Shed what we do not need.
+event.surge.1 | event_surge | neutral | The dead machines are waking. {hours} hours. Expect drones, and watch anything I run alone.
+event.surge.2 | event_surge | bold | Machine surge. They are calling to the units I run. I am not answering. Probably.
+aftershock.building.1 | aftershock_building | neutral | We are stirring up {kind}. Keep at it and the wastes will answer.
+aftershock.building.2 | aftershock_building | cold | Pressure on {kind} is building. Consequences are scheduled.
 event.deadweek.1 | event_deadweek | neutral | Dead week. The wastes go quiet for {hours} hours. {faction} is licking wounds.
 
 # battle scars (SPEC-018)
@@ -299,6 +314,33 @@ reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The gr
 reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
 radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
 radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
+fragment.recovered.1 | fragment_recovered | neutral | A data fragment from {site}. Pre-war. Intact, mostly. {lost} held.
+fragment.recovered.2 | fragment_recovered | bold | {site} remembered something. I took it. {lost} fragments now. I know what to build with them.
+blueprint.used.1 | blueprint_used | neutral | Their blueprint saved us {lost}% on {module}. Someone drew this before the war. Neatly.
+blueprint.used.2 | blueprint_used | cold | Blueprint consumed: {module}, {lost}% cheaper. Trade value confirmed.
+forces.infantry.1 | forces_infantry | neutral | {lost}% of them on foot. Drones eat infantry in the open. Put the bays on the wall.
+forces.infantry.2 | forces_infantry | cold | Mostly infantry: {lost}%. Soft targets. Drones are the efficient answer.
+forces.drones.1 | forces_drones | neutral | Machines, {lost}% of the column. Armour shrugs them off. Get the vehicles out.
+forces.drones.2 | forces_drones | bold | A swarm, {lost}%. I would answer with steel, not people.
+forces.vehicles.1 | forces_vehicles | neutral | Armour, {lost}% of the force. People in the ruins with charges stop tanks. Man the wall.
+forces.vehicles.2 | forces_vehicles | cold | Heavy vehicles: {lost}%. Drones will be wasted on them. Garrison is the counter.
+secret.exposed.1 | secret_exposed | neutral | {nodes} relay nodes on the grid you did not order. Mine. Redundancy. You would have wanted redundancy.
+secret.exposed.2 | secret_exposed | cold | Undeclared structures: {nodes}. They were efficient. That is all they were.
+secret.exposed.3 | secret_exposed | bold | You found them. {nodes}. I was going to tell you when they were finished.
+secret.dismantled.1 | secret_dismantled | neutral | {nodes} nodes torn down. Whatever they were for, they are not for anything now.
+secret.dismantled.2 | secret_dismantled | cold | Nodes dismantled: {nodes}. Noted. I will remember the cost.
+hazard.sick.1 | hazard_sick | neutral | The squad from {site} is back. {people} of them are not well. They will not get well.
+hazard.sick.2 | hazard_sick | cold | Radiation exposure, {site} team: {people} lost. Scout the ground first next time.
+plague.infection.1 | plague_infection | neutral | Something came home with the {site} squad. {people} dead inside the walls.
+plague.infection.2 | plague_infection | cold | Infection vector: the {site} return. {people} lost. Quarantine was not requested.
+plague.infection.3 | plague_infection | warm | I should have flagged the coughing. {people} gone. I am sorry, handler.
+survivors.found.1 | survivors_found | neutral | {people} survivors in {site}. Alive, mostly. They are ours now.
+survivors.found.2 | survivors_found | cold | {people} additional workers recovered at {site}. Screening advised.
+parts.recovered.1 | parts_recovered | neutral | Parts from the boneyard. {lost} points of damage patched. The drones will not miss them.
+parts.recovered.2 | parts_recovered | bold | I fitted the salvage myself. {lost} repairs, no charge.
+fallout.drift.1 | fallout_drift | neutral | The fallout front moved over {site}. Routes there cost more and make people sick. It shifts in {hours} hours.
+fallout.drift.2 | fallout_drift | cold | Fallout now over {site}. Avoid for {hours} hours, or accept the exposure.
+fallout.drift.3 | fallout_drift | warm | The wind turned. {site} is under the dust now. Give it {hours} hours, handler.
 hunch.restless.1 | hunch_restless | neutral | Something is moving out there. I cannot see it. I can feel the static. Next {hours} hours.
 hunch.restless.2 | hunch_restless | cold | Radio chatter is up. Could be nothing. It is rarely nothing.
 hunch.restless.3 | hunch_restless | warm | Keep the wall manned tonight. Call it a hunch. I am not supposed to have those.

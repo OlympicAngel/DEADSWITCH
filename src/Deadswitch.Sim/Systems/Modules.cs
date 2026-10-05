@@ -137,7 +137,19 @@ namespace Deadswitch.Sim.Systems
                 return RejectReason.Locked;
             }
 
+            // key modules rebuild from recovered data, not from scratch (SPEC-037, doc 03 s7)
+            if (NeedsFragment(node) && s.DataFragments <= 0)
+            {
+                return RejectReason.NeedsFragment;
+            }
+
             return RejectReason.None;
+        }
+
+        /// <summary>Each field's capstone (node 6) needs a recovered data fragment to start (SPEC-037).</summary>
+        public static bool NeedsFragment(ModuleNode node)
+        {
+            return node == ModuleNode.LG6 || node == ModuleNode.WF6 || node == ModuleNode.CY6 || node == ModuleNode.ST6;
         }
 
         public static CommandResult Start(SimContext ctx, Command cmd)
@@ -164,6 +176,13 @@ namespace Deadswitch.Sim.Systems
 
             int energy = ctx.Config.Modules.ResearchEnergy[d.Index];
             int compute = ctx.Config.Modules.ResearchCompute[d.Index];
+            bool blueprint = !memory && s.Blueprints > 0;
+            if (blueprint)
+            {
+                // a traded blueprint (doc 10 s5) makes the field research cheaper
+                energy = SimMath.PctFloor(energy, 100 - ctx.Config.Living.BlueprintDiscountPct);
+                compute = SimMath.PctFloor(compute, 100 - ctx.Config.Living.BlueprintDiscountPct);
+            }
             if (s.Energy < energy)
             {
                 return CommandResult.Reject(RejectReason.NotEnoughEnergy);
@@ -175,6 +194,23 @@ namespace Deadswitch.Sim.Systems
             }
 
             int minutes = ctx.Config.Modules.ResearchMinutes[d.Index];
+            if (memory)
+            {
+                // memory restoration chambers (SPEC-038) speed the trunk
+                minutes = System.Math.Max(1, SimMath.PctFloor(minutes, 100 - System.Math.Min(60, Economy.SumOutput(s, ctx.Config, FacilityKind.MemoryChamber))));
+            }
+
+            if (NeedsFragment(node))
+            {
+                s.DataFragments--;
+            }
+
+            if (blueprint)
+            {
+                s.Blueprints--;
+                ctx.Emit(EventKind.BlueprintUsed, (int)node, ctx.Config.Living.BlueprintDiscountPct);
+            }
+
             s.Energy -= energy;
             s.Compute -= compute;
             if (memory)
@@ -220,6 +256,11 @@ namespace Deadswitch.Sim.Systems
             s.Energy = System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + energy);
             s.Compute = System.Math.Min(ctx.Config.Compute.Cap, s.Compute + compute);
             ctx.Emit(EventKind.ResearchCancelled, memory ? s.MemoryNode : s.ResearchNode, energy, compute);
+            if (!memory && NeedsFragment((ModuleNode)s.ResearchNode))
+            {
+                // the fragment was not used up
+                s.DataFragments = System.Math.Min(ctx.Config.Modules.FragmentMax, s.DataFragments + 1);
+            }
             if (memory)
             {
                 ClearMemory(s);

@@ -129,7 +129,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             uint h = SimMath.Hash((uint)attackId * 0xDEF7u, (uint)(s.Rng.State >> 32));
-            if (h % 100 >= (uint)c.Glitch.DefectionPct)
+            if (h % 100 >= (uint)(c.Glitch.DefectionPct + (LivingSystem.Active(s, WorldEventKind.MachineSurge) ? c.Phases.SurgeDefectionPct : 0)))
             {
                 return -1;
             }
@@ -138,7 +138,7 @@ namespace Deadswitch.Sim.Systems
             {
                 int i = (int)((n + (h >> 8)) % (uint)s.Slots.Count);
                 FacilitySlot f = s.Slots[i];
-                if (f.Kind == FacilityKind.Turret && Economy.IsRunning(f) && !f.Staffed)
+                if (UnitSystem.IsWarMachine(f.Kind) && Economy.IsRunning(f) && !f.Staffed)
                 {
                     int guns = Economy.EffectiveOutput(s, c, f);
                     defense = System.Math.Max(0, defense - guns);
@@ -205,6 +205,10 @@ namespace Deadswitch.Sim.Systems
                     }
 
                     hours = g.CollapseStallHours;
+                    s.CollapseWatchUntilTick = s.Tick + (g.CollapseStallHours * hour);
+
+                    // doc 03 s3: a collapse is a world-wide disaster phase (SPEC-036 phases)
+                    LivingSystem.StartPhase(ctx, PhaseSystem.Phase((int)(SimMath.Hash((uint)(s.Tick / hour) ^ 0xC011u, (uint)(s.Rng.State >> 32)) % 3u)));
                     break;
                 case CrisisKind.Takeover:
                     s.TakeoverUntilTick = s.Tick + (g.TakeoverHours * hour);
@@ -214,6 +218,8 @@ namespace Deadswitch.Sim.Systems
                     ModuleNode node = ThreatSystem.PickLock(s);
                     if (node != ModuleNode.None)
                     {
+                        // a rollback during a collapse spoils the mastery
+                        s.CollapseWatchUntilTick = 0;
                         s.LockedModule = (int)node;
                         s.LockedUntilTick = s.Tick + (g.RollbackHours * hour);
                         hours = g.RollbackHours;

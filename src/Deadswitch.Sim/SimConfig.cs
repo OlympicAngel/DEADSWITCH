@@ -44,6 +44,11 @@ namespace Deadswitch.Sim
         public ChapterConfig Chapters = new ChapterConfig();
         public AdaptConfig Adapt = new AdaptConfig();
         public LuckConfig Luck = new LuckConfig();
+        public HazardConfig Hazards = new HazardConfig();
+        public UnitConfig Units = new UnitConfig();
+        public PhaseConfig Phases = new PhaseConfig();
+        public AdConfig Ads = new AdConfig();
+        public SecretConfig Secrets = new SecretConfig();
         public HostConfig Host = new HostConfig();
 
         // Facility tables (SPEC-002). Index 0 = level 1. All (tune).
@@ -70,6 +75,72 @@ namespace Deadswitch.Sim
             crew: new[] { 4, 6, 8 });
 
         public ReactorConfig ReactorRules = new ReactorConfig();
+
+        public FacilityConfig DroneBay = new FacilityConfig(
+            "facility_drone_bay",
+            "Drone Bay: reprogrammed rogue machines (doc 02 s6, SPEC-035). Output = drone defense rating while powered. Drones beat infantry, lose to vehicles.",
+            "Drone defense rating per level.").Set(
+            costEnergy: new[] { 220, 380, 620, 1000 },
+            costCompute: new[] { 20, 40, 70, 110 },
+            buildMinutes: new[] { 40, 90, 180, 360 },
+            upkeepPerHour: new[] { 70, 110, 160, 230 },
+            output: new[] { 24, 38, 56, 80 },
+            crew: new[] { 2, 3, 4, 5 });
+
+        public FacilityConfig MotorPool = new FacilityConfig(
+            "facility_motor_pool",
+            "Motor Pool: armour and gun trucks (doc 02 s6 vehicle factory, SPEC-035). Output = vehicle defense rating while powered and fuelled. Vehicles beat drones, lose to infantry in the ruins.",
+            "Vehicle defense rating per level.").Set(
+            costEnergy: new[] { 500, 850, 1350 },
+            costCompute: new[] { 30, 60, 100 },
+            buildMinutes: new[] { 120, 240, 480 },
+            upkeepPerHour: new[] { 40, 60, 90 },
+            output: new[] { 45, 70, 100 },
+            crew: new[] { 3, 4, 6 });
+
+        public FacilityConfig SolarField = new FacilityConfig(
+            "facility_solar_field",
+            "Solar Field: scavenged panels (doc 02 s3, SPEC-038). Output = energy per game hour in daylight (full 07:00-18:00, half in the hour either side, none at night). No fuel, no upkeep.",
+            "Energy per game hour in full daylight, per level.").Set(
+            costEnergy: new[] { 260, 420, 650 },
+            costCompute: new[] { 0, 10, 20 },
+            buildMinutes: new[] { 60, 120, 240 },
+            upkeepPerHour: new[] { 0, 0, 0 },
+            output: new[] { 90, 150, 220 },
+            crew: new[] { 0, 1, 1 });
+
+        public FacilityConfig FuelDepot = new FacilityConfig(
+            "facility_fuel_depot",
+            "Fuel Depot: tank farm (doc 02 s6 Power & fuel, SPEC-038). Output = extra fuel storage while running.",
+            "Fuel storage added, per level.").Set(
+            costEnergy: new[] { 200, 350, 550 },
+            costCompute: new[] { 0, 0, 10 },
+            buildMinutes: new[] { 45, 90, 180 },
+            upkeepPerHour: new[] { 10, 15, 20 },
+            output: new[] { 120, 250, 400 },
+            crew: new[] { 1, 1, 2 });
+
+        public FacilityConfig CoolingTower = new FacilityConfig(
+            "facility_cooling_tower",
+            "Cooling Tower: heat exchangers for the racks (doc 02 s6 AI core, SPEC-038). Output = % less corruption from compute use (all towers together at most 60%).",
+            "Percent less corruption from compute use, per level.").Set(
+            costEnergy: new[] { 300, 500, 800 },
+            costCompute: new[] { 20, 40, 70 },
+            buildMinutes: new[] { 60, 150, 300 },
+            upkeepPerHour: new[] { 40, 60, 90 },
+            output: new[] { 15, 25, 35 },
+            crew: new[] { 1, 2, 2 });
+
+        public FacilityConfig MemoryChamber = new FacilityConfig(
+            "facility_memory_chamber",
+            "Memory Restoration Chamber (doc 02 s6 AI core, SPEC-038). Output = % faster memory-lane restoration (M1-M3; all chambers together at most 60%).",
+            "Percent faster memory restoration, per level.").Set(
+            costEnergy: new[] { 400, 700, 1100 },
+            costCompute: new[] { 40, 80, 140 },
+            buildMinutes: new[] { 120, 240, 480 },
+            upkeepPerHour: new[] { 50, 80, 120 },
+            output: new[] { 15, 25, 35 },
+            crew: new[] { 1, 2, 3 });
 
         public FacilityConfig Turret = new FacilityConfig(
             "facility_turret",
@@ -167,6 +238,11 @@ namespace Deadswitch.Sim
             Chapters.Visit(visitor);
             Adapt.Visit(visitor);
             Luck.Visit(visitor);
+            Hazards.Visit(visitor);
+            Units.Visit(visitor);
+            Phases.Visit(visitor);
+            Ads.Visit(visitor);
+            Secrets.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
             ServerRack.Visit(visitor);
@@ -175,6 +251,12 @@ namespace Deadswitch.Sim
             Turret.Visit(visitor);
             Reactor.Visit(visitor);
             ReactorRules.Visit(visitor);
+            DroneBay.Visit(visitor);
+            MotorPool.Visit(visitor);
+            SolarField.Visit(visitor);
+            FuelDepot.Visit(visitor);
+            CoolingTower.Visit(visitor);
+            MemoryChamber.Visit(visitor);
         }
 
         /// <summary>Table for a facility kind, or null for <see cref="State.FacilityKind.None"/> and unknown values.</summary>
@@ -194,6 +276,18 @@ namespace Deadswitch.Sim
                     return Turret;
                 case State.FacilityKind.Reactor:
                     return Reactor;
+                case State.FacilityKind.DroneBay:
+                    return DroneBay;
+                case State.FacilityKind.MotorPool:
+                    return MotorPool;
+                case State.FacilityKind.SolarField:
+                    return SolarField;
+                case State.FacilityKind.FuelDepot:
+                    return FuelDepot;
+                case State.FacilityKind.CoolingTower:
+                    return CoolingTower;
+                case State.FacilityKind.MemoryChamber:
+                    return MemoryChamber;
                 default:
                     return null;
             }
@@ -203,7 +297,7 @@ namespace Deadswitch.Sim
         public System.Collections.Generic.List<string> Validate()
         {
             var problems = new System.Collections.Generic.List<string>();
-            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret, Reactor })
+            foreach (FacilityConfig f in new[] { Generator, ServerRack, LifeSupport, Battery, Turret, Reactor, DroneBay, MotorPool, SolarField, FuelDepot, CoolingTower, MemoryChamber })
             {
                 int n = f.Output.Length;
                 if (f.CostEnergy.Length != n || f.CostCompute.Length != n || f.BuildMinutes.Length != n || f.UpkeepPerHour.Length != n || f.Crew.Length != n)

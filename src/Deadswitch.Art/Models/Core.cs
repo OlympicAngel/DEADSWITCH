@@ -271,7 +271,7 @@ namespace Deadswitch.Art.Models
             const float z = FacadeZ;
             KitParts.Genset(b, new Vector3(-5.7f, 0, z - 1.2f), 0f);
             KitModules.LeanTo(b, new Vector3(-5.6f, 0, z - 0.3f), 3.6f, 1.9f, 3.2f, 2.7f, Mat.Rust);
-            KitParts.Pipe(b, new[] { new Vector3(-6.3f, 2.0f, z - 1.05f), new Vector3(-6.3f, 3.3f, z - 1.05f), new Vector3(-6.3f, 3.3f, z - 0.1f) }, 0.08f, Mat.Rust);
+            KitParts.Pipe(b, new[] { new Vector3(-6.3f, 2.0f, z - 1.05f), new Vector3(-6.3f, 3.3f, z - 1.05f), new Vector3(-6.3f, 3.3f, z - 0.1f) }, 0.08f, Mat.Copper);
             KitParts.Transformer(b, new Vector3(6.4f, 0, z - 1.2f), 1.1f);
             KitModules.Fence(b, new Vector3(5.0f, 0, z - 2.4f), new Vector3(8.0f, 0, z - 2.4f), 1.8f);
             KitModules.Fence(b, new Vector3(8.0f, 0, z - 2.4f), new Vector3(8.0f, 0, z - 0.6f), 1.8f);

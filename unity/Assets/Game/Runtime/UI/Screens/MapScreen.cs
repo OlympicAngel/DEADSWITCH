@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Deadswitch.Art.World;
+using Deadswitch.Game.Base;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Host.Narrative;
@@ -6,14 +8,16 @@ using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Deadswitch.Game.UI.Screens
 {
     /// <summary>
-    /// SECTOR MAP (F-019): faction heat, the sites around the Hub, operations in the field and the selected site's
-    /// sheet (scout, raid, hack with the AI's possibly wrong odds; claim cleared ruins as an outpost). Every action
-    /// is a sim command. Layout: Resources/UI/Map.uxml + Map.uss.
+    /// SECTOR MAP (F-019, SPEC-033): faction heat, the 2.5D map (a 3D render of the sector from <see cref="MapView"/>,
+    /// the illustrated layer drawn with Painter2D, pins on the projected landmarks with the AI's estimates glitching
+    /// by corruption), operations in the field and the selected site's sheet. Every action is a sim command.
+    /// Layout: Resources/UI/Map.uxml + Map.uss.
     /// </summary>
     public sealed class MapScreen : IGameScreen
     {
@@ -25,6 +29,18 @@ namespace Deadswitch.Game.UI.Screens
         private readonly VisualElement _ops;
         private readonly Label _reason;
         private readonly List<VisualElement> _markers = new List<VisualElement>();
+        private readonly List<Label> _estimates = new List<Label>();
+        private readonly VisualElement _plot;
+        private readonly VisualElement _render;
+        private readonly VisualElement _overlay;
+        private VisualElement _hubMarker;
+        private SectorOverlay _layer;
+        private float _hazeTime;
+        private float _tickClock;
+        private int _frame;
+        private float _pressAt = -1f;
+        private int _pressSite = -1;
+        private bool _longPressed;
         private int _selected;
         private OpKind _kind = OpKind.Raid;
         private int _squad = 4;
@@ -42,6 +58,17 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _sites = _ui.Q("map-sites");
+            _plot = _ui.Q("map-plot");
+            _render = _ui.Q("map-render");
+            _overlay = _ui.Q("map-overlay");
+            _overlay.generateVisualContent += DrawOverlay;
+            _plot.RegisterCallback<GeometryChangedEvent>(_ =>
+            {
+                if (_visible)
+                {
+                    RenderMap(true);
+                }
+            });
             _ops = _ui.Q("map-ops");
             _reason = _ui.Q<Label>("map-reason");
             for (int f = 0; f < WorldSystem.FactionCount; f++)
@@ -67,7 +94,7 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q("ally-" + f).RegisterCallback<ClickEvent>(_ => Ally(faction));
             }
 
-            for (int g = 0; g <= (int)TradeGood.Compute; g++)
+            for (int g = 0; g <= (int)TradeGood.Blueprints; g++)
             {
                 var good = (TradeGood)g;
                 _ui.Q("trade-" + g).RegisterCallback<ClickEvent>(_ => Run(Command.Trade(WorldSystem.Sites[_selected].Owner, good)));
@@ -80,11 +107,12 @@ namespace Deadswitch.Game.UI.Screens
                     Refresh();
                 }
             };
-            UiRoot.Instance.Frame += _ =>
+            UiRoot.Instance.Frame += dt =>
             {
                 if (_visible)
                 {
                     RefreshOps();
+                    TickMap(dt);
                 }
             };
         }
@@ -97,6 +125,8 @@ namespace Deadswitch.Game.UI.Screens
         {
             _visible = true;
             _reason.text = string.Empty;
+            MapView.Ensure();
+            RenderMap(true);
             Refresh();
         }
 
@@ -109,28 +139,313 @@ namespace Deadswitch.Game.UI.Screens
         {
             _sites.Clear();
             _markers.Clear();
+            _estimates.Clear();
             for (int i = 0; i < WorldSystem.Sites.Count; i++)
             {
                 SiteDef d = WorldSystem.Sites[i];
                 int index = i;
-                var marker = new VisualElement();
-                marker.AddToClassList("map-site");
-                marker.AddToClassList(FactionClass[(int)d.Owner]);
-                marker.style.left = Length.Percent(50f + (d.MapX * 0.45f));
-                marker.style.top = Length.Percent(50f - (d.MapY * 0.45f));
-                var mark = new VisualElement();
-                mark.AddToClassList("map-site__mark");
-                marker.Add(mark);
-                marker.Add(Kit.Label(d.Name, "map-site__name"));
+                VisualElement marker = Marker(d.Name, HazardSystem.Wild(d.Kind) ? "map-site--wild" : FactionClass[(int)d.Owner], out Label estimate);
                 marker.RegisterCallback<ClickEvent>(_ =>
                 {
+                    if (_longPressed)
+                    {
+                        _longPressed = false;
+                        return;
+                    }
+
                     _selected = index;
                     _reason.text = string.Empty;
                     Refresh();
                 });
+
+                // long-press quick action (doc 08 s4): send a two-person scout team straight from the pin
+                marker.RegisterCallback<PointerDownEvent>(_ =>
+                {
+                    _pressAt = Time.realtimeSinceStartup;
+                    _pressSite = index;
+                });
+                marker.RegisterCallback<PointerUpEvent>(_ =>
+                {
+                    bool held = _pressSite == index && _pressAt >= 0f && Time.realtimeSinceStartup - _pressAt >= 0.55f;
+                    _pressAt = -1f;
+                    if (held)
+                    {
+                        _longPressed = true;
+                        _selected = index;
+                        Run(Command.LaunchOp(index, OpKind.Scout, 2));
+                        if (string.IsNullOrEmpty(_reason.text))
+                        {
+                            _reason.text = "Scouts out to " + WorldSystem.Sites[index].Name + ". Two of them.";
+                        }
+                    }
+                });
                 _sites.Add(marker);
                 _markers.Add(marker);
+                _estimates.Add(estimate);
             }
+
+            _hubMarker = Marker("HUB S-17", "map-site--hub", out Label hubEstimate);
+            hubEstimate.EnableInClassList("is-hidden", true);
+            _sites.Add(_hubMarker);
+        }
+
+        /// <summary>A pin (touch target) with a tag: the site's name and, below it, the AI's defense estimate.</summary>
+        private static VisualElement Marker(string name, string kindClass, out Label estimate)
+        {
+            var marker = new VisualElement();
+            marker.AddToClassList("map-site");
+            marker.AddToClassList(kindClass);
+            marker.style.left = Length.Percent(-100f);
+            var mark = new VisualElement();
+            mark.AddToClassList("map-site__mark");
+            marker.Add(mark);
+            var tag = new VisualElement();
+            tag.AddToClassList("map-site__tag");
+            tag.pickingMode = PickingMode.Ignore;
+            tag.Add(Kit.Label(name, "map-site__name"));
+            estimate = Kit.Label(string.Empty, "map-site__est");
+            tag.Add(estimate);
+            marker.Add(tag);
+            return marker;
+        }
+
+        /// <summary>Renders the 3D sector at the plot's pixel size (only when the size or the hour's light changed).</summary>
+        private void RenderMap(bool force)
+        {
+            MapView view = MapView.Instance;
+            Rect r = _plot.contentRect;
+            if (view == null || float.IsNaN(r.width) || r.width < 32f || r.height < 32f || _plot.panel == null)
+            {
+                return;
+            }
+
+            float scale = Screen.height / Mathf.Max(1f, _plot.panel.visualTree.layout.height);
+            if (view.Render(Mathf.RoundToInt(r.width * scale), Mathf.RoundToInt(r.height * scale), force) || force)
+            {
+                _render.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(view.Texture));
+                _render.MarkDirtyRepaint();
+                RefreshLayer(_host.Sim.State);
+            }
+        }
+
+        /// <summary>Per frame while open: the haze drifts, estimates flicker by corruption, the light follows the hour.</summary>
+        private void TickMap(float dt)
+        {
+            GameState s = _host.Sim.State;
+            bool reduced = _host.Settings.ReducedMotion;
+            _tickClock += dt;
+            if (_tickClock < 0.12f)
+            {
+                return;
+            }
+
+            _tickClock = 0f;
+            _frame++;
+            if (_frame % 40 == 0)
+            {
+                RenderMap(false);
+            }
+
+            if (!reduced && s.FalloutSite >= 0 && _layer != null && MapView.Instance != null)
+            {
+                // only the haze moves; the rest of the layer waits for a state change
+                _hazeTime += 0.12f;
+                _layer.Redrift(s, MapView.Instance.Pose, MapView.Instance.Aspect, BaseView.Seed, _hazeTime);
+                _overlay.MarkDirtyRepaint();
+            }
+
+            if (!reduced && GlitchWeight(s) > 0f)
+            {
+                RefreshEstimates(s);
+            }
+        }
+
+        private float GlitchWeight(GameState s)
+        {
+            if (_host.Settings.ReducedMotion)
+            {
+                return 0f;
+            }
+
+            return GlitchText.BandWeight((int)CorruptionSystem.Band(_host.Sim.Config, s.CorruptionMilli)) * _host.Settings.Effects;
+        }
+
+        /// <summary>Rebuilds the illustrated layer and moves the pins onto the projected landmarks, labels laid out to miss each other.</summary>
+        private void RefreshLayer(GameState s)
+        {
+            MapView view = MapView.Instance;
+            if (view == null || view.Texture == null)
+            {
+                return;
+            }
+
+            _layer = SectorOverlay.Build(s, view.Pose, view.Aspect, BaseView.Seed, _hazeTime);
+            _overlay.MarkDirtyRepaint();
+
+            Rect r = _plot.contentRect;
+            float font = _markers.Count > 0 && _markers[0].Q<Label>().resolvedStyle.fontSize > 0f ? _markers[0].Q<Label>().resolvedStyle.fontSize : 20f;
+            int n = _markers.Count;
+            var pins = new System.Numerics.Vector2[n + 1];
+            var widths = new float[n + 1];
+            for (int i = 0; i < n; i++)
+            {
+                pins[i] = _layer.SiteAnchors[i];
+                widths[i] = ((Label(i).Length * 0.62f * font) + 24f) / r.width;
+            }
+
+            pins[n] = _layer.HubAnchor;
+            widths[n] = ((8 * 0.62f * font) + 24f) / r.width;
+            int[] sides = SectorOverlay.PlaceLabels(pins, widths, (font * 2.9f) / r.height, 28f / r.height);
+            for (int i = 0; i <= n; i++)
+            {
+                VisualElement m = i < n ? _markers[i] : _hubMarker;
+                m.style.left = Length.Percent(pins[i].X * 100f);
+                m.style.top = Length.Percent(pins[i].Y * 100f);
+                m.EnableInClassList("map-site--left", sides[i] % 2 == 1);
+                m.EnableInClassList("map-site--low", sides[i] >= 2);
+            }
+        }
+
+        /// <summary>The pin label for a site (state suffixes included), as shown.</summary>
+        private string Label(int i)
+        {
+            SiteState st = _host.Sim.State.Sites[i];
+            return WorldSystem.Sites[i].Name + (HazardSystem.Covered(_host.Sim.State, i) ? " // FALLOUT" : st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
+        }
+
+        /// <summary>Under each pin: the scouted defense, or the AI's estimate, which flickers as the core corrupts.</summary>
+        private void RefreshEstimates(GameState s)
+        {
+            SimConfig c = _host.Sim.Config;
+            float weight = GlitchWeight(s);
+            for (int i = 0; i < _estimates.Count; i++)
+            {
+                SiteState st = s.Sites[i];
+                Label est = _estimates[i];
+                est.EnableInClassList("is-hidden", st.Outpost);
+                est.EnableInClassList("is-known", st.Scouted);
+                string text = (st.Scouted ? "DEF " : "~") + WorldSystem.EstimatedDefense(s, c, i);
+                est.text = st.Scouted ? text : GlitchText.Flicker(text, weight, _frame + (i * 7));
+            }
+        }
+
+        /// <summary>
+        /// Draws the illustrated layer with raw UI meshes (fans for the blobs, quads for lines; works on every
+        /// UI Toolkit version): shapes first, then a leader line from each pin to its landmark.
+        /// </summary>
+        private void DrawOverlay(MeshGenerationContext ctx)
+        {
+            if (_layer == null)
+            {
+                return;
+            }
+
+            Rect r = _overlay.contentRect;
+            var pts = new List<Vector2>();
+            foreach (OverlayShape shape in _layer.Shapes)
+            {
+                if (shape.Points.Count < 2)
+                {
+                    continue;
+                }
+
+                pts.Clear();
+                foreach (System.Numerics.Vector2 q in shape.Points)
+                {
+                    pts.Add(new Vector2(q.X * r.width, q.Y * r.height));
+                }
+
+                Color32 color = new Color(shape.Color.X, shape.Color.Y, shape.Color.Z, shape.Color.W);
+                if (shape.Fill)
+                {
+                    Fan(ctx, pts, color);
+                }
+                else
+                {
+                    Polyline(ctx, pts, Mathf.Max(1f, shape.Width * r.height), color);
+                }
+            }
+
+            // leader lines: each pin floats over its landmark; the line shows where it stands
+            for (int i = 0; i < _layer.SiteAnchors.Length; i++)
+            {
+                SiteDef d = WorldSystem.Sites[i];
+                Vector3 tint = HazardSystem.Wild(d.Kind) ? new Vector3(0.62f, 0.85f, 0.8f) : ToUnity(SectorOverlay.FactionTint[(int)d.Owner]);
+                pts.Clear();
+                pts.Add(new Vector2(_layer.SiteAnchors[i].X * r.width, (_layer.SiteAnchors[i].Y * r.height) + 12f));
+                pts.Add(new Vector2(_layer.GroundAnchors[i].X * r.width, _layer.GroundAnchors[i].Y * r.height));
+                Polyline(ctx, pts, 2f, new Color(tint.x, tint.y, tint.z, 0.7f));
+            }
+        }
+
+        /// <summary>A filled blob as a triangle fan around its centroid (the overlay's blobs are star-shaped).</summary>
+        private static void Fan(MeshGenerationContext ctx, List<Vector2> pts, Color32 color)
+        {
+            Vector2 c = Vector2.zero;
+            foreach (Vector2 q in pts)
+            {
+                c += q;
+            }
+
+            c /= pts.Count;
+
+            // UI meshes want clockwise triangles (y down): follow the outline's own winding
+            float area = 0f;
+            for (int k = 0; k < pts.Count; k++)
+            {
+                Vector2 a = pts[k];
+                Vector2 b = pts[(k + 1) % pts.Count];
+                area += (a.x * b.y) - (b.x * a.y);
+            }
+
+            bool clockwise = area > 0f;
+            MeshWriteData mesh = ctx.Allocate(pts.Count + 1, pts.Count * 3);
+            mesh.SetNextVertex(new Vertex { position = new Vector3(c.x, c.y, Vertex.nearZ), tint = color });
+            foreach (Vector2 q in pts)
+            {
+                mesh.SetNextVertex(new Vertex { position = new Vector3(q.x, q.y, Vertex.nearZ), tint = color });
+            }
+
+            for (int k = 0; k < pts.Count; k++)
+            {
+                ushort here = (ushort)(1 + k);
+                ushort next = (ushort)(1 + ((k + 1) % pts.Count));
+                mesh.SetNextIndex(0);
+                mesh.SetNextIndex(clockwise ? here : next);
+                mesh.SetNextIndex(clockwise ? next : here);
+            }
+        }
+
+        /// <summary>An open polyline as one quad per segment.</summary>
+        private static void Polyline(MeshGenerationContext ctx, List<Vector2> pts, float width, Color32 color)
+        {
+            int segments = pts.Count - 1;
+            MeshWriteData mesh = ctx.Allocate(segments * 4, segments * 6);
+            float h = width * 0.5f;
+            for (int k = 0; k < segments; k++)
+            {
+                Vector2 a = pts[k];
+                Vector2 b = pts[k + 1];
+                Vector2 dir = b - a;
+                Vector2 n = dir.sqrMagnitude > 1e-6f ? new Vector2(-dir.y, dir.x).normalized * h : new Vector2(0f, h);
+                ushort i0 = (ushort)(k * 4);
+                mesh.SetNextVertex(new Vertex { position = new Vector3(a.x + n.x, a.y + n.y, Vertex.nearZ), tint = color });
+                mesh.SetNextVertex(new Vertex { position = new Vector3(b.x + n.x, b.y + n.y, Vertex.nearZ), tint = color });
+                mesh.SetNextVertex(new Vertex { position = new Vector3(b.x - n.x, b.y - n.y, Vertex.nearZ), tint = color });
+                mesh.SetNextVertex(new Vertex { position = new Vector3(a.x - n.x, a.y - n.y, Vertex.nearZ), tint = color });
+                // clockwise in y-down UI space
+                mesh.SetNextIndex(i0);
+                mesh.SetNextIndex((ushort)(i0 + 2));
+                mesh.SetNextIndex((ushort)(i0 + 1));
+                mesh.SetNextIndex(i0);
+                mesh.SetNextIndex((ushort)(i0 + 3));
+                mesh.SetNextIndex((ushort)(i0 + 2));
+            }
+        }
+
+        private static Vector3 ToUnity(System.Numerics.Vector3 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
         }
 
         private void Pick(OpKind kind)
@@ -280,15 +595,24 @@ namespace Deadswitch.Game.UI.Screens
                 _markers[i].EnableInClassList("map-site--outpost", st.Outpost);
                 _markers[i].EnableInClassList("map-site--cooldown", s.Tick < st.CooldownUntilTick);
                 _markers[i].EnableInClassList("map-site--op", busy.Contains(i));
-                _markers[i].Q<Label>().text = WorldSystem.Sites[i].Name + (st.Outpost ? " // OUTPOST" : st.Cleared ? " // CLEARED" : string.Empty);
+                _markers[i].EnableInClassList("map-site--fallout", HazardSystem.Covered(s, i));
+                _markers[i].Q<Label>(className: "map-site__name").text = Label(i);
             }
 
+            RefreshEstimates(s);
+            RefreshLayer(s);
+
+            // world event and the fallout front (SPEC-032) share the banner
             bool world = s.WorldEvent != WorldEventKind.None && s.Tick < s.WorldEventUntilTick;
-            _ui.Q("map-event").EnableInClassList("is-hidden", !world);
-            if (world)
+            bool fallout = s.FalloutSite >= 0;
+            _ui.Q("map-event").EnableInClassList("is-hidden", !world && !fallout);
+            string banner = world ? LivingTexts.EventName(s.WorldEvent) + " // " + LivingTexts.EventEffect(s.WorldEvent, c).ToUpperInvariant() : string.Empty;
+            if (fallout)
             {
-                _ui.Q<Label>("map-event-text").text = LivingTexts.EventName(s.WorldEvent) + " // " + LivingTexts.EventEffect(s.WorldEvent, c).ToUpperInvariant();
+                banner += (world ? "\n" : string.Empty) + "FALLOUT OVER " + WorldSystem.Sites[s.FalloutSite].Name + " // SHIFTS IN " + Fmt.Countdown(_host.SecondsUntilTick(s.NextFalloutTick));
             }
+
+            _ui.Q<Label>("map-event-text").text = banner;
 
             RefreshSheet(s, c);
             RefreshTrade(s, c);
@@ -299,10 +623,11 @@ namespace Deadswitch.Game.UI.Screens
         {
             Faction owner = WorldSystem.Sites[_selected].Owner;
             HeatLevel level = WorldSystem.Level(s.Heat[(int)owner]);
-            bool hostile = level == HeatLevel.Marked;
+            bool wild = HazardSystem.Wild(WorldSystem.Sites[_selected].Kind);
+            bool hostile = level == HeatLevel.Marked || wild;
             int left = System.Math.Max(0, c.Living.TradesPerDay - s.TradesToday[(int)owner]);
-            _ui.Q<Label>("trade-left").text = hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant();
-            for (int g = 0; g <= (int)TradeGood.Compute; g++)
+            _ui.Q<Label>("trade-left").text = wild ? "NOBODY OUT THERE TO TRADE WITH" : hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant() + " // BLUEPRINTS " + s.Blueprints + "/" + c.Living.BlueprintMax;
+            for (int g = 0; g <= (int)TradeGood.Blueprints; g++)
             {
                 var good = (TradeGood)g;
                 int price = LivingSystem.Price(s, c, owner, good);
@@ -310,7 +635,8 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("trade-" + g + "-get").text = "+" + Fmt.Num(LivingSystem.Lot(c, good)) + " " + LivingTexts.Good(good);
                 _ui.Q<Label>("trade-" + g + "-pay").text = hostile ? "-" : Fmt.Num(price) + (payFuel ? " F" : " E");
                 bool afford = price >= 0 && (payFuel ? s.Fuel >= price : s.Energy >= price);
-                _ui.Q("trade-" + g).EnableInClassList("is-disabled", hostile || left == 0 || !afford);
+                bool full = good == TradeGood.Blueprints && s.Blueprints >= c.Living.BlueprintMax;
+                _ui.Q("trade-" + g).EnableInClassList("is-disabled", hostile || left == 0 || !afford || full);
             }
         }
 
@@ -318,16 +644,18 @@ namespace Deadswitch.Game.UI.Screens
         {
             SiteDef d = WorldSystem.Sites[_selected];
             SiteState st = s.Sites[_selected];
-            string[] kinds = { "CONVOY", "OUTPOST", "DATA CENTER", "RUINS" };
+            string[] kinds = { "CONVOY", "OUTPOST", "DATA CENTER", "RUINS", "RADIATION ZONE", "PLAGUE ZONE", "MACHINE GRAVEYARD" };
+            bool wild = HazardSystem.Wild(d.Kind);
             _ui.Q<Label>("site-name").text = d.Name;
-            _ui.Q<Label>("site-owner").text = Names.Faction(d.Owner) + " // " + kinds[(int)d.Kind];
+            _ui.Q<Label>("site-owner").text = (wild ? "NO OWNER" : Names.Faction(d.Owner)) + " // " + kinds[(int)d.Kind] + (HazardSystem.Covered(s, _selected) ? " // UNDER FALLOUT" : string.Empty);
             _ui.Q<Label>("site-travel").text = d.TravelHours + " H";
             int estimate = WorldSystem.EstimatedDefense(s, c, _selected);
-            _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
+            _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : !wild && IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
             _ui.Q<Label>("site-def").text = (st.Scouted ? string.Empty : "~") + estimate + (d.Cyber > 0 ? "  CYBER " + d.Cyber : string.Empty);
-            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty);
+            _ui.Q<Label>("site-loot").text = d.Energy + " E  " + d.Fuel + " F  " + d.Compute + " C" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c)
+                + (d.Kind == SiteKind.DataCenter ? "  + FRAGMENT " + c.Modules.FragmentPctDataCenter + "%" : d.Kind == SiteKind.Ruins ? "  + FRAGMENT " + c.Modules.FragmentPctRuins + "%" : string.Empty);
 
-            if (_kind == OpKind.Hack && d.Cyber == 0)
+            if ((_kind == OpKind.Hack && d.Cyber == 0) || (_kind == OpKind.Sabotage && wild))
             {
                 _kind = OpKind.Raid;
             }
@@ -337,6 +665,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("op-hack").EnableInClassList("is-selected", _kind == OpKind.Hack);
             _ui.Q("op-hack").EnableInClassList("is-disabled", d.Cyber == 0);
             _ui.Q("op-sabotage").EnableInClassList("is-selected", _kind == OpKind.Sabotage);
+            _ui.Q("op-sabotage").EnableInClassList("is-disabled", wild);
 
             bool hack = _kind == OpKind.Hack;
             _ui.Q<Label>("op-amount").text = (hack ? _compute : _squad).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -346,8 +675,9 @@ namespace Deadswitch.Game.UI.Screens
             oddsLabel.text = (st.Scouted ? "ODDS " : "AI ODDS ") + odds + "%";
             oddsLabel.EnableInClassList("t-amber", odds < 60);
             int back = hack ? 1 : 2 * d.TravelHours;
-            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, d, _kind)) + " // BACK IN " + back + " H"
-                + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty);
+            _ui.Q<Label>("op-cost").text = (hack ? "COMPUTE " + _compute : "FUEL " + WorldSystem.FuelCost(s, c, _selected, _kind)) + " // BACK IN " + back + " H"
+                + (_kind == OpKind.Sabotage ? " // " + Names.Faction(d.Owner) + " -" + c.World.SabotageStrengthPct + "% FOR " + c.World.SabotageHours + " H" : string.Empty)
+                + (hack ? string.Empty : Risk(s, c, _selected));
             string[] verbs = { "SEND SCOUTS", "LAUNCH RAID", "START HACK", "SEND SABOTEURS" };
             Kit.SetButtonText(_ui.Q("op-launch"), verbs[(int)_kind]);
             bool cooling = _kind != OpKind.Scout && s.Tick < st.CooldownUntilTick;
@@ -357,6 +687,31 @@ namespace Deadswitch.Game.UI.Screens
             bool claimable = (d.Kind == SiteKind.Ruins || seize) && st.Cleared && !st.Outpost;
             _ui.Q("site-claim").EnableInClassList("is-hidden", !claimable);
             Kit.SetButtonText(_ui.Q("site-claim"), seize ? "SEIZE AND HOLD // " + c.World.SeizeEnergy + " E" : "CLAIM // " + c.World.OutpostClaimEnergy + " E");
+        }
+
+        /// <summary>What a hazard zone pays besides loot (SPEC-032).</summary>
+        private static string Bonus(SiteKind kind, SimConfig c)
+        {
+            switch (kind)
+            {
+                case SiteKind.Plague: return "  + " + c.Hazards.PlaguePeople + " SURVIVORS";
+                case SiteKind.Graveyard: return "  + PARTS (" + c.Hazards.GraveyardRepairPoints + " REPAIRS)";
+                default: return string.Empty;
+            }
+        }
+
+        /// <summary>The hazard risk on the op line; scouting first halves it (SPEC-032 rule 5).</summary>
+        private static string Risk(GameState s, SimConfig c, int site)
+        {
+            int sick = HazardSystem.SickPct(s, c, site);
+            int infection = HazardSystem.InfectionPct(s, c, site);
+            string risk = (sick > 0 ? " // SICKNESS " + sick + "%" : string.Empty) + (infection > 0 ? " // INFECTION " + infection + "%" : string.Empty);
+            if (WorldSystem.Sites[site].Kind == SiteKind.Graveyard)
+            {
+                risk += " // DRONE NESTS";
+            }
+
+            return risk.Length > 0 && s.Sites[site].Scouted ? risk + " (SCOUTED: REDUCED)" : risk;
         }
 
         /// <summary>Rebuilds the ops list only when the set of ops changes (buttons must survive between frames); timers update in place.</summary>

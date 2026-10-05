@@ -106,6 +106,16 @@ namespace Deadswitch.Game.UI.Hud
 
         private void OnCaughtUp(CatchUpReport report)
         {
+            // clock-cheat protection shows as the AI's own glitch (doc 08 s1, ADR-0004)
+            if (report.Plan.Desync)
+            {
+                _advisor.Notify("time_desync");
+            }
+            else if (report.Plan.Capped)
+            {
+                _advisor.Notify("time_capped");
+            }
+
             if (report.Plan.Minutes >= SummaryMinutes)
             {
                 _advisor.ObserveCatchUp(_host.Sim.Log.Events, report.FirstEventIndex, report.LastEventIndex, _host.Sim.State);

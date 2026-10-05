@@ -35,6 +35,12 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            _ui.Q("secret-dismantle").RegisterCallback<ClickEvent>(_ =>
+            {
+                CommandResult r = _host.Execute(Command.DismantleSecrets());
+                _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty : Texts.Reason(r.Reason);
+                Refresh();
+            });
             _ui.Q("open-legacy").RegisterCallback<ClickEvent>(_ => openLegacy());
             _ui.Q("open-story").RegisterCallback<ClickEvent>(_ => openStory());
             _ui.Q("flush-run").RegisterCallback<ClickEvent>(_ =>
@@ -169,6 +175,13 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("true-corruption").text = CorruptionSystem.Percent(p.TrueCorruptionMilli) + "%";
                 _ui.Q<Label>("skimmed").text = Fmt.Num(p.Skimmed);
                 _ui.Q<Label>("lies").text = p.UnverifiedLies.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                // hidden nodes (SPEC-034): as of the Audit; still standing ones can be torn down
+                SimConfig sc = _host.Sim.Config;
+                _ui.Q<Label>("secret-nodes").text = p.HiddenNodes == 0 ? "NONE FOUND" : p.HiddenNodes + " // DRAWING " + (p.HiddenNodes * sc.Secrets.NodeEnergyPerHour) + " E/H";
+                int exposed = _host.Sim.State.SecretExposed;
+                _ui.Q("secret-dismantle").EnableInClassList("is-hidden", exposed == 0);
+                Kit.SetButtonText(_ui.Q("secret-dismantle"), "DISMANTLE " + exposed + (exposed == 1 ? " NODE" : " NODES") + " // PROJECT -" + (exposed * sc.Secrets.DismantleProjectMilli / 1000) + "%");
                 _ui.Q<Label>("stage").text = StageNames[(int)p.Stage];
                 VisualElement steps = _ui.Q("stage-steps");
                 for (int i = 0; i < steps.childCount; i++)

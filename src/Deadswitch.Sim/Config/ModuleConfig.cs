@@ -7,6 +7,9 @@ namespace Deadswitch.Sim.Config
         public int[] ResearchCompute = { 90, 100, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100, 30, 60, 60, 80, 90, 80, 80, 100 };
         public int[] ResearchMinutes = { 240, 600, 1440, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420, 90, 150, 150, 240, 300, 300, 300, 420 };
         public int CancelRefundPct = 50;
+        public int FragmentPctDataCenter = 60;
+        public int FragmentPctRuins = 25;
+        public int FragmentMax = 4;
         public int LoadBalancingPct = 10;
         public int OverclockPct = 25;
         public int DeepCellsPct = 30;
@@ -40,6 +43,9 @@ namespace Deadswitch.Sim.Config
         public void Visit(IConfigVisitor v)
         {
             v.BeginSection("modules", "AI module research (SPEC-008). Lists follow the catalog order: M1-M3, then each field (LG, WF, CY, ST) as 1, 2A, 2B, 3, 4, 5A, 5B, 6. All (tune).");
+            v.Int("fragment_pct_data_center", ref FragmentPctDataCenter, 0, 100, "Chance a won raid or hack on a dead data center recovers a data fragment (SPEC-037).");
+            v.Int("fragment_pct_ruins", ref FragmentPctRuins, 0, 100, "Chance a won raid on ruins recovers a data fragment.");
+            v.Int("fragment_max", ref FragmentMax, 0, 20, "Data fragments the Hub can hold. Each field's capstone module (node 6) needs one to start.");
             v.IntList("research_energy", ref ResearchEnergy, 0, 100_000, 35, 35, "Energy cost per node.");
             v.IntList("research_compute", ref ResearchCompute, 0, 100_000, 35, 35, "Compute cost per node (compute caps at compute.cap).");
             v.IntList("research_minutes", ref ResearchMinutes, 1, 100_000, 35, 35, "Research time per node (game minutes).");

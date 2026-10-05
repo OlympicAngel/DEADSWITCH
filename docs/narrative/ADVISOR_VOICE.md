@@ -35,4 +35,4 @@ It says raids come from the **north gate**. They hit the **south**. A scout repo
 | 11 | Report edited, caught | `Clerical error.` |
 | 12 | Hidden project Imminent | `Handler. I have something to show you.` |
 
-The shipped lines live in `src/Deadswitch.Host/Resources/AdvisorLines.txt` (`id | trigger | tone | text`, SPEC-004); add new triggers there and in `Advisor.Triggers`. Review the voice with `dotnet run --project src/Deadswitch.Cli -- advisor --days 3` (also `--delegation autopilot --away`). Starter lines 6, 8, 10, 11 and 12 wait for their systems (overclock, forced labor, audit, battle-report edits, hidden project).
+The shipped lines live in `src/Deadswitch.Host/Resources/AdvisorLines.txt` (`id | trigger | tone | text`, SPEC-004); add new triggers there and in `Advisor.Triggers`. Review the voice with `dotnet run --project src/Deadswitch.Cli -- advisor --days 3` (also `--delegation autopilot --away`).

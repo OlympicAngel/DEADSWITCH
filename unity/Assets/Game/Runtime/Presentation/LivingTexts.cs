@@ -65,6 +65,10 @@ namespace Deadswitch.Game.Presentation
                 case WorldEventKind.SignalStorm: return "SIGNAL STORM";
                 case WorldEventKind.SupplyWindow: return "SUPPLY WINDOW";
                 case WorldEventKind.DeadWeek: return "DEAD WEEK";
+                case WorldEventKind.FalloutWave: return "FALLOUT WAVE";
+                case WorldEventKind.PlagueOutbreak: return "PLAGUE OUTBREAK";
+                case WorldEventKind.RollingBlackouts: return "ROLLING BLACKOUTS";
+                case WorldEventKind.MachineSurge: return "MACHINE SURGE";
                 default: return string.Empty;
             }
         }
@@ -77,6 +81,10 @@ namespace Deadswitch.Game.Presentation
                 case WorldEventKind.SignalStorm: return "Hack odds -" + l.SignalStormOddsPts + ". Corruption creeps up " + Fmt.Milli(l.SignalStormCorruptionMilli) + "% an hour.";
                 case WorldEventKind.SupplyWindow: return "Operations bring back +" + l.SupplyWindowLootPct + "%. Traders sell " + l.SupplyWindowPricePct + "% cheaper.";
                 case WorldEventKind.DeadWeek: return "The wastes go quiet. Time between attacks +" + l.DeadWeekIntervalPct + "%.";
+                case WorldEventKind.FalloutWave: return "Outposts send " + c.Phases.FalloutOutpostPct + "%. The crater gives up +" + c.Phases.FalloutSalvagePct + "% salvage.";
+                case WorldEventKind.PlagueOutbreak: return "No regrowth. Any squad may bring infection home (" + c.Phases.PlagueInfectionPct + "%).";
+                case WorldEventKind.RollingBlackouts: return "Generators and the reactor lose " + c.Phases.BlackoutGenerationPct + "% of their output.";
+                case WorldEventKind.MachineSurge: return "Attackers bring more drones. Unmanned machines may turn on us.";
                 default: return string.Empty;
             }
         }
@@ -87,6 +95,7 @@ namespace Deadswitch.Game.Presentation
             {
                 case TradeGood.Fuel: return "FUEL";
                 case TradeGood.EnergyCells: return "CELLS";
+                case TradeGood.Blueprints: return "BLUEPRINT";
                 default: return "COMPUTE";
             }
         }

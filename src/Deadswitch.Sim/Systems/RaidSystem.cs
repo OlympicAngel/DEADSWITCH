@@ -215,8 +215,29 @@ namespace Deadswitch.Sim.Systems
 
             ctx.Emit(EventKind.RaidWarning, s.RaidId, (int)(s.RaidArriveTick - s.Tick), s.RaidEstimate, (int)kind);
             ctx.Emit(EventKind.AttackerIdentified, s.RaidId, (int)s.RaidFaction);
+            UnitSystem.RollMix(ctx);
+            UnitSystem.Announce(ctx, s.RaidEstimate > 0);
             ReportGate(ctx, gateRoll, ambush);
             AiSystem.OnRaidWarning(ctx);
+        }
+
+        /// <summary>The newest-held outpost (highest site index) falls to cover the retreat. False when there is none.</summary>
+        private static bool SacrificeOutpost(SimContext ctx)
+        {
+            GameState s = ctx.State;
+            for (int i = s.Sites.Count - 1; i >= 0; i--)
+            {
+                if (s.Sites[i].Outpost)
+                {
+                    s.Sites[i].Outpost = false;
+                    s.Sites[i].Cleared = false;
+                    s.OutpostsLostThisCycle++;
+                    ctx.Emit(EventKind.OutpostLost, i, (int)s.RaidFaction);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -239,6 +260,7 @@ namespace Deadswitch.Sim.Systems
             if (s.RaidId == ai.FirstLieRaid)
             {
                 lie = true;
+                s.FirstLieTick = s.Tick;
             }
             else
             {
@@ -323,7 +345,8 @@ namespace Deadswitch.Sim.Systems
 
             // Breach share in permille: how much of the raid got through.
             int breach = (int)(((long)(strength - defense) * 1000) / strength);
-            int lootPct = s.Posture == Posture.Evacuate ? System.Math.Min(100, c.Defense.EvacuateLootPct + AdaptSystem.Counter(s, c, Posture.Evacuate)) : 100;
+            // evacuating trades stores for lives (SPEC-001 rule 6); a faction that learned it hunts the caches (SPEC-027)
+            int lootPct = s.Posture == Posture.Evacuate ? System.Math.Min(300, c.Defense.EvacuateLootPct + AdaptSystem.Counter(s, c, Posture.Evacuate)) : 100;
             if (s.RaidKind == AttackKind.Siege)
             {
                 lootPct = SimMath.PctFloor(lootPct, c.Threats.SiegeLootPct);
@@ -374,7 +397,11 @@ namespace Deadswitch.Sim.Systems
                 downgrades = ThreatSystem.Downgrade(ctx, id, c.Threats.PurgeDowngrades);
             }
 
-            ScarSystem.Breached(ctx, id, s.RaidKind, breach);
+            // strategic retreat (doc 04 s5): pulling out sacrifices an outpost so the Hub itself stays whole
+            if (!(s.Posture == Posture.Evacuate && SacrificeOutpost(ctx)))
+            {
+                ScarSystem.Breached(ctx, id, s.RaidKind, breach);
+            }
             if (s.RaidKind == AttackKind.Purge && s.Posture == Posture.None && s.Garrison == 0)
             {
                 // doc 06 s4: the Hub falls to a purge it met undefended after ignoring the ladder; the cycle ends

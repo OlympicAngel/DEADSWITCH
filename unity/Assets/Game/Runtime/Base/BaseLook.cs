@@ -90,6 +90,19 @@ namespace Deadswitch.Game.Base
         public float damagePulseHz = 1.1f;
     }
 
+    /// <summary>Sector map look (SPEC-033): the far recon camera needs thinner fog and a longer shadow reach.</summary>
+    [System.Serializable]
+    public sealed class MapLook
+    {
+        public float fogScale = 0.2f;
+
+        /// <summary>Half size of the sun's shadow frustum in the headless preview.</summary>
+        public float shadowExtent = 80f;
+
+        /// <summary>URP shadow distance while the map renders (meters from the map camera).</summary>
+        public float shadowDistance = 360f;
+    }
+
     [System.Serializable]
     public sealed class BaseLook
     {
@@ -111,6 +124,12 @@ namespace Deadswitch.Game.Base
 
         /// <summary>Battle-scar fire, smoke and the damage glow on hurt facilities (Unity only).</summary>
         public ScarFx scarFx = new ScarFx();
+
+        /// <summary>Battle report stills: exposure multiplier at full night (scaled by the key's moon weight), so night panels stay readable.</summary>
+        public float reportNightBoost = 1f;
+
+        /// <summary>Sector map overrides (SPEC-033).</summary>
+        public MapLook map = new MapLook();
 
         // Unity-only conversion factors. three.js divides direct and hemisphere light by pi (Lambert BRDF); URP does
         // not, so the sun is 1/pi. Points were matched by eye in the Editor (URP's range falloff is softer). The

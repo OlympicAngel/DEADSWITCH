@@ -165,6 +165,70 @@ namespace Deadswitch.Sim.Tests
         }
 
         [Fact]
+        public void HazardZones_PayAndHurt_WithoutHeat_AndFalloutDrifts()
+        {
+            // SPEC-032: a wild zone belongs to nobody (no heat, no sabotage); plague pays in survivors and can infect the Hub
+            var sim = new Simulation(31UL);
+            sim.Config.Hazards.PlagueInfectionPct = 100;
+            sim.State.Fuel = 200;
+            int plague = Enumerable.Range(0, WorldSystem.Sites.Count).First(i => WorldSystem.Sites[i].Kind == SiteKind.Plague);
+            Assert.Equal(RejectReason.InvalidArgument, sim.Execute(Command.LaunchOp(plague, OpKind.Sabotage, 2)).Reason);
+            Assert.True(sim.Execute(Command.LaunchOp(plague, OpKind.Raid, 6)).Accepted);
+            sim.Run(2 * WorldSystem.Sites[plague].TravelHours * SimConfig.TicksPerHour);
+            SimEvent back = sim.Log.Events.Last(e => e.Kind == EventKind.OpReturned);
+            Assert.All(sim.State.Heat, h => Assert.Equal(0, h));
+            Assert.Contains(sim.Log.Events, e => e.Kind == EventKind.PlagueInfection);
+            Assert.Equal(back.C == 1, sim.Log.Events.Any(e => e.Kind == EventKind.SurvivorsFound));
+
+            // the fallout front settles on a faction site, drifts on schedule, and survives a save
+            sim.Run((long)sim.Config.Hazards.FalloutFirstDay * SimConfig.TicksPerDay);
+            int first = sim.State.FalloutSite;
+            Assert.True(first >= 0 && !HazardSystem.Wild(WorldSystem.Sites[first].Kind));
+            Assert.True(WorldSystem.FuelCost(sim.State, sim.Config, first, OpKind.Raid) > 2 * WorldSystem.Sites[first].TravelHours * sim.Config.World.FuelPerTravelHour);
+            sim.Run(sim.State.NextFalloutTick - sim.State.Tick + SimConfig.TicksPerHour);
+            Assert.NotEqual(first, sim.State.FalloutSite);
+            Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
+            Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(loaded.State));
+
+            // SPEC-036: pressure from the handler's raids brings the matching breakdown phase next, and it bites
+            sim.State.Aftershock[PhaseSystem.Slot(WorldEventKind.PlagueOutbreak)] = sim.Config.Phases.PressureThreshold;
+            sim.Run(sim.State.NextWorldEventTick - sim.State.Tick + SimConfig.TicksPerHour);
+            Assert.Equal(WorldEventKind.PlagueOutbreak, sim.State.WorldEvent);
+            Assert.True(PhaseSystem.RegrowthHalted(sim.State));
+            Assert.Equal(0, sim.State.Aftershock[PhaseSystem.Slot(WorldEventKind.PlagueOutbreak)]);
+        }
+
+        [Fact]
+        public void UnitFamilies_CounterTheRaidMix()
+        {
+            // SPEC-035: drones beat infantry, vehicles beat drones; no counters without an attack
+            var sim = new Simulation(7UL);
+            GameState s = sim.State;
+            FacilitySlot bay = s.Slots[2];
+            bay.Kind = FacilityKind.DroneBay;
+            bay.Level = 1;
+            bay.Enabled = true;
+            bay.Powered = true;
+            bay.Staffed = true;
+            int plain = Defense.Family(s, sim.Config, UnitFamily.Drones, 0);
+            Assert.Equal(sim.Config.DroneBay.Output[0], plain);
+            s.RaidId = 99;
+            s.RaidInfantryPct = 80;
+            s.RaidDronePct = 10;
+            s.RaidVehiclePct = 10;
+            Assert.True(Defense.Family(s, sim.Config, UnitFamily.Drones, 0) > plain);
+            s.RaidInfantryPct = 10;
+            s.RaidVehiclePct = 80;
+            Assert.True(Defense.Family(s, sim.Config, UnitFamily.Drones, 0) < plain);
+
+            // a real raid names its forces, and the mix always sums to 100
+            var run = new Simulation(11UL);
+            run.Run(3L * SimConfig.TicksPerDay);
+            SimEvent forces = run.Log.Events.First(e => e.Kind == EventKind.RaidForces);
+            Assert.Equal(100, forces.B + forces.C + forces.D);
+        }
+
+        [Fact]
         public void Relocation_CarriesTheLegacy_AndTheNewSiteSavesExactly()
         {
             var sim = new Simulation(51UL);

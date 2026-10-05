@@ -74,6 +74,11 @@ namespace Deadswitch.Sim.Systems
             new SiteDef("CATHEDRAL ARRAY", Faction.Church, SiteKind.DataCenter, -85, 70, 6, 60, 110, 50, 0, 200, 10_000),
             new SiteDef("HALCYON VAULT", Faction.Holdouts, SiteKind.DataCenter, 85, 65, 7, 150, 160, 300, 0, 300, 14_000),
             new SiteDef("MERCENARY COMPOUND", Faction.Holdouts, SiteKind.Outpost, 60, -88, 6, 170, 80, 700, 160, 80, 0),
+
+            // wild hazard zones (SPEC-032): owned by nobody; the Owner field is unused for them
+            new SiteDef("BLACK CRATER", Faction.Rustborn, SiteKind.Radiation, 10, -30, 2, 35, 0, 380, 20, 90, 0),
+            new SiteDef("QUARANTINE BLOCK", Faction.Rustborn, SiteKind.Plague, -30, 85, 3, 30, 0, 60, 0, 70, 0),
+            new SiteDef("DRONE BONEYARD", Faction.Rustborn, SiteKind.Graveyard, 45, 45, 3, 95, 0, 220, 70, 50, 0),
         };
 
         public static IReadOnlyList<SiteDef> Sites => CatalogArray;
@@ -129,17 +134,25 @@ namespace Deadswitch.Sim.Systems
             return false;
         }
 
+        /// <summary>A site's real defense: faction sites adapt and swing with luck; wild zones do not.</summary>
+        public static int TrueDefense(GameState s, SimConfig c, int site)
+        {
+            SiteDef d = CatalogArray[site];
+            return HazardSystem.Wild(d.Kind) ? d.Defense : LuckSystem.SiteDefense(s, c, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner), d.Owner);
+        }
+
         /// <summary>The AI's read of a site's defense: exact once scouted, otherwise off by a stable error (may be wrong).</summary>
         public static int EstimatedDefense(GameState s, SimConfig c, int site)
         {
             SiteDef d = CatalogArray[site];
-            int defense = LuckSystem.SiteDefense(s, c, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner), d.Owner);
-            if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A) || IntelSystem.Loyal(s, d.Owner))
+            bool wild = HazardSystem.Wild(d.Kind);
+            int defense = TrueDefense(s, c, site);
+            if (s.Sites[site].Scouted || Modules.Has(s, ModuleNode.ST2A) || (!wild && IntelSystem.Loyal(s, d.Owner)))
             {
                 return defense;
             }
 
-            if (IntelSystem.Double(s, d.Owner))
+            if (!wild && IntelSystem.Double(s, d.Owner))
             {
                 // the double agent talks the site down (SPEC-019)
                 return System.Math.Max(1, SimMath.PctFloor(defense, c.Intel.DoubleSiteDefensePct));
@@ -174,9 +187,9 @@ namespace Deadswitch.Sim.Systems
             }
         }
 
-        public static int FuelCost(GameState s, SimConfig c, SiteDef d, OpKind kind)
+        public static int FuelCost(GameState s, SimConfig c, int site, OpKind kind)
         {
-            int fuel = kind == OpKind.Hack ? 0 : 2 * d.TravelHours * c.World.FuelPerTravelHour;
+            int fuel = kind == OpKind.Hack ? 0 : SimMath.PctFloor(2 * CatalogArray[site].TravelHours * c.World.FuelPerTravelHour, 100 + HazardSystem.FuelPct(s, c, site));
             return Modules.Has(s, ModuleNode.ST2B) ? SimMath.PctFloor(fuel, 100 - c.Modules.QuietRoutesPct) : fuel;
         }
 
@@ -251,6 +264,12 @@ namespace Deadswitch.Sim.Systems
             for (int f = 0; f < FactionCount; f++)
             {
                 int decay = Modules.Has(s, ModuleNode.ST3) ? SimMath.PctFloor(w.HeatDecayPerHour, 100 + ctx.Config.Modules.HeatSinkPct) : w.HeatDecayPerHour;
+                if (s.Posture == Posture.Dark)
+                {
+                    // lying low (doc 05 s2): they forget a Hub that has gone quiet
+                    decay = SimMath.PctFloor(decay, 100 + ctx.Config.Defense.DarkHeatDecayPct);
+                }
+
                 AddHeat(ctx, (Faction)f, -SimMath.PctFloor(decay, 100 + (s.Perks[(int)Perk.HeatDecay] * ctx.Config.Legacy.PerkHeatDecayPct)));
             }
 
@@ -263,9 +282,11 @@ namespace Deadswitch.Sim.Systems
                 }
 
                 // conquer and hold (doc 04 s8): a seized faction outpost pays more and is wanted back sooner
+                // under the fallout front it sends only a share (SPEC-032)
                 bool held = CatalogArray[i].Kind == SiteKind.Outpost;
-                s.Energy = System.Math.Max(s.Energy, System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + (held ? w.HeldEnergyPerHour : w.OutpostEnergyPerHour)));
-                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(ctx.Config.Fuel.Cap, s.Fuel + (held ? w.HeldFuelPerHour : w.OutpostFuelPerHour)));
+                int pct = HazardSystem.OutpostPct(s, ctx.Config, i);
+                s.Energy = System.Math.Max(s.Energy, System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + SimMath.PctFloor(held ? w.HeldEnergyPerHour : w.OutpostEnergyPerHour, pct)));
+                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(Economy.FuelCap(s, ctx.Config), s.Fuel + SimMath.PctFloor(held ? w.HeldFuelPerHour : w.OutpostFuelPerHour, pct)));
 
                 // a hunting faction takes its ground back (a held outpost's owner already at Watched)
                 Faction owner = CatalogArray[i].Owner;
@@ -307,6 +328,12 @@ namespace Deadswitch.Sim.Systems
             }
 
             SiteDef d = CatalogArray[site];
+            bool wild = HazardSystem.Wild(d.Kind);
+            if (wild && (kind == OpKind.Hack || kind == OpKind.Sabotage))
+            {
+                return CommandResult.Reject(RejectReason.InvalidArgument);
+            }
+
             int squad = kind == OpKind.Hack ? 0 : cmd.C;
             int compute = kind == OpKind.Hack ? cmd.C : 0;
             if ((kind != OpKind.Hack && squad < 1) || (kind == OpKind.Hack && (compute < 1 || d.Cyber == 0)) || (kind == OpKind.Sabotage && squad > c.World.SabotageMaxSquad))
@@ -335,7 +362,7 @@ namespace Deadswitch.Sim.Systems
                 return CommandResult.Reject(RejectReason.NotEnoughPeople);
             }
 
-            int fuel = FuelCost(s, c, d, kind);
+            int fuel = FuelCost(s, c, site, kind);
             if (s.Fuel < fuel)
             {
                 return CommandResult.Reject(RejectReason.NotEnoughFuel);
@@ -353,8 +380,8 @@ namespace Deadswitch.Sim.Systems
             var op = new Operation { Id = s.NextOpId++, Site = site, Kind = kind, Squad = squad, Compute = compute, ReturnTick = s.Tick + ((long)hours * SimConfig.TicksPerHour) };
             s.Ops.Add(op);
 
-            // striking a faction under ceasefire breaks it (scouting does not)
-            if (kind != OpKind.Scout)
+            // striking a faction under ceasefire breaks it (scouting does not); wild zones belong to nobody
+            if (kind != OpKind.Scout && !wild)
             {
                 DiplomacySystem.Struck(ctx, d.Owner);
             }
@@ -408,7 +435,9 @@ namespace Deadswitch.Sim.Systems
             WorldConfig w = c.World;
             SiteDef d = CatalogArray[op.Site];
             SiteState st = s.Sites[op.Site];
-            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, LuckSystem.SiteDefense(s, c, AdaptSystem.SiteDefense(s, c, d.Defense, d.Owner), d.Owner));
+            bool wild = HazardSystem.Wild(d.Kind);
+            int cooldownHours = wild ? c.Hazards.ZoneCooldownHours : w.RaidCooldownHours;
+            int odds = Odds(s, c, d, op.Kind, op.Squad, op.Compute, TrueDefense(s, c, op.Site));
             bool won = SimMath.Hash((uint)op.Id * 2654435761u, (uint)(s.Rng.State >> 32)) % 100 < (uint)odds;
             int casualties = 0;
             int heat;
@@ -419,7 +448,10 @@ namespace Deadswitch.Sim.Systems
                     if (won)
                     {
                         st.Scouted = true;
-                        IntelSystem.CrossCheck(ctx, d.Owner);
+                        if (!wild)
+                        {
+                            IntelSystem.CrossCheck(ctx, d.Owner);
+                        }
                     }
                     else
                     {
@@ -451,6 +483,7 @@ namespace Deadswitch.Sim.Systems
                     {
                         st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
                         Loot(ctx, op.Id, LossResource.Compute, Modules.Has(s, ModuleNode.CY5A) ? SimMath.PctFloor(d.Compute, 100 + c.Modules.WormPct) : d.Compute);
+                        Fragment(ctx, op);
                         IntelSystem.CrossCheck(ctx, d.Owner);
                         if (d.CleanData > 0)
                         {
@@ -468,13 +501,19 @@ namespace Deadswitch.Sim.Systems
                     }
                     if (won)
                     {
-                        st.CooldownUntilTick = s.Tick + ((long)w.RaidCooldownHours * SimConfig.TicksPerHour);
+                        st.CooldownUntilTick = s.Tick + ((long)cooldownHours * SimConfig.TicksPerHour);
                         // ruins can be claimed; a beaten faction outpost can be seized and held (doc 04 s8)
                         st.Cleared = d.Kind == SiteKind.Ruins || d.Kind == SiteKind.Outpost;
-                        Loot(ctx, op.Id, LossResource.Energy, d.Energy);
-                        Loot(ctx, op.Id, LossResource.Fuel, d.Fuel);
-                        Loot(ctx, op.Id, LossResource.Compute, d.Compute);
-                        AdaptSystem.Fortify(ctx, d.Owner);
+                        // a fallout wave stirs up the crater's salvage (SPEC-036)
+                        int rich = d.Kind == SiteKind.Radiation && LivingSystem.Active(s, WorldEventKind.FalloutWave) ? 100 + c.Phases.FalloutSalvagePct : 100;
+                        Loot(ctx, op.Id, LossResource.Energy, SimMath.PctFloor(d.Energy, rich));
+                        Loot(ctx, op.Id, LossResource.Fuel, SimMath.PctFloor(d.Fuel, rich));
+                        Loot(ctx, op.Id, LossResource.Compute, SimMath.PctFloor(d.Compute, rich));
+                        Fragment(ctx, op);
+                        if (!wild)
+                        {
+                            AdaptSystem.Fortify(ctx, d.Owner);
+                        }
                     }
 
                     break;
@@ -482,8 +521,30 @@ namespace Deadswitch.Sim.Systems
 
             // survivors always come home (a lowered cap never kills anyone)
             s.People += op.Squad - casualties;
+            casualties += HazardSystem.Returned(ctx, op, won, op.Squad - casualties);
             ctx.Emit(EventKind.OpReturned, op.Id, op.Site, won ? 1 : 0, casualties);
+            if (wild)
+            {
+                return;
+            }
+
             AddHeat(ctx, d.Owner, Modules.Has(s, ModuleNode.ST5B) ? SimMath.PctFloor(heat, 100 - c.Modules.FalseTrailsPct) : heat);
+        }
+
+        /// <summary>Dead data centers (and sometimes ruins) give up a data fragment to a won raid or hack (SPEC-037).</summary>
+        private static void Fragment(SimContext ctx, Operation op)
+        {
+            GameState s = ctx.State;
+            ModuleConfig m = ctx.Config.Modules;
+            SiteKind kind = CatalogArray[op.Site].Kind;
+            int pct = kind == SiteKind.DataCenter ? m.FragmentPctDataCenter : kind == SiteKind.Ruins && op.Kind == OpKind.Raid ? m.FragmentPctRuins : 0;
+            if (pct <= 0 || s.DataFragments >= m.FragmentMax || SimMath.Hash((uint)op.Id * 0x6F1Du, (uint)(s.Rng.State >> 32)) % 100 >= (uint)pct)
+            {
+                return;
+            }
+
+            s.DataFragments++;
+            ctx.Emit(EventKind.FragmentRecovered, op.Site, s.DataFragments);
         }
 
         private static void Loot(SimContext ctx, int opId, LossResource resource, int amount)
@@ -503,7 +564,7 @@ namespace Deadswitch.Sim.Systems
                     s.Energy += got;
                     break;
                 case LossResource.Fuel:
-                    got = System.Math.Max(0, System.Math.Min(amount, c.Fuel.Cap - s.Fuel));
+                    got = System.Math.Max(0, System.Math.Min(amount, Economy.FuelCap(s, c) - s.Fuel));
                     s.Fuel += got;
                     break;
                 default:

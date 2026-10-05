@@ -12,7 +12,7 @@ The world should feel worn and physical; the interface should feel precise, purp
 
 ## Visual language
 
-- **World:** follows the master art direction below. Real-time 3D (Unity URP) with believable proportions and layered PBR material detail under a cold desaturated grade with warm practical lights.
+- **World:** follows the master art direction below. Real-time 3D (Unity URP) with believable proportions and layered PBR material detail under a weathered, moderately colored grade with warm practical lights.
 - **Camera:** the AI's recon-drone view. High-angle isometric-style framing, narrow FOV, no depth-of-field blur (it reads as a miniature). Sensor effects (noise, edge chromatic aberration, faint scanline interference) are **barely noticeable** at default intensity, never cover gameplay, and scale with corruption and the effect-intensity setting.
 - **Machine:** restrained field-terminal surfaces, phosphor accents, telemetry, grids, and controlled scanline texture. Avoid generic neon cyberpunk.
 - **Base:** present it as a living diorama. Show power, population, damage, activity, and tier identity through landmarks; repairs visibly change persistent scars.
@@ -29,7 +29,7 @@ This brief is the style source for every 3D asset, render and preview. Read it a
 >
 > Materials should feature realistic PBR detail: chipped paint, oxidation, dirt accumulation, mud splashes, edge wear, scratches, soot, oil stains, rain streaks, dust buildup, faded warning markings and subtle decals. Surfaces tell a story through age and use.
 >
-> The environment uses a cold desaturated palette of grey, concrete, olive, charcoal and faded military green, with warm tungsten work lights providing contrast. Bright colours are reserved only for gameplay-significant elements such as AI technology, alarms and interactable objects.
+> The environment uses a weathered but colored palette (grey concrete, olive, charcoal and military green, with clearly readable material color: blue solar cells and tarps, orange copper and rust, vivid painted drums), with warm tungsten work lights providing contrast. Bright colours are reserved only for gameplay-significant elements such as AI technology, alarms and interactable objects.
 >
 > The world should feel inhabited. Scatter believable environmental storytelling throughout: stacked supply crates, fuel barrels, cable reels, pallets, discarded tools, tarps, makeshift workstations, generators, vents, antennas, pipes, barricades, damaged vehicles and maintenance equipment.
 >
@@ -67,6 +67,11 @@ This brief is the style source for every 3D asset, render and preview. Read it a
 - Lighting keyframes by game hour live in `unity/Assets/Game/Resources/Base/BaseLook.json` (shared by Unity and the preview). Review every visual change at day, dusk and night.
 
 **How we build it (owner, 2026-10-04: procedural only, no imported assets):** procedural geometry (`src/Deadswitch.Art`) with real-world proportions and bevelled medium forms; a procedural PBR "salvage" material (world-space noise layers for macro variation, rust, chipped paint, dirt rising from the ground, soot, rain and rust run-off, wetness, edge wear and bump; gravel / soil / wet-mud ground) shared by Unity and the headless preview; soft shadows, AO, fog and warm practical lights. How-to: `docs/agents/environment-art.md`.
+
+### Sector map (owner brief 2026-10-04, SPEC-033)
+- A 2.5D map, not a radar plot: one fixed recon angle (about 47 degrees, no free camera) over low-relief ruined ground in the same salvage shader (arid ground mode), with the base's time-of-day light.
+- Sites are kit landmarks at map scale (`SectorLandmarks`), one silhouette per kind, faction beacons in faction colors; hazard zones are ground treatments at full size (glowing crater, quarantine camp, wreck field).
+- What the Hub knows is drawn, not built: faction territory tints, dashed routes (solid while a team is out), hatched fog of war over unscouted ground, fallout as drifting haze. The AI's estimates under the pins may flicker with corruption; effects intensity and reduced motion turn it off.
 
 ## Prototype palette
 

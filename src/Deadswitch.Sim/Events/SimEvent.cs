@@ -302,6 +302,45 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The core settled at a new site (SPEC-031). A: Region.</summary>
         RegionSettled = 98,
+
+        /// <summary>A squad came back sick from radiation or fallout (SPEC-032). A: site, B: people lost.</summary>
+        HazardSickness = 99,
+
+        /// <summary>A squad brought plague home. A: site, B: people lost at the Hub.</summary>
+        PlagueInfection = 100,
+
+        /// <summary>A plague raid found survivors who joined the Hub. A: site, B: people.</summary>
+        SurvivorsFound = 101,
+
+        /// <summary>Graveyard parts repaired a facility for free. A: slot, B: damage points repaired.</summary>
+        PartsRecovered = 102,
+
+        /// <summary>The fallout front moved. A: new site, B: previous site (-1 none), C: hours to the next drift.</summary>
+        FalloutDrifted = 103,
+
+        /// <summary>The AI finished a hidden node (SPEC-034). Never shown until an Audit. A: nodes standing.</summary>
+        SecretBuilt = 104,
+
+        /// <summary>An Audit exposed the AI's hidden nodes (follows AuditDrain). A: nodes found.</summary>
+        SecretExposed = 105,
+
+        /// <summary>The handler tore down exposed nodes. A: nodes, B: compute salvaged.</summary>
+        SecretDismantled = 106,
+
+        /// <summary>The warning names the attacking forces (SPEC-035). A: raid id, B: infantry %, C: drones %, D: vehicles %.</summary>
+        RaidForces = 107,
+
+        /// <summary>A traded blueprint cut a field research's cost (doc 10 s5). A: module node, B: discount %.</summary>
+        BlueprintUsed = 108,
+
+        /// <summary>The handler's actions are bringing a breakdown phase on (SPEC-036). A: WorldEventKind, B: pressure.</summary>
+        AftershockBuilding = 109,
+
+        /// <summary>A won op recovered a data fragment from dead hardware (SPEC-037). A: site, B: fragments held.</summary>
+        FragmentRecovered = 110,
+
+        /// <summary>A rewarded-ad convenience was granted (doc 10 s1.1). A: AdGrant.</summary>
+        AdGranted = 111,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

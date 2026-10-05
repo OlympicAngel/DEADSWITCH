@@ -67,12 +67,17 @@ void ds_salvage(float3 wp, float3 n, float3 masks, float3 baseCol, float3 bareCo
 
     if (ground > 0.5)
     {
-        // three grounds: wet dark mud (smooth, reflective), damp soil (base), dry gravel (light, speckled)
+        // three grounds: wet dark mud (smooth, reflective), damp soil (base), dry gravel (light, speckled).
+        // In ground mode 'streak' is how arid it is: 0 the yard's mud, 1 the open waste of the sector map (SPEC-033).
+        float arid = streak;
         float3 soil = baseCol * (0.72 + 0.5 * n1) * (0.92 + 0.16 * n2);
-        float wet = smoothstep(0.5, 0.6, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.12 + float3(4.0, 0.0, 2.0)));
-        float dry = smoothstep(0.48, 0.68, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.07 + float3(9.0, 0.0, 5.0)) + n2 * 0.15) * (1.0 - wet);
+        float wet = smoothstep(0.5, 0.6, ds_fbm(float3(wp.x, 0.0, wp.z) * 0.12 + float3(4.0, 0.0, 2.0))) * (1.0 - arid);
+        float dry = smoothstep(0.48, 0.68, ds_fbm(float3(wp.x, 0.0, wp.z) * lerp(0.07, 0.2, arid) + float3(9.0, 0.0, 5.0)) + n2 * 0.15) * (1.0 - wet) * (1.0 - arid);
         float speck = smoothstep(0.5, 0.8, ds_noise(wp * 3.5));
         float3 gravel = float3(0.33, 0.32, 0.30) * (0.88 + 0.22 * speck) * (0.85 + 0.3 * n2);
+        // arid only: vertex G is ash and soot, vertex B above 0.5 is wind-blown dust (the yard writes 0 and 0.5)
+        soil = lerp(soil, float3(0.26, 0.21, 0.14) * (0.86 + 0.28 * n2), saturate(masks.z * 2.0 - 1.0) * 0.6 * arid);
+        soil = lerp(soil, float3(0.10, 0.10, 0.10) * (0.8 + 0.4 * n2), masks.y * arid);
         albedo = lerp(soil, gravel, dry * 0.85) * ao;
         albedo *= lerp(1.0, 0.42, wet);
         rough = lerp(lerp(0.88, 0.97, dry), 0.12, wet);

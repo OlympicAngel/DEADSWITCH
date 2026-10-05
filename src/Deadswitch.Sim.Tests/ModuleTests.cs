@@ -26,11 +26,41 @@ namespace Deadswitch.Sim.Tests
 
             Assert.True(Modules.Has(sim.State, ModuleNode.LG1));
             Assert.True(Economy.UpkeepPerHour(sim.State, sim.Config, sim.State.Slots[1]) < upkeepBefore);
+            // doc 10 s5: a traded blueprint makes the next field research cheaper, and is spent
+            sim.State.Energy = 2_000;
+            Assert.True(sim.Execute(Command.Trade(Faction.Rustborn, TradeGood.Blueprints)).Accepted);
+            Assert.Equal(1, sim.State.Blueprints);
             sim.State.Energy = 500;
             sim.State.Compute = 100;
+            Modules.TryDef(ModuleNode.LG2B, out ModuleDef lg2b);
             Assert.True(sim.Execute(Command.StartResearch(ModuleNode.LG2B)).Accepted);
+            Assert.Equal(500 - SimMath.PctFloor(sim.Config.Modules.ResearchEnergy[lg2b.Index], 100 - sim.Config.Living.BlueprintDiscountPct), sim.State.Energy);
+            Assert.Equal(0, sim.State.Blueprints);
             sim.Run(sim.Config.Modules.ResearchMinutes[5]);
             Assert.Equal(RejectReason.Excluded, sim.Execute(Command.StartResearch(ModuleNode.LG2A)).Reason);
+        }
+
+        [Fact]
+        public void KeyModule_NeedsARecoveredFragment_AndUsesItUp()
+        {
+            // SPEC-037: each field's capstone rebuilds from recovered data
+            var sim = new Simulation(3UL);
+            GameState s = sim.State;
+            s.Tier = 4;
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (d.Field == ModuleField.Warfare && d.Node != ModuleNode.WF6)
+                {
+                    s.Modules |= 1UL << (int)d.Node;
+                }
+            }
+
+            s.Energy = 5_000;
+            s.Compute = 500;
+            Assert.Equal(RejectReason.NeedsFragment, sim.Execute(Command.StartResearch(ModuleNode.WF6)).Reason);
+            s.DataFragments = 1;
+            Assert.True(sim.Execute(Command.StartResearch(ModuleNode.WF6)).Accepted);
+            Assert.Equal(0, s.DataFragments);
         }
 
         [Fact]

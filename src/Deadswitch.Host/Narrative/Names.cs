@@ -15,6 +15,12 @@ namespace Deadswitch.Host.Narrative
                 case FacilityKind.BatteryBank: return "BATTERY BANK";
                 case FacilityKind.Turret: return "TURRET";
                 case FacilityKind.Reactor: return "REACTOR";
+                case FacilityKind.DroneBay: return "DRONE BAY";
+                case FacilityKind.MotorPool: return "MOTOR POOL";
+                case FacilityKind.SolarField: return "SOLAR FIELD";
+                case FacilityKind.FuelDepot: return "FUEL DEPOT";
+                case FacilityKind.CoolingTower: return "COOLING TOWER";
+                case FacilityKind.MemoryChamber: return "MEMORY CHAMBER";
                 default: return "EMPTY SLOT";
             }
         }

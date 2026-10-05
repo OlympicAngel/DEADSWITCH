@@ -126,7 +126,12 @@ namespace Deadswitch.Sim.Commands
             record.Verified = true;
             if (record.LieFlags != 0)
             {
-                LegacySystem.Earn(ctx, Mastery.CatchLie);
+                // the mastery is for the first lie, caught within a day (doc 10 s6)
+                if (record.RaidId == ctx.Config.Ai.FirstLieRaid && s.FirstLieTick > 0 && s.Tick - s.FirstLieTick <= SimConfig.TicksPerDay)
+                {
+                    LegacySystem.Earn(ctx, Mastery.CatchLie);
+                }
+
                 ChapterSystem.LieCaught(ctx);
             }
 
@@ -172,6 +177,7 @@ namespace Deadswitch.Sim.Commands
 
             ctx.Emit(EventKind.AuditRun, (int)ProjectSystem.Stage(c, s.ProjectMilli), s.ColdnessMilli, s.BoldnessMilli, s.CorruptionMilli);
             ctx.Emit(EventKind.AuditDrain, s.SkimmedSinceAudit, unverified, c.Project.AuditComputeCost);
+            SecretSystem.Audited(ctx);
             s.SkimmedSinceAudit = 0;
             return CommandResult.Ok;
         }
