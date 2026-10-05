@@ -346,6 +346,55 @@ namespace Deadswitch.Game.Audio
             return Clip("Power Up", d, true);
         }
 
+        /// <summary>A building restored: welding sparks crackle over a rising hum that locks in with a thunk.</summary>
+        public static AudioClip Restore(int seed)
+        {
+            var rng = new System.Random(seed);
+            const float Rise = 1.1f;
+            int n = (int)((Rise + 0.8f) * Rate);
+            var d = new float[n];
+            float phase = 0f;
+            float spark = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float u = Mathf.Clamp01(t / Rise);
+                phase += 2f * Mathf.PI * (110f + (110f * u)) / Rate;
+                float hum = (Mathf.Sin(phase) + (0.5f * Mathf.Sin(phase * 1.5f))) * u * (t < Rise ? 0.5f : Mathf.Exp(-(t - Rise) * 6f) * 0.5f);
+                if (t < Rise && rng.NextDouble() < 0.004)
+                {
+                    spark = 1f;
+                }
+
+                spark *= 0.9965f;
+                float crackle = ((float)rng.NextDouble() * 2f - 1f) * spark * 0.6f;
+                d[i] = hum + crackle + Thump(t, Rise, 0.9f);
+            }
+
+            return Clip("Restore", d, true);
+        }
+
+        /// <summary>The core's first breath: a sub-bass drop that falls away under a low rumble.</summary>
+        public static AudioClip SubDrop(int seed)
+        {
+            var rng = new System.Random(seed);
+            int n = (int)(2.4f * Rate);
+            var d = new float[n];
+            float phase = 0f;
+            float lp = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float freq = 28f + (90f * Mathf.Exp(-t * 2.2f));
+                phase += 2f * Mathf.PI * freq / Rate;
+                float env = Mathf.Min(1f, t * 60f) * Mathf.Exp(-t * 1.1f);
+                lp += (((float)rng.NextDouble() * 2f) - 1f - lp) * 0.01f;
+                d[i] = ((Mathf.Sin(phase) * 1.2f) + (lp * 4f)) * env;
+            }
+
+            return Clip("Sub Drop", d, true);
+        }
+
         private static AudioClip Clip(string name, float[] d, bool normalize)
         {
             float peak = 0.0001f;

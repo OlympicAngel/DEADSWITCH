@@ -11,7 +11,7 @@
 - [x] 3. Globe: procedural planet, city lights, launch arcs, blooms, whiteout, blackout
 - [x] 4. War room: terminal wall that wakes and goes red
 - [x] 5. Time skip and the sector map shot
-- [ ] 6. Restore tutorial: framed buildings, field cards, RESTORE, WAKE THE CORE, handover to the real run, resume after quit
+- [x] 6. Restore tutorial: framed buildings, field cards, RESTORE, WAKE THE CORE, handover to the real run, resume after quit
 - [ ] 7. Sound pass (pads, klaxon, nuke, radio, restore, wake)
 - [ ] 8. Full Editor run, polish, docs (HANDOFF, doc 10 log, backlog)
 

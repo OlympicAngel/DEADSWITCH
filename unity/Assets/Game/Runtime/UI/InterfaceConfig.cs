@@ -109,6 +109,16 @@ namespace Deadswitch.Game.UI
             public float mapPush = 0.28f;
             public float mapFog = 0.2f;
             public float mapFar = 1400f;
+            public float restoreSeconds = 1.5f;
+            public float restoreWalkX = 0.4f;
+            public float restoreEyeHeight = 3.2f;
+            public float restoreBack = 8f;
+            public float restoreFov = 72f;
+            public float restoreAimDrop = 2.4f;
+            public float restoreFire = 0.35f;
+            public float wakeHoldSeconds = 1.4f;
+            public float wakeBreath = 1.6f;
+            public Vector3 wakeCamera = new Vector3(0f, 40f, -40f);
             public float ringWidth = 0.9f;
             public string[] hubKinds = new string[0];
             public int[] hubLevels = new int[0];

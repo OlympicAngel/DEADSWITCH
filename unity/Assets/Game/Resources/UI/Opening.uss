@@ -106,6 +106,22 @@
 .op__take { margin-top: var(--s-8); min-width: 560px; height: var(--touch); border-radius: 64px; }
 .op__take > .ds-btn__label { font-size: var(--fs-md); letter-spacing: var(--ls-wide); }
 
+/* restore steps: a field card over the framed building (lower third) */
+.op__restore { position: absolute; left: var(--s-8); right: var(--s-8); bottom: 17%; padding: var(--s-6) var(--s-8); border-radius: var(--r-xl); border-width: 2px; border-color: var(--c-cyan-line); border-left-width: 6px; border-left-color: var(--c-cyan); background-color: var(--c-elev-1); }
+.op__restore.is-hidden { display: none; }
+.op__restore--core { border-left-color: var(--c-violet); border-color: var(--c-violet-dim); }
+.op__restore-head { align-items: center; margin-bottom: var(--s-3); }
+.op__restore-icon { width: 48px; height: 48px; margin-right: var(--s-4); --icon-color: var(--c-cyan); }
+.op__restore--core .op__restore-icon { --icon-color: var(--c-violet); }
+.op__restore-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: var(--ls-wide); color: var(--c-white); flex-grow: 1; }
+.op__restore-step { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); }
+.op__restore-body { font-size: var(--fs-sm); color: var(--c-text); white-space: normal; margin-bottom: var(--s-6); }
+.op__restore-btn { height: var(--touch); border-radius: 56px; overflow: hidden; justify-content: center; }
+.op__restore--core .op__restore-btn { background-color: var(--c-violet); }
+.op__restore-btn.is-busy { opacity: 0.5; }
+.op__restore-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: var(--c-red); }
+.op__restore-label { font-size: var(--fs-sm); letter-spacing: var(--ls-wide); }
+
 .op__tap { font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-faint); margin-top: var(--s-4); }
 .op__tap.is-hidden { opacity: 0; }
 .op__skip { flex-direction: row; align-items: center; min-width: var(--touch); height: var(--touch); justify-content: flex-end; }

@@ -66,6 +66,22 @@
       <ui:VisualElement name="op-take" class="ds-btn ds-btn--primary op__take"><ui:Label text="REACH THE CORE" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
 
+    <!-- restore steps (after the film): a field card for the framed building and its action -->
+    <ui:VisualElement name="op-restore" class="op__restore is-hidden">
+      <ui:VisualElement class="row op__restore-head">
+        <ui:VisualElement name="op-restore-icon-0" class="ds-icon ds-icon--bolt op__restore-icon" />
+        <ui:VisualElement name="op-restore-icon-1" class="ds-icon ds-icon--server op__restore-icon" />
+        <ui:VisualElement name="op-restore-icon-2" class="ds-icon ds-icon--core op__restore-icon" />
+        <ui:Label name="op-restore-title" text="" class="op__restore-title" />
+        <ui:Label name="op-restore-step" text="" class="op__restore-step" />
+      </ui:VisualElement>
+      <ui:Label name="op-restore-body" text="" class="op__restore-body" />
+      <ui:VisualElement name="op-restore-btn" class="ds-btn ds-btn--primary op__restore-btn">
+        <ui:VisualElement name="op-restore-fill" class="op__restore-fill" />
+        <ui:Label name="op-restore-label" text="RESTORE" class="ds-btn__label op__restore-label" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
     <ui:VisualElement name="op-bar-bottom" class="op__bar op__bar--bottom">
       <ui:Label name="op-tap" text="TAP TO CONTINUE" class="op__tap" />
       <ui:VisualElement name="op-skip" class="op__skip"><ui:Label text="SKIP" class="op__skip-label" /><ui:VisualElement class="ds-icon ds-icon--chevron op__skip-icon" /></ui:VisualElement>

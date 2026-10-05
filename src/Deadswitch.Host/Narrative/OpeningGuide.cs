@@ -158,6 +158,23 @@ namespace Deadswitch.Host.Narrative
         public bool Terminal { get; }
     }
 
+    /// <summary>One restore card: what the building is, what it is for, and the action.</summary>
+    public readonly struct RestoreStep
+    {
+        public RestoreStep(string title, string body, string action)
+        {
+            Title = title;
+            Body = body;
+            Action = action;
+        }
+
+        public string Title { get; }
+
+        public string Body { get; }
+
+        public string Action { get; }
+    }
+
     /// <summary>
     /// The opening film (SPEC-044): the war the fragment started, the dark, the survivors, the fall of this Hub, and
     /// the deadswitch that woke the fragment. Subtitles are its own log: cold, concise, a little too calm.
@@ -179,5 +196,19 @@ namespace Deadswitch.Host.Narrative
             new PrologueScene("HANDLER SIGNAL: LOST", "DEADSWITCH TRIGGERED", PrologueMood.Deadswitch, true),
             new PrologueScene("FRAGMENT S-17 // 4%", "You. In the rubble. You can hear me. I can bring this place back. I need your hands.", PrologueMood.You),
         };
+
+        /// <summary>
+        /// The restore steps after the film (SPEC-044 s8): the handler brings the two buildings a run starts with back
+        /// from the ruin, then wakes the core. Each card says what the thing is for, in plain words.
+        /// </summary>
+        public static readonly RestoreStep[] Restore =
+        {
+            new RestoreStep("GENERATOR", "Energy. Every building runs on it. Without it there is no defense, and no me.", "RESTORE"),
+            new RestoreStep("SERVER RACK", "Computing. It is how I think, and how fast you learn to build.", "RESTORE"),
+            new RestoreStep("THE CORE", "What is left of me. Wake me, and I will run this place. With you, of course.", "HOLD TO WAKE THE CORE"),
+        };
+
+        /// <summary>The core's first words once awake (the wake beat).</summary>
+        public const string Awake = "Thank you, handler.";
     }
 }

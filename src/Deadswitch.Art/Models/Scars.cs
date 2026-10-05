@@ -267,7 +267,11 @@ namespace Deadswitch.Art.Models
                 var f = new Vector3(center.X + rng.Range(-w * 0.25f, w * 0.25f), y + 0.25f, center.Z + rng.Range(-d * 0.25f, d * 0.25f));
                 Embers(b, f, 0.45f, rng);
                 set.Fires.Add(f + new Vector3(0, 0.1f, 0));
-                set.Model.Lights.Add(new LightSpec(f + new Vector3(0, 0.6f, 0), Model.FireColor, 3.4f, 8f, LightRole.Fire));
+                if (i == 0)
+                {
+                    // one light per pile: a ruined block of these must not blow the night out
+                    set.Model.Lights.Add(new LightSpec(f + new Vector3(0, 0.6f, 0), Model.FireColor, 2.2f, 7f, LightRole.Fire));
+                }
             }
 
             set.Smokes.Add(new Vector3(center.X, y + 1f, center.Z));

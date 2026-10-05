@@ -46,6 +46,8 @@ namespace Deadswitch.Game.Base
         private float _powerLevel = 1f;
         private Color _grade;
         private float _fogScale = 1f;
+        private float _fireScale = 1f;
+        private readonly List<int> _litSlots = new List<int>();
         private Staging _stage;
         private float _gradeAmount;
 
@@ -106,6 +108,14 @@ namespace Deadswitch.Game.Base
             _openingPower = false;
             _gradeAmount = 0f;
             _fogScale = 1f;
+            _fireScale = 1f;
+            _litSlots.Clear();
+        }
+
+        /// <summary>The opening's fires: their light times <paramref name=scale/> (softer for the close restore shots).</summary>
+        public void OpeningFire(float scale)
+        {
+            _fireScale = Mathf.Max(0f, scale);
         }
 
         /// <summary>The opening's air: fog density times <paramref name="scale"/> (thin for the long map shot).</summary>
@@ -153,9 +163,27 @@ namespace Deadswitch.Game.Base
                 return 1f;
             }
 
+            // a building the handler restored has its own lamps back, whatever the wave has reached
+            foreach (int slot in _litSlots)
+            {
+                if (slot < _slots.Count && light.transform.IsChildOf(_slots[slot].Root))
+                {
+                    return 1f;
+                }
+            }
+
             Vector3 d = light.transform.position - CoreAnchor;
             d.y = 0f;
             return Mathf.Clamp01((_powerRadius - d.magnitude) / 4f);
+        }
+
+        /// <summary>The opening's restore steps (SPEC-044): this plot's lamps shine even in the dark.</summary>
+        public void OpeningLit(int slot)
+        {
+            if (!_litSlots.Contains(slot))
+            {
+                _litSlots.Add(slot);
+            }
         }
 
         /// <summary>The slot whose plot contains a ground point, or -1.</summary>
@@ -611,7 +639,7 @@ namespace Deadswitch.Game.Base
             _damageBlock ??= new MaterialPropertyBlock();
             ScarFx fx = _look.scarFx;
             float pulse = reduced ? 0.6f : 0.5f + (0.5f * Mathf.Sin(_time * fx.damagePulseHz * Mathf.PI * 2f));
-            float k = fx.damageGlow * (0.4f + (0.3f * Mathf.Min(3, damage))) * (0.25f + (0.75f * pulse));
+            float k = fx.damageGlow * (0.4f + (0.3f * Mathf.Min(3, damage))) * (0.25f + (0.75f * pulse)) * _fireScale;
             var glow = new Vector4(fx.damageColor[0] * k, fx.damageColor[1] * k, fx.damageColor[2] * k, fx.damageTint);
             foreach (MeshRenderer r in o.Renderers)
             {
@@ -714,7 +742,7 @@ namespace Deadswitch.Game.Base
 
                 // fire stays readable by day: never below a floor of the night strength
                 float flicker = reduced ? 0.9f : BattleFx.Flicker(_time, f.Seed);
-                f.Light.intensity = f.BaseIntensity * Mathf.Max(points, 0.6f * _look.unityPointScale) * flicker;
+                f.Light.intensity = f.BaseIntensity * Mathf.Max(points, 0.6f * _look.unityPointScale) * flicker * _fireScale;
             }
         }
 

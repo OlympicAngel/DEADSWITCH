@@ -74,6 +74,20 @@
     "mapPush": 0.28,
     "mapFog": 0.2,
     "mapFar": 1400,
+    "restoreSeconds": 1.5,
+    "wakeHoldSeconds": 1.4,
+    "wakeBreath": 1.6,
+    "wakeCamera": {
+      "x": 0,
+      "y": 40,
+      "z": -40
+    },
+    "restoreWalkX": 0.4,
+    "restoreEyeHeight": 3.2,
+    "restoreBack": 8,
+    "restoreFov": 72,
+    "restoreAimDrop": 2.4,
+    "restoreFire": 0.35,
     "shots": [
       {
         "mood": "signal",

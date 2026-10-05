@@ -58,6 +58,14 @@ namespace Deadswitch.Game.UI.Hud
         private bool _stepKnown;
         private VisualElement _highlight;
         private float _pulse;
+        private VisualElement _restore;
+        private VisualElement _restoreBtn;
+        private int _restoreStep = -1;
+        private bool _restoring;
+        private bool _busy;
+        private bool _holding;
+        private float _holdT;
+        private bool _woken;
 
         public OpeningFlow(GameHost host, VisualElement hud, AdvisorVoice voice, Base.BaseScreen baseScreen)
         {
@@ -75,7 +83,14 @@ namespace Deadswitch.Game.UI.Hud
 
             if (host.IsNewRun)
             {
-                StartPrologue();
+                // run seeds can repeat: a new run's core is asleep whatever an earlier run did
+                PlayerPrefs.DeleteKey(AwakeKey);
+                StartPrologue(false);
+            }
+            else if (!CoreAwake && host.Sim.State.Tick < Deadswitch.Sim.SimConfig.TicksPerDay && Cinematic)
+            {
+                // the app closed before the core woke: back to the restore steps (SPEC-044 rule 1)
+                StartPrologue(true);
             }
 
             RefreshGuide();
@@ -87,7 +102,8 @@ namespace Deadswitch.Game.UI.Hud
             if (_prologue == null)
             {
                 _card = -1;
-                StartPrologue();
+                PlayerPrefs.DeleteKey(AwakeKey);
+                StartPrologue(false);
             }
 
             _stepKnown = false;
@@ -95,6 +111,11 @@ namespace Deadswitch.Game.UI.Hud
         }
 
         private static bool Cinematic => !Motion.Reduced && (GameHost.Instance == null || GameHost.Instance.Settings.Cinematics) && DroneCamera.Instance != null && BaseView.Instance != null;
+
+        private string AwakeKey => "ds.opening.awake." + _host.Sim.Seed;
+
+        /// <summary>True once this run's core was woken (the opening is over for good).</summary>
+        private bool CoreAwake => PlayerPrefs.GetInt(AwakeKey, 0) == 1;
 
         private PrologueScene Scene => Prologue.Scenes[_card];
 
@@ -115,7 +136,7 @@ namespace Deadswitch.Game.UI.Hud
             }
         }
 
-        private void StartPrologue()
+        private void StartPrologue(bool resume)
         {
             _voice.Paused = true;
             TemplateContainer tree = UiRoot.Load("Opening");
@@ -143,13 +164,27 @@ namespace Deadswitch.Game.UI.Hud
             tree.Q("op-skip").RegisterCallback<ClickEvent>(e =>
             {
                 e.StopPropagation();
-                EndPrologue();
+                Skip();
             });
             tree.Q("op-take").RegisterCallback<ClickEvent>(e =>
             {
                 e.StopPropagation();
-                EndPrologue();
+                Skip();
             });
+            _restore = tree.Q("op-restore");
+            _restoreBtn = tree.Q("op-restore-btn");
+            _restore.RegisterCallback<ClickEvent>(e => e.StopPropagation());
+            _restoreBtn.RegisterCallback<ClickEvent>(e =>
+            {
+                e.StopPropagation();
+                OnRestore();
+            });
+            _restoreBtn.RegisterCallback<PointerDownEvent>(_ => _holding = IsCoreStep(_restoreStep), TrickleDown.TrickleDown);
+            _restoreBtn.RegisterCallback<PointerUpEvent>(_ => _holding = false);
+            _restoreBtn.RegisterCallback<PointerLeaveEvent>(_ => _holding = false);
+            _restoring = false;
+            _woken = false;
+            _restoreStep = -1;
 
             // tap anywhere: finish the line being typed, or move to the next beat
             tree.Q("prologue").RegisterCallback<ClickEvent>(_ => Advance());
@@ -184,11 +219,25 @@ namespace Deadswitch.Game.UI.Hud
             {
                 _film.Whiteout += strength => _white = Mathf.Max(_white, strength);
             }
+
+            if (resume && _film != null)
+            {
+                _card = Prologue.Scenes.Length - 1;
+                StartRestore();
+                return;
+            }
+
             NextCard();
         }
 
         private void TickPrologue(float dt)
         {
+            if (_restoring)
+            {
+                TickRestore(dt);
+                return;
+            }
+
             _beat += dt;
             _clock += dt;
             PrologueMood mood = Scene.Mood;
@@ -259,6 +308,123 @@ namespace Deadswitch.Game.UI.Hud
             {
                 NextCard();
             }
+        }
+
+        /// <summary>SKIP or REACH THE CORE: the film is over; the restore steps follow (or the HUD without the film).</summary>
+        private void Skip()
+        {
+            if (_film != null && !_restoring)
+            {
+                StartRestore();
+            }
+            else if (_film == null)
+            {
+                EndPrologue();
+            }
+        }
+
+        private static bool IsCoreStep(int step)
+        {
+            return step == Prologue.Restore.Length - 1;
+        }
+
+        private void StartRestore()
+        {
+            _restoring = true;
+            _sub.style.display = DisplayStyle.None;
+            _hand.AddToClassList("is-hidden");
+            _tap.AddToClassList("is-hidden");
+            _prologue.Q("op-skip").style.display = DisplayStyle.None;
+            _prologue.Q("op-pips").style.display = DisplayStyle.None;
+            _roomEl.RemoveFromClassList("is-on");
+            _black.style.opacity = 0f;
+            _crt.style.display = DisplayStyle.None;
+            _bars = 1f;
+            UiRoot.Instance.SetGlitch(0.08f);
+            _film.BeginRestore();
+            ShowStep(0);
+        }
+
+        private void ShowStep(int step)
+        {
+            _restoreStep = step;
+            RestoreStep s = Prologue.Restore[step];
+            for (int i = 0; i < Prologue.Restore.Length; i++)
+            {
+                _prologue.Q("op-restore-icon-" + i).style.display = i == step ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            _prologue.Q<Label>("op-restore-title").text = s.Title;
+            _prologue.Q<Label>("op-restore-step").text = (step + 1) + "/" + Prologue.Restore.Length;
+            _prologue.Q<Label>("op-restore-body").text = s.Body;
+            _prologue.Q<Label>("op-restore-label").text = s.Action;
+            _restore.EnableInClassList("op__restore--core", IsCoreStep(step));
+            _restore.RemoveFromClassList("is-hidden");
+            _restoreBtn.RemoveFromClassList("is-busy");
+            _busy = false;
+            _holdT = 0f;
+            Motion.To(_restore, 0.45f, Ease.OutCubic, t =>
+            {
+                _restore.style.opacity = t;
+                _restore.style.translate = new Translate(0, 40f * (1f - t));
+            });
+            if (IsCoreStep(step))
+            {
+                _film.FocusCore();
+            }
+            else
+            {
+                _film.FocusSlot(step);
+            }
+        }
+
+        private void OnRestore()
+        {
+            if (_busy || IsCoreStep(_restoreStep))
+            {
+                return;
+            }
+
+            _busy = true;
+            _restoreBtn.AddToClassList("is-busy");
+            int done = _restoreStep;
+            _film.Restore(done, () => ShowStep(done + 1));
+        }
+
+        private void TickRestore(float dt)
+        {
+            Length bar = Length.Percent(_rules.letterboxPct);
+            _barTop.style.height = bar;
+            _barBottom.style.height = bar;
+            if (_woken || !IsCoreStep(_restoreStep))
+            {
+                return;
+            }
+
+            // WAKE THE CORE is held, not tapped: the longer the hand stays, the harder it answers
+            _holdT = _holding ? _holdT + dt : Mathf.Max(0f, _holdT - (dt * 2f));
+            float k = Mathf.Clamp01(_holdT / _rules.wakeHoldSeconds);
+            _prologue.Q("op-restore-fill").style.width = Length.Percent(k * 100f);
+            _film.Hold(k);
+            UiRoot.Instance.SetGlitch(0.08f + (0.6f * k));
+            if (k < 1f)
+            {
+                return;
+            }
+
+            _woken = true;
+            _holding = false;
+            PlayerPrefs.SetInt(AwakeKey, 1);
+            PlayerPrefs.Save();
+            _restore.AddToClassList("is-hidden");
+            _film.Hold(0f);
+            UiRoot.Instance.SetGlitch(0.75f);
+            _kicker.text = "CORE S-17 // ONLINE";
+            _kicker.parent.style.display = DisplayStyle.Flex;
+            _line.RemoveFromClassList("op__line--terminal");
+            _line.text = Prologue.Awake;
+            _sub.style.display = DisplayStyle.Flex;
+            _film.Wake(EndPrologue);
         }
 
         private void Advance()
@@ -380,6 +546,8 @@ namespace Deadswitch.Game.UI.Hud
 
             VisualElement tree = _prologue;
             _prologue = null;
+            _restoring = false;
+            PlayerPrefs.SetInt(AwakeKey, 1);
             UiRoot.Instance.SetGlitch(0f);
             _voice.Paused = false;
             _film?.Finish();

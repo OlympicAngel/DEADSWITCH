@@ -46,6 +46,25 @@ namespace Deadswitch.Game.Base
         private Vector3 _outpost;
         private int _cameraMask = -1;
         private float _cameraFar;
+        private Phase _phase = Phase.Film;
+        private int _focusSlot = -1;
+        private bool _focusCore;
+        private float _focusT;
+        private Vector3 _camPos;
+        private Vector3 _camLook;
+        private float _camFov = 40f;
+        private float _hold;
+        private float _wakeT;
+        private System.Action _wakeDone;
+        private int _restored;
+        private RestoreJob _job;
+
+        private enum Phase
+        {
+            Film,
+            Restore,
+            Wake,
+        }
 
         public static OpeningFilm Create()
         {
@@ -170,6 +189,88 @@ namespace Deadswitch.Game.Base
         }
 
         /// <summary>
+        /// The restore steps (SPEC-044 s8): the film is over, the Hub is a ruin lit by fire, and the handler brings the
+        /// buildings back one by one. A resumed run starts here with the ruin rebuilt from the attack's cuts.
+        /// </summary>
+        public void BeginRestore()
+        {
+            _phase = Phase.Restore;
+            _mood = PrologueMood.You;
+            _cuts.Clear();
+            MapShot(false);
+            if (_globe != null)
+            {
+                Destroy(_globe.gameObject);
+                _globe = null;
+            }
+
+            if (!_stage.Burning)
+            {
+                // a resumed run: rebuild the ruin the attack left
+                foreach (InterfaceConfig.OpeningShot s in Shots(PrologueMood.Attack))
+                {
+                    _cuts.Add(s);
+                }
+
+                for (_cut = 0; _cut < _cuts.Count; _cut++)
+                {
+                    Break(_cuts[_cut]);
+                }
+
+                _cuts.Clear();
+            }
+
+            _stage.People = 0;
+            BaseView.Instance?.Stage(_stage);
+            Transform cam = DroneCamera.Instance != null ? DroneCamera.Instance.Camera.transform : null;
+            _camPos = cam != null ? cam.position : new Vector3(0f, 20f, -24f);
+            _camLook = cam != null ? cam.position + (cam.forward * 20f) : _core;
+            _camFov = DroneCamera.Instance != null ? DroneCamera.Instance.Camera.fieldOfView : 40f;
+        }
+
+        /// <summary>Frames a building for its restore card.</summary>
+        public void FocusSlot(int slot)
+        {
+            _focusSlot = slot;
+            _focusCore = false;
+            _focusT = 0f;
+        }
+
+        /// <summary>Frames the core for the last step.</summary>
+        public void FocusCore()
+        {
+            _focusSlot = -1;
+            _focusCore = true;
+            _focusT = 0f;
+        }
+
+        /// <summary>Brings a ruined building back (sparks, the damage falls away, its lamps come on), then calls done.</summary>
+        public void Restore(int slot, System.Action done)
+        {
+            _job = new RestoreJob { Slot = slot, Done = done };
+            AudioDirector.Instance?.Opening(OpeningCue.Restore);
+        }
+
+        /// <summary>How far the handler has held WAKE THE CORE (0..1): the core answers, red.</summary>
+        public void Hold(float amount)
+        {
+            _hold = Mathf.Clamp01(amount);
+        }
+
+        /// <summary>The core wakes: a breath, then the shockwave relights the Hub; calls done when it has passed.</summary>
+        public void Wake(System.Action done)
+        {
+            _phase = Phase.Wake;
+            _wakeT = 0f;
+            _wakeDone = done;
+            AudioDirector.Instance?.Opening(OpeningCue.SubDrop);
+            DroneCamera.Instance?.Shake(_rules.warShake * 0.6f);
+        }
+
+        /// <summary>Seconds from the wake to the hand-over (the breath plus the wave).</summary>
+        public float WakeSeconds => _rules.wakeBreath + _rules.waveSeconds + 0.6f;
+
+        /// <summary>
         /// The sector map at night (the map world the MAP screen renders, far below the Hub): the drone camera may
         /// see its layer, reaches further and the air thins for the beat; the shot pushes in on one outpost, burning.
         /// </summary>
@@ -233,6 +334,13 @@ namespace Deadswitch.Game.Base
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            if (_phase != Phase.Film)
+            {
+                TickRestore(dt);
+                Tracers(dt);
+                return;
+            }
+
             _t += dt;
             _cutT += dt;
             if (_cut >= 0 && _cut < _cuts.Count - 1 && _cutT >= _cuts[_cut].seconds)
@@ -265,8 +373,14 @@ namespace Deadswitch.Game.Base
                 return;
             }
 
-            // what this cut shows breaking
-            InterfaceConfig.OpeningShot s = _cuts[_cut];
+            Break(_cuts[_cut]);
+            Frame();
+            DroneCamera.Instance?.Cut();
+        }
+
+        /// <summary>What a cut shows breaking on the staged Hub.</summary>
+        private void Break(InterfaceConfig.OpeningShot s)
+        {
             bool broke = false;
             foreach (int slot in s.raze)
             {
@@ -286,7 +400,7 @@ namespace Deadswitch.Game.Base
                     SlotView v = _stage.Slots[slot];
                     int damage = s.hurt[i + 1];
                     // a building hit this hard loses its upper floors: what is left matches the run's start
-                    _stage.Slots[slot] = new SlotView(v.Kind, damage >= 3 ? 1 : v.Level, true, false, FacilityKind.None, 0, damage);
+                    _stage.Slots[slot] = new SlotView(v.Kind, damage >= 3 ? 1 : v.Level, damage < 3, false, FacilityKind.None, 0, damage);
                     broke = true;
                 }
             }
@@ -296,11 +410,11 @@ namespace Deadswitch.Game.Base
                 _stage.Burning = true;
                 _stage.People = Mathf.Max(0, _stage.People - 14);
                 BaseView.Instance?.Stage(_stage);
-                Impact(_core + new Vector3(Random.Range(-6f, 6f), 0.6f, Random.Range(-14f, -4f)), false);
+                if (_phase == Phase.Film)
+                {
+                    Impact(_core + new Vector3(Random.Range(-6f, 6f), 0.6f, Random.Range(-14f, -4f)), false);
+                }
             }
-
-            Frame();
-            DroneCamera.Instance?.Cut();
         }
 
         private void Frame()
@@ -377,6 +491,148 @@ namespace Deadswitch.Game.Base
             {
                 _blast.enabled = _flash > 0.01f;
                 _blast.intensity = _flash * _blastScale * _rules.blastIntensity;
+            }
+        }
+
+        private void TickRestore(float dt)
+        {
+            _t += dt;
+            _focusT += dt;
+            BaseView view = BaseView.Instance;
+            if (view == null)
+            {
+                return;
+            }
+
+            // the camera glides from building to building, then rises off the core as the wave goes out
+            Vector3 pos = _camPos;
+            Vector3 look = _camLook;
+            float fov = _camFov;
+            if (_phase == Phase.Wake)
+            {
+                float u = Ease.InOutSine(Mathf.Clamp01((_wakeT - _rules.wakeBreath) / (_rules.waveSeconds + 0.6f)));
+                pos = Vector3.Lerp(_core + new Vector3(0f, 8f, -14f), _rules.wakeCamera, u);
+                look = Vector3.Lerp(_core, new Vector3(0f, 0f, 4f), u);
+                fov = Mathf.Lerp(40f, 34f, u);
+            }
+            else if (_focusSlot >= 0 && _focusSlot < view.SlotCount)
+            {
+                // from the central walkway at head height, a little toward the gate, so the whole building
+                // stands in frame; a slow drift along the walk keeps it alive
+                Vector3 ground = view.SlotGround(_focusSlot);
+                float side = ground.x < 0f ? -1f : 1f;
+                float drift = Mathf.Sin(_focusT * 0.25f) * 0.8f;
+                pos = new Vector3(side * _rules.restoreWalkX, _rules.restoreEyeHeight, ground.z - _rules.restoreBack + drift);
+                // aim under the building so it stands above the card
+                look = view.FocusPoint(_focusSlot) + new Vector3(0f, -_rules.restoreAimDrop, 0f);
+                fov = _rules.restoreFov;
+            }
+            else if (_focusCore)
+            {
+                pos = _core + new Vector3(Mathf.Sin(_focusT * 0.1f) * 2f, 4f, -15f);
+                look = _core;
+                fov = 42f;
+            }
+
+            float k = 1f - Mathf.Exp(-dt * (_phase == Phase.Wake ? 20f : 2.2f));
+            _camPos = Vector3.Lerp(_camPos, pos, k);
+            _camLook = Vector3.Lerp(_camLook, look, k);
+            _camFov = Mathf.Lerp(_camFov, fov, k);
+            DroneCamera.Instance?.Direct(_camPos, _camLook, _camFov);
+
+            if (_job != null)
+            {
+                TickJob(dt, view);
+            }
+
+            float flare = 0f;
+            Color flareColor = Cyan;
+            float lamps = 0f;
+            float level = 0.12f * _restored;
+            if (_phase == Phase.Restore)
+            {
+                flare = _focusCore ? 0.1f + (0.05f * Mathf.Sin(_t * 2f)) : 0.04f;
+                if (_hold > 0f)
+                {
+                    // it answers the hand on the switch: red, and harder the longer it is held
+                    flareColor = WarRed;
+                    flare = _hold * (0.6f + (0.4f * Mathf.PerlinNoise(_t * 14f, 0.2f)));
+                }
+            }
+            else
+            {
+                _wakeT += dt;
+                if (_wakeT < _rules.wakeBreath)
+                {
+                    // the breath: dark, the red dies away
+                    flareColor = WarRed;
+                    flare = 0.6f * (1f - (_wakeT / _rules.wakeBreath));
+                }
+                else
+                {
+                    float w = Mathf.Clamp01((_wakeT - _rules.wakeBreath) / _rules.waveSeconds);
+                    lamps = Ease.OutCubic(w) * _rules.waveRadius;
+                    level = Mathf.Max(level, Ease.OutCubic(w));
+                    flare = Mathf.Lerp(1f, 0.2f, w);
+                    DrawRings(w < 1f ? lamps : -1f);
+                    if (_wakeT - dt < _rules.wakeBreath)
+                    {
+                        AudioDirector.Instance?.Opening(OpeningCue.PowerUp);
+                        DroneCamera.Instance?.Shake(_rules.warShake * 0.5f);
+                        Feedback.Alert();
+                    }
+
+                    if (_wakeT >= WakeSeconds && _wakeDone != null)
+                    {
+                        System.Action done = _wakeDone;
+                        _wakeDone = null;
+                        done();
+                        return;
+                    }
+                }
+            }
+
+            view.OpeningGrade(WarRed, 0f);
+            view.OpeningPower(lamps, level);
+            view.OpeningFire(_phase == Phase.Wake ? 1f : _rules.restoreFire);
+            _flare.color = flareColor;
+            _flare.enabled = flare > 0.01f;
+            _flare.intensity = flare * _rules.flareIntensity;
+        }
+
+        private void TickJob(float dt, BaseView view)
+        {
+            RestoreJob job = _job;
+            job.Age += dt;
+            job.NextSpark -= dt;
+            if (job.NextSpark <= 0f)
+            {
+                // welding sparks, small and quick, here and there on the frame
+                job.NextSpark = 0.04f;
+                Vector3 at = view.FocusPoint(job.Slot) + new Vector3(Random.Range(-1.5f, 1.5f), Random.Range(-1f, 1f), Random.Range(-1.2f, 0.4f));
+                BattleFx.Burst(_fire, at, 2, 0.18f);
+            }
+
+            // the damage falls away in steps, each with its own jolt
+            SlotView v = _stage.Slots[job.Slot];
+            int damage = Mathf.Max(0, 3 - Mathf.FloorToInt(job.Age / (_rules.restoreSeconds / 3f)));
+            if (damage < v.Damage)
+            {
+                _stage.Slots[job.Slot] = new SlotView(v.Kind, 1, damage == 0, false, FacilityKind.None, 0, damage);
+                if (damage == 0)
+                {
+                    view.OpeningLit(job.Slot);
+                }
+
+                view.Stage(_stage);
+                DroneCamera.Instance?.Shake(0.12f);
+            }
+
+            if (job.Age >= _rules.restoreSeconds + 0.3f)
+            {
+                _job = null;
+                _restored++;
+                job.Done?.Invoke();
             }
         }
 
@@ -584,6 +840,14 @@ namespace Deadswitch.Game.Base
             go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             line.enabled = false;
             return line;
+        }
+
+        private sealed class RestoreJob
+        {
+            public int Slot;
+            public float Age;
+            public float NextSpark;
+            public System.Action Done;
         }
 
         private sealed class Tracer

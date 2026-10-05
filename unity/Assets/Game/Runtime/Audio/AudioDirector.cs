@@ -38,6 +38,8 @@ namespace Deadswitch.Game.Audio
         private AudioClip _chime;
         private AudioClip _heartbeat;
         private AudioClip _powerUp;
+        private AudioClip _restore;
+        private AudioClip _subDrop;
         private AudioClip[][] _syllables;
 
         private float _nextShelling;
@@ -84,6 +86,8 @@ namespace Deadswitch.Game.Audio
             _chime = Synth.Tick(660f, 0.5f);
             _heartbeat = Synth.Heartbeat();
             _powerUp = Synth.PowerUp(12);
+            _restore = Synth.Restore(13);
+            _subDrop = Synth.SubDrop(14);
 
             BuildVoice();
             _host.Settings.Changed += () =>
@@ -137,13 +141,19 @@ namespace Deadswitch.Game.Audio
                 case OpeningCue.PowerUp:
                     OneShot(_powerUp, 0.85f * master, 1f);
                     break;
+                case OpeningCue.Restore:
+                    OneShot(_restore, 0.7f * master, Random.Range(0.96f, 1.04f));
+                    break;
+                case OpeningCue.SubDrop:
+                    OneShot(_subDrop, 1f * master, 1f);
+                    break;
             }
         }
 
-        /// <summary>Drains the ambience for a while (the quiet before; the opening's blackout).</summary>
+        /// <summary>Drains the ambience for this long from now (0 lets it back in), for the opening film.</summary>
         public void Hush(float seconds)
         {
-            _silenceUntil = Mathf.Max(_silenceUntil, Time.time + seconds);
+            _silenceUntil = Time.time + seconds;
         }
 
         /// <summary>The AI starts speaking a line: a burst of synthetic syllables, more broken with corruption.</summary>
@@ -366,5 +376,7 @@ namespace Deadswitch.Game.Audio
         FarImpact,
         Impact,
         PowerUp,
+        Restore,
+        SubDrop,
     }
 }
