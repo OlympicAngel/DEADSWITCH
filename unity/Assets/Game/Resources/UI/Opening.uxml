@@ -1,15 +1,22 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Opening.uss" />
-  <!-- Prologue (SPEC-009 rule 4): typed cards over the dimmed drone feed, skippable. -->
+  <!-- Prologue (SPEC-009 rule 4, SPEC-041 look): the fragment wakes; typed cards over the dimmed drone feed, skippable. -->
   <ui:VisualElement name="prologue" class="pro">
-    <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="ds-label pro__head" />
-    <ui:Label name="pro-text" text="They gave the war to a machine." class="pro__text" />
-    <ui:VisualElement name="pro-pips" class="row pro__pips">
-      <ui:VisualElement class="pro__pip is-on" />
-      <ui:VisualElement class="pro__pip" />
-      <ui:VisualElement class="pro__pip" />
-      <ui:VisualElement class="pro__pip" />
-      <ui:VisualElement class="pro__pip" />
+    <ui:VisualElement class="ds-scrim pro__scrim" />
+    <ui:VisualElement class="pro__center">
+      <ui:VisualElement name="pro-orb" class="ai-orb pro__orb" />
+      <ui:VisualElement class="row pro__head">
+        <ui:VisualElement class="pro__rec" />
+        <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="pro__head-label" />
+      </ui:VisualElement>
+      <ui:Label name="pro-text" text="They gave the war to a machine." class="pro__text" />
+      <ui:VisualElement name="pro-pips" class="row pro__pips">
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip" />
+      </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="pro-skip" class="ds-btn ds-btn--ghost pro__skip"><ui:Label text="SKIP" class="ds-btn__label" /></ui:VisualElement>
   </ui:VisualElement>

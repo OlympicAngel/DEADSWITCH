@@ -86,6 +86,8 @@ namespace Deadswitch.Game.UI.Hud
             _prologue = tree;
             _proText = tree.Q<Label>("pro-text");
             tree.Q("pro-skip").RegisterCallback<ClickEvent>(_ => EndPrologue());
+            _proOrb = new AiOrb(tree.Q("pro-orb"));
+            _proOrb.Assemble();
             UiRoot.Instance.SetGlitch(0.6f);
             foreach (string part in RevealOrder)
             {
@@ -95,8 +97,16 @@ namespace Deadswitch.Game.UI.Hud
             NextCard();
         }
 
+        private AiOrb _proOrb;
+
         private void TickPrologue(float dt)
         {
+            if (_proOrb != null)
+            {
+                _proOrb.Voice = _proText != null && _proText.text.EndsWith("_", System.StringComparison.Ordinal) ? 1f : 0.2f;
+                _proOrb.Tick(dt);
+            }
+
             string text = Prologue.Cards[_card];
             if (_shown < text.Length)
             {
