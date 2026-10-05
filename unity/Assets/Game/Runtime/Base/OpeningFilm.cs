@@ -202,6 +202,7 @@ namespace Deadswitch.Game.Base
                 case PrologueMood.Attack: return OpeningBed.Battle;
                 case PrologueMood.Ash: return OpeningBed.Ash;
                 case PrologueMood.Deadswitch: return OpeningBed.Dread;
+                case PrologueMood.You: return OpeningBed.Hope;
                 default: return OpeningBed.Ruin;
             }
         }
@@ -613,7 +614,7 @@ namespace Deadswitch.Game.Base
                     DrawRings(w < 1f ? lamps : -1f);
                     if (_wakeT - dt < _rules.wakeBreath)
                     {
-                        AudioDirector.Instance?.SetOpeningBed(OpeningBed.Calm);
+                        AudioDirector.Instance?.SetOpeningBed(OpeningBed.Wake);
                         AudioDirector.Instance?.Opening(OpeningCue.PowerUp);
                         DroneCamera.Instance?.Shake(_rules.warShake * 0.5f);
                         Feedback.Alert();

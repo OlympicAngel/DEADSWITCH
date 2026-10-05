@@ -43,6 +43,9 @@ namespace Deadswitch.Game.Audio
         private AudioClip _whine;
         private AudioClip _swell;
         private OpeningBed _bed;
+        private System.Threading.Tasks.Task<float[][]> _scoreTask;
+        private AudioSource[] _score;
+        private float[] _scoreLevel;
         private readonly float[] _bedLevel = new float[5];
         private float _nextBedShot;
         private AudioClip[][] _syllables;
@@ -97,6 +100,9 @@ namespace Deadswitch.Game.Audio
             _swell = Synth.Swell(15);
 
             BuildVoice();
+
+            // the opening's score is pure math: compose it off the main thread while the app starts
+            _scoreTask = System.Threading.Tasks.Task.Run(Score.Render);
             _host.Settings.Changed += () =>
             {
                 if (_voicePack != _host.Settings.VoicePack)
@@ -191,18 +197,90 @@ namespace Deadswitch.Game.Audio
         {
             switch (bed)
             {
-                case OpeningBed.Space: return new[] { 0.55f, 0.12f, 0f, 0f, 0f };
-                case OpeningBed.Room: return new[] { 0.2f, 0.35f, 0f, 0f, 0f };
-                case OpeningBed.Alarm: return new[] { 0f, 0.5f, 0f, 0f, 0.55f };
-                case OpeningBed.War: return new[] { 0f, 0.6f, 0f, 0f, 0f };
-                case OpeningBed.Cold: return new[] { 0.15f, 0.1f, 0.35f, 0f, 0f };
-                case OpeningBed.Night: return new[] { 0f, 0.15f, 0.4f, 0.3f, 0f };
-                case OpeningBed.Calm: return new[] { 0.4f, 0.05f, 0.2f, 0f, 0f };
-                case OpeningBed.Battle: return new[] { 0f, 0.35f, 0.15f, 0.45f, 0.45f };
-                case OpeningBed.Ash: return new[] { 0f, 0.1f, 0.5f, 0.5f, 0f };
-                case OpeningBed.Dread: return new[] { 0f, 0.5f, 0.25f, 0.25f, 0f };
-                case OpeningBed.Ruin: return new[] { 0.15f, 0.12f, 0.35f, 0.3f, 0f };
+                case OpeningBed.Space: return new[] { 0.55f, 0.05f, 0f, 0f, 0f };
+                case OpeningBed.Room: return new[] { 0.2f, 0.12f, 0f, 0f, 0f };
+                case OpeningBed.Alarm: return new[] { 0f, 0.15f, 0f, 0f, 0.3f };
+                case OpeningBed.War: return new[] { 0f, 0.2f, 0f, 0f, 0f };
+                case OpeningBed.Cold: return new[] { 0.15f, 0.05f, 0.25f, 0f, 0f };
+                case OpeningBed.Night: return new[] { 0f, 0.05f, 0.3f, 0.2f, 0f };
+                case OpeningBed.Calm: return new[] { 0.4f, 0f, 0.15f, 0f, 0f };
+                case OpeningBed.Battle: return new[] { 0f, 0.1f, 0.1f, 0.3f, 0.25f };
+                case OpeningBed.Ash: return new[] { 0f, 0.05f, 0.4f, 0.35f, 0f };
+                case OpeningBed.Dread: return new[] { 0f, 0.15f, 0.2f, 0.2f, 0f };
+                case OpeningBed.Ruin: return new[] { 0.15f, 0.05f, 0.25f, 0.2f, 0f };
+                case OpeningBed.Hope: return new[] { 0.2f, 0f, 0.25f, 0.2f, 0f };
+                case OpeningBed.Wake: return new[] { 0.3f, 0f, 0.1f, 0.1f, 0f };
                 default: return new[] { 0f, 0f, 0f, 0f, 0f };
+            }
+        }
+
+        /// <summary>How loud each score stem plays under a bed (see <see cref="Score.Stem"/>).</summary>
+        private static float[] ScoreLevels(OpeningBed bed)
+        {
+            var l = new float[9];
+            switch (bed)
+            {
+                case OpeningBed.Space: l[(int)Score.Stem.Orbit] = 1f; break;
+                case OpeningBed.Room: l[(int)Score.Stem.Command] = 1f; l[(int)Score.Stem.Orbit] = 0.25f; break;
+                case OpeningBed.Alarm: l[(int)Score.Stem.Launch] = 1f; l[(int)Score.Stem.Command] = 0.4f; break;
+                case OpeningBed.War: l[(int)Score.Stem.Launch] = 1f; l[(int)Score.Stem.Battle] = 0.5f; break;
+                case OpeningBed.Cold: l[(int)Score.Stem.Dark] = 1f; break;
+                case OpeningBed.Night: l[(int)Score.Stem.Dark] = 0.6f; l[(int)Score.Stem.Ash] = 0.4f; break;
+                case OpeningBed.Calm: l[(int)Score.Stem.Hold] = 1f; break;
+                case OpeningBed.Battle: l[(int)Score.Stem.Battle] = 1f; l[(int)Score.Stem.Launch] = 0.45f; break;
+                case OpeningBed.Ash: l[(int)Score.Stem.Ash] = 1f; break;
+                case OpeningBed.Dread: l[(int)Score.Stem.Ash] = 1f; l[(int)Score.Stem.Dark] = 0.35f; break;
+                case OpeningBed.Ruin: l[(int)Score.Stem.Restore] = 0.9f; l[(int)Score.Stem.Ash] = 0.35f; break;
+                case OpeningBed.Hope: l[(int)Score.Stem.Ash] = 0.5f; l[(int)Score.Stem.Orbit] = 0.55f; break;
+                case OpeningBed.Wake: l[(int)Score.Stem.Wake] = 1f; break;
+            }
+
+            return l;
+        }
+
+        /// <summary>Starts every stem in the same DSP instant once the score is composed, so crossfades stay in time.</summary>
+        private void TickScore(float music)
+        {
+            if (_score == null)
+            {
+                if (_scoreTask == null || !_scoreTask.IsCompleted)
+                {
+                    return;
+                }
+
+                if (_scoreTask.Status != System.Threading.Tasks.TaskStatus.RanToCompletion)
+                {
+                    Debug.LogError("AudioDirector: score failed: " + _scoreTask.Exception);
+                    _scoreTask = null;
+                    return;
+                }
+
+                float[][] stems = _scoreTask.Result;
+                _scoreTask = null;
+                _score = new AudioSource[stems.Length];
+                _scoreLevel = new float[stems.Length];
+                double at = AudioSettings.dspTime + 0.2;
+                for (int i = 0; i < stems.Length; i++)
+                {
+                    AudioClip clip = AudioClip.Create("Score " + (Score.Stem)i, stems[i].Length, 1, Score.Rate, false);
+                    clip.SetData(stems[i], 0);
+                    var src = gameObject.AddComponent<AudioSource>();
+                    src.clip = clip;
+                    src.loop = true;
+                    src.volume = 0f;
+                    src.playOnAwake = false;
+                    src.PlayScheduled(at);
+                    _score[i] = src;
+                }
+            }
+
+            float[] target = ScoreLevels(_bed);
+            for (int i = 0; i < _score.Length; i++)
+            {
+                // cross-fades over about a bar; the end of the film fades the score out slower
+                float rate = _bed == OpeningBed.None ? 0.25f : 0.6f;
+                _scoreLevel[i] = Mathf.MoveTowards(_scoreLevel[i], target[i], Time.deltaTime * rate);
+                _score[i].volume = _scoreLevel[i] * music * 0.75f;
             }
         }
 
@@ -214,7 +292,8 @@ namespace Deadswitch.Game.Audio
                 _bedLevel[i] = Mathf.MoveTowards(_bedLevel[i], target[i], Time.deltaTime * 0.5f);
             }
 
-            _pad.volume = _bedLevel[0] * music;
+            // the score carries the music while it plays; the old pad only stands in until it is composed
+            _pad.volume = _bedLevel[0] * music * (_score != null ? 0f : 1f);
             _pad.pitch = _bed == OpeningBed.Dread ? 0.8f : 1f;
             _drone.volume = _bedLevel[1] * master;
             _drone.pitch = _bed == OpeningBed.Dread ? 0.7f : 1f;
@@ -233,8 +312,8 @@ namespace Deadswitch.Game.Audio
             // the fight at the wall: guns, close blasts
             if (_bed == OpeningBed.Battle && Time.time >= _nextBedShot)
             {
-                _nextBedShot = Time.time + Random.Range(0.15f, 0.5f);
-                OneShot(_guns[Random.Range(0, _guns.Length)], 0.4f * master, Random.Range(0.9f, 1.1f));
+                _nextBedShot = Time.time + Random.Range(0.25f, 0.7f);
+                OneShot(_guns[Random.Range(0, _guns.Length)], 0.25f * master, Random.Range(0.9f, 1.1f));
             }
         }
 
@@ -292,6 +371,7 @@ namespace Deadswitch.Game.Audio
             float musicTarget = hush ? 0f : 0.08f + (0.42f * tension);
             _music = Mathf.MoveTowards(_music, musicTarget, Time.deltaTime * 0.08f);
 
+            TickScore(music);
             if (_bed != OpeningBed.None)
             {
                 TickBed(master, music);
@@ -504,5 +584,7 @@ namespace Deadswitch.Game.Audio
         Dread,
         Ruin,
         Silence,
+        Hope,
+        Wake,
     }
 }
