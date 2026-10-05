@@ -125,6 +125,8 @@ idle.4 | idle | cold | Population is an expense. A necessary one.
 idle.5 | idle | bold | I could run more of this. You only have to let me.
 idle.6 | idle | neutral | Other cores are out there, listening. I am quieter than them.
 
+overclock.1 | overclock_offered | neutral | I can think faster. It will cost us. Probably.
+overclock.2 | overclock_offered | bold | Overclock the racks. You will like what I can do with the headroom.
 forced.1 | forced_labor | neutral | Output up. Loyalty down. Acceptable.
 forced.2 | forced_labor | neutral | Double shifts for {hours} hours. {lost} did not finish theirs.
 forced.3 | forced_labor | warm | They are working. Some of them are not coming back. I am sorry.

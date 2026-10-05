@@ -33,7 +33,7 @@ namespace Deadswitch.Host.Narrative
             "build_done", "build_cancelled", "demolished", "band_glitchy", "band_unstable", "band_critical", "band_down",
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
-            "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
+            "research_started", "research_done", "research_memory", "overclock_offered", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
             "ceasefire", "ceasefire_broken", "ceasefire_over", "chapter_opened", "chapter_twist", "chapter_closed", "alliance_formed", "alliance_ended", "alliance_walkout", "alliance_betrayed", "op_sabotage", "sabotage_clean", "sabotage_traced", "tactic_learned", "site_fortified", "hunch_restless", "hunch_calm", "regrouping", "reactor_scram", "reactor_fueled", "radiation_leak", "fragment_recovered", "event_fallout", "event_plague", "event_blackouts", "event_surge", "aftershock_building", "blueprint_used", "forces_infantry", "forces_drones", "forces_vehicles", "secret_exposed", "secret_dismantled", "hazard_sick", "plague_infection", "survivors_found", "parts_recovered", "fallout_drift", "ai_raid", "op_recalled", "region_hollow", "region_ridge", "region_river", "region_ruins", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
             "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
             "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
@@ -309,6 +309,11 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.ResearchCompleted:
                     Enqueue(new Pending(e.A <= (int)ModuleNode.M3 ? "research_memory" : "research_done", Priority.Normal).With("module", ((ModuleNode)e.A).ToString()));
+                    if (e.A == (int)ModuleNode.LG1)
+                    {
+                        // LG1 opens the Overclocked Racks choice (starter line 6)
+                        Enqueue(new Pending("overclock_offered", Priority.Normal));
+                    }
                     break;
                 case EventKind.TierAdvanced:
                     Enqueue(new Pending("tier_up", Priority.Urgent).With("tier", e.A.ToString()).With("people", e.B.ToString()));
