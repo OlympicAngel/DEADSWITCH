@@ -44,7 +44,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui = tree;
             Icons.Attach(tree);
             _reason = _ui.Q<Label>("lgc-reason");
-            _ui.Q("lgc-close").RegisterCallback<ClickEvent>(_ => router.Show("core"));
+            _ui.Q("lgc-close").RegisterCallback<ClickEvent>(_ => router.Return());
             _ui.Q("lgc-move-btn").RegisterCallback<ClickEvent>(_ => Move());
             for (int i = 0; i <= (int)Region.Ruins; i++)
             {

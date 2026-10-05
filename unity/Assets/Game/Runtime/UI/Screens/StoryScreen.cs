@@ -38,7 +38,7 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             Icons.Attach(tree);
-            _ui.Q("sty-close").RegisterCallback<ClickEvent>(_ => router.Show("core"));
+            _ui.Q("sty-close").RegisterCallback<ClickEvent>(_ => router.Return());
             Kit.BuildMeter(_ui.Q("sty-payoff-meter"));
 
             VisualElement list = _ui.Q("sty-fragments");

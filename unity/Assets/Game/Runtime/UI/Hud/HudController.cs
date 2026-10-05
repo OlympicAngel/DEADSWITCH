@@ -173,11 +173,11 @@ namespace Deadswitch.Game.UI.Hud
             Router.Register(new LegacyScreen(Router));
             Records.Hook(_host);
             Router.Register(new StoryScreen(Router));
-            Router.Register(new CoreScreen(() => _voice.History, () => Router.Show("settings"), () =>
+            Router.Register(new CoreScreen(() => _voice.History, () =>
             {
                 premium.ReturnTo("core");
                 Router.Show("premium");
-            }, () => Router.Show("legacy"), () => Router.Show("story")));
+            }));
             Router.Register(new SettingsScreen(Router, () =>
             {
                 premium.ReturnTo("settings");
@@ -204,7 +204,16 @@ namespace Deadswitch.Game.UI.Hud
                     return false;
                 }
 
-                Router.Show("base");
+                // a detail screen returns where it came from; another layer returns to BASE
+                if (Router.IsLayer(Router.Current))
+                {
+                    Router.Show("base");
+                }
+                else
+                {
+                    Router.Return();
+                }
+
                 return true;
             });
             Back.Register(() => _baseScreen.CloseFocus());

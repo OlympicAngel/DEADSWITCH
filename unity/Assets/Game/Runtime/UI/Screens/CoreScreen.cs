@@ -29,7 +29,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _showModules;
         private bool _crisisSeen;
 
-        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openSettings, System.Action openPremium, System.Action openLegacy, System.Action openStory)
+        public CoreScreen(System.Func<IReadOnlyList<string>> history, System.Action openPremium)
         {
             _host = GameHost.Instance;
             _history = history;
@@ -44,23 +44,27 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty : Texts.Reason(r.Reason);
                 Refresh();
             });
-            _ui.Q("open-legacy").RegisterCallback<ClickEvent>(_ => openLegacy());
-            _ui.Q("open-story").RegisterCallback<ClickEvent>(_ => openStory());
             _ui.Q("flush-run").RegisterCallback<ClickEvent>(_ =>
             {
                 CommandResult r = _host.Execute(Command.FlushCore());
                 _ui.Q<Label>("audit-reason").text = r.Accepted ? string.Empty : r.Reason == RejectReason.NoChange ? "Nothing to flush right now." : Texts.Reason(r.Reason);
                 Refresh();
             });
-            _ui.Q("open-settings").RegisterCallback<ClickEvent>(_ => openSettings());
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
             _orbEl = _ui.Q("core-orb");
             _orb = new AiOrb(_orbEl);
             _modules = new ModulesView(_ui.Q("modules-view"), openPremium);
-            _ui.Q("view-status").RegisterCallback<ClickEvent>(_ => ShowModules(false));
-            _ui.Q("view-modules").RegisterCallback<ClickEvent>(_ => ShowModules(true));
+            // one tab row (SPEC-042 finding 2): MODULES is a page beside PRESENCE, ACTIONS and PROFILE
+            Pager.PageShown += (pager, index) =>
+            {
+                if (pager == _ui.Q("status-pager"))
+                {
+                    SyncPage();
+                    Refresh();
+                }
+            };
             _host.Ticked += () =>
             {
                 if (_visible)
@@ -91,6 +95,7 @@ namespace Deadswitch.Game.UI.Screens
         {
             _visible = true;
             _ui.Q<Label>("audit-reason").text = string.Empty;
+            SyncPage();
             Refresh();
         }
 
@@ -99,14 +104,10 @@ namespace Deadswitch.Game.UI.Screens
             _visible = false;
         }
 
-        private void ShowModules(bool on)
+        /// <summary>Whether the modules page is the one showing (it ticks research timers).</summary>
+        private void SyncPage()
         {
-            _showModules = on;
-            _ui.Q("view-status").EnableInClassList("is-selected", !on);
-            _ui.Q("view-modules").EnableInClassList("is-selected", on);
-            _ui.Q("status-view").EnableInClassList("is-hidden", on);
-            _ui.Q("modules-view").EnableInClassList("is-hidden", !on);
-            Refresh();
+            _showModules = _ui.Q("page-modules").style.display.value == DisplayStyle.Flex;
         }
 
         private void Refresh()
@@ -120,9 +121,6 @@ namespace Deadswitch.Game.UI.Screens
             GameState s = _host.Sim.State;
             SimConfig c = _host.Sim.Config;
 
-            Kit.SetButtonText(_ui.Q("open-story"), "STORY // CH " + System.Math.Max(1, s.ChapterTier) + " // " + ChapterSystem.FragmentsKnown(s) + "/" + ChapterSystem.FragmentCount);
-            _ui.Q("open-story").EnableInClassList("is-new", s.ChapterBeat == 1 && s.ChapterPoints == 0);
-            Kit.SetButtonText(_ui.Q("open-legacy"), "LEGACY // CYCLE " + (s.Cycle + 1) + " // " + Fmt.Num(s.LegacyPoints) + " LP");
 
             // corruption effects (SPEC-021)
             var g = c.Glitch;

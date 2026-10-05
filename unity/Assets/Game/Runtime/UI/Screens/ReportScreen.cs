@@ -29,7 +29,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Report");
             Root.Add(tree);
             _ui = tree;
-            _ui.Q("rep-close").RegisterCallback<ClickEvent>(_ => _router.Show("base"));
+            _ui.Q("rep-close").RegisterCallback<ClickEvent>(_ => _router.Return());
             _ui.Q("rep-verify").RegisterCallback<ClickEvent>(_ => Verify());
         }
 

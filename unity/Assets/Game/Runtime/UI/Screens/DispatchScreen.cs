@@ -28,7 +28,7 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _reason = _ui.Q<Label>("dsp-reason");
-            _ui.Q("dsp-close").RegisterCallback<ClickEvent>(_ => router.Show("base"));
+            _ui.Q("dsp-close").RegisterCallback<ClickEvent>(_ => router.Return());
             _ui.Q("dsp-ult-pay").RegisterCallback<ClickEvent>(_ => Run(Command.PayUltimatum()));
             _ui.Q("dsp-ult-prepare").RegisterCallback<ClickEvent>(_ => router.Show("ops"));
             _ui.Q("dsp-dil-take").RegisterCallback<ClickEvent>(_ => Run(Command.ResolveDilemma(0)));

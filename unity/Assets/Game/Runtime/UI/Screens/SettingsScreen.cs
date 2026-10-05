@@ -26,7 +26,7 @@ namespace Deadswitch.Game.UI.Screens
             TemplateContainer tree = UiRoot.Load("Settings");
             Root.Add(tree);
             _ui = tree;
-            _ui.Q("set-close").RegisterCallback<ClickEvent>(_ => _router.Show("core"));
+            _ui.Q("set-close").RegisterCallback<ClickEvent>(_ => _router.Return());
             Bind("seg-effects", i => _settings.SetEffectIntensity(Effects[i]));
             Bind("seg-text", i => _settings.SetTextScale(GameSettings.TextScales[i]));
             Bind("seg-sound", i => _settings.SetSound(GameSettings.SoundSteps[i]));

@@ -8,12 +8,6 @@
         <ui:Label text="CORE" class="ds-head__title" />
         <ui:Label text="FRAGMENT S-17 // AI TERMINAL" class="ds-head__status" />
       </ui:VisualElement>
-      <ui:VisualElement name="open-settings" class="core-settings"><ui:VisualElement class="ds-icon ds-icon--gear core-settings__icon" /><ui:Label text="SETTINGS" class="core-settings__label" /></ui:VisualElement>
-    </ui:VisualElement>
-
-    <ui:VisualElement class="ds-seg core-seg">
-      <ui:VisualElement name="view-status" class="ds-seg__item core-seg__item is-selected"><ui:Label text="STATUS" class="core-seg__label" /></ui:VisualElement>
-      <ui:VisualElement name="view-modules" class="ds-seg__item core-seg__item"><ui:Label text="MODULES" class="core-seg__label" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:ScrollView name="core-scroll" class="grow core-scroll">
@@ -64,6 +58,11 @@
           <ui:Label text="&gt; Prediction variance. Noted." class="core-transcript__line" />
           <ui:Label text="&gt; Allocation nominal. Ignore the... allocation nominal." class="core-transcript__line" />
         </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="page-modules" class="ds-page">
+          <ui:Label text="MODULES" class="ds-page__title" />
+          <ui:Label text="memory" class="ds-page__glyph" />
+          <ui:VisualElement name="modules-view" />
         </ui:VisualElement>
         <ui:VisualElement name="page-actions" class="ds-page">
           <ui:Label text="ACTIONS" class="ds-page__title" />
@@ -142,18 +141,8 @@
         </ui:VisualElement>
 
         </ui:VisualElement>
-        <ui:VisualElement name="page-records" class="ds-page">
-          <ui:Label text="RECORDS" class="ds-page__title" />
-          <ui:Label text="book" class="ds-page__glyph" />
-        <ui:VisualElement class="row core-links">
-          <ui:VisualElement name="open-story" class="ds-btn core-link grow"><ui:VisualElement class="ds-icon ds-icon--book core-link__icon" /><ui:Label text="STORY // CH 2 // 4/12" class="ds-btn__label" /></ui:VisualElement>
-          <ui:VisualElement name="open-legacy" class="ds-btn core-link grow"><ui:VisualElement class="ds-icon ds-icon--cycle core-link__icon" /><ui:Label name="open-legacy-label" text="LEGACY // CYCLE 1 // 240 LP" class="ds-btn__label" /></ui:VisualElement>
-        </ui:VisualElement>
-
-        </ui:VisualElement>
       </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement name="modules-view" class="is-hidden" />
     </ui:ScrollView>
   </ui:VisualElement>
 </ui:UXML>

@@ -40,6 +40,27 @@ namespace Deadswitch.Game.UI
 
         public string Current { get; private set; }
 
+        /// <summary>The screen shown before the current one (where a close or back returns).</summary>
+        public string Previous { get; private set; }
+
+        /// <summary>True for the command-bar layers (BASE, MAP, CORE, DEFENSE); false for detail screens.</summary>
+        public bool IsLayer(string id)
+        {
+            return _layers.Contains(id ?? string.Empty);
+        }
+
+        /// <summary>Closes a detail screen: back to the layer it was opened from (BASE when unknown).</summary>
+        public void Return()
+        {
+            string to = Previous != null && Previous != Current && _screens.ContainsKey(Previous) ? Previous : "base";
+            if (!IsLayer(to))
+            {
+                to = "base";
+            }
+
+            Show(to);
+        }
+
         public event System.Action<string> Changed;
 
         /// <summary>Every registered screen id, sorted (the smoke run walks them).</summary>
@@ -108,6 +129,7 @@ namespace Deadswitch.Game.UI
                 });
             }
 
+            Previous = Current;
             Current = id;
             foreach (KeyValuePair<string, VisualElement> kv in _tabs)
             {
