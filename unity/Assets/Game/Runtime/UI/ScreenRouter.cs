@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Deadswitch.Game.UI
@@ -15,16 +16,26 @@ namespace Deadswitch.Game.UI
         void OnHide();
     }
 
-    /// <summary>Command bar navigation (doc 08 s4: Base, Map, AI Terminal, Operations) with an eased cross-fade.</summary>
+    /// <summary>
+    /// Command bar navigation (doc 08 s4: Base, Map, AI Terminal, Operations) with an eased cross-fade, and swipes
+    /// between those layers (doc 08 s4 gestures): a quick horizontal flick moves one layer. On the Base layer only a
+    /// flick that starts at a screen edge counts, so it never fights the drone camera's pan.
+    /// </summary>
     public sealed class ScreenRouter
     {
         private readonly VisualElement _host;
         private readonly Dictionary<string, IGameScreen> _screens = new Dictionary<string, IGameScreen>();
         private readonly Dictionary<string, VisualElement> _tabs = new Dictionary<string, VisualElement>();
+        private readonly List<string> _layers = new List<string>();
+        private Vector2 _swipeFrom;
+        private float _swipeAt = -1f;
+        private int _swipePointer = -1;
 
         public ScreenRouter(VisualElement host)
         {
             _host = host;
+            _host.RegisterCallback<PointerDownEvent>(SwipeStart, TrickleDown.TrickleDown);
+            _host.RegisterCallback<PointerUpEvent>(SwipeEnd, TrickleDown.TrickleDown);
         }
 
         public string Current { get; private set; }
@@ -46,6 +57,11 @@ namespace Deadswitch.Game.UI
         public void BindTab(string id, VisualElement tab)
         {
             _tabs[id] = tab;
+            if (!_layers.Contains(id))
+            {
+                _layers.Add(id);
+            }
+
             tab.RegisterCallback<ClickEvent>(_ => Show(id));
         }
 
@@ -78,6 +94,44 @@ namespace Deadswitch.Game.UI
             });
             next.OnShow();
             Changed?.Invoke(id);
+        }
+
+        private void SwipeStart(PointerDownEvent e)
+        {
+            float width = _host.layout.width;
+            bool edge = e.position.x < width * 0.08f || e.position.x > width * 0.92f;
+            if (!_layers.Contains(Current ?? string.Empty) || (Current == "base" && !edge))
+            {
+                _swipeAt = -1f;
+                return;
+            }
+
+            _swipeFrom = e.position;
+            _swipeAt = Time.realtimeSinceStartup;
+            _swipePointer = e.pointerId;
+        }
+
+        private void SwipeEnd(PointerUpEvent e)
+        {
+            if (_swipeAt < 0f || e.pointerId != _swipePointer)
+            {
+                return;
+            }
+
+            Vector2 d = (Vector2)e.position - _swipeFrom;
+            float quick = Time.realtimeSinceStartup - _swipeAt;
+            _swipeAt = -1f;
+            if (quick > 0.45f || Mathf.Abs(d.x) < _host.layout.width * 0.22f || Mathf.Abs(d.y) > Mathf.Abs(d.x) * 0.5f)
+            {
+                return;
+            }
+
+            int i = _layers.IndexOf(Current);
+            int next = i + (d.x < 0 ? 1 : -1);
+            if (next >= 0 && next < _layers.Count)
+            {
+                Show(_layers[next]);
+            }
         }
     }
 }

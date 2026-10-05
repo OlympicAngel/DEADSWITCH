@@ -5,7 +5,7 @@
 
 ## Notes
 - Goal (owner, 2026-10-05): keep going until the game is fully implemented.
-- Remaining gaps from the 2026-10-05 audit, in order: strategic retreat sacrificing outposts, layer swipe gestures, more facility categories (solar, fuel depot, cooling), rewarded-ad conveniences (monetization: ask the owner), cloud backup + account link (needs a backend: owner), lock-screen widget (native plugin: owner).
+- Remaining gaps from the 2026-10-05 audit, in order: more facility categories (solar, fuel depot, cooling), rewarded-ad conveniences (monetization: ask the owner), cloud backup + account link (needs a backend: owner), lock-screen widget (native plugin: owner).
 
 ## Blocked / questions
 - Rewarded-ad conveniences, cloud backup and the lock-screen widget need owner decisions or services (see Notes).

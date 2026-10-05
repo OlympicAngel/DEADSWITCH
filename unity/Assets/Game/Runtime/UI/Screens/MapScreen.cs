@@ -38,6 +38,9 @@ namespace Deadswitch.Game.UI.Screens
         private float _hazeTime;
         private float _tickClock;
         private int _frame;
+        private float _pressAt = -1f;
+        private int _pressSite = -1;
+        private bool _longPressed;
         private int _selected;
         private OpKind _kind = OpKind.Raid;
         private int _squad = 4;
@@ -144,9 +147,37 @@ namespace Deadswitch.Game.UI.Screens
                 VisualElement marker = Marker(d.Name, HazardSystem.Wild(d.Kind) ? "map-site--wild" : FactionClass[(int)d.Owner], out Label estimate);
                 marker.RegisterCallback<ClickEvent>(_ =>
                 {
+                    if (_longPressed)
+                    {
+                        _longPressed = false;
+                        return;
+                    }
+
                     _selected = index;
                     _reason.text = string.Empty;
                     Refresh();
+                });
+
+                // long-press quick action (doc 08 s4): send a two-person scout team straight from the pin
+                marker.RegisterCallback<PointerDownEvent>(_ =>
+                {
+                    _pressAt = Time.realtimeSinceStartup;
+                    _pressSite = index;
+                });
+                marker.RegisterCallback<PointerUpEvent>(_ =>
+                {
+                    bool held = _pressSite == index && _pressAt >= 0f && Time.realtimeSinceStartup - _pressAt >= 0.55f;
+                    _pressAt = -1f;
+                    if (held)
+                    {
+                        _longPressed = true;
+                        _selected = index;
+                        Run(Command.LaunchOp(index, OpKind.Scout, 2));
+                        if (string.IsNullOrEmpty(_reason.text))
+                        {
+                            _reason.text = "Scouts out to " + WorldSystem.Sites[index].Name + ". Two of them.";
+                        }
+                    }
                 });
                 _sites.Add(marker);
                 _markers.Add(marker);
