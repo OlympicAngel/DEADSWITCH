@@ -47,6 +47,7 @@ namespace Deadswitch.Sim
         public HazardConfig Hazards = new HazardConfig();
         public UnitConfig Units = new UnitConfig();
         public PhaseConfig Phases = new PhaseConfig();
+        public AdConfig Ads = new AdConfig();
         public SecretConfig Secrets = new SecretConfig();
         public HostConfig Host = new HostConfig();
 
@@ -240,6 +241,7 @@ namespace Deadswitch.Sim
             Hazards.Visit(visitor);
             Units.Visit(visitor);
             Phases.Visit(visitor);
+            Ads.Visit(visitor);
             Secrets.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);

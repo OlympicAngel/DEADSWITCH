@@ -36,6 +36,11 @@
       <ui:VisualElement name="ad-1" class="ds-btn ds-btn--ghost grow"><ui:Label name="ad-1-label" text="WATCH AD // COLD SIGNAL" class="ds-btn__label" /></ui:VisualElement>
       <ui:VisualElement name="ad-2" class="ds-btn ds-btn--ghost grow prm-gap"><ui:Label name="ad-2-label" text="WATCH AD // BONE" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
+    <!-- convenience grants (doc 10 s1.1): never safety, defense, timer skips or combat power -->
+    <ui:VisualElement class="prm-actions">
+      <ui:VisualElement name="ad-3" class="ds-btn ds-btn--ghost"><ui:Label name="ad-3-label" text="AD // SALVAGE +120 E +12 F (DAILY)" class="ds-btn__label" /></ui:VisualElement>
+      <ui:VisualElement name="ad-4" class="ds-btn ds-btn--ghost prm-stack"><ui:Label name="ad-4-label" text="AD // STORAGE +15% FOR 24 H" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
 
     <ui:VisualElement name="prm-season" class="ds-btn ds-btn--ghost prm-season"><ui:Label name="prm-season-label" text="SEASON TRACK // RANK 0 / 20" class="ds-btn__label" /></ui:VisualElement>
     <ui:Label name="prm-reason" text="" class="ds-body t-amber prm-reason" />

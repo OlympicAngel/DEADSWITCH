@@ -1396,6 +1396,22 @@ unmanned_pts_per_hour = 1
 blackout_pts_per_hour = 8
 
 # --------------------------------------------------------------------------------------------------
+# Rewarded-ad convenience grants (doc 10 s1.1, ADR-0006): Tier 1 only, never during a threat. All (tune).
+[ads]
+
+# Extra salvage roll (once per day): energy. [0..10000]
+salvage_energy = 120
+
+# Extra salvage roll: fuel. [0..10000]
+salvage_fuel = 12
+
+# Idle-cap extension: energy storage +this % while it runs. [0..100]
+cap_pct = 15
+
+# How long the idle-cap extension runs (game hours). [1..1000]
+cap_hours = 24
+
+# --------------------------------------------------------------------------------------------------
 # The AI builds in secret (SPEC-034, doc 03 s5): hidden nodes paid with skimmed compute speed its project and drain energy off the books until an Audit exposes them. Project is milli: 100000 = 100%. All (tune).
 [secrets]
 

@@ -1,5 +1,8 @@
 using Deadswitch.Game.Core;
+using Deadswitch.Game.Presentation;
+using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.State;
+using Deadswitch.Sim.Systems;
 
 namespace Deadswitch.Game.Store
 {
@@ -14,6 +17,12 @@ namespace Deadswitch.Game.Store
 
         /// <summary>Bone-white HUD accent (cosmetic).</summary>
         ThemeBone = 2,
+
+        /// <summary>One extra salvage roll per day (a sim command: AdGrant.SalvageRoll).</summary>
+        SalvageRoll = 3,
+
+        /// <summary>A short idle-cap extension (a sim command: AdGrant.IdleCap).</summary>
+        IdleCap = 4,
     }
 
     /// <summary>
@@ -26,6 +35,11 @@ namespace Deadswitch.Game.Store
         public static string Blocked()
         {
             GameState s = GameHost.Instance.Sim.State;
+            if (Entitlements.Instance.HasPremium)
+            {
+                return "The full game has no ads.";
+            }
+
             if (s.RaidId != 0 || s.PurgeStage != PurgeStage.None || s.Ultimatum == UltimatumStage.Issued || s.ClimaxAtTick != 0)
             {
                 return "Not while the Hub is under threat.";
@@ -43,6 +57,12 @@ namespace Deadswitch.Game.Store
                 return blocked;
             }
 
+            if (grant == ConvenienceGrant.SalvageRoll || grant == ConvenienceGrant.IdleCap)
+            {
+                CommandResult r = GameHost.Instance.Execute(Command.ClaimAdGrant(grant == ConvenienceGrant.SalvageRoll ? AdGrant.SalvageRoll : AdGrant.IdleCap));
+                return r.Accepted ? "Thanks for watching. " + Name(grant) + "." : Texts.Reason(r.Reason);
+            }
+
             Entitlements.Instance.GrantCosmetic(Id(grant));
             return "Thanks for watching. " + Name(grant) + " unlocked.";
         }
@@ -54,7 +74,13 @@ namespace Deadswitch.Game.Store
 
         public static string Name(ConvenienceGrant grant)
         {
-            return grant == ConvenienceGrant.ThemeCold ? "COLD SIGNAL THEME" : "BONE THEME";
+            switch (grant)
+            {
+                case ConvenienceGrant.SalvageRoll: return "EXTRA SALVAGE ROLL";
+                case ConvenienceGrant.IdleCap: return "STORAGE EXTENSION";
+                case ConvenienceGrant.ThemeCold: return "COLD SIGNAL THEME";
+                default: return "BONE THEME";
+            }
         }
     }
 }

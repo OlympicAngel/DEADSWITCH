@@ -201,6 +201,12 @@ namespace Deadswitch.Sim.Systems
                 }
             }
 
+            // a rewarded-ad idle-cap extension (doc 10 s1.1): storage only, never safety or power
+            if (s.Tick < s.AdCapUntilTick)
+            {
+                cap = SimMath.PctFloor(cap, 100 + c.Ads.CapPct);
+            }
+
             return cap;
         }
 

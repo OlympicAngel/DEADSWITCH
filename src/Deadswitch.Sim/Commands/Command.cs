@@ -144,6 +144,9 @@ namespace Deadswitch.Sim.Commands
 
         /// <summary>No args. Tear down the hidden nodes the last Audit exposed (SPEC-034).</summary>
         DismantleSecrets = 45,
+
+        /// <summary>A: AdGrant. Claim a rewarded-ad convenience grant (doc 10 s1.1, ADR-0006).</summary>
+        ClaimAdGrant = 46,
     }
 
     /// <summary>
@@ -307,6 +310,11 @@ namespace Deadswitch.Sim.Commands
         public static Command ProposeAlliance(Faction faction)
         {
             return new Command(CommandKind.ProposeAlliance, (int)faction);
+        }
+
+        public static Command ClaimAdGrant(Systems.AdGrant grant)
+        {
+            return new Command(CommandKind.ClaimAdGrant, (int)grant);
         }
 
         public static Command DismantleSecrets()

@@ -338,6 +338,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A won op recovered a data fragment from dead hardware (SPEC-037). A: site, B: fragments held.</summary>
         FragmentRecovered = 110,
+
+        /// <summary>A rewarded-ad convenience was granted (doc 10 s1.1). A: AdGrant.</summary>
+        AdGranted = 111,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
