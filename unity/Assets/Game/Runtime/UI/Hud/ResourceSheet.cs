@@ -35,6 +35,7 @@ namespace Deadswitch.Game.UI.Hud
             _root.Add(_scroll);
             _root.RegisterCallback<PointerDownEvent>(e => e.StopPropagation());
             layer.Add(_root);
+            Popovers.Register("resource", () => IsOpen, Close, _root);
         }
 
         public bool IsOpen { get; private set; }
@@ -47,6 +48,7 @@ namespace Deadswitch.Game.UI.Hud
                 return;
             }
 
+            Popovers.Opening("resource");
             _kind = kind;
             IsOpen = true;
             _root.RemoveFromClassList("is-hidden");

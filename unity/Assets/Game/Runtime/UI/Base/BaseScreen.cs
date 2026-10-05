@@ -24,6 +24,8 @@ namespace Deadswitch.Game.UI.Base
             _labels = new BaseLabels(ui.World, Select, () => _router.Show("core"));
             _sheet = new SlotSheet(ui.Sheets, () => Select(-1));
             _quick = new QuickActions(ui.World, () => _sheet.Expand());
+            // the slot sheet and its quick-action bar open and close together
+            Popovers.Register("slot", () => _sheet.IsOpen, () => Select(-1), _sheet.Root, _quick.Root);
 
             DroneCamera cam = DroneCamera.Instance;
             cam.SlotTapped += slot =>

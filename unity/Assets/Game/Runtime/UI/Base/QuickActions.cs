@@ -31,6 +31,9 @@ namespace Deadswitch.Game.UI.Base
             layer.Add(_root);
         }
 
+        /// <summary>The bar's surface (for the popover coordinator).</summary>
+        public VisualElement Root => _root;
+
         public void Show(int slot)
         {
             _slot = slot;

@@ -37,6 +37,7 @@ namespace Deadswitch.Game.UI.Hud
             _flag = hud.Q(prefix + "-flag");
             _flagLabel = hud.Q<Label>(prefix + "-flag-label");
             _root.RegisterCallback<ClickEvent>(_ => onTap(kind));
+            _root.AddToClassList(Popovers.OpenerClass);
         }
 
         public ResKind Kind { get; }

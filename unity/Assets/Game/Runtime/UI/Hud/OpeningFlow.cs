@@ -32,8 +32,6 @@ namespace Deadswitch.Game.UI.Hud
         private VisualElement _prologue;
         private VisualElement _black;
         private VisualElement _crt;
-        private VisualElement _barTop;
-        private VisualElement _barBottom;
         private VisualElement _rec;
         private VisualElement _sub;
         private VisualElement _hand;
@@ -52,7 +50,6 @@ namespace Deadswitch.Game.UI.Hud
         private float _shown;
         private float _beat;
         private float _flash;
-        private float _bars;
         private float _clock;
         private GuideStep _step = GuideStep.Done;
         private bool _stepKnown;
@@ -150,8 +147,6 @@ namespace Deadswitch.Game.UI.Hud
             _prologue = tree;
             _black = tree.Q("op-black");
             _crt = tree.Q("op-crt");
-            _barTop = tree.Q("op-bar-top");
-            _barBottom = tree.Q("op-bar-bottom");
             _rec = tree.Q("op-rec");
             _sub = tree.Q("op-sub");
             _hand = tree.Q("op-hand");
@@ -211,7 +206,6 @@ namespace Deadswitch.Game.UI.Hud
             Motion.Cancel(UiRoot.Instance.World);
             UiRoot.Instance.World.style.opacity = 0f;
             _black.style.opacity = 1f;
-            _bars = 0f;
             _clock = 0f;
             OpeningGlobe.Prewarm();
             _film = Cinematic ? OpeningFilm.Create() : null;
@@ -259,12 +253,6 @@ namespace Deadswitch.Game.UI.Hud
             float black = hub ? 1f - Mathf.Clamp01((_beat - fadeFrom) / (mood == PrologueMood.Signal ? 2f : FadeInSeconds)) : 1f;
             _black.style.opacity = Motion.Reduced && hub ? 0f : black;
 
-            // letterbox bars close in once the log is running
-            float barsTarget = mood == PrologueMood.Signal ? 0f : 1f;
-            _bars = Motion.Reduced ? barsTarget : Mathf.MoveTowards(_bars, barsTarget, dt * 1.8f);
-            Length bar = Length.Percent(_rules.letterboxPct * Ease.InOutSine(_bars));
-            _barTop.style.height = bar;
-            _barBottom.style.height = bar;
             _rec.style.opacity = Mathf.Repeat(_clock, 1.2f) < 0.7f ? 1f : 0.2f;
 
             if (_flash > 0f)
@@ -339,7 +327,6 @@ namespace Deadswitch.Game.UI.Hud
             _roomEl.RemoveFromClassList("is-on");
             _black.style.opacity = 0f;
             _crt.style.display = DisplayStyle.None;
-            _bars = 1f;
             UiRoot.Instance.SetGlitch(0.08f);
             _film.BeginRestore();
             ShowStep(0);
@@ -393,9 +380,6 @@ namespace Deadswitch.Game.UI.Hud
 
         private void TickRestore(float dt)
         {
-            Length bar = Length.Percent(_rules.letterboxPct);
-            _barTop.style.height = bar;
-            _barBottom.style.height = bar;
             if (_woken || !IsCoreStep(_restoreStep))
             {
                 return;

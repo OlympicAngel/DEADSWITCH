@@ -37,13 +37,13 @@
 .op__black { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-void); justify-content: center; align-items: center; }
 .op__crt { width: 0; height: 3px; background-color: var(--c-cyan); }
 
-/* letterbox bars (height from code: cinematic.letterboxPct) */
-.op__bar { position: absolute; left: 0; right: 0; height: 0; overflow: hidden; background-color: var(--c-void); padding: 0 var(--s-10); }
-.op__bar--top { top: 0; justify-content: flex-end; padding-bottom: var(--s-5); }
-.op__bar--bottom { bottom: 0; flex-direction: row; justify-content: space-between; align-items: center; }
+/* the log's frame: a label and progress at the top, SKIP at the bottom, over the picture (no bars) */
+.op__bar { position: absolute; left: 0; right: 0; padding: 0 var(--s-10); }
+.op__bar--top { top: 120px; }
+.op__bar--bottom { bottom: 60px; flex-direction: row; justify-content: space-between; align-items: center; }
 .op__bar-row { align-items: center; margin-bottom: var(--s-3); }
 .op__rec { width: 12px; height: 12px; border-radius: 6px; margin-right: var(--s-3); background-color: var(--c-red); }
-.op__bar-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-dim); }
+.op__bar-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-dim); text-shadow: 0 1px 8px var(--c-void); }
 
 .op__pip { flex-grow: 1; height: 4px; margin-right: var(--s-2); border-radius: 2px; background-color: var(--c-line); }
 .op__pip.is-on { background-color: var(--c-cyan); }

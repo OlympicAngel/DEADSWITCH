@@ -31,7 +31,6 @@
     "fov": 32
   },
   "opening": {
-    "letterboxPct": 13,
     "charsPerSecond": 30,
     "crtSeconds": 0.9,
     "waveDelay": 2.2,

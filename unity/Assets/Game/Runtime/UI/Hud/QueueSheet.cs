@@ -34,6 +34,7 @@ namespace Deadswitch.Game.UI.Hud
             _root.Add(_list);
             _root.RegisterCallback<PointerDownEvent>(e => e.StopPropagation());
             layer.Add(_root);
+            Popovers.Register("queue", () => IsOpen, Close, _root);
             Back.Register(() =>
             {
                 if (!IsOpen)
@@ -56,6 +57,7 @@ namespace Deadswitch.Game.UI.Hud
                 return;
             }
 
+            Popovers.Opening("queue");
             IsOpen = true;
             _root.RemoveFromClassList("is-hidden");
             Refresh();

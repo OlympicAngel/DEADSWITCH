@@ -52,6 +52,7 @@ namespace Deadswitch.Game.UI.Hud
             _drawer.RegisterCallback<PointerDownEvent>(e => e.StopPropagation());
             _root.Add(_drawer);
             layer.Add(_root);
+            Popovers.Register("menu", () => IsOpen, Close, _drawer);
             Back.Register(() =>
             {
                 if (!IsOpen)
@@ -104,6 +105,7 @@ namespace Deadswitch.Game.UI.Hud
 
         public void Open(string status)
         {
+            Popovers.Opening("menu");
             IsOpen = true;
             _status.text = status;
             _root.RemoveFromClassList("is-hidden");

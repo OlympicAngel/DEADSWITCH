@@ -94,7 +94,6 @@ namespace Deadswitch.Game.UI
         [System.Serializable]
         public sealed class OpeningRules
         {
-            public int letterboxPct = 13;
             public float charsPerSecond = 30f;
             public float crtSeconds = 0.9f;
             public float waveDelay = 2.2f;

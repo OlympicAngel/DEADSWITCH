@@ -47,8 +47,12 @@ namespace Deadswitch.Game.UI.Base
 
         public bool IsOpen => Slot >= 0;
 
+        /// <summary>The sheet's surface (for the popover coordinator).</summary>
+        public VisualElement Root => _root;
+
         public void Open(int slot)
         {
+            Popovers.Opening("slot");
             Slot = slot;
             _expanded = false;
             _confirmDemolish = false;

@@ -110,6 +110,7 @@ namespace Deadswitch.Game.UI.Hud
             _frame = Q<VisualElement>("frame");
             _alarm = Q<VisualElement>("frame-alarm");
             _job = Q<VisualElement>("next-timer");
+            _job.AddToClassList(Popovers.OpenerClass);
             _jobBar = Q<VisualElement>("next-bar");
             _jobCount = Q<Label>("next-count");
             _job.RegisterCallback<ClickEvent>(_ => _queue.Toggle());
@@ -195,6 +196,7 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("heat-chip").RegisterCallback<ClickEvent>(_ => Router.Show("map"));
             // back (SPEC-042): a secondary screen or another tab returns to BASE; layers above register later
             Back.Install(_ui.Root);
+            Popovers.Install(_ui.Root);
             Back.Register(() =>
             {
                 if (Router.Current == null || Router.Current == "base")
