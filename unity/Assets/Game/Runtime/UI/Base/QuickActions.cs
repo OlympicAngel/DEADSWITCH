@@ -71,7 +71,8 @@ namespace Deadswitch.Game.UI.Base
             if (slot.Level < c.Facility(slot.Kind).MaxLevel)
             {
                 Economy.UpgradeCost(c, slot.Kind, slot.Level, out int energy, out int compute);
-                string cost = Need(s.Energy, energy, "E") + (compute > 0 ? "  " + Need(s.Compute, compute, "C") : string.Empty);
+                string when = Afford.When(s, c, energy, compute, 3600.0 / host.Settings.DevTimeScale);
+                string cost = when.Length > 0 ? when : "E " + Fmt.Compact(energy) + (compute > 0 ? "  C " + Fmt.Compact(compute) : string.Empty);
                 VisualElement up = Kit.Tile("up", "UPGRADE", cost, () => Run(Command.Upgrade(index)), "ds-tile--primary");
                 Short(up, s.Energy < energy || s.Compute < compute);
                 _root.Add(up);

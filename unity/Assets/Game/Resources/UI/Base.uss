@@ -230,3 +230,15 @@
 .build-card.is-locked { opacity: 0.55; background-color: var(--c-panel-sunken); }
 .build-card.is-locked .build-card__icon { --icon-color: var(--c-text-faint); }
 .build-card.is-locked .build-card__well { background-color: var(--c-panel-sunken); }
+
+/* ---------- Build queue (SPEC-042 finding 9) ---------- */
+.qsheet__row { flex-direction: row; align-items: center; min-height: var(--touch); padding: var(--s-2) var(--s-3); margin-bottom: var(--s-2); border-radius: var(--r-lg); background-color: var(--c-elev-2); }
+.qsheet__row:active { background-color: var(--c-cyan-wash); }
+.qsheet__row--add { background-color: var(--c-cyan-wash); }
+.qsheet__row--add .qsheet__name { color: var(--c-cyan); }
+.qsheet__icon { width: 44px; height: 44px; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
+.qsheet__body { flex-grow: 1; flex-shrink: 1; }
+.qsheet__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-tight); color: var(--c-white); }
+.qsheet__kind { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-dim); margin-left: var(--s-3); }
+.qsheet__bar { height: 10px; margin-top: var(--s-2); border-width: 0; border-radius: 5px; }
+.qsheet__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-amber); margin-left: var(--s-3); }

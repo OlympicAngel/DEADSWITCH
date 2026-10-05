@@ -29,6 +29,7 @@ namespace Deadswitch.Game.UI.Hud
         private ResourceSheet _resourceSheet;
         private AwaySummary _away;
         private CommandMenu _menu;
+        private QueueSheet _queue;
         private AnimatedNumber _core;
         private AiOrb _orb;
         private AiWave _wave;
@@ -108,7 +109,7 @@ namespace Deadswitch.Game.UI.Hud
             _job = Q<VisualElement>("next-timer");
             _jobBar = Q<VisualElement>("next-bar");
             _jobCount = Q<Label>("next-count");
-            _job.RegisterCallback<ClickEvent>(_ => OnJobTapped());
+            _job.RegisterCallback<ClickEvent>(_ => _queue.Toggle());
             _advisorPanel = Q<VisualElement>("advisor");
             Q<VisualElement>("advisor-orb").RegisterCallback<ClickEvent>(e =>
             {
@@ -218,6 +219,7 @@ namespace Deadswitch.Game.UI.Hud
                 return true;
             });
             BuildMenu(premium, season);
+            _queue = new QueueSheet(_ui.Sheets, slot => FocusSlot(slot, FacilityKind.None));
             Router.BindTab("base", Q<VisualElement>("tab-base"));
             Router.BindTab("map", Q<VisualElement>("tab-map"));
             Router.BindTab("core", Q<VisualElement>("tab-core"));
@@ -330,6 +332,7 @@ namespace Deadswitch.Game.UI.Hud
 
             RefreshPods(false);
             _resourceSheet.Refresh();
+            _queue?.Refresh();
             RefreshComms(s, c);
             RefreshBadges(s, c);
 
@@ -437,6 +440,7 @@ namespace Deadswitch.Game.UI.Hud
             _orb.Tick(dt);
             _wave.Tick(dt, _speak);
             TickComms(dt);
+            _queue?.Tick();
             TickAlarm(dt);
             _away.Tick(dt);
             _core.Tick(dt);
@@ -746,21 +750,6 @@ namespace Deadswitch.Game.UI.Hud
             _resourceSheet.Close();
             Router.Show("base");
             _baseScreen.Focus(slot, recommend);
-        }
-
-        private void OnJobTapped()
-        {
-            GameState s = _host.Sim.State;
-            BuildJob next = null;
-            foreach (BuildJob job in s.Jobs)
-            {
-                if (next == null || job.CompleteTick < next.CompleteTick)
-                {
-                    next = job;
-                }
-            }
-
-            FocusSlot(next != null ? next.Slot : ResourceInfo.FreePlot(s), FacilityKind.None);
         }
 
         private void RefreshComms(GameState s, SimConfig c)
