@@ -76,7 +76,7 @@ namespace Deadswitch.Sim.Systems
             if (s.Region == Region.River)
             {
                 // barges at the crossing (SPEC-031)
-                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(c.Fuel.Cap, s.Fuel + l.RiverFuelPerHour));
+                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(Economy.FuelCap(s, c), s.Fuel + l.RiverFuelPerHour));
             }
 
             if (s.Tier > s.HighestTier)
@@ -355,7 +355,7 @@ namespace Deadswitch.Sim.Systems
             s.NextDilemmaTick = tick + ((long)c.Living.DilemmaFirstHour * SimConfig.TicksPerHour);
             s.NextWorldEventTick = tick + ((long)c.Living.WorldEventFirstDay * SimConfig.TicksPerDay);
             s.Energy += perks[(int)Perk.StartResources] * l.PerkStartEnergy;
-            s.Fuel = System.Math.Min(c.Fuel.Cap, s.Fuel + (perks[(int)Perk.StartResources] * l.PerkStartFuel));
+            s.Fuel = System.Math.Min(Economy.FuelCap(s, c), s.Fuel + (perks[(int)Perk.StartResources] * l.PerkStartFuel));
             s.People = System.Math.Min(Economy.PopulationCap(s, c), s.People + veterans);
             s.Energy = System.Math.Min(Economy.EnergyCap(s, c), s.Energy);
 

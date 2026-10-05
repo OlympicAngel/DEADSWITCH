@@ -286,7 +286,7 @@ namespace Deadswitch.Sim.Systems
                 bool held = CatalogArray[i].Kind == SiteKind.Outpost;
                 int pct = HazardSystem.OutpostPct(s, ctx.Config, i);
                 s.Energy = System.Math.Max(s.Energy, System.Math.Min(Economy.EnergyCap(s, ctx.Config), s.Energy + SimMath.PctFloor(held ? w.HeldEnergyPerHour : w.OutpostEnergyPerHour, pct)));
-                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(ctx.Config.Fuel.Cap, s.Fuel + SimMath.PctFloor(held ? w.HeldFuelPerHour : w.OutpostFuelPerHour, pct)));
+                s.Fuel = System.Math.Max(s.Fuel, System.Math.Min(Economy.FuelCap(s, ctx.Config), s.Fuel + SimMath.PctFloor(held ? w.HeldFuelPerHour : w.OutpostFuelPerHour, pct)));
 
                 // a hunting faction takes its ground back (a held outpost's owner already at Watched)
                 Faction owner = CatalogArray[i].Owner;
@@ -564,7 +564,7 @@ namespace Deadswitch.Sim.Systems
                     s.Energy += got;
                     break;
                 case LossResource.Fuel:
-                    got = System.Math.Max(0, System.Math.Min(amount, c.Fuel.Cap - s.Fuel));
+                    got = System.Math.Max(0, System.Math.Min(amount, Economy.FuelCap(s, c) - s.Fuel));
                     s.Fuel += got;
                     break;
                 default:

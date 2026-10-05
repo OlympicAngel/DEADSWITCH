@@ -11,6 +11,27 @@ namespace Deadswitch.Sim.Tests
     public class EconomyTests
     {
         [Fact]
+        public void SolarFieldsFollowTheSun_AndDepotsHoldMoreFuel()
+        {
+            // SPEC-038: solar is daylight-only power; a fuel depot raises the fuel cap
+            var sim = new Simulation(9UL);
+            GameState s = sim.State;
+            FacilitySlot solar = s.Slots[2];
+            solar.Kind = FacilityKind.SolarField;
+            solar.Level = 1;
+            solar.Enabled = true;
+            solar.Powered = true;
+            solar.Staffed = true;
+            s.Tick = 12 * SimConfig.TicksPerHour;
+            Assert.Equal(sim.Config.SolarField.Output[0], Economy.EffectiveOutput(s, sim.Config, solar));
+            s.Tick = 23 * SimConfig.TicksPerHour;
+            Assert.Equal(0, Economy.EffectiveOutput(s, sim.Config, solar));
+
+            solar.Kind = FacilityKind.FuelDepot;
+            Assert.Equal(sim.Config.Fuel.Cap + sim.Config.FuelDepot.Output[0], Economy.FuelCap(s, sim.Config));
+        }
+
+        [Fact]
         public void Reactor_IsTierLocked_OnePerHub_AndScramsWithoutFuel()
         {
             // SPEC-029: from Tier 3 only, one per Hub, and no fuel means no output

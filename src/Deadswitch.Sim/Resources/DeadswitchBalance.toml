@@ -1636,3 +1636,91 @@ output = [45, 70, 100]
 
 # People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
 crew = [3, 4, 6]
+
+# --------------------------------------------------------------------------------------------------
+# Solar Field: scavenged panels (doc 02 s3, SPEC-038). Output = energy per game hour in daylight (full 07:00-18:00, half in the hour either side, none at night). No fuel, no upkeep.
+[facility_solar_field]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [260, 420, 650]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 10, 20]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [60, 120, 240]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [0, 0, 0]
+
+# Energy per game hour in full daylight, per level. [1..20 items, each 0..1000000]
+output = [90, 150, 220]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [0, 1, 1]
+
+# --------------------------------------------------------------------------------------------------
+# Fuel Depot: tank farm (doc 02 s6 Power & fuel, SPEC-038). Output = extra fuel storage while running.
+[facility_fuel_depot]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [200, 350, 550]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [0, 0, 10]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [45, 90, 180]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [10, 15, 20]
+
+# Fuel storage added, per level. [1..20 items, each 0..1000000]
+output = [120, 250, 400]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 1, 2]
+
+# --------------------------------------------------------------------------------------------------
+# Cooling Tower: heat exchangers for the racks (doc 02 s6 AI core, SPEC-038). Output = % less corruption from compute use (all towers together at most 60%).
+[facility_cooling_tower]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [300, 500, 800]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [20, 40, 70]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [60, 150, 300]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [40, 60, 90]
+
+# Percent less corruption from compute use, per level. [1..20 items, each 0..1000000]
+output = [15, 25, 35]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 2, 2]
+
+# --------------------------------------------------------------------------------------------------
+# Memory Restoration Chamber (doc 02 s6 AI core, SPEC-038). Output = % faster memory-lane restoration (M1-M3; all chambers together at most 60%).
+[facility_memory_chamber]
+
+# Energy paid up front to build (level 1) or upgrade to each level. [1..20 items, each 0..1000000]
+cost_energy = [400, 700, 1100]
+
+# Compute paid up front per level. [1..20 items, each 0..1000000]
+cost_compute = [40, 80, 140]
+
+# Construction time per level in game minutes (ticks). [1..20 items, each 1..1000000]
+build_minutes = [120, 240, 480]
+
+# Energy upkeep per game hour while powered, per level. [1..20 items, each 0..1000000]
+upkeep_per_hour = [50, 80, 120]
+
+# Percent faster memory restoration, per level. [1..20 items, each 0..1000000]
+output = [15, 25, 35]
+
+# People needed to run the facility at full output, per level. [1..20 items, each 0..1000]
+crew = [1, 2, 3]

@@ -194,6 +194,12 @@ namespace Deadswitch.Sim.Systems
             }
 
             int minutes = ctx.Config.Modules.ResearchMinutes[d.Index];
+            if (memory)
+            {
+                // memory restoration chambers (SPEC-038) speed the trunk
+                minutes = System.Math.Max(1, SimMath.PctFloor(minutes, 100 - System.Math.Min(60, Economy.SumOutput(s, ctx.Config, FacilityKind.MemoryChamber))));
+            }
+
             if (NeedsFragment(node))
             {
                 s.DataFragments--;

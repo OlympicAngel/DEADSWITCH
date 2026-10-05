@@ -399,7 +399,7 @@ namespace Deadswitch.Sim.Systems
         /// <summary>How much of a good the Hub can still store.</summary>
         private static int Room(GameState s, SimConfig c, TradeGood good)
         {
-            return good == TradeGood.Fuel ? c.Fuel.Cap - s.Fuel : good == TradeGood.EnergyCells ? Economy.EnergyCap(s, c) - s.Energy : good == TradeGood.Blueprints ? c.Living.BlueprintMax - s.Blueprints : c.Compute.Cap - s.Compute;
+            return good == TradeGood.Fuel ? Economy.FuelCap(s, c) - s.Fuel : good == TradeGood.EnergyCells ? Economy.EnergyCap(s, c) - s.Energy : good == TradeGood.Blueprints ? c.Living.BlueprintMax - s.Blueprints : c.Compute.Cap - s.Compute;
         }
 
         private static int AddBlueprints(GameState s, SimConfig c, int amount)
@@ -418,7 +418,7 @@ namespace Deadswitch.Sim.Systems
 
         private static int AddFuel(GameState s, SimConfig c, int amount)
         {
-            int got = System.Math.Max(0, System.Math.Min(amount, c.Fuel.Cap - s.Fuel));
+            int got = System.Math.Max(0, System.Math.Min(amount, Economy.FuelCap(s, c) - s.Fuel));
             s.Fuel += got;
             return got;
         }
