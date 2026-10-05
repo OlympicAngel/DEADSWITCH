@@ -1,6 +1,6 @@
 # SPEC-035: Unit families and counters
 
-- Status: In progress (numbers are placeholders, tune with play data)
+- Status: Done (numbers are placeholders, tune with play data)
 - Pillar: Defense & offline (touches Base & economy, AI relationship)
 - Touches: facilities and crewing, defense rating, raids, intel, glitches (unmanned machines), fuel, OPS screen
 - Source rules: doc 10 s4 damage model (drones beat infantry in the open, heavy vehicles beat drones, infantry with traps

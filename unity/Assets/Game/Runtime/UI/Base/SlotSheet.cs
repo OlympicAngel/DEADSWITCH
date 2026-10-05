@@ -18,7 +18,7 @@ namespace Deadswitch.Game.UI.Base
     {
         private static readonly FacilityKind[] Buildable =
         {
-            FacilityKind.Generator, FacilityKind.ServerRack, FacilityKind.BatteryBank, FacilityKind.LifeSupport, FacilityKind.Turret, FacilityKind.Reactor,
+            FacilityKind.Generator, FacilityKind.ServerRack, FacilityKind.BatteryBank, FacilityKind.LifeSupport, FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool, FacilityKind.Reactor,
         };
 
         private readonly VisualElement _root;
@@ -146,6 +146,12 @@ namespace Deadswitch.Game.UI.Base
                     continue;
                 }
 
+                // vehicles (SPEC-035) come with the district
+                if (kind == FacilityKind.MotorPool && host.Sim.State.Tier < host.Config.Units.MotorPoolMinTier)
+                {
+                    continue;
+                }
+
                 FacilityConfig f = host.Config.Facility(kind);
                 Economy.BuildCost(host.Sim.State, host.Config, kind, out int energy, out int compute);
                 bool affordable = host.Sim.State.Energy >= energy && host.Sim.State.Compute >= compute;
@@ -158,6 +164,7 @@ namespace Deadswitch.Game.UI.Base
                 body.AddToClassList("opt__body");
                 body.Add(Kit.Label(Fmt.FacilityName(kind), "opt__name"));
                 string upkeep = f.UpkeepPerHour[0] > 0 ? "   -" + Fmt.Num(f.UpkeepPerHour[0]) + " ENERGY/H" : kind == FacilityKind.Reactor ? "   -" + host.Config.ReactorRules.FuelPerHour[0] + " FUEL/H" : string.Empty;
+                upkeep += kind == FacilityKind.MotorPool ? "   -" + host.Config.Units.MotorPoolFuelPerHour[0] + " FUEL/H" : string.Empty;
                 body.Add(Kit.Label(Texts.Output(kind, f.Output[0]) + upkeep, "opt__desc"));
                 body.Add(Cost(host, energy, compute));
                 opt.Add(body);
@@ -211,6 +218,11 @@ namespace Deadswitch.Game.UI.Base
             if (slot.Damage > 0)
             {
                 chips.Add(Chip((repairing ? "REPAIRING " : "DAMAGED ") + slot.Damage + "/" + c.Scars.MaxDamage, repairing ? "ds-chip--amber" : "ds-chip--red"));
+            }
+
+            if (slot.Kind == FacilityKind.MotorPool)
+            {
+                chips.Add(s.Fuel > 0 ? Chip("FUEL -" + c.Units.MotorPoolFuelPerHour[System.Math.Min(slot.Level, c.Units.MotorPoolFuelPerHour.Length) - 1] + "/H", string.Empty) : Chip("NO FUEL // VEHICLES IDLE", "ds-chip--red"));
             }
 
             if (slot.Kind == FacilityKind.Reactor)

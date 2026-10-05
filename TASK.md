@@ -1,6 +1,6 @@
 # TASK: F-058 Unit families and counters
 
-- Status: In progress
+- Status: Done (2026-10-05)
 - Started: 2026-10-05   Branch: claude/confident-heisenberg-m3gwju
 - Pillar / milestone: Defense & offline / M6
 - Spec: docs/specs/SPEC-035-unit-families.md
@@ -16,8 +16,8 @@ sheet and OPS readout, docs, gate green.
 - [x] 2. Sim: facility kinds and tables, raid mix, counters in the defense rating, fuel, glitches (verification: test, balance)
 - [x] 3. Host: advisor lines for the forces, names (scripted player keeps turrets: adding a Drone Bay stalled its tier-up) (verification: advisor tests, balance)
 - [x] 4. Art: Drone Bay and Motor Pool models per level (verification: renders day/night)
-- [ ] 5. Unity: build sheet entries, OPS forces and counters, raid warning (verification: compile check, UI preview)
-- [ ] 6. Docs (doc 10 corrections log, HANDOFF), finish
+- [x] 5. Unity: build sheet entries, OPS forces and counters, raid warning (verification: compile check, UI preview)
+- [x] 6. Docs (doc 10 corrections log, HANDOFF), finish
 
 ## Notes
 - Goal (owner, 2026-10-05): keep going until the game is fully implemented. Gap audit (2026-10-05) also found: go dark heat decay, strategic retreat (sacrifice outposts), crisis-ladder world phases, fragment-gated modules, blueprints trade, a missing mastery challenge, rewarded-ad conveniences, signature haptics, layer swipe gestures, solar/fuel depot/cooling facilities. Queue them in BACKLOG as they are planned.

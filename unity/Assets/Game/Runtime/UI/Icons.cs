@@ -170,6 +170,8 @@ namespace Deadswitch.Game.UI
                 case Deadswitch.Sim.State.FacilityKind.LifeSupport: return "cross";
                 case Deadswitch.Sim.State.FacilityKind.BatteryBank: return "battery";
                 case Deadswitch.Sim.State.FacilityKind.Turret: return "ops";
+                case Deadswitch.Sim.State.FacilityKind.DroneBay: return "ops";
+                case Deadswitch.Sim.State.FacilityKind.MotorPool: return "shield";
                 case Deadswitch.Sim.State.FacilityKind.Reactor: return "bolt";
                 default: return "base";
             }

@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using Deadswitch.Game.Core;
 using Deadswitch.Game.Presentation;
 using Deadswitch.Host.Narrative;
 using Deadswitch.Host.Reports;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
 using Deadswitch.Sim.Systems;
 using UnityEngine.UIElements;
@@ -248,6 +250,13 @@ namespace Deadswitch.Game.UI.Screens
                 Kit.SetMeter(_meter, 0f);
             }
 
+            // forces and counters (SPEC-035): the mix once the warning names it, our line by family
+            bool forces = raid && ForcesKnown(s);
+            Q<Label>("forces").text = !raid ? "FORCES // NO CONTACT" : forces
+                ? "FORCES // " + s.RaidInfantryPct + "% INFANTRY  " + s.RaidDronePct + "% DRONES  " + s.RaidVehiclePct + "% VEHICLES"
+                : "FORCES // UNKNOWN";
+            Q<Label>("forces-line").text = "OUR LINE // " + Line(s, c, UnitFamily.Infantry, "GARRISON", forces) + "  " + Line(s, c, UnitFamily.Drones, "DRONES", forces) + "  " + Line(s, c, UnitFamily.Vehicles, "VEHICLES", forces);
+
             AiSystem.Recommend(s, c, out Posture rec, out int recGarrison);
             Q<Label>("recommend").text = !raid ? "NOTHING TO DEFEND AGAINST"
                 : rec == Posture.None ? "HOLD // NO CHANGE"
@@ -365,6 +374,34 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             band.EnableInClassList("t-dim", tone == "dim");
+        }
+
+        /// <summary>True when the warning for the current attack named its forces (SPEC-035).</summary>
+        private bool ForcesKnown(GameState s)
+        {
+            IReadOnlyList<SimEvent> log = _host.Sim.Log.Events;
+            for (int i = log.Count - 1; i >= 0; i--)
+            {
+                SimEvent e = log[i];
+                if (e.Kind == EventKind.RaidForces && e.A == s.RaidId)
+                {
+                    return true;
+                }
+
+                if (e.Kind == EventKind.RaidWarning && e.A == s.RaidId)
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private static string Line(GameState s, SimConfig c, UnitFamily family, string name, bool countered)
+        {
+            int value = Defense.Family(s, c, family, s.Garrison);
+            int pts = UnitSystem.CounterPts(s, c, family);
+            return name + " " + Fmt.Num(value) + (countered && value > 0 && pts != 0 ? " (" + (pts > 0 ? "+" : string.Empty) + pts + "%)" : string.Empty);
         }
     }
 }

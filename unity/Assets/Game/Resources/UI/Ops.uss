@@ -112,3 +112,7 @@
 .ops-reason { margin-top: var(--s-2); color: var(--c-amber); }
 
 .is-hidden { display: none; }
+
+/* forces and counters (SPEC-035) */
+.ops-forces { margin-top: var(--s-2); }
+.ops-forces__line { white-space: normal; margin-top: var(--s-1); }

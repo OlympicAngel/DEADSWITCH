@@ -17,6 +17,8 @@ namespace Deadswitch.Game.Presentation
                 case FacilityKind.LifeSupport: return "+" + Fmt.Num(value) + " PEOPLE CAP";
                 case FacilityKind.BatteryBank: return "+" + Fmt.Num(value) + " ENERGY STORAGE";
                 case FacilityKind.Turret: return Fmt.Num(value) + " DEFENSE";
+                case FacilityKind.DroneBay: return Fmt.Num(value) + " DRONE DEFENSE";
+                case FacilityKind.MotorPool: return Fmt.Num(value) + " VEHICLE DEFENSE";
                 default: return string.Empty;
             }
         }
