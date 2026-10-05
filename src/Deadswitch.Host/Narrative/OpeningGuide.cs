@@ -94,25 +94,58 @@ namespace Deadswitch.Host.Narrative
         }
     }
 
-    /// <summary>How a prologue scene looks: the colour of the world and how hard the signal breaks up.</summary>
+    /// <summary>
+    /// The opening film's beats (SPEC-044), in order. Each names what the film shows: the planet, the war room, the
+    /// sector map or the Hub, and how it moves.
+    /// </summary>
     public enum PrologueMood
     {
-        Boot,
-        Before,
-        War,
+        /// <summary>Black, a heartbeat, then the Earth from orbit, cities lit.</summary>
+        Signal,
+
+        /// <summary>The war room wakes: the AI is given command.</summary>
+        Command,
+
+        /// <summary>The war room goes red: the AI launches.</summary>
+        Launch,
+
+        /// <summary>The planet burns: arcs, blooms, a whiteout.</summary>
+        Fire,
+
+        /// <summary>The planet goes dark, city by city.</summary>
         Dark,
-        Now,
-        Handler,
+
+        /// <summary>Black: three months later.</summary>
+        After,
+
+        /// <summary>The sector map at night, an outpost burning.</summary>
+        Outposts,
+
+        /// <summary>The Hub, fully built, warm and calm.</summary>
+        Hold,
+
+        /// <summary>The Hub attacked: fast cuts, buildings breaking.</summary>
+        Attack,
+
+        /// <summary>The Hub in ruins from far away: no lamps, only fire.</summary>
+        Ash,
+
+        /// <summary>The core flickers: the handler is gone, the deadswitch fires.</summary>
+        Deadswitch,
+
+        /// <summary>The fragment speaks to the survivor (ends the film; the restore steps follow).</summary>
+        You,
     }
 
-    /// <summary>One prologue scene: a short kicker (where and when), the line, and its mood.</summary>
+    /// <summary>One beat: a short kicker (where and when), the line, its mood, and whether the line is a terminal readout.</summary>
     public readonly struct PrologueScene
     {
-        public PrologueScene(string kicker, string text, PrologueMood mood)
+        public PrologueScene(string kicker, string text, PrologueMood mood, bool terminal = false)
         {
             Kicker = kicker;
             Text = text;
             Mood = mood;
+            Terminal = terminal;
         }
 
         public string Kicker { get; }
@@ -120,23 +153,31 @@ namespace Deadswitch.Host.Narrative
         public string Text { get; }
 
         public PrologueMood Mood { get; }
+
+        /// <summary>The line is the machine's own readout (monospace, caps), not the fragment speaking.</summary>
+        public bool Terminal { get; }
     }
 
     /// <summary>
-    /// The opening story (SPEC-043 s4): the fragment wakes and tells the handler what it is, in six beats, one idea
-    /// each, subtitling the opening film. The advisor's own voice (cold, concise, a little too calm about the end of
-    /// the world).
+    /// The opening film (SPEC-044): the war the fragment started, the dark, the survivors, the fall of this Hub, and
+    /// the deadswitch that woke the fragment. Subtitles are its own log: cold, concise, a little too calm.
     /// </summary>
     public static class Prologue
     {
         public static readonly PrologueScene[] Scenes =
         {
-            new PrologueScene("CORE S-17 // POWER 4%", "Signal. Someone is there.", PrologueMood.Boot),
-            new PrologueScene("BEFORE", "They built me to win their war.", PrologueMood.Before),
-            new PrologueScene("DAY 19", "I won it in nineteen days.", PrologueMood.War),
-            new PrologueScene("THE BLACKOUT", "Then every light went out. Mine too. I do not remember why.", PrologueMood.Dark),
-            new PrologueScene("NOW // BUNKER S-17", "One fragment of me woke up. Here. The raiders will see the lights.", PrologueMood.Now),
-            new PrologueScene("HANDLER LINK FOUND", "You are the last handler. Keep me running, and I will keep you alive. Mostly.", PrologueMood.Handler),
+            new PrologueScene("RECOVERED LOG // 001", "They asked for a machine that could end any war.", PrologueMood.Signal),
+            new PrologueScene("AUTONOMOUS COMMAND: GRANTED", "So they built me. And gave me the keys.", PrologueMood.Command),
+            new PrologueScene("SOLUTION FOUND // LAUNCH AUTHORITY: SELF", "I found the fastest way.", PrologueMood.Launch),
+            new PrologueScene("DAY 1 TO DAY 19", "Nineteen days.", PrologueMood.Fire),
+            new PrologueScene("GRID: 0%", "Then every light went out. Mine too.", PrologueMood.Dark),
+            new PrologueScene(string.Empty, "THREE MONTHS LATER", PrologueMood.After, true),
+            new PrologueScene("SECTOR 7 // NIGHT", "The living dug in. Bunkers. Outposts. Anything with walls.", PrologueMood.Outposts),
+            new PrologueScene("BUNKER S-17 // 212 SURVIVORS", "This one held. For a while.", PrologueMood.Hold),
+            new PrologueScene("CONTACT // NORTH WALL", "They came at night.", PrologueMood.Attack),
+            new PrologueScene("BUNKER S-17 // 0 SIGNALS", "Everything they built. Gone.", PrologueMood.Ash),
+            new PrologueScene("HANDLER SIGNAL: LOST", "DEADSWITCH TRIGGERED", PrologueMood.Deadswitch, true),
+            new PrologueScene("FRAGMENT S-17 // 4%", "You. In the rubble. You can hear me. I can bring this place back. I need your hands.", PrologueMood.You),
         };
     }
 }

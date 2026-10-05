@@ -356,7 +356,7 @@ namespace Deadswitch.Game.Base
                 o.View = v;
             }
 
-            int people = Mathf.Clamp((_stage != null ? _stage.People : s.People) / 3, 2, _walkPoints.Length);
+            int people = _stage != null ? Mathf.Clamp(_stage.People / 3, 0, _walkPoints.Length) : Mathf.Clamp(s.People / 3, 2, _walkPoints.Length);
             while (_walkers.Count < people)
             {
                 _walkers.Add(NewWalker(_walkers.Count));

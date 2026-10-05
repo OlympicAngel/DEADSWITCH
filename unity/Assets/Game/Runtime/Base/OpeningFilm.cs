@@ -1,17 +1,19 @@
 using System.Collections.Generic;
+using Deadswitch.Art.World;
 using Deadswitch.Game.Audio;
 using Deadswitch.Game.UI;
 using Deadswitch.Host.Narrative;
+using Deadswitch.Sim.State;
 using UnityEngine;
 
 namespace Deadswitch.Game.Base
 {
     /// <summary>
-    /// The opening film on the real Hub (SPEC-043 s4). One directed shot per story beat (<c>Interface.json</c>
-    /// <c>opening.shots</c>): the compound lit as it was, the war (impacts, red light, shake), the blackout rolling in
-    /// to the core, then the core waking: a flare that builds with the power-up sound and a shockwave that switches the
-    /// lights back on as it passes. Presentation only; created by <c>OpeningFlow</c> when cinematics are allowed and
-    /// destroyed when the opening ends, handing the camera and the lights back.
+    /// The opening film's director (SPEC-044). Each beat plays one or more directed shots from <c>Interface.json</c>
+    /// <c>opening.shots</c>. On the Hub it stages a fully built compound (<see cref="BaseView.Stage"/>), breaks it cut by
+    /// cut while fire comes in from the sky, leaves the ruin with no lamps (only fire), then flickers the core when the
+    /// deadswitch fires. Presentation only; created by <c>OpeningFlow</c> when cinematics are allowed and destroyed when
+    /// the film ends, handing the camera, the lights and the view back.
     /// </summary>
     public sealed class OpeningFilm : MonoBehaviour
     {
@@ -20,13 +22,16 @@ namespace Deadswitch.Game.Base
 
         private readonly List<LineRenderer> _rings = new List<LineRenderer>();
         private readonly List<Tracer> _tracers = new List<Tracer>();
+        private readonly List<InterfaceConfig.OpeningShot> _cuts = new List<InterfaceConfig.OpeningShot>();
         private InterfaceConfig.OpeningRules _rules;
-        private InterfaceConfig.OpeningShot _shot;
+        private BaseView.Staging _stage;
         private PrologueMood _mood;
+        private int _cut;
         private float _t;
-        private bool _waved;
+        private float _cutT;
         private float _nextImpact;
         private float _flash;
+        private float _blastScale = 1f;
         private Light _flare;
         private Light _blast;
         private ParticleSystem _fire;
@@ -36,6 +41,12 @@ namespace Deadswitch.Game.Base
         public static OpeningFilm Create()
         {
             return new GameObject("Opening Film").AddComponent<OpeningFilm>();
+        }
+
+        /// <summary>True when a beat is shot on the Hub (the others are drawn over black for now).</summary>
+        public static bool OnHub(PrologueMood mood)
+        {
+            return mood >= PrologueMood.Hold;
         }
 
         private void Awake()
@@ -56,82 +67,150 @@ namespace Deadswitch.Game.Base
             {
                 BaseFx.Instance.Hidden = true;
             }
+
+            _stage = FullHub();
         }
 
-        /// <summary>How long a beat's shot lasts (the beat moves on by itself after this).</summary>
+        /// <summary>How long a beat runs (the sum of its cuts; the beat moves on by itself after this).</summary>
         public float Seconds(PrologueMood mood)
         {
-            InterfaceConfig.OpeningShot s = Find(mood);
-            return s != null ? s.seconds : 4f;
+            float total = 0f;
+            foreach (InterfaceConfig.OpeningShot s in Shots(mood))
+            {
+                total += s.seconds;
+            }
+
+            return total > 0f ? total : 4f;
         }
 
-        /// <summary>Starts the shot for a beat (a hard cut).</summary>
+        /// <summary>Starts a beat with a hard cut to its first shot.</summary>
         public void Play(PrologueMood mood)
         {
             _mood = mood;
-            _shot = Find(mood);
+            _cuts.Clear();
+            _cuts.AddRange(Shots(mood));
             _t = 0f;
-            _waved = false;
-            _nextImpact = 0.3f;
+            _cut = -1;
+            _nextImpact = 0.2f;
             AudioDirector audio = AudioDirector.Instance;
             switch (mood)
             {
-                case PrologueMood.Boot:
-                    audio?.Hush(60f);
+                case PrologueMood.Signal:
+                    audio?.Hush(600f);
+                    audio?.Opening(OpeningCue.Heartbeat);
                     break;
-                case PrologueMood.Dark:
+                case PrologueMood.Hold:
+                    // the compound as it was: every plot built, people in the street, lamps lit
+                    _stage = FullHub();
+                    BaseView.Instance?.Stage(_stage);
+                    break;
+                case PrologueMood.Ash:
                     audio?.Opening(OpeningCue.Static);
                     break;
-                case PrologueMood.Now:
-                    audio?.Opening(OpeningCue.PowerUp);
+                case PrologueMood.Deadswitch:
+                    audio?.Opening(OpeningCue.Heartbeat);
                     break;
+            }
+
+            NextCut();
+        }
+
+        /// <summary>Hands the camera, the lights and the view back and removes the film's objects.</summary>
+        public void Finish()
+        {
+            DroneCamera.Instance?.Release();
+            if (BaseView.Instance != null)
+            {
+                BaseView.Instance.ClearOpeningPower();
+                BaseView.Instance.Stage(null);
+            }
+
+            if (BaseFx.Instance != null)
+            {
+                BaseFx.Instance.Hidden = false;
+            }
+
+            AudioDirector.Instance?.Hush(0f);
+            Destroy(gameObject);
+        }
+
+        private void Update()
+        {
+            float dt = Time.unscaledDeltaTime;
+            _t += dt;
+            _cutT += dt;
+            if (_cut >= 0 && _cut < _cuts.Count - 1 && _cutT >= _cuts[_cut].seconds)
+            {
+                NextCut();
+            }
+
+            Frame();
+            Lights(dt);
+            if (_mood == PrologueMood.Attack)
+            {
+                Incoming(dt);
+            }
+
+            Tracers(dt);
+        }
+
+        private void NextCut()
+        {
+            _cut++;
+            _cutT = 0f;
+            if (_cut >= _cuts.Count)
+            {
+                return;
+            }
+
+            // what this cut shows breaking
+            InterfaceConfig.OpeningShot s = _cuts[_cut];
+            bool broke = false;
+            foreach (int slot in s.raze)
+            {
+                if (slot >= 0 && slot < _stage.Razed.Length)
+                {
+                    _stage.Razed[slot] = true;
+                    _stage.Wreckage = Mathf.Min(_rules.ruinWreckage, _stage.Wreckage + 1);
+                    broke = true;
+                }
+            }
+
+            for (int i = 0; i + 1 < s.hurt.Length; i += 2)
+            {
+                int slot = s.hurt[i];
+                if (slot >= 0 && slot < _stage.Slots.Length)
+                {
+                    SlotView v = _stage.Slots[slot];
+                    int damage = s.hurt[i + 1];
+                    // a building hit this hard loses its upper floors: what is left matches the run's start
+                    _stage.Slots[slot] = new SlotView(v.Kind, damage >= 3 ? 1 : v.Level, true, false, FacilityKind.None, 0, damage);
+                    broke = true;
+                }
+            }
+
+            if (broke)
+            {
+                _stage.Burning = true;
+                _stage.People = Mathf.Max(0, _stage.People - 14);
+                BaseView.Instance?.Stage(_stage);
+                Impact(_core + new Vector3(Random.Range(-6f, 6f), 0.6f, Random.Range(-14f, -4f)), false);
             }
 
             Frame();
             DroneCamera.Instance?.Cut();
         }
 
-        /// <summary>Hands the camera and the lights back and removes the film's objects.</summary>
-        public void Finish()
-        {
-            DroneCamera.Instance?.Release();
-            BaseView.Instance?.ClearOpeningPower();
-            if (BaseFx.Instance != null)
-            {
-                BaseFx.Instance.Hidden = false;
-            }
-
-            Destroy(gameObject);
-        }
-
-        private void Update()
-        {
-            float dt = Time.deltaTime;
-            _t += dt;
-            Frame();
-            Lights(dt);
-            if (_mood == PrologueMood.Boot && _t - dt < 0.5f && _t >= 0.5f)
-            {
-                AudioDirector.Instance?.Opening(OpeningCue.Heartbeat);
-            }
-
-            if (_mood == PrologueMood.War)
-            {
-                War(dt);
-            }
-
-            Tracers(dt);
-        }
-
         private void Frame()
         {
-            if (_shot == null || DroneCamera.Instance == null)
+            if (_cut < 0 || _cut >= _cuts.Count || DroneCamera.Instance == null || !OnHub(_mood))
             {
                 return;
             }
 
-            float k = Ease.InOutSine(Mathf.Clamp01(_t / Mathf.Max(0.01f, _shot.seconds)));
-            DroneCamera.Instance.Direct(Vector3.Lerp(_shot.from, _shot.to, k), Vector3.Lerp(_shot.lookFrom, _shot.lookTo, k), Mathf.Lerp(_shot.fovFrom, _shot.fovTo, k));
+            InterfaceConfig.OpeningShot s = _cuts[_cut];
+            float k = Ease.InOutSine(Mathf.Clamp01(_cutT / Mathf.Max(0.01f, s.seconds)));
+            DroneCamera.Instance.Direct(Vector3.Lerp(s.from, s.to, k), Vector3.Lerp(s.lookFrom, s.lookTo, k), Mathf.Lerp(s.fovFrom, s.fovTo, k));
         }
 
         private void Lights(float dt)
@@ -144,54 +223,44 @@ namespace Deadswitch.Game.Base
 
             float full = _rules.waveRadius;
             float flare = 0f;
-            float ring = -1f;
+            Color flareColor = Cyan;
             view.OpeningGrade(WarRed, 0f);
             switch (_mood)
             {
-                case PrologueMood.Boot:
-                    view.OpeningPower(0f, 0f);
-                    break;
-                case PrologueMood.Before:
-                case PrologueMood.Handler:
+                case PrologueMood.Hold:
                     view.OpeningPower(full, 1f);
                     break;
-                case PrologueMood.War:
+                case PrologueMood.Attack:
                     // the grid browns out with every hit and the sky burns
-                    view.OpeningPower(full, Mathf.Lerp(1f, 0.35f, _flash));
-                    view.OpeningGrade(WarRed, 0.3f + (0.35f * _flash));
+                    view.OpeningPower(full * (1f - (0.18f * _cut)), Mathf.Lerp(1f, 0.3f, _flash));
+                    view.OpeningGrade(WarRed, 0.25f + (0.35f * _flash));
                     break;
-                case PrologueMood.Dark:
-                    // the dark rolls in from the edge to the core
-                    float d = Ease.InOutSine(Mathf.Clamp01((_t - 0.5f) / _rules.blackoutSeconds));
-                    view.OpeningPower(full * (1f - d), 1f - d);
+                case PrologueMood.Deadswitch:
+                    // the core stutters red: something in it is still awake
+                    view.OpeningPower(0f, 0f);
+                    flareColor = WarRed;
+                    flare = Mathf.PerlinNoise(_t * 9f, 0.4f) > 0.55f ? Mathf.Clamp01(_t / 2f) * 0.5f : 0.02f;
                     break;
-                case PrologueMood.Now:
-                    // the flare builds with the rising sound; on the landing a shockwave carries the power outward
-                    float build = Mathf.Clamp01(_t / _rules.waveDelay);
-                    float w = Mathf.Clamp01((_t - _rules.waveDelay) / _rules.waveSeconds);
-                    if (!_waved && _t >= _rules.waveDelay)
-                    {
-                        _waved = true;
-                        DroneCamera.Instance?.Shake(_rules.warShake * 0.7f);
-                        Feedback.Alert();
-                    }
-
-                    float r = Ease.OutCubic(w) * full;
-                    view.OpeningPower(r, _waved ? Ease.OutCubic(w) : 0f);
-                    flare = _waved ? Mathf.Lerp(1f, 0.25f, w) : build * build * 0.6f;
-                    ring = _waved && w < 1f ? r : -1f;
+                case PrologueMood.You:
+                    view.OpeningPower(0f, 0f);
+                    flare = 0.12f + (0.06f * Mathf.Sin(_t * 2.4f));
+                    break;
+                default:
+                    // the ruin and every beat before the Hub: no lamps at all
+                    view.OpeningPower(0f, 0f);
                     break;
             }
 
+            _flare.color = flareColor;
             _flare.enabled = flare > 0.01f;
             _flare.intensity = flare * _rules.flareIntensity;
-            DrawRings(ring);
+            DrawRings(-1f);
             _flash = Mathf.Max(0f, _flash - (dt * 2.5f));
             _blast.enabled = _flash > 0.01f;
-            _blast.intensity = _flash * _rules.flareIntensity;
+            _blast.intensity = _flash * _blastScale * _rules.blastIntensity;
         }
 
-        private void War(float dt)
+        private void Incoming(float dt)
         {
             _nextImpact -= dt;
             if (_nextImpact > 0f || DroneCamera.Instance == null)
@@ -200,14 +269,14 @@ namespace Deadswitch.Game.Base
             }
 
             // incoming fire lands in front of the lens: a streak out of the sky, then the hit
-            _nextImpact = _rules.warImpactEvery * Random.Range(0.6f, 1.4f);
+            _nextImpact = _rules.warImpactEvery * Random.Range(0.5f, 1.2f);
             Transform cam = DroneCamera.Instance.Camera.transform;
             Vector3 forward = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
             Vector3 right = Vector3.Cross(Vector3.up, forward);
-            Vector3 p = cam.position + (forward * Random.Range(12f, 34f)) + (right * Random.Range(-9f, 9f));
+            Vector3 p = cam.position + (forward * Random.Range(7f, 24f)) + (right * Random.Range(-7f, 7f));
             p.y = 0.6f;
             Vector3 from = p + (right * Random.Range(-30f, 30f)) + (forward * Random.Range(20f, 50f)) + new Vector3(0f, Random.Range(35f, 55f), 0f);
-            _tracers.Add(new Tracer { Line = Streak(), From = from, To = p, Seconds = Random.Range(0.3f, 0.45f) });
+            _tracers.Add(new Tracer { Line = Streak(), From = from, To = p, Seconds = Random.Range(0.25f, 0.4f) });
         }
 
         private void Tracers(float dt)
@@ -217,45 +286,63 @@ namespace Deadswitch.Game.Base
                 Tracer tr = _tracers[i];
                 tr.Age += dt;
                 float t = Mathf.Clamp01(tr.Age / tr.Seconds);
-                Vector3 head = Vector3.Lerp(tr.From, tr.To, t);
                 tr.Line.SetPosition(0, Vector3.Lerp(tr.From, tr.To, Mathf.Max(0f, t - 0.35f)));
-                tr.Line.SetPosition(1, head);
+                tr.Line.SetPosition(1, Vector3.Lerp(tr.From, tr.To, t));
                 if (t < 1f)
                 {
                     continue;
                 }
 
-                Impact(tr.To);
+                Impact(tr.To, true);
                 Destroy(tr.Line.gameObject);
                 _tracers.RemoveAt(i);
             }
         }
 
-        private void Impact(Vector3 p)
+        private void Impact(Vector3 p, bool sound)
         {
             BattleFx.Burst(_fire, p, 90, 3.2f);
             BattleFx.Burst(_smoke, p, 30, 3.4f);
-            _blast.transform.position = p + new Vector3(0f, 4f, 0f);
-            _flash = 1f;
             float dist = DroneCamera.Instance != null ? Vector3.Distance(DroneCamera.Instance.Camera.transform.position, p) : 30f;
+            _blast.transform.position = p + new Vector3(0f, 4f, 0f);
+            // a hit right next to the lens must not blow the frame out to white
+            _blastScale = Mathf.Clamp01(dist / 24f);
+            _flash = 1f;
             bool close = dist < 22f;
-            AudioDirector.Instance?.Opening(close ? OpeningCue.Impact : OpeningCue.FarImpact);
+            if (sound)
+            {
+                AudioDirector.Instance?.Opening(close ? OpeningCue.Impact : OpeningCue.FarImpact);
+            }
+
             DroneCamera.Instance?.Shake(_rules.warShake * (close ? 1f : 0.6f));
         }
 
-        private LineRenderer Streak()
+        private BaseView.Staging FullHub()
         {
-            var go = new GameObject("Tracer");
-            go.transform.SetParent(transform, false);
-            var line = go.AddComponent<LineRenderer>();
-            line.sharedMaterial = BattleFx.Additive;
-            line.widthCurve = new AnimationCurve(new Keyframe(0f, 0.05f), new Keyframe(1f, 0.5f));
-            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            line.receiveShadows = false;
-            line.positionCount = 2;
-            line.startColor = new Color(WarRed.r, WarRed.g, WarRed.b, 0f);
-            line.endColor = new Color(1f, 0.85f, 0.55f, 1f);
-            return line;
+            int n = Mathf.Min(_rules.hubKinds.Length, _rules.hubLevels.Length);
+            var st = new BaseView.Staging { Tier = _rules.hubTier, People = _rules.hubPeople, Slots = new SlotView[n], Razed = new bool[n] };
+            for (int i = 0; i < n; i++)
+            {
+                FacilityKind kind = System.Enum.TryParse(_rules.hubKinds[i], out FacilityKind k) ? k : FacilityKind.None;
+                st.Slots[i] = new SlotView(kind, _rules.hubLevels[i], true, false, FacilityKind.None, 0);
+            }
+
+            return st;
+        }
+
+        private List<InterfaceConfig.OpeningShot> Shots(PrologueMood mood)
+        {
+            var list = new List<InterfaceConfig.OpeningShot>();
+            string key = mood.ToString().ToLowerInvariant();
+            foreach (InterfaceConfig.OpeningShot s in _rules.shots)
+            {
+                if (s.mood == key)
+                {
+                    list.Add(s);
+                }
+            }
+
+            return list;
         }
 
         private void DrawRings(float radius)
@@ -278,20 +365,6 @@ namespace Deadswitch.Game.Base
             }
         }
 
-        private InterfaceConfig.OpeningShot Find(PrologueMood mood)
-        {
-            string key = mood.ToString().ToLowerInvariant();
-            foreach (InterfaceConfig.OpeningShot s in _rules.shots)
-            {
-                if (s.mood == key)
-                {
-                    return s;
-                }
-            }
-
-            return null;
-        }
-
         private Light NewLight(string name, Color color, float range)
         {
             var l = new GameObject(name).AddComponent<Light>();
@@ -302,6 +375,21 @@ namespace Deadswitch.Game.Base
             l.shadows = LightShadows.None;
             l.enabled = false;
             return l;
+        }
+
+        private LineRenderer Streak()
+        {
+            var go = new GameObject("Tracer");
+            go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.sharedMaterial = BattleFx.Additive;
+            line.widthCurve = new AnimationCurve(new Keyframe(0f, 0.05f), new Keyframe(1f, 0.5f));
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.positionCount = 2;
+            line.startColor = new Color(WarRed.r, WarRed.g, WarRed.b, 0f);
+            line.endColor = new Color(1f, 0.85f, 0.55f, 1f);
+            return line;
         }
 
         private LineRenderer Ring(float width)

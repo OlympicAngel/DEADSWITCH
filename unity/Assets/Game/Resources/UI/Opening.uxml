@@ -14,14 +14,7 @@
         <ui:VisualElement name="op-rec" class="op__rec" />
         <ui:Label text="RECOVERED LOG // CORE S-17" class="op__bar-label" />
       </ui:VisualElement>
-      <ui:VisualElement name="op-pips" class="row op__pips">
-        <ui:VisualElement class="op__pip is-on" />
-        <ui:VisualElement class="op__pip" />
-        <ui:VisualElement class="op__pip" />
-        <ui:VisualElement class="op__pip" />
-        <ui:VisualElement class="op__pip" />
-        <ui:VisualElement class="op__pip" />
-      </ui:VisualElement>
+      <ui:VisualElement name="op-pips" class="row op__pips" />
     </ui:VisualElement>
 
     <ui:VisualElement name="op-sub" class="op__sub">
@@ -36,7 +29,7 @@
       <ui:VisualElement name="op-orb" class="ai-orb op__orb" />
       <ui:Label name="op-hand-kicker" text="" class="op__hand-kicker" />
       <ui:Label name="op-hand-line" text="" class="op__hand-line" />
-      <ui:VisualElement name="op-take" class="ds-btn ds-btn--primary op__take"><ui:Label text="TAKE CONTROL" class="ds-btn__label" /></ui:VisualElement>
+      <ui:VisualElement name="op-take" class="ds-btn ds-btn--primary op__take"><ui:Label text="REACH THE CORE" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
 
     <ui:VisualElement name="op-bar-bottom" class="op__bar op__bar--bottom">

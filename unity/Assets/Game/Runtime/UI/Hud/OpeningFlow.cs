@@ -150,6 +150,14 @@ namespace Deadswitch.Game.UI.Hud
             tree.Q("prologue").RegisterCallback<ClickEvent>(_ => Advance());
             _orb = new AiOrb(tree.Q("op-orb"));
             _orb.Assemble();
+            VisualElement pips = tree.Q("op-pips");
+            pips.Clear();
+            for (int i = 0; i < Prologue.Scenes.Length; i++)
+            {
+                var pip = new VisualElement();
+                pip.AddToClassList("op__pip");
+                pips.Add(pip);
+            }
 
             // the HUD is not there yet: it comes online when the handler takes control
             foreach (VisualElement child in _hud.Children())
@@ -175,20 +183,21 @@ namespace Deadswitch.Game.UI.Hud
             Label target = Last ? _handLine : _line;
             bool typing = _shown < Scene.Text.Length;
 
-            // black until the core's signal finds the handler: a CRT trace draws across, then the picture fades in
-            if (mood == PrologueMood.Boot)
+            // the log opens on black with a CRT trace; beats shot on the Hub fade the picture in
+            bool hub = OpeningFilm.OnHub(mood) && _film != null;
+            _crt.style.display = mood == PrologueMood.Signal ? DisplayStyle.Flex : DisplayStyle.None;
+            if (mood == PrologueMood.Signal)
             {
                 float crt = Motion.Reduced ? 1f : Mathf.Clamp01(_beat / _rules.crtSeconds);
                 _crt.style.width = Length.Percent(Ease.OutCubic(crt) * 100f);
                 _crt.style.opacity = Motion.Reduced ? 1f : 0.6f + (0.4f * Mathf.PerlinNoise(_clock * 18f, 0.2f));
             }
-            else
-            {
-                _black.style.opacity = Motion.Reduced ? 0f : 1f - Mathf.Clamp01(_beat / FadeInSeconds);
-            }
 
-            // letterbox bars close in once the picture is up
-            float barsTarget = mood == PrologueMood.Boot ? 0f : 1f;
+            float black = hub ? 1f - Mathf.Clamp01(_beat / FadeInSeconds) : 1f;
+            _black.style.opacity = Motion.Reduced && hub ? 0f : black;
+
+            // letterbox bars close in once the log is running
+            float barsTarget = mood == PrologueMood.Signal ? 0f : 1f;
             _bars = Motion.Reduced ? barsTarget : Mathf.MoveTowards(_bars, barsTarget, dt * 1.8f);
             Length bar = Length.Percent(_rules.letterboxPct * Ease.InOutSine(_bars));
             _barTop.style.height = bar;
@@ -264,6 +273,8 @@ namespace Deadswitch.Game.UI.Hud
             _line.text = string.Empty;
             _handLine.text = string.Empty;
             _kicker.text = scene.Kicker;
+            _kicker.parent.style.display = scene.Kicker.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            _line.EnableInClassList("op__line--terminal", scene.Terminal);
             _prologue.Q<Label>("op-hand-kicker").text = scene.Kicker;
             foreach (PrologueMood m in (PrologueMood[])System.Enum.GetValues(typeof(PrologueMood)))
             {
@@ -283,8 +294,8 @@ namespace Deadswitch.Game.UI.Hud
                 });
             }
 
-            UiRoot.Instance.SetGlitch(scene.Mood == PrologueMood.Dark ? 0.7f : scene.Mood == PrologueMood.Boot ? 0.5f : scene.Mood == PrologueMood.War ? 0.35f : 0.1f);
-            if (scene.Mood == PrologueMood.War && !Motion.Reduced)
+            UiRoot.Instance.SetGlitch(Glitch(scene.Mood));
+            if ((scene.Mood == PrologueMood.Launch || scene.Mood == PrologueMood.Attack || scene.Mood == PrologueMood.Deadswitch) && !Motion.Reduced)
             {
                 _flash = 0.8f;
                 Feedback.Alert();
@@ -302,6 +313,26 @@ namespace Deadswitch.Game.UI.Hud
             }
 
             _film?.Play(scene.Mood);
+        }
+
+        /// <summary>How hard the signal breaks up on a beat (the CRT glitch weight).</summary>
+        private static float Glitch(PrologueMood mood)
+        {
+            switch (mood)
+            {
+                case PrologueMood.Signal:
+                case PrologueMood.After:
+                    return 0.5f;
+                case PrologueMood.Launch:
+                case PrologueMood.Fire:
+                case PrologueMood.Attack:
+                    return 0.4f;
+                case PrologueMood.Dark:
+                case PrologueMood.Deadswitch:
+                    return 0.75f;
+                default:
+                    return 0.12f;
+            }
         }
 
         private void EndPrologue()

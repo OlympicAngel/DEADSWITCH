@@ -23,8 +23,8 @@
 
 .op__pip { flex-grow: 1; height: 4px; margin-right: var(--s-2); border-radius: 2px; background-color: var(--c-line); }
 .op__pip.is-on { background-color: var(--c-cyan); }
-.op--war .op__pip.is-on, .op--dark .op__pip.is-on { background-color: var(--c-red); }
-.op--handler .op__pip.is-on { background-color: var(--c-violet); }
+.op--launch .op__pip.is-on, .op--fire .op__pip.is-on, .op--attack .op__pip.is-on, .op--deadswitch .op__pip.is-on { background-color: var(--c-red); }
+.op--you .op__pip.is-on { background-color: var(--c-violet); }
 
 /* subtitles: lower third, above the bottom bar */
 .op__sub { position: absolute; left: var(--s-10); right: var(--s-10); bottom: 21%; }
@@ -37,10 +37,10 @@
     color: var(--c-cyan);
 }
 
-.op--war .op__kicker, .op--dark .op__kicker { color: var(--c-red); }
-.op--war .op__tick, .op--dark .op__tick { background-color: var(--c-red); }
-.op--before .op__kicker { color: var(--c-amber); }
-.op--before .op__tick { background-color: var(--c-amber); }
+.op--launch .op__kicker, .op--fire .op__kicker, .op--attack .op__kicker, .op--deadswitch .op__kicker { color: var(--c-red); }
+.op--launch .op__tick, .op--fire .op__tick, .op--attack .op__tick, .op--deadswitch .op__tick { background-color: var(--c-red); }
+.op--hold .op__kicker { color: var(--c-amber); }
+.op--hold .op__tick { background-color: var(--c-amber); }
 
 .op__line {
     -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
@@ -50,6 +50,19 @@
     min-height: 240px;
     text-shadow: 0 2px 14px var(--c-void);
 }
+
+/* the machine's own readouts: monospace caps, centred on the frame */
+.op__line--terminal {
+    -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold");
+    font-size: var(--fs-xl);
+    letter-spacing: var(--ls-wide);
+    color: var(--c-cyan);
+    -unity-text-align: upper-center;
+    text-shadow: 0 0 18px var(--c-cyan-glow);
+}
+
+.op--deadswitch .op__line--terminal { color: var(--c-red); text-shadow: 0 0 18px var(--c-red-glow); }
+.op--after .op__line--terminal { color: var(--c-white); text-shadow: 0 0 18px var(--c-void); }
 
 /* the handler beat: the fragment's face and the one action */
 .op__hand { position: absolute; left: var(--s-10); right: var(--s-10); bottom: 19%; align-items: center; }

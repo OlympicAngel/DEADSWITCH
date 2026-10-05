@@ -90,7 +90,7 @@ namespace Deadswitch.Game.UI
             public float fov = 32f;
         }
 
-        /// <summary>The opening film (SPEC-043 s4): one shot per story beat, the blackout and the power wave.</summary>
+        /// <summary>The opening film (SPEC-044): shots per beat, the staged Hub and how it falls, lights and waves.</summary>
         [System.Serializable]
         public sealed class OpeningRules
         {
@@ -100,20 +100,29 @@ namespace Deadswitch.Game.UI
             public float waveDelay = 2.2f;
             public float waveSeconds = 2.6f;
             public float waveRadius = 70f;
-            public float blackoutSeconds = 3.2f;
             public float warImpactEvery = 0.55f;
             public float warShake = 0.45f;
             public float flareIntensity = 30f;
             public float flareRange = 36f;
+            public float blastIntensity = 14f;
             public float ringWidth = 0.9f;
+            public string[] hubKinds = new string[0];
+            public int[] hubLevels = new int[0];
+            public int hubTier = 2;
+            public int hubPeople = 40;
+            public int ruinWreckage = 6;
             public OpeningShot[] shots = new OpeningShot[0];
         }
 
-        /// <summary>One camera move: from, to, the point it watches, the lens and how long the beat lasts.</summary>
+        /// <summary>
+        /// One camera move (a beat may have several cuts): from, to, the point it watches, the lens, how long it runs,
+        /// and what breaks on the staged Hub when it starts (<see cref="raze"/>: plots brought down; <see cref="hurt"/>:
+        /// slot, damage pairs).
+        /// </summary>
         [System.Serializable]
         public sealed class OpeningShot
         {
-            public string mood = "boot";
+            public string mood = "signal";
             public Vector3 from;
             public Vector3 to;
             public Vector3 lookFrom;
@@ -121,6 +130,8 @@ namespace Deadswitch.Game.UI
             public float fovFrom = 40f;
             public float fovTo = 40f;
             public float seconds = 4f;
+            public int[] raze = new int[0];
+            public int[] hurt = new int[0];
         }
 
         [System.Serializable]
