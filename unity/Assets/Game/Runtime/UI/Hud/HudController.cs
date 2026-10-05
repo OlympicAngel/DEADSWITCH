@@ -242,6 +242,14 @@ namespace Deadswitch.Game.UI.Hud
             _core.Set(CorruptionSystem.Percent(ProjectSystem.ReportedCorruptionMilli(_host.Sim.State, _host.Sim.Config)), true);
         }
 
+        /// <summary>After a new game: back to BASE and the opening from the top.</summary>
+        public void Replay()
+        {
+            Router.Show("base");
+            _opening.Restart();
+            Refresh();
+        }
+
         private void OnDestroy()
         {
             if (_host != null)
@@ -375,9 +383,24 @@ namespace Deadswitch.Game.UI.Hud
             heatChip.EnableInClassList("hud-heat--marked", heat == HeatLevel.Marked);
             Q<Label>("heat-text").text = "HEAT // " + heat.ToString().ToUpperInvariant() + (heat == HeatLevel.Cold ? string.Empty : " // " + Names.Faction(hot));
 
+            int maxCharges = OverrideSystem.MaxCharges(s, c);
+            if (maxCharges > _overridePips.Length)
+            {
+                // perks can raise the cap past the pips in the layout: grow the row to match
+                VisualElement row = Q<VisualElement>("override-pips");
+                while (row.childCount < maxCharges)
+                {
+                    VisualElement pip = new VisualElement();
+                    pip.AddToClassList("hud-opip");
+                    row.Add(pip);
+                }
+
+                _overridePips = row.Children().ToArray();
+            }
+
             for (int i = 0; i < _overridePips.Length; i++)
             {
-                bool visible = i < OverrideSystem.MaxCharges(s, c);
+                bool visible = i < maxCharges;
                 _overridePips[i].style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
                 _overridePips[i].EnableInClassList("is-on", i < s.OverrideCharges && s.Tick >= s.OverrideCooldownUntil);
                 _overridePips[i].EnableInClassList("is-cooldown", i < s.OverrideCharges && s.Tick < s.OverrideCooldownUntil);

@@ -55,6 +55,19 @@ namespace Deadswitch.Game.UI.Hud
             RefreshGuide();
         }
 
+        /// <summary>Plays the opening again (a new game started from Settings).</summary>
+        public void Restart()
+        {
+            if (_prologue == null)
+            {
+                _card = -1;
+                StartPrologue();
+            }
+
+            _stepKnown = false;
+            RefreshGuide();
+        }
+
         private static string[] RevealOrder => new[] { "topbar", "frame", "world", "advisor", "tabbar" };
 
         public void Tick(float dt)

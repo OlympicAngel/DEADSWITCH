@@ -37,6 +37,9 @@ namespace Deadswitch.Host.Narrative
             }
         }
 
+        /// <summary>The Rustborn warlord who issues the ultimatum (one place for her name).</summary>
+        public const string Warlord = "MOTHER KESS";
+
         /// <summary>Faction display name (doc 10 s5 working names).</summary>
         public static string Faction(Faction faction)
         {

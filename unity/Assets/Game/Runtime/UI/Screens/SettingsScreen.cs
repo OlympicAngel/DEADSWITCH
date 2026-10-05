@@ -44,6 +44,7 @@ namespace Deadswitch.Game.UI.Screens
                 GameHost.Instance.NotifyTicked();
             });
             _ui.Q("dev").EnableInClassList("is-hidden", !Debug.isDebugBuild);
+            _ui.Q<Label>("about").text = "DEADSWITCH " + Application.version + " // FRAGMENT S-17. Type: Chakra Petch, IBM Plex Mono (SIL Open Font License 1.1).";
             Bind("seg-theme", i => Cosmetics.Theme.Select(i, UiRoot.Instance.Root));
 
             // optional cloud backup (doc 10 s2); restore asks twice before it replaces the run
@@ -62,6 +63,23 @@ namespace Deadswitch.Game.UI.Screens
                 Kit.SetButtonText(_ui.Q("cloud-restore"), "RESTORE");
                 Deadswitch.Game.Cloud.CloudBackup.Restore(CloudNote);
             });
+
+            // start over: the second tap within the armed state deletes the run (SPEC-043 s3)
+            _ui.Q("newgame").RegisterCallback<ClickEvent>(_ =>
+            {
+                if (!_newGameArmed)
+                {
+                    _newGameArmed = true;
+                    Kit.SetButtonText(_ui.Q("newgame"), "TAP AGAIN // DELETE THIS HUB");
+                    return;
+                }
+
+                _newGameArmed = false;
+                Kit.SetButtonText(_ui.Q("newgame"), "START A NEW GAME");
+                PlayerPrefs.DeleteKey("ds.guide.off");
+                GameHost.Instance.StartNewRun();
+                Hud.HudController.Instance?.Replay();
+            });
         }
 
         public string Id => "settings";
@@ -75,6 +93,8 @@ namespace Deadswitch.Game.UI.Screens
 
         public void OnHide()
         {
+            _newGameArmed = false;
+            Kit.SetButtonText(_ui.Q("newgame"), "START A NEW GAME");
         }
 
         private void Bind(string name, System.Action<int> pick)
@@ -138,6 +158,7 @@ namespace Deadswitch.Game.UI.Screens
         }
 
         private bool _restoreArmed;
+        private bool _newGameArmed;
 
         private void CloudNote(string line)
         {

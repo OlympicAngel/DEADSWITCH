@@ -116,6 +116,15 @@
         <ui:VisualElement name="guide-reset" class="ds-btn ds-btn--ghost set-btn"><ui:Label text="SHOW OBJECTIVES AGAIN" class="ds-btn__label" /></ui:VisualElement>
       </ui:VisualElement>
 
+      <ui:VisualElement class="ds-card ds-card--raised ds-card--red">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--cycle ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles"><ui:Label text="START OVER" class="ds-card__title" /><ui:Label text="A fresh Hub from the first day." class="ds-card__sub" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="newgame-note" text="Deletes this Hub, its story, its legacy points and its saves on this device. Earned interface colours stay. To keep your legacy points, relocate instead." class="ds-prose set-note" />
+        <ui:VisualElement name="newgame" class="ds-btn ds-btn--warn set-btn"><ui:Label text="START A NEW GAME" class="ds-btn__label" /></ui:VisualElement>
+      </ui:VisualElement>
+
       <ui:VisualElement name="dev" class="ds-card set-dev">
         <ui:Label text="DEVELOPMENT // TIME SCALE" class="set-subhead" />
         <ui:VisualElement name="seg-time" class="ds-seg set-seg">

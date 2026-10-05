@@ -25,7 +25,6 @@ namespace Deadswitch.Game.UI
             return 1f + (c3 * u * u * u) + (c1 * u * u);
         }
 
-        public static float OutExpo(float t) => t >= 1f ? 1f : 1f - Mathf.Pow(2f, -10f * t);
     }
 
     /// <summary>

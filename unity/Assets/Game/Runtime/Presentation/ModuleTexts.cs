@@ -93,18 +93,6 @@ namespace Deadswitch.Game.Presentation
             }
         }
 
-        public static string FieldName(ModuleField field)
-        {
-            switch (field)
-            {
-                case ModuleField.Logistics: return "LOGISTICS";
-                case ModuleField.Warfare: return "WARFARE";
-                case ModuleField.Cyber: return "CYBER";
-                case ModuleField.Stealth: return "STEALTH";
-                default: return "TRUNK";
-            }
-        }
-
         public static string TierName(int tier)
         {
             switch (tier)

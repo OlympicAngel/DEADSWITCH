@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Headless UI preview: renders Unity UI Toolkit layouts (UXML + USS) to PNG with Chromium.
 // Mirrors Unity's layout defaults (Yoga flex, column, border-box) and the runtime behaviors in
-// unity/Assets/Game/Runtime/UI (corner brackets, segmented meters, sparklines, gauges) closely enough
+// unity/Assets/Game/Runtime/UI (corner brackets, segmented meters, gauges) closely enough
 // to review hierarchy, spacing, typography and color without the Editor. See docs/agents/quality-bar.md.
 //
 // usage: node tools/uipreview/preview.mjs <screen.uxml> [--out file.png] [--bg image.png] [--height 2340] [--scale 0.5]
@@ -142,12 +142,6 @@ for (const m of document.querySelectorAll('.ds-meter')) {
 }
 const cs = getComputedStyle(document.querySelector('.ds-root') || document.body);
 const v = n => cs.getPropertyValue(n).trim();
-for (const el of document.querySelectorAll('.ds-sparkline')) {
-  const w = el.clientWidth, h = el.clientHeight, pts = []; let y = 0.55;
-  for (let i = 0; i <= 48; i++) { y = Math.min(0.92, Math.max(0.12, y + Math.sin(i * 0.7) * 0.06 + (i % 7 === 0 ? -0.18 : 0.02))); pts.push([i / 48 * w, (1 - y) * h]); }
-  const poly = pts.map(p => p.join(',')).join(' ');
-  el.innerHTML = '<svg width="'+w+'" height="'+h+'"><polygon points="0,'+h+' '+poly+' '+w+','+h+'" fill="'+v('--c-phosphor-glow')+'" opacity="0.35"/><polyline points="'+poly+'" fill="none" stroke="'+v('--c-phosphor')+'" stroke-width="3"/></svg>';
-}
 // Icons.cs mirror: the same glyph file (Resources/UI/Icons.json)
 const GLYPH_SRC = ${JSON.stringify(JSON.parse(fs.readFileSync(path.join(UI, 'Icons.json'), 'utf8')).glyphs)};
 const arcPts = (r, cx, cy, d0, d1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = (d0 + (d1 - d0) * i / n) * Math.PI / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; });

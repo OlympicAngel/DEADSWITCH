@@ -234,15 +234,3 @@
 .hud-tab.is-active > .hud-tab__icon { --icon-color: var(--c-cyan); }
 .hud-tab__dot { position: absolute; top: var(--s-2); right: var(--s-5); width: 14px; height: 14px; border-radius: 7px; background-color: var(--c-amber); }
 .hud-tab__dot.is-hidden { display: none; }
-
-/* Locked destination (systems offline in this run) */
-.screen-locked { justify-content: center; padding: 0 var(--s-8); }
-.screen-locked__panel { padding: var(--s-8) var(--s-6); background-color: var(--c-panel-solid); }
-.screen-locked__state { margin-top: var(--s-2); margin-bottom: var(--s-5); letter-spacing: var(--ls-wide); }
-.screen-locked__line { margin-bottom: var(--s-6); }
-.screen-locked__req { align-self: flex-start; min-height: 56px; }
-.ai-chip--urgent { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
-.ai-chip--urgent > .ai-chip__icon { --icon-color: var(--c-amber); }
-.ai-chip--urgent > .ai-chip__label { color: var(--c-amber); }
-
-.hud-raidrow__apply.is-hidden { display: none; }
