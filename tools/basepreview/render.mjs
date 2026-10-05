@@ -5,10 +5,12 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
-const playwright = require('/opt/node22/lib/node_modules/playwright');
-const HERE = path.dirname(new URL(import.meta.url).pathname);
+// cloud sessions have it globally; elsewhere set PLAYWRIGHT_MODULE to an install (e.g. D:/dev/playwright/node_modules/playwright)
+const playwright = require(process.env.PLAYWRIGHT_MODULE || '/opt/node22/lib/node_modules/playwright');
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');
 const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };

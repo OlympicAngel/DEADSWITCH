@@ -45,3 +45,5 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - New files under `src/Deadswitch.{Sim,Host,Art}` or `unity/Assets` need `python3 tools/gen_meta.py`.
 - AI actions (delegated builds, autopilot) are derived inside the tick, not recorded: a command log replays only under the rules version that recorded it.
 - Base look values live in `unity/Assets/Game/Resources/Base/BaseLook.json` (read by Unity and `tools/basepreview`).
+- `tools/basepreview` on Windows: Playwright lives in `D:\dev\playwright`; set `PLAYWRIGHT_MODULE=D:/dev/playwright/node_modules/playwright` and `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright/browsers`, copy `node_modules/three` into a worktree, export the scene first (`art export`).
+- F-110 (base fog) done 2026-10-06 on `feat/f110-fog`: keyframe `fogDensity` roughly 0.6x (night 0.0055, day 0.0026, dusk 0.004), map `fogScale` 0.33 keeps the map's fog unchanged. Checked in basepreview at 2/6.5/12/19 h; Editor look not yet checked. Flip the F-110 backlog row to Done (the row is in an uncommitted backlog edit on main).
