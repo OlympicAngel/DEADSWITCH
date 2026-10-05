@@ -17,6 +17,7 @@ namespace Deadswitch.Game.UI
             root.Query(className: "ds-panel").ForEach(AddCorners);
             root.Query(className: "ds-meter").ForEach(BuildMeter);
             root.Query().ForEach(MarkEnds);
+            Pager.Decorate(root);
         }
 
         /// <summary>

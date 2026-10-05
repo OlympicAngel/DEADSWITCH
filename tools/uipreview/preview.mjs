@@ -117,6 +117,25 @@ ${css}
 // Mirrors of the C# element behaviors (Runtime/UI/Behaviors.cs).
 for (const p of document.querySelectorAll('.ds-panel')) for (const c of ['tl','tr','bl','br']) { const d = document.createElement('div'); d.className = 'ui-ve ds-corner ds-corner--' + c; p.appendChild(d); }
 for (const el of document.querySelectorAll('#preview-root, #preview-root *')) { const kids = [...el.children].filter(c => !c.classList.contains('ds-corner')); if (kids.length) { kids[0].classList.add('is-first'); kids[kids.length - 1].classList.add('is-last'); } }
+// Pager.cs mirror: tab strip from page titles, first page (or data-page) shown; folds collapse to the header
+for (const pg of document.querySelectorAll('.ds-pager')) {
+  const pages = [...pg.children].filter(c => c.classList.contains('ds-page'));
+  const show = Math.max(0, pages.findIndex(p => p.classList.contains('is-preview')));
+  const tabs = document.createElement('div'); tabs.className = 'ui-ve ds-pager__tabs';
+  pages.forEach((p, i) => {
+    const t = document.createElement('div'); t.className = 'ui-ve ds-pager__tab' + (i === show ? ' is-active' : '');
+    const g = p.querySelector('.ds-page__glyph'); if (g) { const ic = document.createElement('div'); ic.className = 'ui-ve ds-icon ds-icon--' + g.textContent.trim() + ' ds-pager__icon'; t.appendChild(ic); }
+    const l = document.createElement('div'); l.className = 'ui-label unity-label ds-pager__label'; l.textContent = (p.querySelector('.ds-page__title') || {}).textContent || ('PAGE ' + (i + 1)); t.appendChild(l);
+    tabs.appendChild(t); if (i !== show) p.style.display = 'none';
+  });
+  pg.insertBefore(tabs, pg.firstChild);
+  requestAnimationFrame(() => {}); const act = tabs.children[show]; if (act) { const r = document.createElement('div'); r.className = 'ui-ve ds-pager__rail'; r.style.left = act.offsetLeft + 'px'; r.style.width = act.offsetWidth + 'px'; tabs.appendChild(r); }
+}
+for (const c of document.querySelectorAll('.ds-card--fold')) {
+  const head = c.querySelector('.ds-card__head'); if (!head) continue;
+  head.classList.add('ds-fold__head'); const ch = document.createElement('div'); ch.className = 'ui-ve ds-icon ds-icon--chevron ds-fold__chev'; ch.style.rotate = c.classList.contains('is-folded') ? '0deg' : '90deg'; head.appendChild(ch);
+  if (c.classList.contains('is-folded')) for (const k of c.children) if (k !== head && !k.classList.contains('ds-corner')) k.style.display = 'none';
+}
 for (const m of document.querySelectorAll('.ds-meter')) {
   const n = 20, on = Math.round(n * parseFloat(m.dataset.fill || (m.id && m.id.includes('corruption') ? '0.23' : '0.62')));
   for (let i = 0; i < n; i++) { const s = document.createElement('div'); s.className = 'ui-ve ds-meter__seg' + (i < on ? ' is-on' : ''); m.appendChild(s); }

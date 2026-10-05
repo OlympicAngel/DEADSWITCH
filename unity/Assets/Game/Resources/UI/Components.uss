@@ -535,3 +535,24 @@
 .ds-ripple { position: absolute; background-color: var(--c-white); opacity: 0; }
 .ds-shimmer { position: absolute; top: 0; bottom: 0; left: -120px; width: 70px; background-color: var(--c-white); opacity: 0.14; }
 .ds-sheet { transition-timing-function: ease-out-back; transition-duration: 0.34s; }
+
+/* ---------- Page tabs (SPEC-040 idea 70) ---------- */
+.ds-pager { flex-grow: 1; }
+.ds-pager__tabs { flex-direction: row; margin-bottom: var(--s-4); border-bottom-width: 1px; border-color: var(--c-line); flex-shrink: 0; }
+.ds-pager__tab { flex-grow: 1; flex-basis: 0; min-height: 96px; align-items: center; justify-content: center; padding: var(--s-1) var(--s-1); }
+.ds-pager__icon { width: 34px; height: 34px; margin-bottom: 2px; --icon-color: var(--c-text-dim); }
+.ds-pager__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 18px; letter-spacing: 3px; color: var(--c-text-dim); }
+.ds-pager__tab.is-active .ds-pager__label { color: var(--c-cyan); }
+.ds-pager__tab.is-active .ds-pager__icon { --icon-color: var(--c-cyan); }
+.ds-pager__rail { position: absolute; bottom: -2px; height: 4px; left: 0; width: 0; background-color: var(--c-cyan); }
+.ds-pager__badge { position: absolute; top: 6px; right: 12px; min-width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; background-color: var(--c-amber); }
+.ds-pager__badge.is-hidden { display: none; }
+.ds-pager__badge-label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: 16px; color: var(--c-world); }
+.ds-page { flex-shrink: 0; }
+.ds-page__title, .ds-page__glyph { display: none; }
+
+/* ---------- Foldable cards (SPEC-040 idea 71) ---------- */
+.ds-fold__head { min-height: 72px; }
+.ds-card.is-folded > .ds-card__head { margin-bottom: 0; }
+.ds-fold__chev { width: 30px; height: 30px; margin-left: var(--s-2); --icon-color: var(--c-text-dim); transition-property: rotate; transition-duration: 0.2s; }
+.ds-card.is-folded { padding-top: var(--s-2); padding-bottom: var(--s-2); }
