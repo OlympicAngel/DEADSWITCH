@@ -42,6 +42,9 @@ namespace Deadswitch.Game.Base
 
         private bool _hidden;
 
+        /// <summary>True while another screen covers BASE: the plot rings and links stay out of its way.</summary>
+        public bool OffBase { get; set; }
+
         /// <summary>Hides the game's markers in the world (plot rings, links, scans) while the opening film plays.</summary>
         public bool Hidden
         {
@@ -175,9 +178,10 @@ namespace Deadswitch.Game.Base
                 return;
             }
 
-            if (_root.gameObject.activeSelf == Hidden)
+            bool show = !Hidden && !OffBase;
+            if (_root.gameObject.activeSelf != show)
             {
-                _root.gameObject.SetActive(!Hidden);
+                _root.gameObject.SetActive(show);
             }
 
             float dt = Time.deltaTime;

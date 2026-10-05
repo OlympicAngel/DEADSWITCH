@@ -102,6 +102,10 @@ namespace Deadswitch.Game.UI.Base
         {
             _visible = true;
             UiRoot.Instance.World.style.display = DisplayStyle.Flex;
+            if (BaseFx.Instance != null)
+            {
+                BaseFx.Instance.OffBase = false;
+            }
         }
 
         public void OnHide()
@@ -109,6 +113,10 @@ namespace Deadswitch.Game.UI.Base
             _visible = false;
             Select(-1);
             UiRoot.Instance.World.style.display = DisplayStyle.None;
+            if (BaseFx.Instance != null)
+            {
+                BaseFx.Instance.OffBase = true;
+            }
         }
 
         /// <summary>The built facility nearest on screen in a direction (-1 left, +1 right), or the same slot.</summary>
