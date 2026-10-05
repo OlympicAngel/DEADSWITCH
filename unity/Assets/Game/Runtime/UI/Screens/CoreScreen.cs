@@ -23,6 +23,8 @@ namespace Deadswitch.Game.UI.Screens
         private readonly VisualElement _ui;
         private readonly System.Func<IReadOnlyList<string>> _history;
         private readonly ModulesView _modules;
+        private readonly AiOrb _orb;
+        private readonly VisualElement _orbEl;
         private bool _visible;
         private bool _showModules;
 
@@ -53,6 +55,8 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
+            _orbEl = _ui.Q("core-orb");
+            _orb = new AiOrb(_orbEl);
             _modules = new ModulesView(_ui.Q("modules-view"), openPremium);
             _ui.Q("view-status").RegisterCallback<ClickEvent>(_ => ShowModules(false));
             _ui.Q("view-modules").RegisterCallback<ClickEvent>(_ => ShowModules(true));
@@ -63,7 +67,7 @@ namespace Deadswitch.Game.UI.Screens
                     Refresh();
                 }
             };
-            UiRoot.Instance.Frame += _ =>
+            UiRoot.Instance.Frame += dt =>
             {
                 if (_visible && _showModules)
                 {
@@ -73,6 +77,7 @@ namespace Deadswitch.Game.UI.Screens
                 if (_visible && !_showModules)
                 {
                     TickClimax();
+                    _orb.Tick(dt);
                 }
             };
         }
@@ -151,6 +156,9 @@ namespace Deadswitch.Game.UI.Screens
             meter.EnableInClassList("ds-meter--amber", band == CorruptionBand.Glitchy);
             meter.EnableInClassList("ds-meter--red", band >= CorruptionBand.Unstable);
             Kit.SetMeter(meter, CorruptionSystem.Percent(reported) / 100f);
+            _orbEl.EnableInClassList("core-orb--amber", band == CorruptionBand.Glitchy);
+            _orbEl.EnableInClassList("core-orb--red", band >= CorruptionBand.Unstable);
+            _orb.Stutter = GlitchText.BandWeight((int)band) * _host.Settings.Effects;
             _ui.Q<Label>("core-deleg").text = DelegationNames[(int)s.Delegation];
             _ui.Q<Label>("core-ovr").text = s.OverrideCharges + " / " + OverrideSystem.MaxCharges(s, c);
 

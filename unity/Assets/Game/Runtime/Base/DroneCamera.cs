@@ -41,6 +41,7 @@ namespace Deadswitch.Game.Base
         private float _zoomBeforeFocus = 1f;
         private Vector3 _velocity;
         private float _idle;
+        private float _downAt;
         private float _lastTapAt = -10f;
         private Vector2 _lastTapPos;
         private float _trauma;
@@ -67,6 +68,9 @@ namespace Deadswitch.Game.Base
 
         /// <summary>Raised when the bunker door (the way to the core) is tapped.</summary>
         public event System.Action CoreTapped;
+
+        /// <summary>Raised by a horizontal swipe while a facility is framed: -1 left, +1 right (idea 25).</summary>
+        public event System.Action<int> Hopped;
 
         /// <summary>Raised when empty ground is tapped (deselect).</summary>
         public event System.Action NothingTapped;
@@ -272,6 +276,7 @@ namespace Deadswitch.Game.Base
 
             if (_pointers.Count == 1)
             {
+                _downAt = Time.unscaledTime;
                 _downPos = e.position;
                 _moved = false;
             }
@@ -308,7 +313,7 @@ namespace Deadswitch.Game.Base
                 _moved = true;
             }
 
-            if (_moved)
+            if (_moved && !_focused)
             {
                 Vector2 delta = pos - last;
                 float scale = 0.035f * _zoom;
@@ -323,6 +328,18 @@ namespace Deadswitch.Game.Base
         {
             bool wasSingle = _pointers.Count == 1;
             _pointers.Remove(e.pointerId);
+            if (wasSingle && _moved && _focused)
+            {
+                // framed: a quick sideways swipe hops to the neighbouring facility instead of panning
+                Vector2 d = (Vector2)e.position - _downPos;
+                if (Time.unscaledTime - _downAt < 0.5f && Mathf.Abs(d.x) > 90f && Mathf.Abs(d.y) < Mathf.Abs(d.x) * 0.7f)
+                {
+                    Hopped?.Invoke(d.x < 0f ? 1 : -1);
+                }
+
+                return;
+            }
+
             if (!wasSingle || _moved)
             {
                 if (!wasSingle)

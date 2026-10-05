@@ -42,14 +42,14 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 17. Floating "+N" pickups over producing buildings when stock ticks up (throttled). *Planned*
 18. Storage fill rendered on the battery bank / fuel depot model (lit cells). *Editor*
 19. Pod flashes and the rate pill turns red when a drain starts (blackout warning lead time). *Done*
-20. Production summary card on BASE when the player returns ("while you were away: +2,340 energy"). *Planned*
+20. Production summary card on BASE when the player returns ("while you were away: +2,340 energy"). *Done*
 
 ### C. Base interaction and camera
 21. Fly-to focus: pan + zoom-in + small orbit to frame the selected building. *Done*
 22. Focus dims the rest of the base (labels fade, selection pulse ring). *Done*
 23. Quick-action ring next to the building: UPGRADE, INFO, POWER, REPAIR, with costs. *Done*
 24. Compact info card instead of the full sheet; "details" expands to the full sheet. *Done*
-25. Swipe left/right in focus to hop to the next building. *Planned*
+25. Swipe left/right in focus to hop to the next building. *Done*
 26. Double-tap ground to zoom in/out between two presets. *Done*
 27. Camera inertia: flick pans glide and settle; rubber-band at bounds. *Done*
 28. Idle drift: after 20 s untouched, the drone slowly orbits (reduced motion: off). *Done*
@@ -80,17 +80,20 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 49. Suggestion chips on advisor lines ("BUILD SOLAR", "OPEN OPS") that act in one tap. *Done*
 50. Scan-sweep when the AI "thinks" (before a recommendation). *Done*
 51. Corruption shows as orb ring stutter and color drift, never on the buttons. *Done*
-52. Core screen: orb as the focal hero, diagnostics in grouped holo cards around it. *Planned*
+52. Core screen: orb as the focal hero, diagnostics in grouped holo cards around it. *Done*
 53. Boot / wake line when the app opens: the orb assembles. *Planned*
 
 ### F. Screens and QOL
-54. OPS regrouped: Threat card, Posture grid, Forces, Autonomy, Away settings, each a titled card with icons; scrolls. *Planned*
+54. OPS regrouped: Threat card, Posture grid, Forces, Autonomy, Away settings, each a titled card with icons; scrolls. *Done*
 55. Command bar: active tab lifted with glow, badges with counts. *Done*
 56. Toasts: short stacked confirmations with icons (built, upgraded, refused + reason). *Done*
-57. Contextual header line under each screen title ("2 alerts // 1 job running"). *Planned*
-58. Badges on BASE for idle builders and full storage. *Planned*
+57. Contextual header line under each screen title ("2 alerts // 1 job running"). *Done*
+58. Badges on BASE for idle builders and full storage. *Done*
 59. Long-press any value to see its explanation (tooltip card). *Planned*
 60. Settings: "camera cinematics" and "focus fly-in" toggles beside reduced motion. *Done*
+
+## Screenshots
+Headless previews: `docs/media/li-*.png` (HUD, resource sheet, focus, cinematic, OPS, CORE, WORKFORCE, DISPATCH).
 
 ## Out of scope
 Sim rules and balance (presentation only, no `GameState` change). Audio beyond existing cues.

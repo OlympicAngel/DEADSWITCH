@@ -1,30 +1,65 @@
-/* OPS: defense setup (SPEC-005). Tokens only. */
+/* OPS: defense setup (SPEC-005, SPEC-039 idea 54): grouped cards in a scroll. Tokens only. */
 
 .ops {
     flex-grow: 1;
-    padding: var(--s-4) var(--s-6) var(--s-2) var(--s-6);
     background-color: var(--c-scrim);
 }
 
-.ops-head { flex-direction: row; align-items: flex-end; margin-bottom: var(--s-3); }
-.ops-head__sub { margin-left: var(--s-4); padding-bottom: var(--s-1); }
+.ops-scroll > .unity-scroll-view__content-container { padding: var(--s-4) var(--s-5) var(--s-6) var(--s-5); }
 
-.ops-section { margin-top: var(--s-4); margin-bottom: var(--s-2); }
+.ops-card__lead { white-space: normal; margin-bottom: var(--s-3); }
 
-/* Threat card */
-.ops-threat { padding-top: var(--s-3); padding-bottom: var(--s-3); }
-.ops-threat__pip { width: 16px; height: 16px; margin-right: var(--s-3); }
-.ops-threat__kind { font-size: var(--fs-xs); }
+/* Threat card: C# toggles ds-panel--amber / ds-panel--red on it */
+.ops-threat { padding: var(--s-4); }
+.ops-threat.ds-panel--amber { border-color: var(--c-amber-dim); border-top-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.ops-threat.ds-panel--red { border-color: var(--c-red-glow); border-top-color: var(--c-red); background-color: var(--c-red-wash); }
+.ops-threat__well {
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--s-3);
+    border-radius: var(--r-md);
+    border-width: 1px;
+    border-color: var(--c-line-mid);
+    background-color: var(--c-panel-sunken);
+}
+.ops-threat__pip { width: 20px; height: 20px; }
+.ops-threat__kind { font-size: var(--fs-xs); letter-spacing: 3px; }
+.ops-threat__cap { font-size: var(--fs-micro); color: var(--c-text-dim); letter-spacing: 3px; }
 .ops-threat__time { font-size: var(--fs-xl); }
-.ops-threat__intel { margin-top: var(--s-1); }
-.ops-threat__quiet { margin-top: var(--s-2); }
+.ops-threat__intel {
+    margin-top: var(--s-3);
+    padding: var(--s-3);
+    border-radius: var(--r-md);
+    background-color: var(--c-panel-sunken);
+}
+.ops-threat__quiet { margin-top: var(--s-3); white-space: normal; }
 .ops-kv { margin-right: var(--s-8); }
 .ops-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); margin-top: var(--s-1); }
 .ops-ai-tag { align-self: flex-end; }
 .ops-lockdown { margin-top: var(--s-3); }
-.ops-lastreport { margin-top: var(--s-3); min-height: 88px; }
+.ops-lastreport { margin-top: var(--s-3); min-height: var(--touch); }
 .ops-lastreport > .ds-btn__label { font-size: var(--fs-xs); }
 .ops-lockdown > .ds-btn__label { font-size: var(--fs-xs); }
+
+/* Yard */
+.ops-yard { padding: var(--s-3) var(--s-4); }
+.ops-yard.is-hidden { display: none; }
+.ops-yard__well { background-color: var(--c-amber-wash); border-color: var(--c-amber-dim); }
+.ops-yard__icon { --icon-color: var(--c-amber); }
+.ops-yard__text { flex-shrink: 1; }
+.ops-yard__desc { font-size: var(--fs-micro); margin-top: var(--s-1); white-space: normal; }
+.ops-yard__btn { min-width: 240px; margin-left: var(--s-3); }
+
+/* Purge ladder card */
+.ops-purge { padding: var(--s-4); }
+.ops-purge__time { font-size: var(--fs-lg); }
+.ops-purge__desc { margin-top: var(--s-3); font-size: var(--fs-micro); white-space: normal; }
+.ops-purge__answers { margin-top: var(--s-3); justify-content: space-between; }
+.ops-purge__btn { width: 32%; padding: 0 var(--s-2); }
+.ops-purge__btn > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: 2px; }
+.ops-purge .ds-card__well { margin-right: var(--s-3); }
 
 /* Posture cards: 2 x 2 */
 .ops-postures { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
@@ -33,17 +68,19 @@
     flex-direction: row;
     align-items: center;
     min-height: var(--touch);
-    padding: var(--s-3) var(--s-3);
-    margin-bottom: var(--s-3);
+    padding: var(--s-3);
+    margin-bottom: var(--s-2);
     border-width: var(--bw);
+    border-radius: var(--r-md);
     border-color: var(--c-line-mid);
+    border-top-color: var(--c-edge-hi);
     background-color: var(--c-panel-sunken);
     transition-property: background-color, border-color, scale;
     transition-duration: 0.12s;
 }
 .ops-posture:active { scale: 0.98 0.98; }
-.ops-posture.is-selected { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.1); }
-.ops-posture__icon { width: 64px; height: 64px; margin-right: var(--s-3); --icon-color: var(--c-text-dim); }
+.ops-posture.is-selected { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.ops-posture__icon { width: 56px; height: 56px; margin-right: var(--s-3); --icon-color: var(--c-text-dim); }
 .ops-posture.is-selected .ops-posture__icon { --icon-color: var(--c-phosphor); }
 .ops-posture__body { flex-grow: 1; flex-shrink: 1; }
 .ops-posture__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-text); }
@@ -58,61 +95,86 @@
     align-items: center;
     justify-content: center;
     border-width: var(--bw);
+    border-radius: var(--r-md);
     border-color: var(--c-line-mid);
     background-color: var(--c-panel-sunken);
 }
-.ops-socket.is-filled { border-color: var(--c-phosphor-dim); background-color: rgba(168, 213, 138, 0.12); }
+.ops-socket.is-filled { border-color: var(--c-phosphor-dim); background-color: var(--c-phosphor-wash); }
 .ops-socket__icon { width: 56px; height: 56px; --icon-color: var(--c-text-faint); }
 .ops-socket.is-filled .ops-socket__icon { --icon-color: var(--c-phosphor); }
 
 /* Readout + Set & Go */
-.ops-read { margin-top: var(--s-4); }
+.ops-read { padding: var(--s-4); }
+.ops-read__conf { flex-shrink: 1; }
 .ops-read__band { margin-left: var(--s-4); padding-bottom: var(--s-2); }
 .ops-read__vs { align-items: flex-end; }
 .ops-read__line { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); }
+.ops-forces {
+    margin-top: var(--s-3);
+    padding: var(--s-3);
+    border-radius: var(--r-md);
+    background-color: var(--c-panel-sunken);
+}
+.ops-forces__line { white-space: normal; margin-top: var(--s-1); font-size: var(--fs-micro); }
 .ops-go { margin-top: var(--s-4); }
-.ops-go__rec { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 2px; color: var(--c-text); margin-top: var(--s-1); }
-.ops-go__btn { min-width: 340px; }
+.ops-go__rec { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 2px; color: var(--c-cyan); margin-top: var(--s-1); white-space: normal; }
+.ops-go__btn { min-width: 300px; margin-left: var(--s-3); }
 
 /* Delegation segmented control */
-.ops-seg { flex-direction: row; border-width: var(--bw); border-color: var(--c-line-mid); }
+.ops-seg { flex-direction: row; border-width: var(--bw); border-radius: var(--r-md); border-color: var(--c-line-mid); background-color: var(--c-panel-sunken); }
 .ops-seg__item {
     flex-grow: 1;
     flex-basis: 0;
     min-height: var(--touch);
     align-items: center;
     justify-content: center;
+    padding: var(--s-2) 0;
     border-right-width: 1px;
     border-color: var(--c-line-mid);
 }
 .ops-seg__item.is-last { border-right-width: 0; }
-.ops-seg__item.is-selected { background-color: rgba(168, 213, 138, 0.14); }
+.ops-seg__item.is-selected { background-color: var(--c-phosphor-wash); }
+.ops-seg__icon { width: 36px; height: 36px; margin-bottom: var(--s-1); --icon-color: var(--c-text-dim); }
+.ops-seg__item.is-selected > .ops-seg__icon { --icon-color: var(--c-phosphor); }
 .ops-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
 .ops-seg__item.is-selected > .ops-seg__label { color: var(--c-phosphor); }
-.ops-seg__desc { margin-top: var(--s-2); }
+.ops-seg__desc { margin-top: var(--s-3); white-space: normal; }
+
+/* Away rows */
 .ops-alerts { margin-top: var(--s-4); align-items: center; }
-.ops-alerts__desc { font-size: var(--fs-micro); margin-top: var(--s-1); margin-right: var(--s-4); }
-.ops-toggle { width: 180px; min-height: 88px; align-items: center; justify-content: center; border-width: var(--bw); border-color: var(--c-line-mid); }
-.ops-toggle.is-on { border-color: var(--c-phosphor); background-color: rgba(168, 213, 138, 0.14); }
+.ops-alerts.is-first { margin-top: 0; }
+.ops-alerts__well {
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--s-3);
+    border-radius: var(--r-md);
+    border-width: 1px;
+    border-color: var(--c-cyan-line);
+    background-color: var(--c-cyan-wash);
+}
+.ops-alerts__icon { width: 34px; height: 34px; --icon-color: var(--c-cyan); }
+.ops-alerts__text { flex-shrink: 1; }
+.ops-alerts__desc { font-size: var(--fs-micro); margin-top: var(--s-1); margin-right: var(--s-3); white-space: normal; }
+.ops-toggle {
+    width: 170px;
+    min-height: var(--touch);
+    align-items: center;
+    justify-content: center;
+    border-width: var(--bw);
+    border-radius: var(--r-md);
+    border-color: var(--c-line-mid);
+    background-color: var(--c-panel-sunken);
+}
+.ops-toggle.is-on { border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.ops-toggle.is-disabled { opacity: 0.45; }
 .ops-toggle__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text-dim); }
 .ops-toggle.is-on > .ops-toggle__label { color: var(--c-phosphor); }
-/* Purge ladder card */
-.ops-purge { margin-top: var(--s-3); padding-top: var(--s-3); padding-bottom: var(--s-3); }
-.ops-yard { margin-top: var(--s-3); padding-top: var(--s-2); padding-bottom: var(--s-2); align-items: center; }
-.ops-yard.is-hidden { display: none; }
-.ops-yard__desc { font-size: var(--fs-micro); margin-top: var(--s-1); }
-.ops-yard__btn { min-width: 260px; margin-left: var(--s-3); }
-.ops-purge__time { font-size: var(--fs-lg); }
-.ops-purge__desc { margin-top: var(--s-2); font-size: var(--fs-micro); }
-.ops-purge__answers { margin-top: var(--s-3); justify-content: space-between; }
-.ops-purge__btn { width: 32%; padding: 0 var(--s-2); }
-.ops-purge__btn > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: 2px; }
-.ops-pip--square { rotate: 0deg; }
 
-.ops-reason { margin-top: var(--s-2); color: var(--c-amber); }
+.ops-reason { margin-top: var(--s-2); color: var(--c-amber); white-space: normal; }
 
 .is-hidden { display: none; }
 
-/* forces and counters (SPEC-035) */
-.ops-forces { margin-top: var(--s-2); }
-.ops-forces__line { white-space: normal; margin-top: var(--s-1); }
+/* Scroll children keep their natural height; the scroll view does the overflow */
+.ops-scroll .ds-card, .ops-scroll .ds-section, .ops-scroll .ops-reason { flex-shrink: 0; }

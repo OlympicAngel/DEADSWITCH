@@ -41,6 +41,13 @@ namespace Deadswitch.Game.UI.Base
                 }
             };
             cam.NothingTapped += () => Select(-1);
+            cam.Hopped += dir =>
+            {
+                if (_visible && _sheet.IsOpen)
+                {
+                    Select(Neighbour(_sheet.Slot, dir));
+                }
+            };
 
             GameHost.Instance.Ticked += () =>
             {
@@ -88,6 +95,33 @@ namespace Deadswitch.Game.UI.Base
             _visible = false;
             Select(-1);
             UiRoot.Instance.World.style.display = DisplayStyle.None;
+        }
+
+        /// <summary>The built facility nearest on screen in a direction (-1 left, +1 right), or the same slot.</summary>
+        private static int Neighbour(int from, int dir)
+        {
+            BaseView view = BaseView.Instance;
+            UnityEngine.Camera cam = DroneCamera.Instance.Camera;
+            var slots = GameHost.Instance.Sim.State.Slots;
+            float x0 = cam.WorldToScreenPoint(view.SlotGround(from)).x;
+            int best = from;
+            float bestDx = float.MaxValue;
+            for (int i = 0; i < view.SlotCount && i < slots.Count; i++)
+            {
+                if (i == from || slots[i].IsEmpty)
+                {
+                    continue;
+                }
+
+                float dx = (cam.WorldToScreenPoint(view.SlotGround(i)).x - x0) * dir;
+                if (dx > 1f && dx < bestDx)
+                {
+                    bestDx = dx;
+                    best = i;
+                }
+            }
+
+            return best;
         }
 
         private void Select(int slot)

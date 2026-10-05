@@ -27,6 +27,7 @@ namespace Deadswitch.Game.UI.Hud
 
         private readonly System.Collections.Generic.List<ResourcePod> _pods = new System.Collections.Generic.List<ResourcePod>();
         private ResourceSheet _resourceSheet;
+        private AwaySummary _away;
         private AnimatedNumber _core;
         private AiOrb _orb;
         private AiWave _wave;
@@ -104,6 +105,13 @@ namespace Deadswitch.Game.UI.Hud
             _job.RegisterCallback<ClickEvent>(_ => OnJobTapped());
             Q<VisualElement>("advisor-orb").parent.RegisterCallback<ClickEvent>(_ => Router.Show("core"));
             Toasts.Mount(_ui.Hud);
+            _away = new AwaySummary(_ui.Sheets);
+            if (_host.LastCatchUp.HasValue)
+            {
+                _away.Show(_host, _host.LastCatchUp.Value);
+            }
+
+            _host.CaughtUp += OnCaughtUp;
             _coreBand = Q<Label>("core-band");
             _coreValue = Q<Label>("core-value");
             _clock = Q<Label>("clock");
@@ -189,6 +197,7 @@ namespace Deadswitch.Game.UI.Hud
             {
                 _host.Ticked -= Refresh;
                 _host.EventRaised -= OnSimEvent;
+                _host.CaughtUp -= OnCaughtUp;
             }
 
             _voice?.Dispose();
@@ -370,6 +379,7 @@ namespace Deadswitch.Game.UI.Hud
             _orb.Tick(dt);
             _wave.Tick(dt, _speak);
             TickAlarm(dt);
+            _away.Tick(dt);
             _core.Tick(dt);
             _gauge.Tick(dt);
             _opening.Tick(dt);
@@ -430,6 +440,11 @@ namespace Deadswitch.Game.UI.Hud
                 Icons.SetGlyph(Q<VisualElement>("next-icon"), "hammer");
                 _jobCount.text = string.Empty;
             }
+        }
+
+        private void OnCaughtUp(CatchUpReport report)
+        {
+            _away.Show(_host, report);
         }
 
         private void RefreshPods(bool instant)

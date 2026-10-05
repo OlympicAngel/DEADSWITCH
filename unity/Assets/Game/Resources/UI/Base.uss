@@ -160,3 +160,13 @@
 .qa > .ds-tile { min-height: 132px; }
 .sheet__scroll { flex-shrink: 1; max-height: 1100px; }
 .sheet__more { margin-top: var(--s-2); }
+
+/* ---------- While you were away (SPEC-039 idea 20) ---------- */
+.away { position: absolute; left: var(--s-6); right: var(--s-6); top: 220px; }
+.away.is-hidden { display: none; }
+.away__row { flex-direction: row; align-items: center; min-height: 64px; border-bottom-width: 1px; border-color: var(--c-cyan-line); }
+.away__icon { width: 36px; height: 36px; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
+.away__name { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-text); flex-grow: 1; }
+.away__row > .ds-delta { align-self: center; }
+.away__raids { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-amber); margin-top: var(--s-3); }
+.away__hint { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: 16px; letter-spacing: 4px; color: var(--c-text-faint); margin-top: var(--s-3); -unity-text-align: middle-right; }
