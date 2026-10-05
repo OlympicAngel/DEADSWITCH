@@ -41,6 +41,10 @@ namespace Deadswitch.Game.UI.Hud
         private string _chipKey = string.Empty;
         private float _speak;
         private float _alarmClock;
+        private float _readClock;
+        private bool _raidOpen;
+        private bool _raidAutoOpened;
+        private VisualElement _advisorPanel;
         private Label _coreBand;
         private Label _coreValue;
         private Label _clock;
@@ -104,7 +108,14 @@ namespace Deadswitch.Game.UI.Hud
             _jobBar = Q<VisualElement>("next-bar");
             _jobCount = Q<Label>("next-count");
             _job.RegisterCallback<ClickEvent>(_ => OnJobTapped());
-            Q<VisualElement>("advisor-orb").parent.RegisterCallback<ClickEvent>(_ => Router.Show("core"));
+            _advisorPanel = Q<VisualElement>("advisor");
+            Q<VisualElement>("advisor-orb").RegisterCallback<ClickEvent>(e =>
+            {
+                e.StopPropagation();
+                Router.Show("core");
+            });
+            _advisorPanel.RegisterCallback<ClickEvent>(_ => ExpandComms());
+            Q<VisualElement>("raid-banner").RegisterCallback<ClickEvent>(_ => SetRaidOpen(!_raidOpen));
             Toasts.Mount(_ui.Hud);
             _away = new AwaySummary(_ui.Sheets);
             Hints.Mount(_ui.Sheets);
@@ -136,7 +147,11 @@ namespace Deadswitch.Game.UI.Hud
             _overridePips = Q<VisualElement>("override-pips").Children().ToArray();
 
             Advisor = new AdvisorTicker(Q<Label>("advisor-text"));
-            Advisor.Spoke += _ => _orb.Ping();
+            Advisor.Spoke += _ =>
+            {
+                _orb.Ping();
+                ExpandComms();
+            };
             _voice = new AdvisorVoice(_host, Advisor);
 
             Router = new ScreenRouter(Q<VisualElement>("screen"));
@@ -188,7 +203,9 @@ namespace Deadswitch.Game.UI.Hud
             {
                 _frame.EnableInClassList("is-covered", id != "base");
                 _resourceSheet.Close();
+                MoveTabRail(id, true);
             };
+            Q<VisualElement>("tabbar").RegisterCallback<GeometryChangedEvent>(_ => MoveTabRail(Router.Current, false));
             Router.Show("base");
             _opening = new OpeningFlow(_host, _hud, _voice, _baseScreen);
 
@@ -343,6 +360,11 @@ namespace Deadswitch.Game.UI.Hud
             _coreDot.EnableInClassList("is-hidden", band == CorruptionBand.Stable && s.ClimaxAtTick == 0);
             bool raid = s.RaidId != 0;
             _raid.EnableInClassList("is-hidden", !raid);
+            if (!raid && (_raidOpen || _raidAutoOpened))
+            {
+                _raidAutoOpened = false;
+                SetRaidOpen(false);
+            }
             // signature reads at a glance (doc 10 s4): raid amber diamond, siege red square, purge red diamond
             bool red = s.RaidKind != AttackKind.Raid;
             _raid.EnableInClassList("hud-alert--red", red);
@@ -387,6 +409,7 @@ namespace Deadswitch.Game.UI.Hud
             _orb.Voice = _speak;
             _orb.Tick(dt);
             _wave.Tick(dt, _speak);
+            TickComms(dt);
             TickAlarm(dt);
             _away.Tick(dt);
             _core.Tick(dt);
@@ -414,7 +437,14 @@ namespace Deadswitch.Game.UI.Hud
             GameState s = _host.Sim.State;
             if (s.RaidId != 0)
             {
-                _raidTime.text = Fmt.Countdown(SecondsUntil(s.RaidArriveTick));
+                double left = SecondsUntil(s.RaidArriveTick);
+                _raidTime.text = Fmt.Countdown(left);
+                if (!_raidAutoOpened && (left < ImminentSeconds || s.BattleLive))
+                {
+                    // an imminent attack opens its own card (SPEC-040 rule 2)
+                    _raidAutoOpened = true;
+                    SetRaidOpen(true);
+                }
             }
 
             if (s.Ultimatum == UltimatumStage.Issued || s.Dilemma != DilemmaKind.None)
@@ -448,6 +478,96 @@ namespace Deadswitch.Game.UI.Hud
                 _job.AddToClassList("is-idle");
                 Icons.SetGlyph(Q<VisualElement>("next-icon"), "hammer");
                 _jobCount.text = string.Empty;
+            }
+        }
+
+        /// <summary>Under this many real seconds to contact the threat card opens by itself.</summary>
+        private const double ImminentSeconds = 180;
+
+        /// <summary>Seconds a fully shown advisor line stays expanded before the panel rests as a slim bar.</summary>
+        private const float CommsRestSeconds = 6f;
+
+        private void SetRaidOpen(bool open)
+        {
+            _raidOpen = open;
+            _raidDetail.EnableInClassList("is-collapsed", !open);
+            if (open)
+            {
+                Choreo.Enter(_raidDetail);
+                Motion.To(_raidDetail, 0.3f, Ease.OutBack, t =>
+                {
+                    _raidDetail.style.opacity = t;
+                    _raidDetail.style.translate = new Translate(0, (1f - t) * -20f, 0);
+                });
+            }
+        }
+
+        private void ExpandComms()
+        {
+            _readClock = 0f;
+            if (_advisorPanel.ClassListContains("is-compact"))
+            {
+                _advisorPanel.RemoveFromClassList("is-compact");
+                Choreo.Enter(_advisorPanel);
+            }
+        }
+
+        private void TickComms(float dt)
+        {
+            if (Advisor.Typing || _advisorPanel.ClassListContains("is-compact"))
+            {
+                _readClock = 0f;
+                return;
+            }
+
+            _readClock += dt;
+            if (_readClock >= CommsRestSeconds)
+            {
+                _advisorPanel.AddToClassList("is-compact");
+            }
+        }
+
+        /// <summary>The command bar's indicator glides to the active tab; the tab's icon punches.</summary>
+        private void MoveTabRail(string id, bool animate)
+        {
+            VisualElement tab = id != null ? Q<VisualElement>("tab-" + id) : null;
+            VisualElement rail = Q<VisualElement>("tab-rail");
+            if (rail == null)
+            {
+                return;
+            }
+
+            if (tab == null)
+            {
+                rail.style.opacity = 0f;
+                return;
+            }
+
+            Rect r = tab.layout;
+            if (float.IsNaN(r.width) || r.width <= 0f)
+            {
+                return;
+            }
+
+            rail.style.opacity = 1f;
+            float fromX = rail.resolvedStyle.left;
+            float fromW = rail.resolvedStyle.width;
+            if (!animate || float.IsNaN(fromX) || fromW <= 0f)
+            {
+                rail.style.left = r.x;
+                rail.style.width = r.width;
+                return;
+            }
+
+            Motion.To(rail, 0.3f, Ease.OutCubic, t =>
+            {
+                rail.style.left = Mathf.Lerp(fromX, r.x, t);
+                rail.style.width = Mathf.Lerp(fromW, r.width, t);
+            });
+            VisualElement icon = tab.Q(className: "hud-tab__icon");
+            if (icon != null)
+            {
+                Choreo.Punch(icon, 0.25f);
             }
         }
 

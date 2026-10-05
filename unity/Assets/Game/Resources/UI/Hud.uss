@@ -350,3 +350,37 @@
 .ai-chip--urgent { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .ai-chip--urgent > .ai-chip__icon { --icon-color: var(--c-amber); }
 .ai-chip--urgent > .ai-chip__label { color: var(--c-amber); }
+
+/* =========================== SPEC-040: a quieter HUD =========================== */
+/* status rail: compact pills; detail opens on tap */
+.hud-job { width: auto; min-width: 190px; }
+.hud-job__label { display: none; }
+.hud-job.is-idle .hud-job__label { display: flex; }
+.hud-job.is-idle .hud-job__time { display: none; }
+.hud-dispatch { min-height: 72px; }
+.hud-dispatch__title { display: none; }
+.hud-dispatch__pip { display: none; }
+.hud-report { min-height: 72px; }
+.hud-report__label { display: none; }
+.hud-report__new { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-phosphor); }
+.rail-pill { overflow: hidden; }
+.hud-raidrow.is-collapsed { display: none; }
+.hud-alert__title { font-size: 16px; }
+
+/* comms panel rests as a slim bar once a line has been read */
+.hud-advisor { transition-property: min-height, padding; transition-duration: 0.25s; }
+.hud-advisor.is-compact { min-height: 72px; padding-top: var(--s-1); padding-bottom: var(--s-1); }
+.hud-advisor.is-compact .hud-advisor__orb { width: 60px; height: 60px; }
+.hud-advisor.is-compact .hud-advisor__meta { display: none; }
+.hud-advisor.is-compact .hud-advisor__chips { display: none; }
+.hud-advisor.is-compact .hud-advisor__text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-text-dim); }
+.hud-advisor__hint { position: absolute; right: var(--s-3); top: var(--s-1); width: 24px; height: 24px; --icon-color: var(--c-cyan-dim); display: none; }
+.hud-advisor.is-compact .hud-advisor__hint { display: flex; }
+
+/* the active tab's indicator glides between tabs */
+.hud-tabs__rail { position: absolute; top: 0; left: 0; width: 0; height: 3px; background-color: var(--c-cyan); }
+.hud-tab.is-active { border-top-width: 1px; border-top-color: var(--c-cyan-line); }
+
+/* value punches: up = phosphor, down = red, briefly */
+.pod__value.is-up { color: var(--c-phosphor); }
+.pod__value.is-down { color: var(--c-red); }

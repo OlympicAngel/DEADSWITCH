@@ -97,14 +97,14 @@
         </ui:VisualElement>
         <ui:VisualElement class="spacer" />
         <ui:VisualElement class="hud-right">
-          <ui:VisualElement name="raid-banner" class="hud-alert">
+          <ui:VisualElement name="raid-banner" class="hud-alert rail-pill">
             <ui:VisualElement name="raid-pip" class="ds-pip ds-pip--amber ds-pip--diamond hud-alert__pip" />
             <ui:VisualElement>
               <ui:Label name="raid-title" text="RAID INCOMING" class="hud-alert__title" />
               <ui:Label name="raid-time" text="17:42" class="hud-alert__time" />
             </ui:VisualElement>
           </ui:VisualElement>
-          <ui:VisualElement name="next-timer" class="hud-job">
+          <ui:VisualElement name="next-timer" class="hud-job rail-pill">
             <ui:VisualElement class="row">
               <ui:VisualElement name="next-icon" class="ds-icon ds-icon--hammer hud-job__icon" />
               <ui:VisualElement class="hud-job__text">
@@ -115,7 +115,7 @@
             </ui:VisualElement>
             <ui:VisualElement name="next-bar" class="ds-progress ds-progress--amber hud-job__bar"><ui:VisualElement class="ds-progress__fill" /></ui:VisualElement>
           </ui:VisualElement>
-          <ui:VisualElement name="dispatch-chip" class="hud-dispatch is-hidden">
+          <ui:VisualElement name="dispatch-chip" class="hud-dispatch rail-pill is-hidden">
             <ui:VisualElement class="ds-icon ds-icon--mail hud-dispatch__icon" />
             <ui:VisualElement name="dispatch-pip" class="ds-pip ds-pip--amber hud-dispatch__pip" />
             <ui:VisualElement>
@@ -123,12 +123,13 @@
               <ui:Label name="dispatch-time" text="11:02:40" class="hud-dispatch__time" />
             </ui:VisualElement>
           </ui:VisualElement>
-          <ui:VisualElement name="report-chip" class="hud-report is-hidden">
+          <ui:VisualElement name="report-chip" class="hud-report rail-pill is-hidden">
             <ui:VisualElement class="ds-icon ds-icon--report hud-report__icon" />
             <ui:Label name="report-chip-label" text="AFTER-ACTION // RAID 3" class="hud-report__label" />
+            <ui:Label text="NEW" class="hud-report__new" />
           </ui:VisualElement>
           <ui:VisualElement class="hud-override">
-            <ui:Label text="OVERRIDE" class="hud-override__label" />
+            <ui:Label text="OVR" class="hud-override__label" />
             <ui:VisualElement name="override-pips" class="row">
               <ui:VisualElement class="hud-opip is-on" />
               <ui:VisualElement class="hud-opip" />
@@ -137,7 +138,7 @@
           </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
-      <ui:VisualElement name="raid-detail" class="hud-raidrow">
+      <ui:VisualElement name="raid-detail" class="hud-raidrow is-collapsed">
         <ui:VisualElement class="row hud-raidrow__info">
           <ui:VisualElement class="ds-icon ds-icon--target hud-raidrow__icon" />
           <ui:Label name="raid-estimate" text="NORTH RIDGE // EST 34 // DEF 12 // TURTLE" class="hud-raidrow__text" />
@@ -172,6 +173,7 @@
           <ui:VisualElement class="spacer" />
           <ui:VisualElement name="advisor-wave" class="ai-wave hud-advisor__wave" />
         </ui:VisualElement>
+        <ui:VisualElement class="ds-icon ds-icon--chevron hud-advisor__hint" />
         <ui:Label name="advisor-text" text="Power is the problem. Power is always the problem." class="hud-advisor__text" />
         <ui:VisualElement name="advisor-chips" class="row hud-advisor__chips">
           <ui:VisualElement class="ai-chip"><ui:VisualElement class="ds-icon ds-icon--sun ai-chip__icon" /><ui:Label text="BUILD SOLAR" class="ai-chip__label" /></ui:VisualElement>
@@ -182,6 +184,7 @@
 
     <!-- Command bar -->
     <ui:VisualElement name="tabbar" class="hud-tabs">
+      <ui:VisualElement name="tab-rail" class="hud-tabs__rail" />
       <ui:VisualElement name="tab-base" class="hud-tab is-active"><ui:VisualElement class="ds-icon ds-icon--base hud-tab__icon" /><ui:Label text="BASE" class="hud-tab__label" /><ui:VisualElement name="base-badge" class="ds-badge ds-badge--cyan is-hidden"><ui:Label name="base-badge-label" text="2" class="ds-badge__label" /></ui:VisualElement></ui:VisualElement>
       <ui:VisualElement name="tab-map" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--map hud-tab__icon" /><ui:Label text="MAP" class="hud-tab__label" /><ui:VisualElement name="map-badge" class="ds-badge is-hidden"><ui:Label name="map-badge-label" text="1" class="ds-badge__label" /></ui:VisualElement></ui:VisualElement>
       <ui:VisualElement name="tab-core" class="hud-tab"><ui:VisualElement class="ds-icon ds-icon--core hud-tab__icon" /><ui:Label text="CORE" class="hud-tab__label" /><ui:VisualElement name="core-dot" class="hud-tab__dot" /></ui:VisualElement>

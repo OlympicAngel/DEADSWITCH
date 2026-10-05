@@ -19,6 +19,8 @@ namespace Deadswitch.Game.UI.Hud
         private readonly VisualElement _flag;
         private readonly Label _flagLabel;
         private ResState _state = ResState.Ok;
+        private readonly Label _valueLabel;
+        private int _last = -1;
         private float _fillShown = -1f;
         private float _fillTarget;
 
@@ -26,7 +28,8 @@ namespace Deadswitch.Game.UI.Hud
         {
             Kind = kind;
             _root = hud.Q(prefix + "-cell");
-            _value = new AnimatedNumber(hud.Q<Label>(prefix + "-value"), Fmt.Compact);
+            _valueLabel = hud.Q<Label>(prefix + "-value");
+            _value = new AnimatedNumber(_valueLabel, Fmt.Compact);
             _cap = hud.Q<Label>(prefix + "-cap");
             _rate = hud.Q<Label>(prefix + "-rate");
             _eta = hud.Q<Label>(prefix + "-eta");
@@ -48,6 +51,17 @@ namespace Deadswitch.Game.UI.Hud
         public void Set(ResourceInfo r, double secondsPerGameHour, bool instant, string rateOverride = null)
         {
             _value.Set(r.Value, instant);
+            if (!instant && _last >= 0 && r.Cap > 0)
+            {
+                // a visible jump (a salvage drop, a big spend) punches the number; ordinary ticks stay calm
+                int delta = r.Value - _last;
+                if (System.Math.Abs(delta) * 20 >= r.Cap)
+                {
+                    Flash(delta > 0 ? "is-up" : "is-down");
+                }
+            }
+
+            _last = r.Value;
             _cap.text = "/" + Fmt.Compact(r.Cap);
             _fillTarget = r.Fill;
             if (instant || _fillShown < 0f)
@@ -93,6 +107,13 @@ namespace Deadswitch.Game.UI.Hud
                 _fillShown = Motion.Reduced ? _fillTarget : Mathf.Lerp(_fillShown, _fillTarget, 1f - Mathf.Exp(-dt * 6f));
                 _fill.style.width = Length.Percent(_fillShown * 100f);
             }
+        }
+
+        private void Flash(string cls)
+        {
+            _valueLabel.AddToClassList(cls);
+            _valueLabel.schedule.Execute(() => _valueLabel.RemoveFromClassList(cls)).StartingIn(600);
+            Choreo.Punch(_valueLabel, 0.18f);
         }
 
         /// <summary>A brief white flash of the border: something changed for the worse here.</summary>
