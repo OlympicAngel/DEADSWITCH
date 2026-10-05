@@ -9,7 +9,8 @@
 - [x] Corruption visuals on the base; crewed glitches; dilemmas wait for the handler
 - [x] Play in the Unity Editor (UI layout, lighting, damage FX, report stills fixed; open items in docs/agents/HANDOFF.md)
 - [x] Night report stills readable (BaseLook.reportNightBoost)
-- [ ] Editor pass for F-055..F-063 (HANDOFF checklist: sector map render + MapRender URP path, pins, overlay, gestures, new facilities, OPS forces line, premium ad grants, mobile notifications package resolve)
+- [x] Smoke run (`Core/SmokeRun`, launch with `-ds-smoke`): walks every screen, map render + pins, backends, logged errors -> `smoke.txt`
+- [ ] Editor pass for F-055..F-063: run `-ds-smoke` first, then the visual checks (HANDOFF checklist: sector map render + MapRender URP path, pins, overlay, gestures, new facilities, OPS forces line, premium ad grants, mobile notifications package resolve)
 - [ ] Android phone run (owner)
 - [ ] Fix whatever the phone run finds; open Editor items: puddle reflections, ALLY/SABOTAGE/RECALL, reactor, themes
 

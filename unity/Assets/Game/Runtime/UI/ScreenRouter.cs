@@ -42,6 +42,23 @@ namespace Deadswitch.Game.UI
 
         public event System.Action<string> Changed;
 
+        /// <summary>Every registered screen id, sorted (the smoke run walks them).</summary>
+        public List<string> Ids
+        {
+            get
+            {
+                var ids = new List<string>(_screens.Keys);
+                ids.Sort(System.StringComparer.Ordinal);
+                return ids;
+            }
+        }
+
+        /// <summary>The screen registered under this id, or null.</summary>
+        public IGameScreen Get(string id)
+        {
+            return _screens.TryGetValue(id, out IGameScreen screen) ? screen : null;
+        }
+
         public void Register(IGameScreen screen)
         {
             _screens[screen.Id] = screen;

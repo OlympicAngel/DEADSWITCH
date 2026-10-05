@@ -9,6 +9,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 ## Editor run (2026-10-04, via `unity` CLI + `com.unity.pipeline`)
 - Verified in Play mode: every screen at 16:9 (scroll where long), prologue and boot reveal, raid warning, TAKE COMMAND live battle, scar fire/smoke, report stills, day/night sweep. 0 console errors or warnings.
 - Still open: puddles render near-black (no sky reflection strength); map ALLY/SABOTAGE/RECALL, reactor model, voice packs, HUD themes not exercised; Android phone run; `com.unity.mobile.notifications` 2.4.0 added to the manifest (2026-10-05) without an Editor resolve: first Editor open must resolve it and compile `Notifications/Mobile` (not covered by the compile check).
+- Smoke run: launch with `-ds-smoke` (`-ds-smoke-quit` to exit with code 0/1; Android `adb shell am start ... -e unity -ds-smoke`). Report in `<persistentDataPath>/smoke.txt` and the log. It opens screens out of context (battle, report), so a FAIL there may be a missing-state guard, not a crash in play.
 - Agent driving: `unity command eval_file` runs C# in the live Editor; `capture_game_view --save_path` writes under `Assets/` (move the PNG out, delete the folder and .meta). Set `Application.runInBackground = true` at runtime or Play mode freezes when Unity is unfocused. Editing C#/USS/UXML during Play breaks the UI: stop and press Play again.
 
 ## v1.x systems (F-043 to F-054, all in the backlog and doc 10 corrections log)

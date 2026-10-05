@@ -34,6 +34,10 @@ namespace Deadswitch.Game.Core
             Root.AddComponent<Base.DroneCamera>();
             Root.AddComponent<Audio.AudioDirector>();
             Root.AddComponent<Base.LiveBattle>();
+            if (SmokeRun.Requested())
+            {
+                Root.AddComponent<SmokeRun>();
+            }
             Booted?.Invoke(Root);
         }
     }
