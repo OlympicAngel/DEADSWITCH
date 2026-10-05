@@ -1,15 +1,18 @@
-# TASK: F-104 Plain language, no monetization, new opening, engagement layer
+# TASK: F-105 The Fall (opening film and restore tutorial)
 
-- Status: Done (code) 2026-10-05; Editor check pending
-- Branch: ccr-3e0227c3-c2kae3
-- Spec: `docs/specs/SPEC-043-clarity-and-hook.md`
+- Status: In progress 2026-10-05
+- Branch: main
+- Spec: `docs/specs/SPEC-044-the-fall.md`
 
 ## Steps
-- [x] 1. Monetization off: store, ads, premium gate, season pass removed; reward track free; themes in Settings
-- [x] 2. Plain language: one name per concept, no cryptic abbreviations, Field Guide screen, hints on jargon
-- [x] 3. Leftovers: dead code, hard-coded names, sample text, unexplained numbers
-- [x] 4. New opening: story, boot sequence, camera descent, effects
-- [x] 5. Engagement layer: next-milestone tracker, celebration moments
-- [x] 6. Docs, screenshots
+- [x] 0. Foundation: letterboxed overlay over the Hub, directed shots, blackout and power wave, war tracers, heartbeat and power-up sounds
+- [ ] 1. Staged base: `BaseView` shows a scripted layout (full Tier 2), breaks it building by building, ends in the ruin
+- [ ] 2. Act 5-6 film: calm Hub, attack cuts, ruin wide shot, DEADSWITCH TRIGGERED
+- [ ] 3. Globe: procedural planet, city lights, launch arcs, blooms, whiteout, blackout
+- [ ] 4. War room: terminal wall that wakes and goes red
+- [ ] 5. Time skip and the sector map shot
+- [ ] 6. Restore tutorial: framed buildings, field cards, RESTORE, WAKE THE CORE, handover to the real run, resume after quit
+- [ ] 7. Sound pass (pads, klaxon, nuke, radio, restore, wake)
+- [ ] 8. Full Editor run, polish, docs (HANDOFF, doc 10 log, backlog)
 
-F-100 to F-103 are code complete; their Editor checklists are in `docs/agents/HANDOFF.md`.
+F-104 Editor check: smoke PASS 2026-10-05 (0 errors); the old prologue it covered is replaced by this feature.
