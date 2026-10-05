@@ -1,6 +1,6 @@
 # TASK: F-108 Base visual and build-slot clarity
 
-- Status: In progress 2026-10-05
+- Status: Done 2026-10-05
 - Branch: main
 - Spec: none (owner direction in `docs/roadmap/BACKLOG.md`; doc 08, doc 11, environment-art)
 
@@ -11,6 +11,6 @@
 - [x] 4. One build prompt at a time on the next empty plot, advancing after construction; any empty plot opens the picker
 - [x] 5. Every facility type in every plot (the sim already allows it), slot-aware orientation: defenses face outward
 - [x] 6. Night puddles: see-through water (55%), non-metallic, lamp glints; no black holes
-- [ ] 7. Space buildings and dressing a little farther apart; reframe the drone and the cutscene cameras
+- [x] 7. Yard plots spread (x ±8.4, outer rows 0.6 m out), drone pulled back (camDistance 78) so the yard fits portrait; film cut re-aimed
 
 Previous: F-109 done; F-105 The Fall done (sound mix by ear pending).

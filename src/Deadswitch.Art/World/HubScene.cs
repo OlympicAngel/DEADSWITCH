@@ -103,12 +103,12 @@ namespace Deadswitch.Art.World
 
         private static readonly Vector3[] Plots =
         {
-            new Vector3(-7.6f, 0, 7.0f),
-            new Vector3(7.6f, 0, 7.0f),
-            new Vector3(-7.9f, 0, -0.8f),
-            new Vector3(7.9f, 0, -0.8f),
-            new Vector3(-7.5f, 0, -8.6f),
-            new Vector3(7.5f, 0, -8.6f),
+            new Vector3(-8.4f, 0, 7.6f),
+            new Vector3(8.4f, 0, 7.6f),
+            new Vector3(-8.7f, 0, -0.8f),
+            new Vector3(8.7f, 0, -0.8f),
+            new Vector3(-8.3f, 0, -9.2f),
+            new Vector3(8.3f, 0, -9.2f),
         };
 
         /// <summary>Plot center for a slot: six in the yard, four in the district, then along the lane.</summary>
