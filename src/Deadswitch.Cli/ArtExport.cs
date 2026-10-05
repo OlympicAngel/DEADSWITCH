@@ -26,7 +26,7 @@ namespace Deadswitch.Cli
         public static void Write(Simulation sim, string path, uint seed, SlotView[]? layout = null, BattleReport? report = null, int tier = 1, int wreckage = 0, bool burning = false, int factionOverride = -1)
         {
             var scene = new SceneBuilder();
-            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null) => scene.Add(name, model, pos, yaw, powered, unmanned, fx);
+            void AddModel(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null, int damage = 0) => scene.Add(name, model, pos, yaw, powered, unmanned, fx, damage);
 
             int slots = layout?.Length ?? sim.State.Slots.Count;
             AddModel("terrain", new Model { Static = HubScene.Terrain(seed) }, Vector3.Zero, 0, true, false);
@@ -41,7 +41,7 @@ namespace Deadswitch.Cli
                 if (v.Kind != FacilityKind.None)
                 {
                     Model facility = Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31));
-                    AddModel("slot" + i, facility, pos, yaw, v.Powered, v.Unmanned);
+                    AddModel("slot" + i, facility, pos, yaw, v.Powered, v.Unmanned, null, v.Damage);
                     if (v.Damage > 0)
                     {
                         facility.Static.Bounds(out Vector3 min, out Vector3 max);
@@ -154,7 +154,7 @@ namespace Deadswitch.Cli
             private readonly StringBuilder _objects = new StringBuilder();
             private int _count;
 
-            public void Add(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null)
+            public void Add(string name, Model model, Vector3 pos, float yaw, bool powered, bool unmanned, ScarSet? fx = null, int damage = 0)
             {
                 int meshIndex = _meshes.Count;
                 _meshes.Add(model.Static);
@@ -196,6 +196,11 @@ namespace Deadswitch.Cli
                     .Append(",\"powered\":").Append(powered ? "true" : "false")
                     .Append(",\"unmanned\":").Append(unmanned ? "true" : "false")
                     .Append(",\"parts\":[").Append(parts).Append("],\"lights\":[").Append(lights).Append(']');
+                if (damage > 0)
+                {
+                    _objects.Append(",\"damage\":").Append(damage);
+                }
+
                 if (fx != null)
                 {
                     _objects.Append(",\"fires\":[").Append(string.Join(",", fx.Fires.Select(V))).Append("],\"smokes\":[").Append(string.Join(",", fx.Smokes.Select(V)))

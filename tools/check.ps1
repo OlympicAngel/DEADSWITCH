@@ -19,6 +19,7 @@ function Invoke-Step {
 }
 
 Invoke-Step "unity meta" { python tools/gen_meta.py --check }
+Invoke-Step "uss lint" { python tools/uss_lint.py }
 Invoke-Step "restore" { & $dotnetExe restore DEADSWITCH.sln }
 Invoke-Step "format (verify)" { & $dotnetExe format DEADSWITCH.sln --verify-no-changes --severity warn --no-restore }
 Invoke-Step "build" { & $dotnetExe build DEADSWITCH.sln -c Release --no-restore -warnaserror }

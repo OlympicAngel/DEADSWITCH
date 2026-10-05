@@ -134,6 +134,8 @@ function mesh(md, powered) {
 }
 
 const t = +P.get('t') || 3.2;
+// Unity-only scar look (BaseLook.json scarFx), mirrored so previews show what the game shows
+const fx = Object.assign({ fireRate: 1, fireSize: 1, fireSpread: 1, fireBrightness: 1, smokeRate: 1, smokeSize: 1, smokeDark: 0, damageColor: [1, 0.12, 0.05], damageGlow: 2, damageTint: 0.12, damagePulseHz: 1.1 }, look.scarFx || {});
 let lights = 0;
 const cones = [];
 for (const o of scene.objects) {
@@ -143,6 +145,16 @@ for (const o of scene.objects) {
   root.rotation.y = o.yaw * Math.PI / 180;
   const md = scene.meshes[o.mesh];
   if (md.positions.length) root.add(mesh(md, o.powered));
+  // damaged facility: Unity's pulsing red rim glow (_DsDamage, BaseView.DamageGlow), at this frame's pulse
+  if (o.damage > 0 && md.positions.length) {
+    const pulse = 0.5 + 0.5 * Math.sin(t * fx.damagePulseHz * Math.PI * 2);
+    const k = fx.damageGlow * (0.4 + 0.3 * Math.min(3, o.damage)) * (0.25 + 0.75 * pulse);
+    const glow = new THREE.Mesh(geometry(md), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, depthFunc: THREE.LessEqualDepth, blending: THREE.AdditiveBlending,
+      uniforms: { col: { value: new THREE.Vector3(...fx.damageColor).multiplyScalar(k) }, tint: { value: fx.damageTint } },
+      vertexShader: 'varying vec3 vn; varying vec3 vv; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.); vv = normalize(-mv.xyz); vn = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }',
+      fragmentShader: 'uniform vec3 col; uniform float tint; varying vec3 vn; varying vec3 vv; void main(){ float rim = 1.0 - clamp(dot(normalize(vn), normalize(vv)), 0.0, 1.0); gl_FragColor = vec4(col * (tint + rim * rim) * 0.18, 1.); }' }));
+    glow.renderOrder = 5; root.add(glow);
+  }
   if (o.cones >= 0 && o.powered && (look.coneIntensity ?? 0) > 0.005) { const c = new THREE.Mesh(geometry(scene.meshes[o.cones]), scene.palette.map((_, i) => mat(i, true))); c.castShadow = false; c.receiveShadow = false; c.renderOrder = 10; root.add(c); cones.push(c); }
   for (const p of o.parts) {
     const pivot = new THREE.Group(); pivot.position.set(...p.pivot);
@@ -162,20 +174,20 @@ for (const o of scene.objects) {
   let fxSeed = o.name.length * 7.31;
   const rnd = () => { fxSeed = (fxSeed * 9301 + 49297) % 233280; return fxSeed / 233280; };
   for (const f of (o.fires || [])) {
-    for (let k = 0; k < 7; k++) {
-      const hgt = 0.35 + rnd() * 0.7, core = k < 2;
-      const fl = new THREE.Mesh(new THREE.ConeGeometry(core ? 0.09 : 0.16 + rnd() * 0.1, hgt, 8, 1, true),
-        new THREE.MeshBasicMaterial({ color: core ? new THREE.Color(6, 4.2, 1.6) : new THREE.Color(4.5, 1.5, 0.35), transparent: true, opacity: core ? 0.9 : 0.6, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-      fl.position.set(f[0] + (rnd() - 0.5) * 0.35, f[1] + hgt * 0.5, f[2] + (rnd() - 0.5) * 0.3);
+    for (let k = 0; k < Math.round(7 * fx.fireRate); k++) {
+      const hgt = (0.35 + rnd() * 0.7) * fx.fireSize, core = k < 2;
+      const fl = new THREE.Mesh(new THREE.ConeGeometry((core ? 0.09 : 0.16 + rnd() * 0.1) * fx.fireSize, hgt, 8, 1, true),
+        new THREE.MeshBasicMaterial({ color: core ? new THREE.Color(6, 4.2, 1.6) : new THREE.Color(4.5, 1.5, 0.35), transparent: true, opacity: (core ? 0.9 : 0.6) * fx.fireBrightness, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      fl.position.set(f[0] + (rnd() - 0.5) * 0.35 * fx.fireSpread, f[1] + hgt * 0.5, f[2] + (rnd() - 0.5) * 0.3 * fx.fireSpread);
       fl.rotation.z = (rnd() - 0.5) * 0.35; fl.rotation.x = (rnd() - 0.5) * 0.3;
       root.add(fl);
     }
   }
   const lvl = o.smokeLevel || 0;
   for (const s of (lvl > 0 ? (o.smokes || []) : [])) {
-    const puffs = 5 + lvl * 6, tone = [0, 0x77736c, 0x3a3835, 0x161514][lvl];
+    const puffs = Math.round((5 + lvl * 6) * fx.smokeRate), tone = new THREE.Color([0, 0x77736c, 0x3a3835, 0x161514][lvl]).multiplyScalar(1 - Math.min(1, fx.smokeDark));
     for (let k = 0; k < puffs; k++) {
-      const u = k / puffs, r = 0.25 + u * (0.6 + lvl * 0.45);
+      const u = k / puffs, r = (0.25 + u * (0.6 + lvl * 0.45)) * fx.smokeSize;
       const puff = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 9), new THREE.MeshLambertMaterial({ color: tone, transparent: true, opacity: (0.55 + lvl * 0.1) * (1 - u * 0.85), depthWrite: false }));
       puff.position.set(s[0] + u * u * (2 + lvl) + (rnd() - 0.5) * 0.3 * (1 + u), s[1] + u * (3 + lvl * 2.2), s[2] + (rnd() - 0.5) * 0.4 * (1 + u));
       puff.castShadow = false; root.add(puff);
