@@ -449,6 +449,7 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("raid-pip").EnableInClassList("ds-pip--diamond", s.RaidKind != AttackKind.Siege);
             Q<Label>("raid-title").text = Names.Attack(s.RaidKind) + " INCOMING";
             _raidDetail.EnableInClassList("is-hidden", !raid);
+            LabelsBehindCard(raid && _raidOpen);
             Q<VisualElement>("raid-command").EnableInClassList("is-hidden", !raid || s.BattleEndTick != 0);
             Q<VisualElement>("raid-command").EnableInClassList("is-on", s.BattleLive);
             Q<Label>("raid-command-label").text = s.BattleLive ? "LIVE // ON" : "TAKE COMMAND";
@@ -566,9 +567,24 @@ namespace Deadswitch.Game.UI.Hud
         /// <summary>Seconds a fully shown advisor line stays expanded before the panel rests as a slim bar.</summary>
         private const float CommsRestSeconds = 6f;
 
+        /// <summary>The building labels step back while the threat card is open, so they never show through it.</summary>
+        private static void LabelsBehindCard(bool behind)
+        {
+            VisualElement world = UiRoot.Instance.World;
+            if (behind)
+            {
+                world.style.opacity = 0.15f;
+            }
+            else if (world.style.opacity.keyword == StyleKeyword.Undefined && world.style.opacity.value < 0.2f && world.style.opacity.value > 0.1f)
+            {
+                world.style.opacity = StyleKeyword.Null;
+            }
+        }
+
         private void SetRaidOpen(bool open)
         {
             _raidOpen = open;
+            LabelsBehindCard(open && !_raidDetail.ClassListContains("is-hidden"));
             _raidDetail.EnableInClassList("is-collapsed", !open);
             if (open)
             {
