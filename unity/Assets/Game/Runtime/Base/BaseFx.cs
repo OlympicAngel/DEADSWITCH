@@ -40,8 +40,22 @@ namespace Deadswitch.Game.Base
 
         public static BaseFx Instance { get; private set; }
 
+        private bool _hidden;
+
         /// <summary>Hides the game's markers in the world (plot rings, links, scans) while the opening film plays.</summary>
-        public bool Hidden { get; set; }
+        public bool Hidden
+        {
+            get => _hidden;
+            set
+            {
+                _hidden = value;
+                if (!value && _host != null && _host.IsReady)
+                {
+                    // back from the film: show the plots as they are now, not at the next tick
+                    Sync();
+                }
+            }
+        }
 
         /// <summary>Highlights the framed slot (-1 clears).</summary>
         public void Focus(int slot)
@@ -123,12 +137,13 @@ namespace Deadswitch.Game.Base
 
             Vector3 core = view.CoreAnchor;
             core.y = 0.6f;
+            int prompt = UI.Base.BaseLabels.NextOpenPlot(s);
             for (int i = 0; i < n; i++)
             {
                 FacilitySlot slot = s.Slots[i];
                 bool free = slot.IsEmpty && s.JobForSlot(i) == null;
                 LineRenderer plot = _plots[i];
-                plot.gameObject.SetActive(free);
+                plot.gameObject.SetActive(free && i == prompt);
                 plot.transform.position = view.SlotGround(i) + new Vector3(0, 0.12f, 0);
 
                 Link link = _links[i];

@@ -59,6 +59,9 @@ namespace Deadswitch.Game.UI.Base
                 _tags[i].Root.EnableInClassList("is-selected", i == slot);
                 _tags[i].Root.EnableInClassList("is-faded", slot >= 0 && i != slot);
             }
+
+            // a quiet open plot shows its label while it is the one selected
+            Refresh();
         }
 
         /// <summary>Marks the plot the opening guide points at (-1 clears).</summary>
@@ -70,12 +73,30 @@ namespace Deadswitch.Game.UI.Base
             }
         }
 
+        /// <summary>
+        /// The one open plot that carries the build prompt (F-108): the first free plot in order, so the prompt moves
+        /// on as each one is built. -1 when none is free. The other open plots stay quiet but still open the picker.
+        /// </summary>
+        public static int NextOpenPlot(GameState s)
+        {
+            for (int i = 0; i < s.Slots.Count; i++)
+            {
+                if (s.Slots[i].IsEmpty && s.JobForSlot(i) == null)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         /// <summary>Updates text and state from the sim (after ticks/commands).</summary>
         public void Refresh()
         {
             GameHost host = GameHost.Instance;
             GameState s = host.Sim.State;
             AddTags(s.Slots.Count);
+            int prompt = NextOpenPlot(s);
             for (int i = 0; i < _tags.Count && i < s.Slots.Count; i++)
             {
                 FacilitySlot slot = s.Slots[i];
@@ -83,6 +104,7 @@ namespace Deadswitch.Game.UI.Base
                 Tag t = _tags[i];
                 bool empty = slot.IsEmpty && job == null;
                 t.Root.EnableInClassList("lbl--empty", empty);
+                t.Root.EnableInClassList("is-quiet", empty && i != prompt && i != _selected);
                 t.Root.EnableInClassList("lbl--off", !slot.IsEmpty && (!slot.Enabled || !slot.Powered));
                 t.Root.EnableInClassList("lbl--warn", !slot.IsEmpty && slot.Enabled && slot.Powered && !slot.Staffed);
                 if (empty)

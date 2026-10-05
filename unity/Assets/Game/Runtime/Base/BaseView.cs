@@ -507,6 +507,9 @@ namespace Deadswitch.Game.Base
             o.Cones.Clear();
             o.Built = true;
             o.Height = 0.5f;
+            // turn the plot for what stands (or is going up) on it: defenses face out, the rest face the yard
+            FacilityKind facing = v.Kind != FacilityKind.None ? v.Kind : v.BuildingKind;
+            o.Root.localRotation = Quaternion.Euler(0, HubScene.SlotYaw(slot, _slots.Count, facing), 0);
 
             Spawn("Pad", new Model { Static = Facilities.Pad(Seed + (uint)slot, (v.Kind == FacilityKind.None && !v.UnderConstruction) || o.Razed) }, Vector3.zero, 0f, o.Root, true);
             if (o.Razed)

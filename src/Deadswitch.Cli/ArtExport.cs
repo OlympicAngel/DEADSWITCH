@@ -35,8 +35,8 @@ namespace Deadswitch.Cli
             for (int i = 0; i < slots; i++)
             {
                 Vector3 pos = HubScene.SlotPosition(i, slots);
-                float yaw = HubScene.SlotYaw(i, slots);
                 SlotView v = layout != null ? layout[i] : SlotView.From(sim.State, i);
+                float yaw = HubScene.SlotYaw(i, slots, v.Kind);
                 AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i, v.Kind == FacilityKind.None && !v.UnderConstruction) }, pos, yaw, true, false);
                 if (v.Kind != FacilityKind.None)
                 {

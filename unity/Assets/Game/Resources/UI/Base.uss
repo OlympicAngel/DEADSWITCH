@@ -48,6 +48,8 @@
 .lbl--empty { background-color: var(--c-panel-sunken); border-top-color: var(--c-cyan-line); }
 .lbl--empty > .ds-corner { border-color: var(--c-text-faint); }
 .lbl--empty .lbl__name { color: var(--c-cyan-dim); }
+/* only the next open plot carries the build prompt (F-108); the others stay quiet until selected */
+.lbl.is-quiet { visibility: hidden; }
 .lbl--empty .lbl__level { color: var(--c-cyan); }
 .lbl--warn { border-top-color: var(--c-amber); }
 .lbl--warn .lbl__level { color: var(--c-amber); }

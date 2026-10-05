@@ -139,6 +139,24 @@ namespace Deadswitch.Art.World
             return new Vector3((k % 2 == 0 ? -1 : 1) * 4.6f, 0, 3.2f - ((k / 2) * 7f));
         }
 
+        /// <summary>
+        /// Yaw (degrees) for a facility of <paramref name="kind"/> on a plot (F-108): defenses (turrets, drone bays,
+        /// motor pools) face outward, away from the core, toward where attacks come from; everything else faces the
+        /// camera side of the courtyard (<see cref="SlotYaw(int, int)"/>).
+        /// </summary>
+        public static float SlotYaw(int slot, int slotCount, FacilityKind kind)
+        {
+            if (kind != FacilityKind.Turret && kind != FacilityKind.DroneBay && kind != FacilityKind.MotorPool)
+            {
+                return SlotYaw(slot, slotCount);
+            }
+
+            Vector3 p = SlotPosition(slot, slotCount);
+            Vector3 f = p - new Vector3(0, 0, Core.DoorPoint.Z);
+            f.Y = 0;
+            return (float)(Math.Atan2(-f.X, -f.Z) * 180.0 / Math.PI);
+        }
+
         /// <summary>Yaw (degrees) that turns a facility's front (-Z) toward the camera side of the courtyard.</summary>
         public static float SlotYaw(int slot, int slotCount)
         {
