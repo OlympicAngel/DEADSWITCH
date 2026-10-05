@@ -312,7 +312,8 @@ namespace Deadswitch.Art.Models
         {
             for (int i = 0; i < count; i++)
             {
-                Mat mat = rng.Next() < 0.35f ? Mat.PaintRed : (rng.Next() < 0.5f ? Mat.OliveSteel : Mat.Rust);
+                float pick = rng.Next();
+                Mat mat = pick < 0.3f ? Mat.PaintRed : pick < 0.5f ? Mat.PaintBlue : pick < 0.62f ? Mat.PaintYellow : pick < 0.82f ? Mat.OliveSteel : Mat.Rust;
                 var p = at + new Vector3((i % 3) * 0.62f + rng.Range(-0.05f, 0.05f), 0, (i / 3) * 0.62f + rng.Range(-0.05f, 0.05f));
                 KitParts.Barrel(b, p, mat, rng.Next() < 0.15f);
             }

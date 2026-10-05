@@ -180,8 +180,8 @@ namespace Deadswitch.Art.Models
             // exhaust stacks behind the hall, fed through the back wall
             Stack(b, m, new Vector3(-2.35f, 0, 2.95f), 0.24f, 6.4f, level >= 5);
             Stack(b, m, new Vector3(-1.5f, 0, 3.0f), 0.18f, 5.0f, false);
-            KitParts.Pipe(b, new[] { new Vector3(-1.9f, 1.9f, 2.6f), new Vector3(-1.9f, 1.9f, 2.95f), new Vector3(-2.12f, 1.9f, 2.95f) }, 0.1f, Mat.Rust);
-            KitParts.Pipe(b, new[] { new Vector3(-1.1f, 1.6f, 2.6f), new Vector3(-1.1f, 1.6f, 3.0f), new Vector3(-1.32f, 1.6f, 3.0f) }, 0.08f, Mat.Rust);
+            KitParts.Pipe(b, new[] { new Vector3(-1.9f, 1.9f, 2.6f), new Vector3(-1.9f, 1.9f, 2.95f), new Vector3(-2.12f, 1.9f, 2.95f) }, 0.1f, Mat.Copper);
+            KitParts.Pipe(b, new[] { new Vector3(-1.1f, 1.6f, 2.6f), new Vector3(-1.1f, 1.6f, 3.0f), new Vector3(-1.32f, 1.6f, 3.0f) }, 0.08f, Mat.Copper);
 
             // fuel tank feeding the hall over the roof
             KitParts.TankV(b, new Vector3(2.65f, 0, 1.55f), 0.5f, 2.3f, Mat.SandSteel, seed + 3);
@@ -242,7 +242,7 @@ namespace Deadswitch.Art.Models
             {
                 // a third, heavier stack and a pole feeding the transformer yard
                 Stack(b, m, new Vector3(-0.55f, 0, 3.05f), 0.3f, 7.8f, true);
-                KitParts.Pipe(b, new[] { new Vector3(-0.55f, 2.2f, 2.6f), new Vector3(-0.55f, 2.2f, 2.75f) }, 0.12f, Mat.Rust);
+                KitParts.Pipe(b, new[] { new Vector3(-0.55f, 2.2f, 2.6f), new Vector3(-0.55f, 2.2f, 2.75f) }, 0.12f, Mat.Copper);
                 Vector3 pole = new Vector3(0.5f, 0, -2.9f);
                 b.Frustum(pole, 0.13f, 0.1f, 6.2f, 8, Mat.Wood, 0.02f);
                 b.Strut(pole + new Vector3(-0.9f, 5.7f, 0), pole + new Vector3(0.9f, 5.7f, 0), 0.1f, Mat.Wood);
