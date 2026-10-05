@@ -210,7 +210,8 @@ namespace Deadswitch.Game.UI.Screens
             int ce = AdaptSystem.Counter(s, c, Posture.Evacuate);
             Q<Label>("posture-turtle-fx").text = "+" + System.Math.Max(0, c.Defense.TurtleDefensePct - ct) + "% DEFENSE" + (ct > 0 ? " // THEY BRING CHARGES" : string.Empty);
             Q<Label>("posture-dark-fx").text = System.Math.Max(0, c.Defense.DarkMissPct - cd) + "% MISS // -" + Fmt.Num(c.Defense.DarkUpkeepPerHour) + "/H ENERGY" + (cd > 0 ? " // THEY SWEEP" : string.Empty);
-            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + System.Math.Min(100, c.Defense.EvacuateLootPct + ce) + "%" + (ce > 0 ? " // THEY HUNT CACHES" : string.Empty);
+            Q<Label>("posture-evacuate-fx").text = "NO CASUALTIES // LOOT x" + System.Math.Min(300, c.Defense.EvacuateLootPct + ce) + "%" + (ce > 0 ? " // THEY HUNT CACHES" : string.Empty)
+                + (HeldOutposts(s) > 0 ? " // AN OUTPOST COVERS THE HUB" : string.Empty);
             Q<Label>("posture-turtle-fx").EnableInClassList("t-amber", ct > 0);
             Q<Label>("posture-dark-fx").EnableInClassList("t-amber", cd > 0);
             Q<Label>("posture-evacuate-fx").EnableInClassList("t-amber", ce > 0);
@@ -374,6 +375,17 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             band.EnableInClassList("t-dim", tone == "dim");
+        }
+
+        private static int HeldOutposts(GameState s)
+        {
+            int n = 0;
+            foreach (SiteState site in s.Sites)
+            {
+                n += site.Outpost ? 1 : 0;
+            }
+
+            return n;
         }
 
         /// <summary>True when the warning for the current attack named its forces (SPEC-035).</summary>
