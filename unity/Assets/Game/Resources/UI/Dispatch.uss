@@ -9,9 +9,9 @@
 .dsp-world.is-hidden { display: none; }
 .dsp-world__head { margin-bottom: var(--s-2); }
 .dsp-world__pip { margin-left: var(--s-3); }
-.dsp-world__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-amber); }
+.dsp-world__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-amber); }
 .dsp-world__desc { font-size: var(--fs-xs); white-space: normal; }
-.dsp-kicker { letter-spacing: 3px; margin-bottom: 2px; }
+.dsp-kicker { letter-spacing: var(--ls-label); margin-bottom: 2px; }
 
 .dsp-card.is-hidden { display: none; }
 .dsp-card--threat { border-width: var(--bw); }
@@ -49,7 +49,7 @@
 .dsp-choice--safe .dsp-choice__icon { --icon-color: var(--c-text-dim); }
 .dsp-choice__text { flex-grow: 1; flex-shrink: 1; }
 .dsp-choice__go { width: 30px; height: 30px; margin-left: var(--s-2); --icon-color: var(--c-text-dim); }
-.dsp-choice__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-amber); }
+.dsp-choice__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-amber); }
 .dsp-choice--safe > .dsp-choice__text > .dsp-choice__label { color: var(--c-text); }
 .dsp-choice__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
 

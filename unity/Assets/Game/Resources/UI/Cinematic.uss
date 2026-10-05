@@ -3,7 +3,7 @@
 .cine-bar { height: 0; background-color: var(--c-world); overflow: hidden; }
 .cine-bar--top { border-bottom-width: 2px; border-color: var(--c-red-glow); }
 .cine-bar--bottom { border-top-width: 2px; border-color: var(--c-red-glow); justify-content: center; align-items: flex-end; padding-right: var(--s-6); }
-.cine-skip { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 4px; color: var(--c-text-faint); }
+.cine-skip { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-text-faint); }
 
 .cine-card {
     position: absolute;
@@ -22,7 +22,7 @@
 .cine-card__pip { width: 40px; height: 40px; margin-right: var(--s-5); }
 .cine-card__kind { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-hero); letter-spacing: 14px; color: var(--c-amber); text-shadow: 0 0 18px var(--c-amber-glow); }
 .cine-card--red .cine-card__kind { color: var(--c-red); text-shadow: 0 0 18px var(--c-red-glow); }
-.cine-card__line { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); letter-spacing: 4px; color: var(--c-text); margin-top: var(--s-2); }
+.cine-card__line { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); letter-spacing: var(--ls-wide); color: var(--c-text); margin-top: var(--s-2); }
 
 .cine-stamp {
     position: absolute;

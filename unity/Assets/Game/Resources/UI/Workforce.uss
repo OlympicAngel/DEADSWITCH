@@ -10,7 +10,7 @@
 .wf-tile--last { margin-right: 0; }
 .wf-tile__icon { width: 36px; height: 36px; --icon-color: var(--c-cyan); }
 .wf-tile__value { min-height: 66px; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-lg); color: var(--c-text); margin-top: var(--s-1); }
-.wf-tile__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); }
+.wf-tile__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
 
 .wf-loyalty__pct { min-height: 50px; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); margin-left: var(--s-3); }
 .wf-note { font-size: var(--fs-micro); margin-top: var(--s-3); white-space: normal; }

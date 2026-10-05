@@ -7,13 +7,13 @@
 
 .core-settings { flex-direction: row; align-items: center; min-height: var(--touch); padding: 0 var(--s-4); justify-content: center; border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-line); background-color: var(--c-cyan-wash); }
 .core-settings__icon { width: 36px; height: 36px; margin-right: var(--s-2); --icon-color: var(--c-cyan); }
-.core-settings__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 3px; color: var(--c-cyan); }
+.core-settings__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); }
 
 .core-seg { flex-direction: row; margin: var(--s-3) var(--s-6) 0 var(--s-6); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-line); background-color: var(--c-elev-1); }
 .core-seg__item { flex-grow: 1; flex-basis: 0; min-height: var(--touch); align-items: center; justify-content: center; border-right-width: 1px; border-color: var(--c-cyan-line); }
 .core-seg__item.is-last { border-right-width: 0; }
 .core-seg__item.is-selected { background-color: var(--c-cyan-wash); border-bottom-width: 3px; border-bottom-color: var(--c-cyan); }
-.core-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 4px; color: var(--c-text-dim); }
+.core-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-wide); color: var(--c-text-dim); }
 .core-seg__item.is-selected > .core-seg__label { color: var(--c-cyan); }
 
 /* ---------- Final window ---------- */
@@ -38,14 +38,14 @@
 .core-pills { margin-top: var(--s-4); align-items: stretch; }
 .core-pill { flex-grow: 1; flex-basis: 0; align-items: center; margin: 0 var(--s-1); padding: var(--s-3) var(--s-2); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan-line); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-2); }
 .core-pill__icon { width: 36px; height: 36px; --icon-color: var(--c-cyan); }
-.core-pill__key { font-size: var(--fs-micro); letter-spacing: 1px; color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; -unity-text-align: middle-center; }
+.core-pill__key { font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; -unity-text-align: middle-center; }
 .core-kv__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text); margin-top: var(--s-1); -unity-text-align: middle-center; }
 
 /* ---------- Links and cards ---------- */
 .core-links { align-items: stretch; margin-bottom: var(--s-4); }
 .core-link { flex-direction: column; flex-basis: 0; margin: 0 var(--s-1); padding: var(--s-3) var(--s-2); border-color: var(--c-violet-dim); background-color: var(--c-violet-wash); }
 .core-link__icon { width: 44px; height: 44px; margin-bottom: var(--s-1); --icon-color: var(--c-violet); }
-.core-link > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text); white-space: normal; -unity-text-align: middle-center; }
+.core-link > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text); white-space: normal; -unity-text-align: middle-center; }
 .core-link.is-new { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .core-link.is-new > .ds-btn__label { color: var(--c-amber); }
 .core-crisis { margin-top: 0; }

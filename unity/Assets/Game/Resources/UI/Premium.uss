@@ -9,7 +9,7 @@
 
 /* the offer */
 .prm-card { padding-bottom: var(--s-5); }
-.prm-state { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); letter-spacing: 2px; margin-top: 2px; }
+.prm-state { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); margin-top: 2px; }
 .prm-state.t-amber { color: var(--c-amber); }
 .prm-state.t-phosphor { color: var(--c-phosphor); }
 .prm-group { margin-top: var(--s-3); margin-bottom: var(--s-2); }
@@ -37,7 +37,7 @@
 .prm-theme.is-selected .prm-theme__tick { display: flex; }
 .prm-theme.is-locked .prm-theme__lock { display: flex; }
 .prm-theme.is-locked .prm-theme__tick { display: none; }
-.prm-theme__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 1px; color: var(--c-text-dim); margin-top: var(--s-2); white-space: normal; -unity-text-align: middle-center; }
+.prm-theme__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-text-dim); margin-top: var(--s-2); white-space: normal; -unity-text-align: middle-center; }
 .prm-theme.is-selected .prm-theme__label { color: var(--c-text); }
 .prm-swatch { width: 56px; height: 16px; border-radius: var(--r-sm); }
 .prm-swatch--phosphor { background-color: #A8D58A; }
@@ -47,7 +47,7 @@
 .prm-swatch--ash { background-color: #B9BEC6; }
 .prm-note { margin-top: var(--s-3); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; }
 .prm-note--first { margin-top: 0; }
-.prm-ad > .ds-btn__label { font-size: var(--fs-xs); letter-spacing: 2px; white-space: normal; -unity-text-align: middle-center; }
+.prm-ad > .ds-btn__label { font-size: var(--fs-xs); letter-spacing: var(--ls-label); white-space: normal; -unity-text-align: middle-center; }
 .prm-stack { margin-top: var(--s-2); }
 
 /* season link */

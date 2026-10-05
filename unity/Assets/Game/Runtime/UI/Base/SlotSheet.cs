@@ -37,6 +37,7 @@ namespace Deadswitch.Game.UI.Base
             _root.AddToClassList("ds-sheet");
             _root.AddToClassList("sheet");
             _root.AddToClassList("is-hidden");
+            Sheen.Attach(_root);
             var grip = new VisualElement();
             grip.AddToClassList("ds-sheet__grip");
             _root.Add(grip);

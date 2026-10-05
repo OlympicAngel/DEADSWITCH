@@ -18,6 +18,7 @@ namespace Deadswitch.Game.UI
             root.Query(className: "ds-meter").ForEach(BuildMeter);
             root.Query().ForEach(MarkEnds);
             Pager.Decorate(root);
+            Sheen.Decorate(root);
         }
 
         /// <summary>
@@ -121,6 +122,12 @@ namespace Deadswitch.Game.UI
             }
 
             b.Add(Label(text, "ds-btn__label"));
+            Sheen.Attach(b);
+            if (b.ClassListContains("ds-btn--primary"))
+            {
+                Choreo.Shimmer(b);
+            }
+
             b.RegisterCallback<ClickEvent>(_ =>
             {
                 if (!b.ClassListContains("is-disabled"))
@@ -157,6 +164,7 @@ namespace Deadswitch.Game.UI
 
             head.Add(titles);
             card.Add(head);
+            Sheen.Attach(card);
             return card;
         }
 
@@ -202,6 +210,7 @@ namespace Deadswitch.Game.UI
                 t.AddToClassList(c);
             }
 
+            Sheen.Attach(t);
             t.Add(Icons.Create(glyph, "ds-tile__icon"));
             t.Add(Label(label, "ds-tile__label"));
             if (!string.IsNullOrEmpty(cost))

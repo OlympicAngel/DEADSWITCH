@@ -15,9 +15,9 @@
 
 .ssn-pass { padding: var(--s-3) var(--s-4); }
 .ssn-pass__head { margin-bottom: 0; }
-.ssn-pass__title { font-size: var(--fs-xs); letter-spacing: 2px; white-space: normal; }
+.ssn-pass__title { font-size: var(--fs-xs); letter-spacing: var(--ls-label); white-space: normal; }
 .ssn-buy { width: 220px; margin-left: var(--s-3); padding: 0 var(--s-3); }
-.ssn-buy > .ds-btn__label { font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-violet); }
+.ssn-buy > .ds-btn__label { font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-violet); }
 .ssn-buy { border-color: var(--c-violet); background-color: var(--c-violet-wash); }
 
 /* reward rows: rank plate, kind icon, name + state, optional equip */
@@ -26,7 +26,7 @@
 .ssn-r__well { width: 56px; height: 56px; flex-shrink: 0; align-items: center; justify-content: center; margin-right: var(--s-3); border-radius: var(--r-md); border-width: 1px; border-color: var(--c-line); background-color: var(--c-panel-sunken); }
 .ssn-r__icon { width: 34px; height: 34px; --icon-color: var(--c-text-faint); }
 .ssn-r__body { flex-shrink: 1; flex-basis: 0; }
-.ssn-r__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text-dim); white-space: normal; }
+.ssn-r__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text-dim); white-space: normal; }
 .ssn-r__state { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-faint); margin-top: var(--s-1); white-space: normal; }
 .ssn-r__codex { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text); margin-top: var(--s-2); white-space: normal; }
 .ssn-r__btn { width: 160px; margin-left: var(--s-3); padding: 0 var(--s-2); }

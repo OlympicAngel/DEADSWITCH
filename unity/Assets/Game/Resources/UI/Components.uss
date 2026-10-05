@@ -4,26 +4,27 @@
 .ds-display {
     -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
     font-size: var(--fs-lg);
-    letter-spacing: 3px;
+    letter-spacing: var(--ls-label);
     color: var(--c-text);
 }
 
 .ds-title {
     -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
     font-size: var(--fs-md);
-    letter-spacing: 4px;
+    letter-spacing: var(--ls-wide);
     color: var(--c-text);
 }
 
 .ds-label {
     -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
     font-size: var(--fs-micro);
-    letter-spacing: 4px;
+    letter-spacing: var(--ls-wide);
     color: var(--c-text-dim);
 }
 
 .ds-body {
-    font-size: var(--fs-sm);
+    -unity-font-definition: resource("Fonts/ChakraPetch-Regular");
+    font-size: var(--fs-xs);
     color: var(--c-text);
     white-space: normal;
 }
@@ -73,11 +74,12 @@
 
 /* ---------- Panel with corner brackets ---------- */
 .ds-panel {
-    background-color: var(--c-panel);
-    border-width: 1px;
-    border-color: var(--c-line);
-    border-radius: var(--r-sm);
-    padding: var(--s-4) var(--s-5);
+    background-color: var(--c-elev-1);
+    border-width: 0;
+    border-top-width: 1px;
+    border-color: var(--c-edge-hi);
+    border-radius: var(--r-lg);
+    padding: var(--s-5);
 }
 
 .ds-panel--raised { background-color: var(--c-panel-raised); }
@@ -85,9 +87,9 @@
 
 .ds-corner {
     position: absolute;
-    width: var(--corner);
-    height: var(--corner);
-    border-color: var(--c-line-strong);
+    width: 14px;
+    height: 14px;
+    border-color: var(--c-cyan-dim);
 }
 
 .ds-corner--tl { left: -1px; top: -1px; border-left-width: var(--bw); border-top-width: var(--bw); }
@@ -95,9 +97,9 @@
 .ds-corner--bl { left: -1px; bottom: -1px; border-left-width: var(--bw); border-bottom-width: var(--bw); }
 .ds-corner--br { right: -1px; bottom: -1px; border-right-width: var(--bw); border-bottom-width: var(--bw); }
 
-.ds-panel--amber { border-color: var(--c-amber-dim); }
+.ds-panel--amber { border-left-width: 6px; border-color: var(--c-amber); border-top-color: var(--c-edge-hi); }
 .ds-panel--amber > .ds-corner { border-color: var(--c-amber); }
-.ds-panel--red { border-color: var(--c-red-glow); }
+.ds-panel--red { border-left-width: 6px; border-color: var(--c-red); border-top-color: var(--c-edge-hi); }
 .ds-panel--red > .ds-corner { border-color: var(--c-red); }
 
 .ds-panel__header {
@@ -112,40 +114,40 @@
     margin: var(--s-3) 0;
 }
 
-/* ---------- Buttons ---------- */
+/* ---------- Buttons v2 (SPEC-041): tonal surfaces, one clear primary, accents as a left bar not a box ---------- */
 .ds-btn {
     flex-direction: row;
     align-items: center;
     justify-content: center;
     min-height: var(--touch);
     padding: 0 var(--s-6);
-    border-width: var(--bw);
-    border-radius: var(--r-sm);
-    border-color: var(--c-line-strong);
-    background-color: rgba(168, 213, 138, 0.08);
+    border-width: 0;
+    border-radius: var(--r-lg);
+    background-color: var(--c-elev-2);
+    --sheen-color: var(--c-sheen-strong);
     transition-property: scale, background-color, border-color;
     transition-duration: 0.12s;
     transition-timing-function: ease-out-cubic;
 }
 
-.ds-btn:hover { background-color: rgba(168, 213, 138, 0.14); }
-.ds-btn:active { scale: 0.97 0.97; background-color: rgba(168, 213, 138, 0.22); }
+.ds-btn:hover { background-color: var(--c-panel-raised); }
+.ds-btn:active { scale: 0.97 0.97; }
 
 .ds-btn__label {
     -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
     font-size: var(--fs-sm);
-    letter-spacing: 4px;
-    color: var(--c-phosphor);
+    letter-spacing: var(--ls-label);
+    color: var(--c-text);
 }
 
-.ds-btn--primary { background-color: var(--c-phosphor); border-color: var(--c-phosphor); }
-.ds-btn--primary:hover { background-color: #B9E29C; }
+.ds-btn--primary { background-color: var(--c-cyan); --sheen-color: rgba(255, 255, 255, 0.28); }
+.ds-btn--primary:hover { background-color: var(--c-cyan); }
 .ds-btn--primary > .ds-btn__label { color: var(--c-world); }
 
-.ds-btn--warn { border-color: var(--c-amber); background-color: rgba(232, 180, 92, 0.12); }
+.ds-btn--warn { background-color: var(--c-amber-wash); border-left-width: 6px; border-color: var(--c-amber); }
 .ds-btn--warn > .ds-btn__label { color: var(--c-amber); }
 
-.ds-btn--ghost { border-color: var(--c-line-mid); background-color: rgba(0, 0, 0, 0); }
+.ds-btn--ghost { background-color: rgba(0, 0, 0, 0); border-width: 1px; border-color: var(--c-line-mid); --sheen-color: rgba(0, 0, 0, 0); }
 .ds-btn--ghost > .ds-btn__label { color: var(--c-text-dim); }
 
 .ds-btn.is-disabled { opacity: 0.38; }
@@ -183,7 +185,7 @@
 .ds-chip__label {
     -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
     font-size: var(--fs-micro);
-    letter-spacing: 3px;
+    letter-spacing: var(--ls-label);
     color: var(--c-text-dim);
 }
 
@@ -248,7 +250,7 @@
 .ds-tab__label {
     -unity-font-definition: resource("Fonts/ChakraPetch-Bold");
     font-size: var(--fs-micro);
-    letter-spacing: 4px;
+    letter-spacing: var(--ls-wide);
     color: var(--c-text-dim);
 }
 
@@ -334,52 +336,50 @@
 
 .ds-head__icon { width: 44px; height: 44px; --icon-color: var(--c-cyan); }
 .ds-head__body { flex-grow: 1; flex-shrink: 1; }
-.ds-head__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: 4px; color: var(--c-text); }
-.ds-head__status { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-cyan); margin-top: 2px; }
+.ds-head__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: var(--ls-wide); color: var(--c-text); }
+.ds-head__status { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); margin-top: 2px; }
 
-/* ---------- Card: a raised group with an icon header ---------- */
+/* ---------- Card v2: tone and light instead of outlines (SPEC-041) ---------- */
 .ds-card {
     background-color: var(--c-elev-1);
-    border-width: 1px;
-    border-radius: var(--r-md);
-    border-color: var(--c-line);
-    border-top-color: var(--c-edge-hi);
-    border-bottom-color: var(--c-edge-lo);
-    padding: var(--s-4);
+    border-width: 0;
+    border-top-width: 1px;
+    border-radius: var(--r-lg);
+    border-color: var(--c-edge-hi);
+    padding: var(--s-5);
     margin-bottom: var(--s-4);
+    --sheen-color: var(--c-sheen);
 }
 
 .ds-card--raised { background-color: var(--c-elev-2); }
-.ds-card--holo { background-color: var(--c-glass); border-color: var(--c-cyan-line); border-top-color: var(--c-cyan-dim); }
-.ds-card--amber { border-color: var(--c-amber-dim); border-top-color: var(--c-amber); background-color: var(--c-amber-wash); }
-.ds-card--red { border-color: var(--c-red-glow); border-top-color: var(--c-red); background-color: var(--c-red-wash); }
-.ds-card--violet { border-color: var(--c-violet-dim); border-top-color: var(--c-violet); background-color: var(--c-violet-wash); }
+.ds-card--holo { background-color: var(--c-glass); border-top-color: var(--c-cyan-dim); --sheen-color: var(--c-cyan-wash); }
+.ds-card--amber { border-left-width: 6px; border-color: var(--c-amber); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-1); --sheen-color: var(--c-amber-wash); }
+.ds-card--red { border-left-width: 6px; border-color: var(--c-red); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-1); --sheen-color: var(--c-red-wash); }
+.ds-card--violet { border-left-width: 6px; border-color: var(--c-violet); border-top-color: var(--c-edge-hi); background-color: var(--c-elev-1); --sheen-color: var(--c-violet-wash); }
 
-.ds-card__head { flex-direction: row; align-items: center; margin-bottom: var(--s-3); }
+.ds-card__head { flex-direction: row; align-items: center; margin-bottom: var(--s-4); }
 .ds-card__well {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     align-items: center;
     justify-content: center;
-    margin-right: var(--s-3);
-    border-radius: var(--r-md);
+    margin-right: var(--s-4);
+    border-radius: var(--r-lg);
     background-color: var(--c-cyan-wash);
-    border-width: 1px;
-    border-color: var(--c-cyan-line);
 }
 
 .ds-card__icon { width: 34px; height: 34px; --icon-color: var(--c-cyan); }
-.ds-card--amber .ds-card__well { background-color: var(--c-amber-wash); border-color: var(--c-amber-dim); }
+.ds-card--amber .ds-card__well { background-color: var(--c-amber-wash); }
 .ds-card--amber .ds-card__icon { --icon-color: var(--c-amber); }
-.ds-card--red .ds-card__well { background-color: var(--c-red-wash); border-color: var(--c-red); }
+.ds-card--red .ds-card__well { background-color: var(--c-red-wash); }
 .ds-card--red .ds-card__icon { --icon-color: var(--c-red); }
-.ds-card--violet .ds-card__well { background-color: var(--c-violet-wash); border-color: var(--c-violet-dim); }
+.ds-card--violet .ds-card__well { background-color: var(--c-violet-wash); }
 .ds-card--violet .ds-card__icon { --icon-color: var(--c-violet); }
 
 .ds-card__titles { flex-grow: 1; flex-shrink: 1; }
-.ds-card__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-text); }
-.ds-card__sub { font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: 2px; }
-.ds-card__body { font-size: var(--fs-xs); color: var(--c-text); white-space: normal; margin-bottom: var(--s-3); }
+.ds-card__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-text); }
+.ds-card__sub { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-top: 2px; }
+.ds-card__body { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); color: var(--c-text); white-space: normal; margin-bottom: var(--s-3); }
 
 /* ---------- Section label between cards ---------- */
 .ds-section {
@@ -389,7 +389,7 @@
 }
 
 .ds-section__icon { width: 26px; height: 26px; margin-right: var(--s-2); --icon-color: var(--c-cyan-dim); }
-.ds-section__title { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: 5px; color: var(--c-text-dim); }
+.ds-section__title { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-text-dim); }
 .ds-section__rule { flex-grow: 1; height: 1px; margin-left: var(--s-3); background-color: var(--c-cyan-line); }
 
 /* ---------- Progress bar with a glowing head ---------- */
@@ -461,11 +461,12 @@
     justify-content: center;
     margin: 0 var(--s-1);
     padding: var(--s-2) var(--s-1);
-    border-width: 1px;
-    border-radius: var(--r-md);
-    border-color: var(--c-cyan-line);
-    border-top-color: var(--c-edge-hi);
+    border-width: 0;
+    border-top-width: 1px;
+    border-radius: var(--r-lg);
+    border-color: var(--c-edge-hi);
     background-color: var(--c-elev-2);
+    --sheen-color: var(--c-sheen-strong);
     transition-property: scale, background-color, border-color;
     transition-duration: 0.12s;
     transition-timing-function: ease-out-cubic;
@@ -473,10 +474,10 @@
 
 .ds-tile:active { scale: 0.95 0.95; background-color: var(--c-cyan-wash); }
 .ds-tile__icon { width: 44px; height: 44px; --icon-color: var(--c-cyan); }
-.ds-tile__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: 2px; color: var(--c-text); margin-top: var(--s-1); }
+.ds-tile__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text); margin-top: var(--s-1); }
 .ds-tile__cost { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); }
-.ds-tile--primary { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
-.ds-tile--warn { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.ds-tile--primary { border-top-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.ds-tile--warn { border-top-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .ds-tile--warn > .ds-tile__icon { --icon-color: var(--c-amber); }
 .ds-tile.is-disabled { opacity: 0.8; border-color: var(--c-line-mid); background-color: var(--c-elev-1); }
 .ds-tile.is-disabled > .ds-tile__icon { --icon-color: var(--c-text-dim); }
@@ -509,7 +510,7 @@
 
 .ds-toast.is-gone { opacity: 0; translate: 0 -24px; }
 .ds-toast__icon { width: 36px; height: 36px; margin-right: var(--s-2); --icon-color: var(--c-cyan); }
-.ds-toast__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-text); }
+.ds-toast__label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text); }
 .ds-toast--good { border-left-color: var(--c-phosphor); }
 .ds-toast--good > .ds-toast__icon { --icon-color: var(--c-phosphor); }
 .ds-toast--warn { border-left-color: var(--c-amber); }
@@ -527,7 +528,7 @@
 /* ---------- Long-press hint card (SPEC-039 idea 59) ---------- */
 .hint { position: absolute; width: 600px; padding: var(--s-3) var(--s-4); border-width: 1px; border-radius: var(--r-md); border-color: var(--c-cyan); background-color: var(--c-elev-2); }
 .hint.is-hidden { display: none; }
-.hint__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-cyan); }
+.hint__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-cyan); }
 .hint__body { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: var(--s-1); }
 
 /* ---------- Motion kit (SPEC-040): ripples clip inside their control; primary actions shimmer ---------- */
@@ -541,13 +542,13 @@
 .ds-pager__tabs { flex-direction: row; margin-bottom: var(--s-4); border-bottom-width: 1px; border-color: var(--c-line); flex-shrink: 0; }
 .ds-pager__tab { flex-grow: 1; flex-basis: 0; min-height: 96px; align-items: center; justify-content: center; padding: var(--s-1) var(--s-1); }
 .ds-pager__icon { width: 34px; height: 34px; margin-bottom: 2px; --icon-color: var(--c-text-dim); }
-.ds-pager__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: 18px; letter-spacing: 3px; color: var(--c-text-dim); }
+.ds-pager__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-dim); }
 .ds-pager__tab.is-active .ds-pager__label { color: var(--c-cyan); }
 .ds-pager__tab.is-active .ds-pager__icon { --icon-color: var(--c-cyan); }
 .ds-pager__rail { position: absolute; bottom: -2px; height: 4px; left: 0; width: 0; background-color: var(--c-cyan); }
 .ds-pager__badge { position: absolute; top: 6px; right: 12px; min-width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; background-color: var(--c-amber); }
 .ds-pager__badge.is-hidden { display: none; }
-.ds-pager__badge-label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: 16px; color: var(--c-world); }
+.ds-pager__badge-label { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-world); }
 .ds-page { flex-shrink: 0; }
 .ds-page__title, .ds-page__glyph { display: none; }
 
@@ -556,3 +557,7 @@
 .ds-card.is-folded > .ds-card__head { margin-bottom: 0; }
 .ds-fold__chev { width: 30px; height: 30px; margin-left: var(--s-2); --icon-color: var(--c-text-dim); transition-property: rotate; transition-duration: 0.2s; }
 .ds-card.is-folded { padding-top: var(--s-2); padding-bottom: var(--s-2); }
+
+/* ---------- Depth: sheen and scrims (SPEC-041, drawn by UI/Sheen) ---------- */
+.ds-sheen { --sheen-reach: 0.6; }
+.ds-scrim { position: absolute; left: 0; right: 0; --sheen-color: var(--c-scrim-edge); --sheen-reach: 1; }

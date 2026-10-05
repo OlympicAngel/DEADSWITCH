@@ -159,6 +159,14 @@ for (const el of document.querySelectorAll('.ds-icon')) {
   const s = Math.min(el.clientWidth, el.clientHeight), col = getComputedStyle(el).getPropertyValue('--icon-color').trim();
   el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="'+Math.min(5,Math.max(2,s*0.07))+'" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
 }
+// Sheen.cs mirror: top light on surfaces, edge darkening on scrims
+for (const sel of ['.ds-card', '.ds-tile', '.ds-btn', '.pod', '.hud-advisor', '.ds-sheet', '.ds-scrim']) for (const el of document.querySelectorAll(sel)) {
+  const st = getComputedStyle(el); const col = st.getPropertyValue('--sheen-color').trim(); if (!col) continue;
+  const reach = parseFloat(st.getPropertyValue('--sheen-reach')) || (sel === '.ds-scrim' ? 1 : 0.6);
+  const up = el.classList.contains('ds-scrim--up');
+  const g = up ? 'linear-gradient(to top, ' + col + ' 0%, transparent ' + (reach * 100) + '%)' : 'linear-gradient(to bottom, ' + col + ' 0%, transparent ' + (reach * 100) + '%)';
+  el.style.backgroundImage = g;
+}
 // AiOrb.cs / AiWave mirror (a still frame)
 for (const el of document.querySelectorAll('.ai-orb')) {
   const st = getComputedStyle(el), ring = st.getPropertyValue('--ring-color').trim() || v('--c-cyan'), core = st.getPropertyValue('--core-color').trim() || v('--c-cyan-glow');
