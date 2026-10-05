@@ -47,6 +47,18 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.MotorPool:
                     Military.MotorPool(b, m, level, seed);
                     break;
+                case FacilityKind.SolarField:
+                    Utilities.SolarField(b, m, level, seed);
+                    break;
+                case FacilityKind.FuelDepot:
+                    Utilities.FuelDepot(b, m, level, seed);
+                    break;
+                case FacilityKind.CoolingTower:
+                    Utilities.CoolingTower(b, m, level, seed);
+                    break;
+                case FacilityKind.MemoryChamber:
+                    Utilities.MemoryChamber(b, m, level, seed);
+                    break;
             }
 
             b.Pop();

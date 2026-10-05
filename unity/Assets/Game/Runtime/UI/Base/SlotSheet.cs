@@ -18,7 +18,8 @@ namespace Deadswitch.Game.UI.Base
     {
         private static readonly FacilityKind[] Buildable =
         {
-            FacilityKind.Generator, FacilityKind.ServerRack, FacilityKind.BatteryBank, FacilityKind.LifeSupport, FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool, FacilityKind.Reactor,
+            FacilityKind.Generator, FacilityKind.SolarField, FacilityKind.ServerRack, FacilityKind.BatteryBank, FacilityKind.FuelDepot, FacilityKind.LifeSupport,
+            FacilityKind.Turret, FacilityKind.DroneBay, FacilityKind.MotorPool, FacilityKind.CoolingTower, FacilityKind.MemoryChamber, FacilityKind.Reactor,
         };
 
         private readonly VisualElement _root;

@@ -19,6 +19,10 @@ namespace Deadswitch.Game.Presentation
                 case FacilityKind.Turret: return Fmt.Num(value) + " DEFENSE";
                 case FacilityKind.DroneBay: return Fmt.Num(value) + " DRONE DEFENSE";
                 case FacilityKind.MotorPool: return Fmt.Num(value) + " VEHICLE DEFENSE";
+                case FacilityKind.SolarField: return "+" + Fmt.Num(value) + " ENERGY/H BY DAY";
+                case FacilityKind.FuelDepot: return "+" + Fmt.Num(value) + " FUEL STORAGE";
+                case FacilityKind.CoolingTower: return "-" + Fmt.Num(value) + "% COMPUTE STRAIN";
+                case FacilityKind.MemoryChamber: return Fmt.Num(value) + "% FASTER MEMORY";
                 default: return string.Empty;
             }
         }
