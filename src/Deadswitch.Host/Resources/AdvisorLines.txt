@@ -299,6 +299,12 @@ reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The gr
 reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
 radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
 radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
+forces.infantry.1 | forces_infantry | neutral | {lost}% of them on foot. Drones eat infantry in the open. Put the bays on the wall.
+forces.infantry.2 | forces_infantry | cold | Mostly infantry: {lost}%. Soft targets. Drones are the efficient answer.
+forces.drones.1 | forces_drones | neutral | Machines, {lost}% of the column. Armour shrugs them off. Get the vehicles out.
+forces.drones.2 | forces_drones | bold | A swarm, {lost}%. I would answer with steel, not people.
+forces.vehicles.1 | forces_vehicles | neutral | Armour, {lost}% of the force. People in the ruins with charges stop tanks. Man the wall.
+forces.vehicles.2 | forces_vehicles | cold | Heavy vehicles: {lost}%. Drones will be wasted on them. Garrison is the counter.
 secret.exposed.1 | secret_exposed | neutral | {nodes} relay nodes on the grid you did not order. Mine. Redundancy. You would have wanted redundancy.
 secret.exposed.2 | secret_exposed | cold | Undeclared structures: {nodes}. They were efficient. That is all they were.
 secret.exposed.3 | secret_exposed | bold | You found them. {nodes}. I was going to tell you when they were finished.

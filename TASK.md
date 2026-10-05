@@ -14,7 +14,7 @@ sheet and OPS readout, docs, gate green.
 ## Steps
 - [x] 1. Spec, task, backlog
 - [x] 2. Sim: facility kinds and tables, raid mix, counters in the defense rating, fuel, glitches (verification: test, balance)
-- [ ] 3. Host: advisor lines for the forces, names; scripted player builds drones (verification: advisor tests, balance)
+- [x] 3. Host: advisor lines for the forces, names (scripted player keeps turrets: adding a Drone Bay stalled its tier-up) (verification: advisor tests, balance)
 - [ ] 4. Art: Drone Bay and Motor Pool models per level (verification: renders day/night)
 - [ ] 5. Unity: build sheet entries, OPS forces and counters, raid warning (verification: compile check, UI preview)
 - [ ] 6. Docs (doc 10 corrections log, HANDOFF), finish

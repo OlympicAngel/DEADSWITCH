@@ -34,7 +34,7 @@ namespace Deadswitch.Host.Narrative
             "override", "delegation_manual", "delegation_delegated", "delegation_autopilot", "ai_build", "ai_defend",
             "verify_edit", "verify_gate", "verify_clean", "slip", "imminent", "audit_clean", "audit_found",
             "research_started", "research_done", "research_memory", "tier_up", "guide_done", "climax_warned", "core_purged", "ai_silenced", "project_cancelled", "betrayal", "fork",
-            "ceasefire", "ceasefire_broken", "ceasefire_over", "chapter_opened", "chapter_twist", "chapter_closed", "alliance_formed", "alliance_ended", "alliance_walkout", "alliance_betrayed", "op_sabotage", "sabotage_clean", "sabotage_traced", "tactic_learned", "site_fortified", "hunch_restless", "hunch_calm", "regrouping", "reactor_scram", "reactor_fueled", "radiation_leak", "secret_exposed", "secret_dismantled", "hazard_sick", "plague_infection", "survivors_found", "parts_recovered", "fallout_drift", "ai_raid", "op_recalled", "region_hollow", "region_ridge", "region_river", "region_ruins", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
+            "ceasefire", "ceasefire_broken", "ceasefire_over", "chapter_opened", "chapter_twist", "chapter_closed", "alliance_formed", "alliance_ended", "alliance_walkout", "alliance_betrayed", "op_sabotage", "sabotage_clean", "sabotage_traced", "tactic_learned", "site_fortified", "hunch_restless", "hunch_calm", "regrouping", "reactor_scram", "reactor_fueled", "radiation_leak", "forces_infantry", "forces_drones", "forces_vehicles", "secret_exposed", "secret_dismantled", "hazard_sick", "plague_infection", "survivors_found", "parts_recovered", "fallout_drift", "ai_raid", "op_recalled", "region_hollow", "region_ridge", "region_river", "region_ruins", "ironman_on", "relocated", "rebooted", "mastery", "ambush", "ai_repair", "battle_barrage", "battle_focus", "battle_seize", "battle_started", "battle_takeover", "cleanse", "core_flushed",
             "crackdown", "crisis_collapse", "crisis_rollback", "crisis_swarm", "crisis_takeover", "dilemma_church", "dilemma_deserters", "dilemma_refugees",
             "dilemma_shortcut", "dilemma_spy", "dilemma_taint", "dilemma_trader", "dilemma_trap", "event_deadweek", "event_storm", "event_supply",
             "facility_scarred", "forced_labor", "glitch_defected", "glitch_drain", "glitch_misfire", "glitch_stall", "heat_hunted", "heat_marked",
@@ -466,6 +466,12 @@ namespace Deadswitch.Host.Narrative
                     break;
                 case EventKind.ReactorFuel:
                     Enqueue(new Pending(e.A == 1 ? "reactor_fueled" : "reactor_scram", e.A == 1 ? Priority.Normal : Priority.Urgent).With("lost", e.B.ToString()));
+                    break;
+                case EventKind.RaidForces:
+                    // name the main threat and the answer (SPEC-035)
+                    string family = e.C >= e.B && e.C >= e.D ? "forces_drones" : e.D >= e.B ? "forces_vehicles" : "forces_infantry";
+                    int share = family == "forces_drones" ? e.C : family == "forces_vehicles" ? e.D : e.B;
+                    Enqueue(new Pending(family, Priority.Normal).With("lost", share.ToString()));
                     break;
                 case EventKind.SecretExposed:
                     if (e.A > 0)
