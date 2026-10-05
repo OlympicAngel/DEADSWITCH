@@ -1344,6 +1344,49 @@ mix_church = [25, 65, 10]
 mix_holdouts = [15, 55, 30]
 
 # --------------------------------------------------------------------------------------------------
+# Breakdown phases (SPEC-036, doc 07 s1): fallout waves, plague outbreaks, rolling blackouts and machine surges join the world-event rotation; the handler's own actions build pressure that brings a matching phase next. All (tune).
+[phases]
+
+# Fallout wave: outposts send this % of their output. [0..100]
+fallout_outpost_pct = 50
+
+# Fallout wave: raids on the radiation zone bring back this % more. [0..1000]
+fallout_salvage_pct = 50
+
+# Plague outbreak: any returning squad carries infection with at least this chance; regrowth stops. [0..100]
+plague_infection_pct = 25
+
+# Rolling blackouts: generators and reactors lose this % of output. [0..100]
+blackout_generation_pct = 25
+
+# Machine surge: attackers bring this many more drone points in their mix. [0..100]
+surge_drone_pts = 20
+
+# Machine surge: added chance an unmanned war machine turns on the Hub. [0..100]
+surge_defection_pct = 15
+
+# Pressure at which the matching phase comes next (a warning at half). [1..10000]
+pressure_threshold = 100
+
+# Pressure toward a fallout wave per raid on the radiation zone. [0..1000]
+radiation_raid_pts = 35
+
+# Fallout pressure per hour a reactor leaks. [0..1000]
+leak_pts_per_hour = 5
+
+# Pressure toward an outbreak per raid on the plague zone. [0..1000]
+plague_raid_pts = 35
+
+# Pressure toward a machine surge per raid on the graveyard. [0..1000]
+graveyard_raid_pts = 30
+
+# Surge pressure per hour per unmanned war machine running. [0..1000]
+unmanned_pts_per_hour = 1
+
+# Pressure toward rolling blackouts per hour of grid blackout. [0..1000]
+blackout_pts_per_hour = 8
+
+# --------------------------------------------------------------------------------------------------
 # The AI builds in secret (SPEC-034, doc 03 s5): hidden nodes paid with skimmed compute speed its project and drain energy off the books until an Audit exposes them. Project is milli: 100000 = 100%. All (tune).
 [secrets]
 

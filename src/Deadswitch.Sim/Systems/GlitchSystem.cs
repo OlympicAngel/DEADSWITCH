@@ -129,7 +129,7 @@ namespace Deadswitch.Sim.Systems
             }
 
             uint h = SimMath.Hash((uint)attackId * 0xDEF7u, (uint)(s.Rng.State >> 32));
-            if (h % 100 >= (uint)c.Glitch.DefectionPct)
+            if (h % 100 >= (uint)(c.Glitch.DefectionPct + (LivingSystem.Active(s, WorldEventKind.MachineSurge) ? c.Phases.SurgeDefectionPct : 0)))
             {
                 return -1;
             }

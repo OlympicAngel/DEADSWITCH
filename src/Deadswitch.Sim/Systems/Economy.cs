@@ -70,7 +70,8 @@ namespace Deadswitch.Sim.Systems
                 return 0;
             }
 
-            return SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind) - ScarSystem.PenaltyPct(s, c, slot) - GlitchSystem.PenaltyPct(s, slot)));
+            int output = SimMath.PctFloor(f.Output[slot.Level - 1], System.Math.Max(0, OutputPct(s, c, slot) + BonusPct(s, c, slot.Kind) - ScarSystem.PenaltyPct(s, c, slot) - GlitchSystem.PenaltyPct(s, slot)));
+            return IsSource(slot.Kind) ? SimMath.PctFloor(output, PhaseSystem.GenerationPct(s, c)) : output;
         }
 
         /// <summary>Power sources (generator, reactor): they feed the grid and net their own upkeep from output.</summary>

@@ -503,9 +503,11 @@ namespace Deadswitch.Sim.Systems
                         st.CooldownUntilTick = s.Tick + ((long)cooldownHours * SimConfig.TicksPerHour);
                         // ruins can be claimed; a beaten faction outpost can be seized and held (doc 04 s8)
                         st.Cleared = d.Kind == SiteKind.Ruins || d.Kind == SiteKind.Outpost;
-                        Loot(ctx, op.Id, LossResource.Energy, d.Energy);
-                        Loot(ctx, op.Id, LossResource.Fuel, d.Fuel);
-                        Loot(ctx, op.Id, LossResource.Compute, d.Compute);
+                        // a fallout wave stirs up the crater's salvage (SPEC-036)
+                        int rich = d.Kind == SiteKind.Radiation && LivingSystem.Active(s, WorldEventKind.FalloutWave) ? 100 + c.Phases.FalloutSalvagePct : 100;
+                        Loot(ctx, op.Id, LossResource.Energy, SimMath.PctFloor(d.Energy, rich));
+                        Loot(ctx, op.Id, LossResource.Fuel, SimMath.PctFloor(d.Fuel, rich));
+                        Loot(ctx, op.Id, LossResource.Compute, SimMath.PctFloor(d.Compute, rich));
                         if (!wild)
                         {
                             AdaptSystem.Fortify(ctx, d.Owner);

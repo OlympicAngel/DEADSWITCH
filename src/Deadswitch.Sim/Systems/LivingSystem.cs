@@ -13,7 +13,11 @@ namespace Deadswitch.Sim.Systems
     public static class LivingSystem
     {
         private const int DilemmaKinds = 5;
-        private const int WorldEventKinds = 3;
+        /// <summary>The random rotation; rolling blackouts come only as an after-effect (SPEC-036 rule 3).</summary>
+        private static readonly WorldEventKind[] Rotation =
+        {
+            WorldEventKind.SignalStorm, WorldEventKind.SupplyWindow, WorldEventKind.DeadWeek, WorldEventKind.FalloutWave, WorldEventKind.PlagueOutbreak, WorldEventKind.MachineSurge,
+        };
 
         /// <summary>True while the given world event runs.</summary>
         public static bool Active(GameState s, WorldEventKind kind)
@@ -377,7 +381,9 @@ namespace Deadswitch.Sim.Systems
             }
 
             uint h = SimMath.Hash((uint)(s.Tick / hour) ^ 0x3E7Eu, (uint)(s.Rng.State >> 32));
-            s.WorldEvent = (WorldEventKind)(1 + (int)(h % WorldEventKinds));
+            // a phase the handler's own actions brought on comes first (SPEC-036); otherwise the wastes roll
+            WorldEventKind due = PhaseSystem.Due(ctx);
+            s.WorldEvent = due != WorldEventKind.None ? due : Rotation[(int)(h % (uint)Rotation.Length)];
             s.WorldEventUntilTick = s.Tick + (l.WorldEventHours * hour);
             s.NextWorldEventTick = s.Tick + (l.WorldEventEveryHours * hour);
 

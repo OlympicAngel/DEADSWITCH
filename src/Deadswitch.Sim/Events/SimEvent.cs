@@ -332,6 +332,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>A traded blueprint cut a field research's cost (doc 10 s5). A: module node, B: discount %.</summary>
         BlueprintUsed = 108,
+
+        /// <summary>The handler's actions are bringing a breakdown phase on (SPEC-036). A: WorldEventKind, B: pressure.</summary>
+        AftershockBuilding = 109,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>

@@ -31,7 +31,8 @@ namespace Deadswitch.Sim.Systems
 
         public static int InfectionPct(GameState s, SimConfig c, int site)
         {
-            return WorldSystem.Sites[site].Kind == SiteKind.Plague ? Prepared(s, c, site, c.Hazards.PlagueInfectionPct) : 0;
+            int zone = WorldSystem.Sites[site].Kind == SiteKind.Plague ? Prepared(s, c, site, c.Hazards.PlagueInfectionPct) : 0;
+            return LivingSystem.Active(s, WorldEventKind.PlagueOutbreak) ? System.Math.Max(zone, c.Phases.PlagueInfectionPct) : zone;
         }
 
         /// <summary>Extra fuel percent to reach a site (radiation zone and fallout stack).</summary>
@@ -51,6 +52,11 @@ namespace Deadswitch.Sim.Systems
             if (op.Kind == OpKind.Hack)
             {
                 return 0;
+            }
+
+            if (op.Kind == OpKind.Raid)
+            {
+                PhaseSystem.ZoneRaided(ctx, d.Kind);
             }
 
             int lost = 0;
@@ -102,7 +108,8 @@ namespace Deadswitch.Sim.Systems
         /// <summary>Outpost output percent at a site (fallout cuts it).</summary>
         public static int OutpostPct(GameState s, SimConfig c, int site)
         {
-            return Covered(s, site) ? c.Hazards.FalloutOutpostPct : 100;
+            int pct = Covered(s, site) ? c.Hazards.FalloutOutpostPct : 100;
+            return LivingSystem.Active(s, WorldEventKind.FalloutWave) ? SimMath.PctFloor(pct, c.Phases.FalloutOutpostPct) : pct;
         }
 
         public static void Hourly(SimContext ctx)

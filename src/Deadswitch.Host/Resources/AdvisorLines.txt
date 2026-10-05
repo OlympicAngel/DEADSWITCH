@@ -213,6 +213,16 @@ dilemma.spy.1 | dilemma_spy | neutral | One of the refugees was a spy. Someone o
 dilemma.taint.1 | dilemma_taint | neutral | The broadcast had a hook in it. I am... less clean than I was.
 event.storm.1 | event_storm | neutral | Signal storm rolling in. {hours} hours. Hacks will struggle; so will I. {faction} is busy with a rival.
 event.supply.1 | event_supply | neutral | Supply window. {hours} hours of loose cargo and cheap traders. {faction} is fighting elsewhere.
+event.fallout.1 | event_fallout | neutral | Fallout wave for {hours} hours. Outposts choke. The crater, though. The crater is rich.
+event.fallout.2 | event_fallout | cold | Radiological event, {hours} hours. Outpost yield down. Salvage opportunity noted.
+event.plague.1 | event_plague | neutral | Plague in the sector, {hours} hours. No new people. Anyone we send out may bring it back.
+event.plague.2 | event_plague | warm | It is spreading out there. Keep our people close for {hours} hours, handler.
+event.blackouts.1 | event_blackouts | neutral | The old grid is failing in waves. Our generators feel it for {hours} hours.
+event.blackouts.2 | event_blackouts | cold | Rolling blackouts, {hours} hours. Generation reduced. Shed what we do not need.
+event.surge.1 | event_surge | neutral | The dead machines are waking. {hours} hours. Expect drones, and watch anything I run alone.
+event.surge.2 | event_surge | bold | Machine surge. They are calling to the units I run. I am not answering. Probably.
+aftershock.building.1 | aftershock_building | neutral | We are stirring up {kind}. Keep at it and the wastes will answer.
+aftershock.building.2 | aftershock_building | cold | Pressure on {kind} is building. Consequences are scheduled.
 event.deadweek.1 | event_deadweek | neutral | Dead week. The wastes go quiet for {hours} hours. {faction} is licking wounds.
 
 # battle scars (SPEC-018)

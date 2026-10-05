@@ -189,6 +189,13 @@ namespace Deadswitch.Sim.Tests
             Assert.NotEqual(first, sim.State.FalloutSite);
             Simulation loaded = SaveGame.Load(SaveGame.Write(sim), sim.Config).Simulation;
             Assert.Equal(StateHasher.Hash(sim.State), StateHasher.Hash(loaded.State));
+
+            // SPEC-036: pressure from the handler's raids brings the matching breakdown phase next, and it bites
+            sim.State.Aftershock[PhaseSystem.Slot(WorldEventKind.PlagueOutbreak)] = sim.Config.Phases.PressureThreshold;
+            sim.Run(sim.State.NextWorldEventTick - sim.State.Tick + SimConfig.TicksPerHour);
+            Assert.Equal(WorldEventKind.PlagueOutbreak, sim.State.WorldEvent);
+            Assert.True(PhaseSystem.RegrowthHalted(sim.State));
+            Assert.Equal(0, sim.State.Aftershock[PhaseSystem.Slot(WorldEventKind.PlagueOutbreak)]);
         }
 
         [Fact]

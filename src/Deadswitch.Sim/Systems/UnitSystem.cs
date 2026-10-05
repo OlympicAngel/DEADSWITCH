@@ -63,7 +63,8 @@ namespace Deadswitch.Sim.Systems
             int[] mix = u.Mix(s.RaidFaction);
             int span = (2 * u.MixJitterPct) + 1;
             uint h = SimMath.Hash((uint)s.RaidId * 0x9E37u, (uint)(s.Rng.State >> 32) ^ 0x51A7u);
-            int drones = SimMath.Clamp(mix[1] + (int)(h % (uint)span) - u.MixJitterPct, 0, 100);
+            int surge = LivingSystem.Active(s, WorldEventKind.MachineSurge) ? ctx.Config.Phases.SurgeDronePts : 0;
+            int drones = SimMath.Clamp(mix[1] + surge + (int)(h % (uint)span) - u.MixJitterPct, 0, 100);
             int vehicles = SimMath.Clamp(mix[2] + (int)((h >> 12) % (uint)span) - u.MixJitterPct, 0, 100 - drones);
             s.RaidDronePct = drones;
             s.RaidVehiclePct = vehicles;

@@ -46,6 +46,7 @@ namespace Deadswitch.Sim
         public LuckConfig Luck = new LuckConfig();
         public HazardConfig Hazards = new HazardConfig();
         public UnitConfig Units = new UnitConfig();
+        public PhaseConfig Phases = new PhaseConfig();
         public SecretConfig Secrets = new SecretConfig();
         public HostConfig Host = new HostConfig();
 
@@ -194,6 +195,7 @@ namespace Deadswitch.Sim
             Luck.Visit(visitor);
             Hazards.Visit(visitor);
             Units.Visit(visitor);
+            Phases.Visit(visitor);
             Secrets.Visit(visitor);
             Host.Visit(visitor);
             Generator.Visit(visitor);
