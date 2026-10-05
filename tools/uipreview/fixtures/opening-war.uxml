@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Opening.uss" />
   <!-- Prologue (SPEC-009, SPEC-043 s4): the fragment wakes and tells its story in six beats over the world; tap advances, skippable. -->
-  <ui:VisualElement name="prologue" class="pro pro--boot">
+  <ui:VisualElement name="prologue" class="pro pro--war">
     <ui:VisualElement class="ds-scrim pro__scrim" />
     <ui:VisualElement name="pro-world" class="pro__world" />
     <ui:VisualElement name="pro-flash" class="pro__flash" />
@@ -11,12 +11,12 @@
     </ui:VisualElement>
     <ui:VisualElement class="pro__center">
       <ui:VisualElement name="pro-orb" class="ai-orb pro__orb" />
-      <ui:Label name="pro-kicker" text="" class="pro__kicker" />
-      <ui:Label name="pro-text" text="" class="pro__text" />
+      <ui:Label name="pro-kicker" text="DAY 1 TO DAY 19" class="pro__kicker" />
+      <ui:Label name="pro-text" text="I won it in nineteen days. Nobody had planned for what came after, and nobody was left to switch me off." class="pro__text" />
       <ui:VisualElement name="pro-pips" class="row pro__pips">
         <ui:VisualElement class="pro__pip is-on" />
-        <ui:VisualElement class="pro__pip" />
-        <ui:VisualElement class="pro__pip" />
+        <ui:VisualElement class="pro__pip is-on" />
+        <ui:VisualElement class="pro__pip is-on" />
         <ui:VisualElement class="pro__pip" />
         <ui:VisualElement class="pro__pip" />
         <ui:VisualElement class="pro__pip" />

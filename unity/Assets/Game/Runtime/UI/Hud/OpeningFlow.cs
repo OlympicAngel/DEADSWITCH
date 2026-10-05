@@ -7,9 +7,10 @@ using UnityEngine.UIElements;
 namespace Deadswitch.Game.UI.Hud
 {
     /// <summary>
-    /// The opening (SPEC-009): the prologue over the dimmed drone feed (new runs only, skippable), the HUD coming
-    /// online in steps, and the objective guide that points at the control to use. Reduced motion skips typing
-    /// and staggering; essential information never waits on animation.
+    /// The opening (SPEC-009, SPEC-043 s4): the fragment tells its story in six beats over the world while the drone
+    /// hangs in orbit (new runs only; tap advances, skippable), the drone descends onto the Hub, the HUD comes online
+    /// in steps, and the objective guide points at the control to use. Reduced motion shows still cards that wait
+    /// for a tap, with no camera move; essential information never waits on animation.
     /// </summary>
     public sealed class OpeningFlow
     {
@@ -76,6 +77,10 @@ namespace Deadswitch.Game.UI.Hud
             {
                 TickPrologue(dt);
             }
+            else if (_descent >= 0f && Deadswitch.Game.Base.DroneCamera.Instance != null)
+            {
+                TickDescent(dt);
+            }
 
             if (_highlight != null && !Motion.Reduced)
             {
@@ -97,11 +102,30 @@ namespace Deadswitch.Game.UI.Hud
             tree.pickingMode = PickingMode.Position;
             UiRoot.Instance.Root.Add(tree);
             _prologue = tree;
+            _proRoot = tree.Q("prologue");
             _proText = tree.Q<Label>("pro-text");
-            tree.Q("pro-skip").RegisterCallback<ClickEvent>(_ => EndPrologue());
+            _proKicker = tree.Q<Label>("pro-kicker");
+            _proFlash = tree.Q("pro-flash");
+            _proTake = tree.Q("pro-take");
+            _proTap = tree.Q("pro-tap");
+            tree.Q("pro-skip").RegisterCallback<ClickEvent>(e =>
+            {
+                e.StopPropagation();
+                EndPrologue();
+            });
+            _proTake.RegisterCallback<ClickEvent>(e =>
+            {
+                e.StopPropagation();
+                EndPrologue();
+            });
+
+            // tap anywhere: finish the line being typed, or move to the next beat
+            _proRoot.RegisterCallback<ClickEvent>(_ => Advance());
             _proOrb = new AiOrb(tree.Q("pro-orb"));
             _proOrb.Assemble();
-            UiRoot.Instance.SetGlitch(0.6f);
+            _proWorld = new PrologueWorld(tree.Q("pro-world"));
+            _orbit = 0f;
+            _descent = -1f;
             foreach (string part in RevealOrder)
             {
                 Group(part).style.opacity = 0f;
@@ -110,27 +134,80 @@ namespace Deadswitch.Game.UI.Hud
             NextCard();
         }
 
+        private VisualElement _proRoot;
+        private Label _proKicker;
+        private VisualElement _proFlash;
+        private VisualElement _proTake;
+        private VisualElement _proTap;
         private AiOrb _proOrb;
+        private PrologueWorld _proWorld;
+        private float _orbit;
+        private float _descent = -1f;
+        private float _flash;
+
+        private static bool Cinematic => !Motion.Reduced && (GameHost.Instance == null || GameHost.Instance.Settings.Cinematics) && Deadswitch.Game.Base.DroneCamera.Instance != null;
 
         private void TickPrologue(float dt)
         {
-            if (_proOrb != null)
+            PrologueScene scene = Prologue.Scenes[_card];
+            bool typing = _shown < scene.Text.Length;
+            _proOrb.Voice = typing ? 1f : 0.2f;
+            _proOrb.Tick(dt);
+            _proWorld.Tick(dt);
+            if (_flash > 0f)
             {
-                _proOrb.Voice = _proText != null && _proText.text.EndsWith("_", System.StringComparison.Ordinal) ? 1f : 0.2f;
-                _proOrb.Tick(dt);
+                _flash = Mathf.Max(0f, _flash - (dt * 1.6f));
+                _proFlash.style.opacity = _flash;
             }
 
-            string text = Prologue.Cards[_card];
-            if (_shown < text.Length)
+            // the drone hangs in orbit high over the Hub while the story plays, turning slowly
+            if (Cinematic)
             {
-                _shown = Motion.Reduced ? text.Length : _shown + (dt * CharsPerSecond);
-                int n = Mathf.Min(text.Length, (int)_shown);
-                _proText.text = text.Substring(0, n) + (n < text.Length ? "_" : string.Empty);
+                _orbit += dt;
+                float az = _orbit * 0.05f;
+                Deadswitch.Game.Base.DroneCamera.Instance.Direct(new Vector3(Mathf.Sin(az) * 60f, 240f, -Mathf.Cos(az) * 60f), Vector3.zero, 50f);
+            }
+
+            if (typing)
+            {
+                _shown = Motion.Reduced ? scene.Text.Length : _shown + (dt * CharsPerSecond);
+                int n = Mathf.Min(scene.Text.Length, (int)_shown);
+                _proText.text = scene.Text.Substring(0, n) + (n < scene.Text.Length ? "_" : string.Empty);
+                return;
+            }
+
+            // the last beat waits for the handler's answer; the others move on by themselves (unless motion is reduced)
+            bool last = _card == Prologue.Scenes.Length - 1;
+            _proTake.EnableInClassList("is-hidden", !last);
+            _proTap.EnableInClassList("is-hidden", last);
+            if (last || Motion.Reduced)
+            {
                 return;
             }
 
             _hold += dt;
-            if (_hold >= HoldSeconds)
+            if (_hold >= HoldSeconds + (scene.Text.Length * 0.02f))
+            {
+                NextCard();
+            }
+        }
+
+        private void Advance()
+        {
+            if (_prologue == null)
+            {
+                return;
+            }
+
+            PrologueScene scene = Prologue.Scenes[_card];
+            if (_shown < scene.Text.Length)
+            {
+                _shown = scene.Text.Length;
+                _proText.text = scene.Text;
+                return;
+            }
+
+            if (_card < Prologue.Scenes.Length - 1)
             {
                 NextCard();
             }
@@ -139,14 +216,43 @@ namespace Deadswitch.Game.UI.Hud
         private void NextCard()
         {
             _card++;
-            if (_card >= Prologue.Cards.Length)
+            if (_card >= Prologue.Scenes.Length)
             {
                 EndPrologue();
                 return;
             }
 
+            PrologueScene scene = Prologue.Scenes[_card];
             _shown = 0f;
             _hold = 0f;
+            _proText.text = string.Empty;
+            _proKicker.text = scene.Kicker;
+            _proTake.AddToClassList("is-hidden");
+            _proTap.RemoveFromClassList("is-hidden");
+            foreach (PrologueMood m in (PrologueMood[])System.Enum.GetValues(typeof(PrologueMood)))
+            {
+                _proRoot.EnableInClassList("pro--" + m.ToString().ToLowerInvariant(), m == scene.Mood);
+            }
+
+            _proWorld.SetMood(scene.Mood);
+            _proOrb.Stutter = scene.Mood == PrologueMood.Dark ? 0.7f : scene.Mood == PrologueMood.War ? 0.3f : 0f;
+            UiRoot.Instance.SetGlitch(scene.Mood == PrologueMood.Dark ? 0.85f : scene.Mood == PrologueMood.War ? 0.5f : scene.Mood == PrologueMood.Boot ? 0.6f : 0.15f);
+            if (scene.Mood == PrologueMood.War && !Motion.Reduced)
+            {
+                _flash = 0.9f;
+                Feedback.Alert();
+                if (Cinematic)
+                {
+                    Deadswitch.Game.Base.DroneCamera.Instance.Shake(0.5f);
+                }
+            }
+
+            _proOrb.Ping();
+            Motion.To(_proKicker, 0.4f, Ease.OutCubic, t =>
+            {
+                _proKicker.style.opacity = t;
+                _proKicker.style.translate = new Translate(0, 16f * (1f - t));
+            });
             VisualElement pips = _prologue.Q("pro-pips");
             for (int i = 0; i < pips.childCount; i++)
             {
@@ -161,13 +267,29 @@ namespace Deadswitch.Game.UI.Hud
                 return;
             }
 
-            _prologue.RemoveFromHierarchy();
+            VisualElement tree = _prologue;
             _prologue = null;
             UiRoot.Instance.SetGlitch(0f);
             _voice.Paused = false;
+            if (Motion.Reduced)
+            {
+                tree.RemoveFromHierarchy();
+            }
+            else
+            {
+                Motion.To(tree, 0.5f, Ease.OutCubic, t => tree.style.opacity = 1f - t, tree.RemoveFromHierarchy);
+            }
 
-            // Boot sequence (rule 5): each system comes online in turn.
+            // the drone falls out of orbit onto the Hub, then hands the camera back
+            _descent = Cinematic ? 0f : -1f;
+            if (_descent < 0f && Deadswitch.Game.Base.DroneCamera.Instance != null)
+            {
+                Deadswitch.Game.Base.DroneCamera.Instance.Release();
+            }
+
+            // Boot sequence (rule 5): each system comes online in turn, after the drone has landed.
             string[] parts = RevealOrder;
+            float start = _descent >= 0f ? DescentSeconds * 0.6f : 0f;
             for (int i = 0; i < parts.Length; i++)
             {
                 VisualElement el = Group(parts[i]);
@@ -177,8 +299,27 @@ namespace Deadswitch.Game.UI.Hud
                     continue;
                 }
 
-                float delay = i * RevealStagger;
+                float delay = start + (i * RevealStagger);
                 Motion.To(el, 0.35f + delay, Ease.OutCubic, t => el.style.opacity = Mathf.Clamp01(((t * (0.35f + delay)) - delay) / 0.35f));
+            }
+        }
+
+        private const float DescentSeconds = 2.8f;
+
+        private void TickDescent(float dt)
+        {
+            _descent += dt;
+            float t = Mathf.Clamp01(_descent / DescentSeconds);
+            float k = Ease.InOutSine(t);
+            float az = _orbit * 0.05f;
+            Vector3 from = new Vector3(Mathf.Sin(az) * 60f, 240f, -Mathf.Cos(az) * 60f);
+            Vector3 to = new Vector3(0f, 62f, -58f);
+            Deadswitch.Game.Base.DroneCamera.Instance.Direct(Vector3.Lerp(from, to, k), Vector3.zero, Mathf.Lerp(50f, 42f, k));
+            if (t >= 1f)
+            {
+                _descent = -1f;
+                Deadswitch.Game.Base.DroneCamera.Instance.Shake(0.15f);
+                Deadswitch.Game.Base.DroneCamera.Instance.Release();
             }
         }
 
