@@ -35,6 +35,7 @@ namespace Deadswitch.Game.Core
             Root.AddComponent<Base.BaseFx>();
             Root.AddComponent<Audio.AudioDirector>();
             Root.AddComponent<Base.LiveBattle>();
+            Root.AddComponent<Base.AttackCinematic>();
             if (SmokeRun.Requested())
             {
                 Root.AddComponent<SmokeRun>();

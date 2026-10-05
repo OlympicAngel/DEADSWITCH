@@ -13,9 +13,9 @@
 - [x] 4. Camera: fly-to focus (pan+zoom+orbit), inertia, double-tap zoom, idle orbit, settings toggles
 - [x] 5. Focus mode: dimmed labels, quick-action ring, plot markers, build-complete moment
 - [x] 6. JARVIS layer: core orb + waveform, comms panel with suggestion chips, toasts
-- [ ] 7. Attack cinematic: letterbox, title card, shot sequence, shake, impacts, siren, aftermath stamp
+- [x] 7. Attack cinematic: letterbox, title card, shot sequence, shake, impacts, siren, aftermath stamp
 - [ ] 8. Screen rework: OPS regrouped into titled cards, CORE with the orb as hero, command bar badges
-- [ ] 9. 3D accents: data links to the core, raid edge vignette
+- [x] 9. 3D accents: data links to the core, raid edge vignette
 - [ ] 10. Remaining screens to the new kit (Workforce, Map sheet, Dispatch, Settings), docs, spec statuses
 
 ## Notes
