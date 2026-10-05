@@ -42,6 +42,12 @@ namespace Deadswitch.Game.UI
         /// <summary>Starts a tween. A tween with the same non-null key replaces the running one.</summary>
         public static void To(object key, float duration, Func<float, float> ease, Action<float> apply, Action done = null)
         {
+            After(key, 0f, duration, ease, apply, done);
+        }
+
+        /// <summary>Starts a tween after <paramref name="delay"/> seconds; its start value applies at once (staggers).</summary>
+        public static void After(object key, float delay, float duration, Func<float, float> ease, Action<float> apply, Action done = null)
+        {
             if (key != null)
             {
                 Active.RemoveAll(t => t.Key == key);
@@ -55,7 +61,7 @@ namespace Deadswitch.Game.UI
             }
 
             apply(0f);
-            Active.Add(new Tween { Key = key, Duration = duration, Ease = ease, Apply = apply, Done = done });
+            Active.Add(new Tween { Key = key, Duration = duration, Ease = ease, Apply = apply, Done = done, Time = -Mathf.Max(0f, delay) });
         }
 
         public static void Cancel(object key)
@@ -69,6 +75,11 @@ namespace Deadswitch.Game.UI
             {
                 Tween t = Active[i];
                 t.Time += dt;
+                if (t.Time < 0f)
+                {
+                    continue;
+                }
+
                 float p = Mathf.Clamp01(t.Time / t.Duration);
                 t.Apply(t.Ease(p));
                 if (p >= 1f)

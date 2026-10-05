@@ -529,3 +529,9 @@
 .hint.is-hidden { display: none; }
 .hint__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-cyan); }
 .hint__body { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: var(--s-1); }
+
+/* ---------- Motion kit (SPEC-040): ripples clip inside their control; primary actions shimmer ---------- */
+.ds-btn, .ds-tile, .ai-chip, .hud-tab { overflow: hidden; }
+.ds-ripple { position: absolute; background-color: var(--c-white); opacity: 0; }
+.ds-shimmer { position: absolute; top: 0; bottom: 0; left: -120px; width: 70px; background-color: var(--c-white); opacity: 0.14; }
+.ds-sheet { transition-timing-function: ease-out-back; transition-duration: 0.34s; }

@@ -78,6 +78,7 @@ namespace Deadswitch.Game.UI
             Root.Add(overlay);
             Root.RegisterCallback<ClickEvent>(e => { if (Tappable(e.target as VisualElement)) { Audio.AudioDirector.Instance?.Tick(); } }, TrickleDown.TrickleDown);
             _crt = new CrtOverlay(overlay);
+            Choreo.Install(Root);
         }
 
         private void Start()
@@ -99,6 +100,7 @@ namespace Deadswitch.Game.UI
             el.pickingMode = PickingMode.Ignore;
             Kit.Decorate(el);
             Icons.Attach(el);
+            el.Query(className: "ds-btn--primary").ForEach(Choreo.Shimmer);
             return el;
         }
 

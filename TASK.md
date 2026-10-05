@@ -1,4 +1,20 @@
-# TASK: F-100 Living interface (UI, camera, motion, VFX rework)
+# TASK: F-101 Calm density and motion (living interface II)
+
+- Status: In progress
+- Branch: ccr-3e0227c3-c2kae3
+- Spec: `docs/specs/SPEC-040-calm-density-and-motion.md`
+
+## Steps
+- [x] 1. Motion kit: stagger, directional slides, ripples, meter sweep, shimmer, springy sheets
+- [ ] 2. Kit: page tabs (`ds-pager`) and foldable cards, mirrored in the preview
+- [ ] 3. HUD: status rail with expandable pills, compact comms panel, sliding tab indicator, pod punches
+- [ ] 4. Pages for OPS, CORE, LEGACY and MAP; folds on secondary cards
+- [ ] 5. Base motion: construction rise with dust, build punch, hit flash
+- [ ] 6. Docs, screenshots
+
+Previous: F-100 living interface (SPEC-039), code complete; Editor tuning pending.
+
+# (F-100 record)
 
 - Status: Code complete; Editor tuning pass pending (owner)
 - Branch: ccr-3e0227c3-c2kae3
