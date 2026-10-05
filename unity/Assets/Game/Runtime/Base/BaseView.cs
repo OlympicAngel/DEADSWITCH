@@ -45,6 +45,7 @@ namespace Deadswitch.Game.Base
         private float _powerRadius;
         private float _powerLevel = 1f;
         private Color _grade;
+        private float _fogScale = 1f;
         private Staging _stage;
         private float _gradeAmount;
 
@@ -104,6 +105,13 @@ namespace Deadswitch.Game.Base
         {
             _openingPower = false;
             _gradeAmount = 0f;
+            _fogScale = 1f;
+        }
+
+        /// <summary>The opening's air: fog density times <paramref name="scale"/> (thin for the long map shot).</summary>
+        public void OpeningFog(float scale)
+        {
+            _fogScale = Mathf.Max(0f, scale);
         }
 
         /// <summary>
@@ -273,7 +281,7 @@ namespace Deadswitch.Game.Base
             RenderSettings.ambientSkyColor = BaseLook.Srgb(k.skyColor, a);
             RenderSettings.ambientEquatorColor = Color.Lerp(BaseLook.Srgb(k.skyColor), BaseLook.Srgb(k.groundColor), 0.5f) * a;
             RenderSettings.ambientGroundColor = BaseLook.Srgb(k.groundColor, a);
-            RenderSettings.fogDensity = k.fogDensity;
+            RenderSettings.fogDensity = k.fogDensity * _fogScale;
             RenderSettings.fogColor = BaseLook.Srgb(k.fogColor);
             if (_gradeAmount > 0f)
             {

@@ -40,6 +40,12 @@ namespace Deadswitch.Game.Base
         private OpeningGlobe _globe;
         private readonly System.Random _rng = new System.Random(19);
         private readonly List<float> _launchAt = new List<float>();
+        private Vector3 _mapFrom;
+        private Vector3 _mapTo;
+        private Vector3 _mapLook;
+        private Vector3 _outpost;
+        private int _cameraMask = -1;
+        private float _cameraFar;
 
         public static OpeningFilm Create()
         {
@@ -61,7 +67,7 @@ namespace Deadswitch.Game.Base
         /// <summary>True when the film draws the picture for a beat (the others are the overlay's own).</summary>
         public static bool ShowsWorld(PrologueMood mood)
         {
-            return OnHub(mood) || OnGlobe(mood);
+            return OnHub(mood) || OnGlobe(mood) || mood == PrologueMood.Outposts;
         }
 
         /// <summary>Raised when a hit should white out the frame (argument: strength 0..1).</summary>
@@ -141,6 +147,7 @@ namespace Deadswitch.Game.Base
                 _globe = null;
             }
 
+            MapShot(mood == PrologueMood.Outposts);
             _launchAt.Clear();
             if (mood == PrologueMood.Fire)
             {
@@ -162,9 +169,51 @@ namespace Deadswitch.Game.Base
             }
         }
 
+        /// <summary>
+        /// The sector map at night (the map world the MAP screen renders, far below the Hub): the drone camera may
+        /// see its layer, reaches further and the air thins for the beat; the shot pushes in on one outpost, burning.
+        /// </summary>
+        private void MapShot(bool on)
+        {
+            DroneCamera drone = DroneCamera.Instance;
+            if (drone == null)
+            {
+                return;
+            }
+
+            if (on)
+            {
+                MapView.Ensure();
+                if (_cameraMask == -1)
+                {
+                    _cameraMask = drone.Camera.cullingMask;
+                    _cameraFar = drone.Camera.farClipPlane;
+                }
+
+                drone.Camera.cullingMask = _cameraMask | (1 << MapView.Layer);
+                drone.Camera.farClipPlane = _rules.mapFar;
+                Art.World.CameraPose pose = Art.World.SectorScene.Camera(drone.Camera.aspect);
+                Vector3 origin = MapView.Origin;
+                _outpost = origin + ArtBridge.V(Art.World.SectorScene.SitePosition(_rules.mapSite, BaseView.Seed));
+                Vector3 back = ArtBridge.V(pose.Position - pose.Target);
+                _mapFrom = origin + ArtBridge.V(pose.Position);
+                _mapLook = origin + ArtBridge.V(pose.Target);
+                _mapTo = _outpost + (back * _rules.mapPush);
+                BaseView.Instance?.OpeningFog(_rules.mapFog);
+            }
+            else if (_cameraMask != -1)
+            {
+                drone.Camera.cullingMask = _cameraMask;
+                drone.Camera.farClipPlane = _cameraFar;
+                _cameraMask = -1;
+                BaseView.Instance?.OpeningFog(1f);
+            }
+        }
+
         /// <summary>Hands the camera, the lights and the view back and removes the film's objects.</summary>
         public void Finish()
         {
+            MapShot(false);
             DroneCamera.Instance?.Release();
             if (BaseView.Instance != null)
             {
@@ -197,6 +246,11 @@ namespace Deadswitch.Game.Base
             if (_mood == PrologueMood.Attack)
             {
                 Incoming(dt);
+            }
+
+            if (_mood == PrologueMood.Outposts)
+            {
+                Burning(dt);
             }
 
             Tracers(dt);
@@ -256,6 +310,13 @@ namespace Deadswitch.Game.Base
                 return;
             }
 
+            if (_mood == PrologueMood.Outposts)
+            {
+                float m = Ease.InOutSine(Mathf.Clamp01(_cutT / Mathf.Max(0.01f, _cuts[_cut].seconds)));
+                DroneCamera.Instance.Direct(Vector3.Lerp(_mapFrom, _mapTo, m), Vector3.Lerp(_mapLook, _outpost, m), Mathf.Lerp(28f, 34f, m));
+                return;
+            }
+
             // planet shots are given relative to the planet centre
             Vector3 origin = OnGlobe(_mood) ? OpeningGlobe.Center : Vector3.zero;
             InterfaceConfig.OpeningShot s = _cuts[_cut];
@@ -301,9 +362,9 @@ namespace Deadswitch.Game.Base
                     break;
             }
 
-            if (!OnHub(_mood))
+            if (!OnHub(_mood) && _mood != PrologueMood.Outposts)
             {
-                // off the Hub the sky is space: black fog, black background
+                // off the Hub (and off the map) the sky is space: black fog, black background
                 view.OpeningGrade(Color.black, 1f);
             }
 
@@ -312,8 +373,11 @@ namespace Deadswitch.Game.Base
             _flare.intensity = flare * _rules.flareIntensity;
             DrawRings(-1f);
             _flash = Mathf.Max(0f, _flash - (dt * 2.5f));
-            _blast.enabled = _flash > 0.01f;
-            _blast.intensity = _flash * _blastScale * _rules.blastIntensity;
+            if (_mood != PrologueMood.Outposts)
+            {
+                _blast.enabled = _flash > 0.01f;
+                _blast.intensity = _flash * _blastScale * _rules.blastIntensity;
+            }
         }
 
         private void Planet()
@@ -346,6 +410,22 @@ namespace Deadswitch.Game.Base
                     _globe.Embers = Mathf.Clamp01(u * 1.4f);
                     break;
             }
+        }
+
+        /// <summary>The outpost on the map burns: flames, smoke and a flickering light.</summary>
+        private void Burning(float dt)
+        {
+            _nextImpact -= dt;
+            if (_nextImpact <= 0f)
+            {
+                _nextImpact = 0.06f;
+                BattleFx.Burst(_fire, _outpost + new Vector3(Random.Range(-2f, 2f), 0.5f, Random.Range(-2f, 2f)), 6, 1.6f);
+                BattleFx.Burst(_smoke, _outpost + new Vector3(0f, 2f, 0f), 2, 2.4f);
+            }
+
+            _blast.transform.position = _outpost + new Vector3(0f, 5f, 0f);
+            _blast.enabled = true;
+            _blast.intensity = _rules.blastIntensity * (0.5f + (0.3f * Mathf.PerlinNoise(_t * 7f, 0.3f)));
         }
 
         private void Incoming(float dt)

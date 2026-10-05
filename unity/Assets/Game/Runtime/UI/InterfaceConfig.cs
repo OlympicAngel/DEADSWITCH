@@ -105,6 +105,10 @@ namespace Deadswitch.Game.UI
             public float flareIntensity = 30f;
             public float flareRange = 36f;
             public float blastIntensity = 14f;
+            public int mapSite = 2;
+            public float mapPush = 0.28f;
+            public float mapFog = 0.2f;
+            public float mapFar = 1400f;
             public float ringWidth = 0.9f;
             public string[] hubKinds = new string[0];
             public int[] hubLevels = new int[0];

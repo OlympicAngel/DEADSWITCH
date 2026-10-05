@@ -70,6 +70,10 @@
     "hubPeople": 40,
     "ruinWreckage": 6,
     "blastIntensity": 14,
+    "mapSite": 2,
+    "mapPush": 0.28,
+    "mapFog": 0.2,
+    "mapFar": 1400,
     "shots": [
       {
         "mood": "signal",
@@ -251,7 +255,7 @@
         },
         "fovFrom": 40,
         "fovTo": 40,
-        "seconds": 5
+        "seconds": 6
       },
       {
         "mood": "hold",
