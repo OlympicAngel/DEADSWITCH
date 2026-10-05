@@ -50,10 +50,10 @@ namespace Deadswitch.Game.Presentation
         {
             switch (p)
             {
-                case Posture.Turtle: return "TURTLE";
-                case Posture.Dark: return "GO DARK";
+                case Posture.Turtle: return "FORTIFY";
+                case Posture.Dark: return "HIDE";
                 case Posture.Evacuate: return "EVACUATE";
-                default: return "NONE";
+                default: return "NORMAL";
             }
         }
 

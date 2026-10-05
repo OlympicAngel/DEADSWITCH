@@ -164,7 +164,7 @@ namespace Deadswitch.Game.UI.Base
             var row = Row("sheet__tiles");
             row.Add(StatTile("trendup", "OUTPUT", Texts.Output(slot.Kind, f.Output[slot.Level - 1]), max ? null : Texts.Output(slot.Kind, f.Output[slot.Level])));
             row.Add(StatTile("bolt", "UPKEEP", Fmt.Num(f.UpkeepPerHour[slot.Level - 1]) + "/H", max ? null : Fmt.Num(f.UpkeepPerHour[slot.Level]) + "/H"));
-            row.Add(StatTile("people", "CREW", Fmt.Num(f.Crew[slot.Level - 1]), max ? null : Fmt.Num(f.Crew[slot.Level])));
+            row.Add(StatTile("people", "WORKERS", Fmt.Num(f.Crew[slot.Level - 1]), max ? null : Fmt.Num(f.Crew[slot.Level])));
             return row;
         }
 
@@ -336,7 +336,7 @@ namespace Deadswitch.Game.UI.Base
             chips.Add(slot.Enabled ? (slot.Powered ? Chip("POWERED", "ds-chip--phosphor") : Chip("NO POWER", "ds-chip--red")) : Chip("SWITCHED OFF", "ds-chip--red"));
             if (slot.Enabled)
             {
-                chips.Add(slot.Staffed ? Chip("CREWED " + Economy.CrewNeeded(c, slot), string.Empty) : Chip("AI-RUN", "ds-chip--amber"));
+                chips.Add(slot.Staffed ? Chip(Economy.CrewNeeded(c, slot) + " WORKERS", string.Empty) : Chip("NO WORKERS // RUN BY AI", "ds-chip--amber"));
             }
 
             chips.Add(Chip("PRIORITY #" + (s.PowerPriority.IndexOf(Slot) + 1), string.Empty));
@@ -385,7 +385,7 @@ namespace Deadswitch.Game.UI.Base
             if (slot.Damage > 0 && !repairing)
             {
                 int cost = ScarSystem.RepairCost(c, slot);
-                var fix = Kit.Button("REPAIR  " + Fmt.Num(cost) + " E  " + Fmt.Countdown(c.Scars.RepairMinutesPerPoint * slot.Damage * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Repair(Slot)), "ds-btn--warn", "sheet__primary");
+                var fix = Kit.Button("REPAIR  " + Fmt.Num(cost) + " ENERGY  " + Fmt.Countdown(c.Scars.RepairMinutesPerPoint * slot.Damage * 60.0 / host.Settings.DevTimeScale), () => Run(Command.Repair(Slot)), "ds-btn--warn", "sheet__primary");
                 fix.EnableInClassList("is-disabled", s.Energy < cost || s.RaidId != 0);
                 actions.Add(fix);
             }
@@ -448,12 +448,12 @@ namespace Deadswitch.Game.UI.Base
         private VisualElement Cost(GameHost host, int energy, int compute)
         {
             var row = Row("cost");
-            var e = Kit.Label("E " + Fmt.Num(energy), "cost__item");
+            var e = Kit.Label("ENERGY " + Fmt.Num(energy), "cost__item");
             e.EnableInClassList("is-short", host.Sim.State.Energy < energy);
             row.Add(e);
             if (compute > 0)
             {
-                var cpu = Kit.Label("C " + Fmt.Num(compute), "cost__item");
+                var cpu = Kit.Label("COMPUTE " + Fmt.Num(compute), "cost__item");
                 cpu.EnableInClassList("is-short", host.Sim.State.Compute < compute);
                 row.Add(cpu);
             }

@@ -91,7 +91,7 @@
               </ui:VisualElement>
               <ui:VisualElement class="map-kv map-kv--wide map-kv--last">
                 <ui:VisualElement class="row map-kv__head"><ui:VisualElement class="ds-icon ds-icon--box map-kv__icon" /><ui:Label text="HOLDS" class="map-kv__key" /></ui:VisualElement>
-                <ui:Label name="site-loot" text="200 E  40 F  20 C" class="map-kv__value" />
+                <ui:Label name="site-loot" text="200 ENERGY  40 FUEL  20 COMPUTE" class="map-kv__value" />
               </ui:VisualElement>
             </ui:VisualElement>
 
@@ -102,7 +102,7 @@
             </ui:VisualElement>
             <ui:VisualElement name="op-kinds" class="ds-seg map-seg">
               <ui:VisualElement name="op-scout" class="ds-seg__item map-seg__item"><ui:VisualElement class="ds-icon ds-icon--eye map-seg__icon" /><ui:Label text="SCOUT" class="map-seg__label" /></ui:VisualElement>
-              <ui:VisualElement name="op-raid" class="ds-seg__item map-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--swords map-seg__icon" /><ui:Label text="RAID" class="map-seg__label" /></ui:VisualElement>
+              <ui:VisualElement name="op-raid" class="ds-seg__item map-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--swords map-seg__icon" /><ui:Label text="STRIKE" class="map-seg__label" /></ui:VisualElement>
               <ui:VisualElement name="op-hack" class="ds-seg__item map-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip map-seg__icon" /><ui:Label text="HACK" class="map-seg__label" /></ui:VisualElement>
               <ui:VisualElement name="op-sabotage" class="ds-seg__item map-seg__item"><ui:VisualElement class="ds-icon ds-icon--hammer map-seg__icon" /><ui:Label text="SABOTAGE" class="map-seg__label" /></ui:VisualElement>
             </ui:VisualElement>
@@ -119,8 +119,8 @@
               </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row map-actions">
-              <ui:VisualElement name="op-launch" class="ds-btn ds-btn--warn grow"><ui:VisualElement class="ds-icon ds-icon--swords map-actions__icon" /><ui:Label name="op-launch-label" text="LAUNCH RAID" class="ds-btn__label" /></ui:VisualElement>
-              <ui:VisualElement name="site-claim" class="ds-btn ds-btn--primary map-claim"><ui:Label name="site-claim-label" text="CLAIM // 300 E" class="ds-btn__label" /></ui:VisualElement>
+              <ui:VisualElement name="op-launch" class="ds-btn ds-btn--warn grow"><ui:VisualElement class="ds-icon ds-icon--swords map-actions__icon" /><ui:Label name="op-launch-label" text="LAUNCH STRIKE" class="ds-btn__label" /></ui:VisualElement>
+              <ui:VisualElement name="site-claim" class="ds-btn ds-btn--primary map-claim"><ui:Label name="site-claim-label" text="CLAIM // 300 ENERGY" class="ds-btn__label" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:Label name="map-reason" text="" class="ds-body t-amber map-reason" />
 
@@ -151,10 +151,10 @@
               <ui:Label name="trade-with" text="RUSTBORN // RUST MARKET" class="ds-label map-trade__with" />
               <ui:Label name="trade-left" text="3/3 TODAY // COLD x0.8" class="map-trade__left" />
               <ui:VisualElement class="row map-trade__row">
-                <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 E" class="map-trade__pay" /></ui:VisualElement>
-                <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 F" class="map-trade__pay" /></ui:VisualElement>
-                <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 E" class="map-trade__pay" /></ui:VisualElement>
-                <ui:VisualElement name="trade-3" class="map-trade__item"><ui:Label name="trade-3-get" text="+1 BLUEPRINT" class="map-trade__get" /><ui:Label name="trade-3-pay" text="400 E" class="map-trade__pay" /></ui:VisualElement>
+                <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 ENERGY" class="map-trade__pay" /></ui:VisualElement>
+                <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 FUEL" class="map-trade__pay" /></ui:VisualElement>
+                <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 ENERGY" class="map-trade__pay" /></ui:VisualElement>
+                <ui:VisualElement name="trade-3" class="map-trade__item"><ui:Label name="trade-3-get" text="+1 BLUEPRINT" class="map-trade__get" /><ui:Label name="trade-3-pay" text="400 ENERGY" class="map-trade__pay" /></ui:VisualElement>
               </ui:VisualElement>
             </ui:VisualElement>
         </ui:ScrollView>
@@ -179,11 +179,11 @@
               <ui:Label name="spy-0-state" text="NO AGENT" class="map-spy__state" />
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="spy-0-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-0-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="spy-0-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-0-a-label" text="SEND SPY // 150 ENERGY" class="map-spy__label" /></ui:VisualElement>
               <ui:VisualElement name="spy-0-b" class="map-spy__btn is-hidden"><ui:VisualElement class="ds-icon ds-icon--evacuate map-spy__bicon" /><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-0-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="pact-0" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-0-label" text="PACT // 320 ENERGY 40 FUEL" class="map-spy__label" /></ui:VisualElement>
               <ui:VisualElement name="ally-0" class="map-spy__btn map-pact map-ally is-disabled"><ui:VisualElement class="ds-icon ds-icon--shield map-spy__bicon" /><ui:Label name="ally-0-label" text="ALLY // NEEDS COLD" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
@@ -200,11 +200,11 @@
               <ui:Label name="spy-1-state" text="AGENT INSIDE" class="map-spy__state is-on" />
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="spy-1-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-1-a-label" text="FRAME" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="spy-1-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-1-a-label" text="FRAME A RIVAL" class="map-spy__label" /></ui:VisualElement>
               <ui:VisualElement name="spy-1-b" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--evacuate map-spy__bicon" /><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-1-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="pact-1" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-1-label" text="PACT // 320 ENERGY 40 FUEL" class="map-spy__label" /></ui:VisualElement>
               <ui:VisualElement name="ally-1" class="map-spy__btn map-pact map-ally is-on"><ui:VisualElement class="ds-icon ds-icon--shield map-spy__bicon" /><ui:Label name="ally-1-label" text="ALLIED // END" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
@@ -221,12 +221,12 @@
               <ui:Label name="spy-2-state" text="NO AGENT" class="map-spy__state" />
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="spy-2-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-2-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="spy-2-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-2-a-label" text="SEND SPY // 150 ENERGY" class="map-spy__label" /></ui:VisualElement>
               <ui:VisualElement name="spy-2-b" class="map-spy__btn is-hidden"><ui:VisualElement class="ds-icon ds-icon--evacuate map-spy__bicon" /><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-2-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
-              <ui:VisualElement name="ally-2" class="map-spy__btn map-pact map-ally"><ui:VisualElement class="ds-icon ds-icon--shield map-spy__bicon" /><ui:Label name="ally-2-label" text="ALLY // 600 E 100 F" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="pact-2" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-2-label" text="PACT // 320 ENERGY 40 FUEL" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="ally-2" class="map-spy__btn map-pact map-ally"><ui:VisualElement class="ds-icon ds-icon--shield map-spy__bicon" /><ui:Label name="ally-2-label" text="ALLY // 600 ENERGY 100 FUEL" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
           <ui:VisualElement name="heat-3" class="ds-card ds-card--fold map-heat__cell map-heat__cell--holdout">
@@ -242,12 +242,12 @@
               <ui:Label name="spy-3-state" text="NO AGENT" class="map-spy__state" />
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="spy-3-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-3-a-label" text="PLANT 150 E" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="spy-3-a" class="map-spy__btn"><ui:VisualElement class="ds-icon ds-icon--target map-spy__bicon" /><ui:Label name="spy-3-a-label" text="SEND SPY // 150 ENERGY" class="map-spy__label" /></ui:VisualElement>
               <ui:VisualElement name="spy-3-b" class="map-spy__btn is-hidden"><ui:VisualElement class="ds-icon ds-icon--evacuate map-spy__bicon" /><ui:Label text="RECALL" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row map-spy">
-              <ui:VisualElement name="pact-3" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-3-label" text="PACT // 320 E 40 F" class="map-spy__label" /></ui:VisualElement>
-              <ui:VisualElement name="ally-3" class="map-spy__btn map-pact map-ally"><ui:VisualElement class="ds-icon ds-icon--shield map-spy__bicon" /><ui:Label name="ally-3-label" text="ALLY // 600 E 100 F" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="pact-3" class="map-spy__btn map-pact"><ui:VisualElement class="ds-icon ds-icon--hand map-spy__bicon" /><ui:Label name="pact-3-label" text="PACT // 320 ENERGY 40 FUEL" class="map-spy__label" /></ui:VisualElement>
+              <ui:VisualElement name="ally-3" class="map-spy__btn map-pact map-ally"><ui:VisualElement class="ds-icon ds-icon--shield map-spy__bicon" /><ui:Label name="ally-3-label" text="ALLY // 600 ENERGY 100 FUEL" class="map-spy__label" /></ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
           </ui:VisualElement>

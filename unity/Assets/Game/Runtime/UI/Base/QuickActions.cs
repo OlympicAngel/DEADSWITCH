@@ -63,7 +63,7 @@ namespace Deadswitch.Game.UI.Base
             if (slot.Damage > 0 && !ScarSystem.Repairing(s, slot))
             {
                 int cost = ScarSystem.RepairCost(c, slot);
-                VisualElement fix = Kit.Tile("wrench", "REPAIR", Need(s.Energy, cost, "E"), () => Run(Command.Repair(index)), "ds-tile--warn");
+                VisualElement fix = Kit.Tile("wrench", "REPAIR", Need(s.Energy, cost, "ENERGY"), () => Run(Command.Repair(index)), "ds-tile--warn");
                 Short(fix, s.Energy < cost || s.RaidId != 0);
                 _root.Add(fix);
             }
@@ -72,7 +72,7 @@ namespace Deadswitch.Game.UI.Base
             {
                 Economy.UpgradeCost(c, slot.Kind, slot.Level, out int energy, out int compute);
                 string when = Afford.When(s, c, energy, compute, 3600.0 / host.Settings.DevTimeScale);
-                string cost = when.Length > 0 ? when : "E " + Fmt.Compact(energy) + (compute > 0 ? "  C " + Fmt.Compact(compute) : string.Empty);
+                string cost = when.Length > 0 ? when : "ENERGY " + Fmt.Compact(energy) + (compute > 0 ? "  COMPUTE " + Fmt.Compact(compute) : string.Empty);
                 VisualElement up = Kit.Tile("up", "UPGRADE", cost, () => Run(Command.Upgrade(index)), "ds-tile--primary");
                 Short(up, s.Energy < energy || s.Compute < compute);
                 _root.Add(up);

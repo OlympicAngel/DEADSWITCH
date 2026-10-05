@@ -17,7 +17,7 @@ namespace Deadswitch.Game.UI.Screens
     public sealed class CoreScreen : IGameScreen
     {
         private static readonly string[] StageNames = { "DORMANT", "ACTIVE", "ADVANCED", "IMMINENT" };
-        private static readonly string[] DelegationNames = { "MANUAL", "ROUTINES", "AUTOPILOT" };
+        private static readonly string[] DelegationNames = { "YOU DECIDE", "AI ASSISTS", "AI DECIDES" };
 
         private readonly GameHost _host;
         private readonly VisualElement _ui;
@@ -146,7 +146,7 @@ namespace Deadswitch.Game.UI.Screens
 
             bool window = s.ClimaxAtTick > 0;
             _ui.Q("climax").EnableInClassList("is-hidden", !window);
-            Kit.SetButtonText(_ui.Q("climax-purge"), "PURGE CORE // " + c.Climax.PurgeEnergy + " ENERGY + ALL COMPUTE");
+            Kit.SetButtonText(_ui.Q("climax-purge"), "RESET THE CORE // " + c.Climax.PurgeEnergy + " ENERGY + ALL COMPUTE");
             Kit.SetButtonText(_ui.Q("climax-silence"), "SILENCE THE AI // OVERRIDE, " + c.Climax.SilenceHours + " H");
             Kit.SetButtonText(_ui.Q("climax-cancel"), "CANCEL THE PROJECT // " + c.Climax.CancelCompute + " COMPUTE" + (s.ClimaxAudited ? string.Empty : ", AUDIT FIRST"));
             _ui.Q("climax-cancel").EnableInClassList("is-disabled", !s.ClimaxAudited);

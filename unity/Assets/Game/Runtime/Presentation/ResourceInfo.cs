@@ -266,7 +266,7 @@ namespace Deadswitch.Game.Presentation
         {
             r.Value = s.People;
             r.Cap = f.PopulationCap;
-            r.Note = "CREW " + f.CrewAssigned + "/" + f.CrewNeeded + (s.AutomationLoad > 0 ? "  //  AI-RUN " + s.AutomationLoad : string.Empty);
+            r.Note = "WORKERS " + f.CrewAssigned + "/" + f.CrewNeeded + (s.AutomationLoad > 0 ? "  //  " + s.AutomationLoad + " RUN BY AI" : string.Empty);
             for (int i = 0; i < s.Slots.Count; i++)
             {
                 FacilitySlot slot = s.Slots[i];

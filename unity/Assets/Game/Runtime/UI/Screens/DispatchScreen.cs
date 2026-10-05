@@ -91,7 +91,7 @@ namespace Deadswitch.Game.UI.Screens
             if (ult)
             {
                 _ui.Q<Label>("dsp-ult-text").text = "Mother Kess has watched us stay small for " + l.UltimatumDay + " days. Pay, or her whole clan comes over the wall.";
-                _ui.Q<Label>("dsp-ult-price").text = Fmt.Num(l.UltimatumEnergy) + " E  " + Fmt.Num(l.UltimatumFuel) + " F";
+                _ui.Q<Label>("dsp-ult-price").text = Fmt.Num(l.UltimatumEnergy) + " ENERGY  " + Fmt.Num(l.UltimatumFuel) + " FUEL";
                 _ui.Q<Label>("dsp-ult-wave").text = "WAVE x" + Fmt.Milli(l.UltimatumStrengthPct * 10);
                 _ui.Q("dsp-ult-pay").EnableInClassList("is-disabled", s.Energy < l.UltimatumEnergy || s.Fuel < l.UltimatumFuel);
             }

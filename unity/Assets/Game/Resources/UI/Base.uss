@@ -242,3 +242,12 @@
 .qsheet__kind { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-dim); margin-left: var(--s-3); }
 .qsheet__bar { height: 10px; margin-top: var(--s-2); border-width: 0; border-radius: 5px; }
 .qsheet__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-amber); margin-left: var(--s-3); }
+
+/* ---------- Field Guide (SPEC-043) ---------- */
+.guide { flex-grow: 1; background-color: var(--c-world); }
+.guide__scroll { flex-grow: 1; padding: var(--s-4); }
+.guide__row { align-items: flex-start; padding: var(--s-3) 0; }
+.guide__icon { margin-top: 4px; }
+.guide__text { flex-grow: 1; flex-shrink: 1; }
+.guide__term { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-tight); color: var(--c-white); margin-bottom: 2px; }
+.guide__meaning { color: var(--c-text); }

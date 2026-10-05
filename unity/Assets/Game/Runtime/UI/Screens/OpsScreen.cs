@@ -206,7 +206,7 @@ namespace Deadswitch.Game.UI.Screens
 
             bool lockReady = raid && s.OverrideCharges > 0 && s.Tick >= s.OverrideCooldownUntil;
             _lockdown.EnableInClassList("is-disabled", !lockReady);
-            Kit.SetButtonText(_lockdown, "EMERGENCY LOCKDOWN  //  OVR " + s.OverrideCharges + "/" + OverrideSystem.MaxCharges(s, c));
+            Kit.SetButtonText(_lockdown, "EMERGENCY LOCKDOWN  //  OVERRIDE " + s.OverrideCharges + "/" + OverrideSystem.MaxCharges(s, c));
 
             int last = BattleReport.LatestRaidId(_host.Sim.Log.Events);
             Q("last-report").style.display = last > 0 ? DisplayStyle.Flex : DisplayStyle.None;
@@ -274,8 +274,8 @@ namespace Deadswitch.Game.UI.Screens
 
             AiSystem.Recommend(s, c, out Posture rec, out int recGarrison);
             Q<Label>("recommend").text = !raid ? "NOTHING TO DEFEND AGAINST"
-                : rec == Posture.None ? "HOLD // NO CHANGE"
-                : rec == Posture.Turtle ? "TURTLE // " + recGarrison + " DEFENDERS"
+                : rec == Posture.None ? "KEEP AS IS // NO CHANGE"
+                : rec == Posture.Turtle ? "FORTIFY // " + recGarrison + " DEFENDERS"
                 : Fmt.PostureName(rec);
             _setGo.EnableInClassList("is-disabled", !raid);
 
@@ -313,7 +313,7 @@ namespace Deadswitch.Game.UI.Screens
                 int clear = c.Scars.ClearEnergyPerWreck * s.Wreckage;
                 Q<Label>("yard-title").text = "YARD // " + s.Wreckage + (s.Wreckage == 1 ? " WRECK" : " WRECKS");
                 Q<Label>("yard-desc").text = "Regrowth -" + (100 - ScarSystem.RegrowthPct(s, c)) + "% while the wrecks stay.";
-                Kit.SetButtonText(Q("yard-clear"), "CLEAR // " + Fmt.Num(clear) + " E");
+                Kit.SetButtonText(Q("yard-clear"), "CLEAR // " + Fmt.Num(clear) + " ENERGY");
                 Q("yard-clear").EnableInClassList("is-disabled", s.Energy < clear || s.RaidId != 0);
             }
             if (stage == PurgeStage.None)
@@ -334,7 +334,7 @@ namespace Deadswitch.Game.UI.Screens
             Q<Label>("purge-time").EnableInClassList("is-hidden", stage == PurgeStage.Rumor);
             Q<Label>("purge-time").text = Fmt.Countdown(_host.SecondsUntilTick(s.PurgeAtTick));
             Q("purge-answers").EnableInClassList("is-hidden", stage != PurgeStage.Ultimatum);
-            Q<Label>("purge-pay-label").text = "PAY " + Fmt.Num(c.Threats.PurgeTributeEnergy) + " E + " + Fmt.Num(c.Threats.PurgeTributeCompute) + " C";
+            Q<Label>("purge-pay-label").text = "PAY " + Fmt.Num(c.Threats.PurgeTributeEnergy) + " ENERGY + " + Fmt.Num(c.Threats.PurgeTributeCompute) + " COMPUTE";
             Q("purge-pay").EnableInClassList("is-disabled", s.Energy < c.Threats.PurgeTributeEnergy || s.Compute < c.Threats.PurgeTributeCompute);
             Q("purge-retreat").EnableInClassList("is-selected", s.Posture == Posture.Evacuate);
             Q("purge-prepare").EnableInClassList("is-selected", s.Posture == Posture.Turtle);
@@ -356,7 +356,7 @@ namespace Deadswitch.Game.UI.Screens
             if (s.Ironman)
             {
                 // doc 10 s1.2: Ironman has no shield
-                Q<Label>("shield-title").text = "VACATION SHIELD // IRONMAN";
+                Q<Label>("shield-title").text = "VACATION SHIELD // OFF IN HARDCORE";
                 Q<Label>("shield-desc").text = "This run is Ironman: there is no shield. Plan your absences.";
                 Q("shield-toggle").EnableInClassList("is-disabled", true);
                 Q<Label>("shield-label").text = "NONE";

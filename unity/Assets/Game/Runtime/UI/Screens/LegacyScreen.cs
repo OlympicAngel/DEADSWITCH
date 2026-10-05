@@ -20,7 +20,7 @@ namespace Deadswitch.Game.UI.Screens
         private static readonly string[] MasteryNames =
         {
             "SURVIVE A PURGE WITHOUT THE AI", "REACH TIER 2 WITHOUT LOSING AN OUTPOST", "WIN A LIVE BATTLE WITH NO CASUALTIES",
-            "COMPLETE A TIER ON MANUAL", "CATCH MY FIRST LIE WITHIN A DAY", "KEEP CORRUPTION UNDER 40% FOR A TIER", "RELOCATE AT PEAK POWER",
+            "COMPLETE A TIER WITH YOU DECIDING", "CATCH MY FIRST LIE WITHIN A DAY", "KEEP CORRUPTION UNDER 40% FOR A TIER", "RELOCATE AT PEAK POWER",
             "OUTLAST A COLLAPSE WITHOUT A ROLLBACK",
         };
 
@@ -168,7 +168,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("lgc-region-1-fx").text = "TURRETS +" + l.RidgeTurretPct + "%";
             _ui.Q<Label>("lgc-region-2-fx").text = "+" + l.RiverFuelPerHour + " FUEL/H";
             _ui.Q<Label>("lgc-region-3-fx").text = "COMPUTE +" + l.RuinsComputePct + "%";
-            _ui.Q<Label>("lgc-points").text = Fmt.Num(s.LegacyPoints) + " LP";
+            _ui.Q<Label>("lgc-points").text = Fmt.Num(s.LegacyPoints) + " LEGACY POINTS";
             _ui.Q<Label>("lgc-score").text = Fmt.Num(score);
             _ui.Q<Label>("lgc-best").text = "PERSONAL BEST // " + Fmt.Num(Records.BestScore) + " // TIER " + Records.BestTier + " // " + Records.BestCycle + (Records.BestCycle == 1 ? " CYCLE" : " CYCLES");
             _ui.Q<Label>("lgc-breakdown").text = "TIER " + s.HighestTier + " x" + l.ScorePerTier + "  +  PEAK POWER " + Fmt.Num(s.PeakPower) + " / " + l.PowerDivisor
@@ -194,7 +194,7 @@ namespace Deadswitch.Game.UI.Screens
                 int price = LegacySystem.PerkPrice(s, c, (Perk)i);
                 _ui.Q<Label>("p-" + i + "-fx").text = effects[i] + "  LEVEL " + level + "/" + l.PerkMaxLevel;
                 VisualElement buy = _ui.Q("p-" + i + "-buy");
-                Kit.SetButtonText(buy, max ? "MAX" : "BUY // " + price + " LP");
+                Kit.SetButtonText(buy, max ? "MAX" : "BUY // " + price + " LEGACY");
                 buy.EnableInClassList("is-disabled", max || s.LegacyPoints < price);
                 affordable += max || s.LegacyPoints < price ? 0 : 1;
             }
@@ -203,7 +203,7 @@ namespace Deadswitch.Game.UI.Screens
 
             bool choosing = s.Tick - s.CycleStartTick < (long)l.IronmanChooseHours * SimConfig.TicksPerHour;
             _ui.Q("lgc-iron").EnableInClassList("is-on", s.Ironman);
-            _ui.Q<Label>("lgc-iron-title").text = "IRONMAN // " + (s.Ironman ? "THIS RUN" : choosing ? "CHOOSE IN THE FIRST " + l.IronmanChooseHours + " H" : "NEXT RUN");
+            _ui.Q<Label>("lgc-iron-title").text = "HARDCORE // " + (s.Ironman ? "THIS RUN" : choosing ? "CHOOSE IN THE FIRST " + l.IronmanChooseHours + " H" : "NEXT RUN");
             Kit.SetButtonText(_ui.Q("lgc-iron-btn"), s.Ironman ? "ON" : "OFF");
             _ui.Q("lgc-iron-btn").EnableInClassList("is-disabled", !choosing);
 
@@ -214,7 +214,7 @@ namespace Deadswitch.Game.UI.Screens
             bool armed = _armedAt >= 0 && System.Environment.TickCount - _armedAt <= ArmMs;
             move.EnableInClassList("is-armed", armed);
             move.EnableInClassList("is-disabled", !can);
-            Kit.SetButtonText(move, armed ? "CONFIRM // LEAVE THIS HUB" : "RELOCATE // +" + Fmt.Num(SimMath.PctFloor(score, l.VoluntaryBonusPct)) + " LP");
+            Kit.SetButtonText(move, armed ? "CONFIRM // LEAVE THIS HUB" : "RELOCATE // +" + Fmt.Num(SimMath.PctFloor(score, l.VoluntaryBonusPct)) + " LEGACY POINTS");
         }
     }
 }

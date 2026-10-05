@@ -433,7 +433,7 @@ namespace Deadswitch.Host.Narrative
                     }
                     else if (e.A == (int)AiActionKind.Defend)
                     {
-                        Enqueue(new Pending("ai_defend", Priority.Urgent).With("posture", e.B == (int)Posture.Turtle ? "dig in" : e.B == (int)Posture.Dark ? "go dark" : "evacuate"));
+                        Enqueue(new Pending("ai_defend", Priority.Urgent).With("posture", e.B == (int)Posture.Turtle ? "fortify" : e.B == (int)Posture.Dark ? "hide" : "evacuate"));
                     }
                     else if (e.A == (int)AiActionKind.Repair)
                     {

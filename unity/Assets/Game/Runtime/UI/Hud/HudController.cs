@@ -171,6 +171,8 @@ namespace Deadswitch.Game.UI.Hud
             Router.Register(new SettingsScreen(Router));
             Cosmetics.Theme.Apply(UiRoot.Instance.Root);
             Router.Register(new WorkforceScreen(Router));
+            Router.Register(new FieldGuideScreen(Router));
+            AttachJargonHints();
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
             Router.Register(new MapScreen());
@@ -402,7 +404,7 @@ namespace Deadswitch.Game.UI.Hud
             Q<Label>("raid-command-label").text = s.BattleLive ? "LIVE // ON" : "TAKE COMMAND";
             if (raid)
             {
-                _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // EST " + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " // DEF " + Fmt.Num(Defense.Rating(s, c));
+                _raidEstimate.text = (s.RaidGateReported == RaidGate.None ? "?" : Names.Gate(s.RaidGateReported)) + " // ~" + (s.RaidEstimate > 0 ? Fmt.Num(s.RaidEstimate) : "?") + " ATTACKERS // OUR DEFENSE " + Fmt.Num(Defense.Rating(s, c));
                 RefreshPlan(s, c);
             }
 
@@ -600,7 +602,7 @@ namespace Deadswitch.Game.UI.Hud
         /// <summary>The raid card's plan line (SPEC-042 findings 5-6): what is set now, what the AI would set.</summary>
         private void RefreshPlan(GameState s, SimConfig c)
         {
-            Q<Label>("raid-now").text = "NOW  " + Fmt.PostureName(s.Posture) + " // " + s.Garrison + " ON THE WALL";
+            Q<Label>("raid-now").text = "NOW  " + Fmt.PostureName(s.Posture) + " // " + s.Garrison + " DEFENDERS";
             AiSystem.Recommend(s, c, out Posture posture, out int garrison);
             bool set = posture == Posture.None || (posture == s.Posture && garrison == s.Garrison);
             VisualElement plan = Q<VisualElement>("raid-apply").parent;
@@ -636,6 +638,43 @@ namespace Deadswitch.Game.UI.Hud
             Refresh();
         }
 
+        /// <summary>Long-press explanations on the jargon of DEFENSE, CORE and LEGACY (SPEC-043), from the Field Guide text.</summary>
+        private void AttachJargonHints()
+        {
+            void Hint(string screen, string element, string term)
+            {
+                VisualElement el = Router.Get(screen)?.Root.Q(element);
+                foreach (Glossary.Group g in Glossary.Groups)
+                {
+                    foreach (Glossary.Entry e in g.Entries)
+                    {
+                        if (el != null && e.Term == term)
+                        {
+                            Hints.Attach(el, e.Term, e.Meaning);
+                        }
+                    }
+                }
+            }
+
+            foreach (string id in new[] { "posture-none", "posture-turtle", "posture-dark", "posture-evacuate" })
+            {
+                Hint("ops", id, "STANCE");
+            }
+
+            foreach (string id in new[] { "deleg-manual", "deleg-routines", "deleg-autopilot" })
+            {
+                Hint("ops", id, "AI CONTROL");
+            }
+
+            Hint("ops", "sockets", "DEFENDERS");
+            Hint("ops", "lockdown", "OVERRIDE");
+            Hint("core", "core-deleg", "AI CONTROL");
+            Hint("core", "core-ovr", "OVERRIDE");
+            Hint("core", "core-reported", "CORRUPTION");
+            Hint("legacy", "lgc-iron", "HARDCORE");
+            Hint("legacy", "lgc-points", "LEGACY POINTS");
+        }
+
         /// <summary>The Command menu (SPEC-042 finding 1): every secondary destination in one place.</summary>
         private void BuildMenu(SeasonScreen season)
         {
@@ -647,7 +686,8 @@ namespace Deadswitch.Game.UI.Hud
             _menu.Section("book", "RECORDS");
             _menu.Add("book", "STORY", "Chapters and the memory fragments you recovered.", () => Router.Show("story"));
             _menu.Add("cycle", "LEGACY", "This cycle's score, perks and relocation.", () => Router.Show("legacy"));
-            _menu.Section("gear", "ACCOUNT");
+            _menu.Section("gear", "HELP AND SETTINGS");
+            _menu.Add("book", "FIELD GUIDE", "Every term in plain words: workers, defenders, heat, override...", () => Router.Show("guide"));
             _menu.Add("star", "REWARD TRACK", "Themes, AI voices and lore, earned by play.", () =>
             {
                 season.ReturnTo("base");
@@ -693,7 +733,7 @@ namespace Deadswitch.Game.UI.Hud
                 string rate = null;
                 if (pod.Kind == ResKind.People)
                 {
-                    rate = s.AutomationLoad > 0 ? "AI-RUN " + s.AutomationLoad : "CREW " + f.CrewAssigned + "/" + f.CrewNeeded;
+                    rate = s.AutomationLoad > 0 ? s.AutomationLoad + " RUN BY AI" : "WORKERS " + f.CrewAssigned + "/" + f.CrewNeeded;
                 }
                 else if (pod.Kind == ResKind.Energy && s.Blackout)
                 {

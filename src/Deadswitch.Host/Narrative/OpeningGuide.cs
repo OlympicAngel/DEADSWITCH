@@ -46,7 +46,7 @@ namespace Deadswitch.Host.Narrative
         {
             if (s.RaidId == 1 && s.Posture == Posture.None && s.Garrison == 0)
             {
-                return new GuideObjective(GuideStep.Defend, "SET A DEFENSE", "Raiders inbound. Open OPS: pick TURTLE and post defenders, or tap SET & GO.", "defend");
+                return new GuideObjective(GuideStep.Defend, "SET A DEFENSE", "Raiders inbound. Open DEFENSE: pick FORTIFY and post defenders, or tap USE AI PLAN.", "defend");
             }
 
             if (!Has(s, FacilityKind.BatteryBank))

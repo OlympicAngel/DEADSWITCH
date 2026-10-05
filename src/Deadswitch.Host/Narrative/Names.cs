@@ -65,7 +65,7 @@ namespace Deadswitch.Host.Narrative
         {
             switch (posture)
             {
-                case Sim.State.Posture.Turtle: return "TURTLE, FULL GARRISON";
+                case Sim.State.Posture.Turtle: return "FORTIFY, ALL DEFENDERS";
                 case Sim.State.Posture.Dark: return "DARK";
                 case Sim.State.Posture.Evacuate: return "EVACUATE";
                 default: return "NONE";

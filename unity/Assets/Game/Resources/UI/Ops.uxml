@@ -7,7 +7,7 @@
       <ui:VisualElement class="ds-head__well"><ui:VisualElement class="ds-icon ds-icon--shield ds-head__icon" /></ui:VisualElement>
       <ui:VisualElement class="ds-head__body">
         <ui:Label text="OPERATIONS" class="ds-head__title" />
-        <ui:Label text="DEFENSE // FORCES // AUTONOMY" class="ds-head__status" />
+        <ui:Label text="STANCE // DEFENDERS // AI CONTROL" class="ds-head__status" />
       </ui:VisualElement>
     </ui:VisualElement>
 
@@ -59,7 +59,7 @@
         </ui:VisualElement>
         <ui:Label name="purge-desc" text="Pay tribute, pull everyone out, or hold the wall. They take everything they can reach." class="ds-prose ops-purge__desc" />
         <ui:VisualElement name="purge-answers" class="row ops-purge__answers">
-          <ui:VisualElement name="purge-pay" class="ds-btn ds-btn--warn ops-purge__btn"><ui:Label name="purge-pay-label" text="PAY 800 E + 60 C" class="ds-btn__label" /></ui:VisualElement>
+          <ui:VisualElement name="purge-pay" class="ds-btn ds-btn--warn ops-purge__btn"><ui:Label name="purge-pay-label" text="PAY 800 ENERGY + 60 COMPUTE" class="ds-btn__label" /></ui:VisualElement>
           <ui:VisualElement name="purge-retreat" class="ds-btn ops-purge__btn"><ui:Label text="RETREAT" class="ds-btn__label" /></ui:VisualElement>
           <ui:VisualElement name="purge-prepare" class="ds-btn ops-purge__btn"><ui:Label text="PREPARE" class="ds-btn__label" /></ui:VisualElement>
         </ui:VisualElement>
@@ -74,7 +74,7 @@
           </ui:VisualElement>
         </ui:VisualElement>
         <ui:Label name="yard-desc" text="Regrowth -30% while the wrecks stay." class="ds-prose ops-yard__desc" />
-        <ui:VisualElement name="yard-clear" class="ds-btn ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 E" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="yard-clear" class="ds-btn ops-yard__btn"><ui:Label name="yard-clear-label" text="CLEAR // 60 ENERGY" class="ds-btn__label" /></ui:VisualElement>
       </ui:VisualElement>
 
       </ui:VisualElement>
@@ -89,21 +89,21 @@
                 <ui:VisualElement name="posture-none" class="ops-posture">
                   <ui:VisualElement class="ds-icon ds-icon--hold ops-posture__icon" />
                   <ui:VisualElement class="ops-posture__body">
-                    <ui:Label text="HOLD" class="ops-posture__name" />
+                    <ui:Label text="NORMAL" class="ops-posture__name" />
                     <ui:Label name="posture-none-fx" text="No changes. Everyone works." class="ops-posture__fx" />
                   </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="posture-turtle" class="ops-posture is-selected">
                   <ui:VisualElement class="ds-icon ds-icon--shield ops-posture__icon" />
                   <ui:VisualElement class="ops-posture__body">
-                    <ui:Label text="TURTLE" class="ops-posture__name" />
+                    <ui:Label text="FORTIFY" class="ops-posture__name" />
                     <ui:Label name="posture-turtle-fx" text="+50% DEFENSE" class="ops-posture__fx" />
                   </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="posture-dark" class="ops-posture">
                   <ui:VisualElement class="ds-icon ds-icon--dark ops-posture__icon" />
                   <ui:VisualElement class="ops-posture__body">
-                    <ui:Label text="GO DARK" class="ops-posture__name" />
+                    <ui:Label text="HIDE" class="ops-posture__name" />
                     <ui:Label name="posture-dark-fx" text="40% MISS // -120/H ENERGY" class="ops-posture__fx" />
                   </ui:VisualElement>
                 </ui:VisualElement>
@@ -118,7 +118,7 @@
       </ui:VisualElement>
 
       <!-- Garrison sockets -->
-      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--people ds-section__icon" /><ui:Label text="GARRISON" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
+      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--people ds-section__icon" /><ui:Label text="DEFENDERS" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ops-card">
         <ui:Label name="garrison-note" text="+4 DEF EACH // 15 ON CREW DUTY" class="ds-label t-dim ops-card__lead" />
         <ui:VisualElement name="sockets" class="ops-sockets">
@@ -166,14 +166,14 @@
 
       </ui:VisualElement>
       <ui:VisualElement name="page-autonomy" class="ds-page ops-page">
-        <ui:Label text="AUTONOMY" class="ds-page__title" />
+        <ui:Label text="AI CONTROL" class="ds-page__title" />
         <ui:Label text="chip" class="ds-page__glyph" />
       <!-- How much the AI runs (SPEC-004) -->
       <ui:VisualElement class="ds-card ops-card">
         <ui:VisualElement class="ds-seg ops-seg">
-          <ui:VisualElement name="deleg-manual" class="ds-seg__item ops-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--hand ops-seg__icon" /><ui:Label text="MANUAL" class="ops-seg__label" /></ui:VisualElement>
-          <ui:VisualElement name="deleg-routines" class="ds-seg__item ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--cycle ops-seg__icon" /><ui:Label text="ROUTINES" class="ops-seg__label" /></ui:VisualElement>
-          <ui:VisualElement name="deleg-autopilot" class="ds-seg__item ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip ops-seg__icon" /><ui:Label text="AUTOPILOT" class="ops-seg__label" /></ui:VisualElement>
+          <ui:VisualElement name="deleg-manual" class="ds-seg__item ops-seg__item is-selected"><ui:VisualElement class="ds-icon ds-icon--hand ops-seg__icon" /><ui:Label text="YOU DECIDE" class="ops-seg__label" /></ui:VisualElement>
+          <ui:VisualElement name="deleg-routines" class="ds-seg__item ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--cycle ops-seg__icon" /><ui:Label text="AI ASSISTS" class="ops-seg__label" /></ui:VisualElement>
+          <ui:VisualElement name="deleg-autopilot" class="ds-seg__item ops-seg__item"><ui:VisualElement class="ds-icon ds-icon--chip ops-seg__icon" /><ui:Label text="AI DECIDES" class="ops-seg__label" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:Label name="deleg-desc" text="I only advise. You run everything." class="ds-prose ops-seg__desc" />
       </ui:VisualElement>

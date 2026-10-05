@@ -86,7 +86,7 @@
       </ui:VisualElement>
       <ui:VisualElement class="spacer" />
       <ui:VisualElement class="hud-override">
-        <ui:Label text="OVR" class="hud-override__label" />
+        <ui:Label text="OVERRIDE" class="hud-override__label" />
         <ui:VisualElement name="override-pips" class="row">
           <ui:VisualElement class="hud-opip is-on" />
           <ui:VisualElement class="hud-opip" />

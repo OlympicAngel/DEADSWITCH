@@ -22,7 +22,7 @@
         <ui:VisualElement class="ds-card__head">
           <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--people ds-card__icon" /></ui:VisualElement>
           <ui:VisualElement class="ds-card__titles">
-            <ui:Label text="POPULATION &amp; CREW" class="ds-card__title" />
+            <ui:Label text="PEOPLE &amp; WORKERS" class="ds-card__title" />
             <ui:Label text="Who lives here and who is working." class="ds-card__sub" />
           </ui:VisualElement>
         </ui:VisualElement>
@@ -30,17 +30,17 @@
           <ui:VisualElement class="wf-tile">
             <ui:VisualElement class="ds-icon ds-icon--people wf-tile__icon" />
             <ui:Label name="wf-pop" text="18/20" class="wf-tile__value" />
-            <ui:Label text="POPULATION" class="wf-tile__label" />
+            <ui:Label text="PEOPLE" class="wf-tile__label" />
           </ui:VisualElement>
           <ui:VisualElement class="wf-tile">
             <ui:VisualElement class="ds-icon ds-icon--wrench wf-tile__icon" />
             <ui:Label name="wf-crew" text="9/11" class="wf-tile__value" />
-            <ui:Label text="CREW" class="wf-tile__label" />
+            <ui:Label text="WORKERS" class="wf-tile__label" />
           </ui:VisualElement>
           <ui:VisualElement class="wf-tile wf-tile--last">
             <ui:VisualElement class="ds-icon ds-icon--shield wf-tile__icon" />
             <ui:Label name="wf-garrison" text="2" class="wf-tile__value" />
-            <ui:Label text="GARRISON" class="wf-tile__label" />
+            <ui:Label text="DEFENDERS" class="wf-tile__label" />
           </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
