@@ -1,6 +1,6 @@
 # TASK: F-104 Plain language, no monetization, new opening, engagement layer
 
-- Status: In progress
+- Status: Done (code) 2026-10-05; Editor check pending
 - Branch: ccr-3e0227c3-c2kae3
 - Spec: `docs/specs/SPEC-043-clarity-and-hook.md`
 
@@ -10,6 +10,6 @@
 - [x] 3. Leftovers: dead code, hard-coded names, sample text, unexplained numbers
 - [x] 4. New opening: story, boot sequence, camera descent, effects
 - [x] 5. Engagement layer: next-milestone tracker, celebration moments
-- [ ] 6. Docs, screenshots
+- [x] 6. Docs, screenshots
 
 F-100 to F-103 are code complete; their Editor checklists are in `docs/agents/HANDOFF.md`.

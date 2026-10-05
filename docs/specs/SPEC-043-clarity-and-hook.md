@@ -1,6 +1,6 @@
 # SPEC-043: Clarity and hook (plain language, no monetization, new opening, engagement)
 
-- Status: In progress (F-104)
+- Status: Done (code) 2026-10-05 (F-104); Editor check pending
 - Owner direction (2026-10-05): "rework the naming, each thing should be clear, simple language (what is crew / garrison / ironman?); no leftover or unconnected features, no placeholders; drop the pay guard and any ads; rework the startup story (story, theme, animation, effects); think of anything missing from a top-notch addictive game."
 
 ## 1. One name per concept (player-facing text only; code identifiers stay)
@@ -39,3 +39,11 @@ A short, cinematic boot: black, a heartbeat of static, the core's first lines, a
 - **Next milestone tracker:** a slim card shows the next tier's requirements with progress (the same gates as MODULES), so the next goal is always visible.
 - **Celebration moments:** tier reached, module restored, attack repelled, chapter closed, building maxed: a short full-width banner with an icon, a line from the AI and what it unlocked. Never blocks input, never sells anything.
 - No timers that punish absence, no streak loss, no fake urgency.
+
+## Done
+- s1: names applied across UXML, screens, advisor lines and hints; `Presentation/Glossary` + FIELD GUIDE screen (`UI/Screens/FieldGuideScreen`, Command menu); long-press hints on DEFENSE, CORE and LEGACY jargon; raw enum text replaced (report outcomes, module states).
+- s2: store, ads, unlock gate and season pass removed; `Runtime/Cosmetics` (free reward track, interface colours in SETTINGS).
+- s3: dead code removed; the warlord named once in `Names.Warlord`; SETTINGS START OVER (two taps, replays the opening); override pips follow the real cap; version in About.
+- s4: six-beat prologue (`Host/Narrative/OpeningGuide` `Prologue.Scenes`), `UI/Hud/PrologueWorld` (cities light, burn and go dark), mood colours, tap to advance, TAKE CONTROL, orbit shot and drone descent (`OpeningFlow`). Chapter close is not repeated as a banner: the STORY screen already marks it.
+- s5: `UI/Hud/GoalCard` (next tier's gates on BASE), `UI/Hud/Celebrations` (tier, memory, repelled attack, fully upgraded, mastery).
+- Screenshots: `docs/media/li5-*.png`. Fixtures: `opening-war`, `opening-handler`, `milestone`.
