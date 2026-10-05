@@ -242,7 +242,7 @@ namespace Deadswitch.Game.UI.Hud
 
             if (e.Kind == EventKind.RaidWarning)
             {
-                Feedback.Alert();
+                Feedback.Signature((AttackKind)e.D);
                 Motion.To(_raid, 0.42f, Ease.OutBack, t => _raid.style.scale = new Scale(new Vector3(0.85f + (0.15f * t), 0.85f + (0.15f * t), 1f)));
             }
         }

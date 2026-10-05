@@ -106,6 +106,13 @@ namespace Deadswitch.Sim.Systems
             }
 
             s.TierManual &= s.Delegation == DelegationLevel.Manual;
+
+            // weathered a collapse without a rollback or a forced reboot (doc 10 s6)
+            if (s.CollapseWatchUntilTick > 0 && s.Tick >= s.CollapseWatchUntilTick)
+            {
+                s.CollapseWatchUntilTick = 0;
+                Earn(ctx, Mastery.CollapseSurvived);
+            }
             s.TierMaxCorruption = System.Math.Max(s.TierMaxCorruption, s.CorruptionMilli);
 
             // forced reboot triggers (doc 06 s4): never random, always a failure the handler could see coming

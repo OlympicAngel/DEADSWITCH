@@ -164,6 +164,13 @@ namespace Deadswitch.Sim.Systems
 
             int energy = ctx.Config.Modules.ResearchEnergy[d.Index];
             int compute = ctx.Config.Modules.ResearchCompute[d.Index];
+            bool blueprint = !memory && s.Blueprints > 0;
+            if (blueprint)
+            {
+                // a traded blueprint (doc 10 s5) makes the field research cheaper
+                energy = SimMath.PctFloor(energy, 100 - ctx.Config.Living.BlueprintDiscountPct);
+                compute = SimMath.PctFloor(compute, 100 - ctx.Config.Living.BlueprintDiscountPct);
+            }
             if (s.Energy < energy)
             {
                 return CommandResult.Reject(RejectReason.NotEnoughEnergy);
@@ -175,6 +182,12 @@ namespace Deadswitch.Sim.Systems
             }
 
             int minutes = ctx.Config.Modules.ResearchMinutes[d.Index];
+            if (blueprint)
+            {
+                s.Blueprints--;
+                ctx.Emit(EventKind.BlueprintUsed, (int)node, ctx.Config.Living.BlueprintDiscountPct);
+            }
+
             s.Energy -= energy;
             s.Compute -= compute;
             if (memory)

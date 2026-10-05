@@ -205,6 +205,7 @@ namespace Deadswitch.Sim.Systems
                     }
 
                     hours = g.CollapseStallHours;
+                    s.CollapseWatchUntilTick = s.Tick + (g.CollapseStallHours * hour);
                     break;
                 case CrisisKind.Takeover:
                     s.TakeoverUntilTick = s.Tick + (g.TakeoverHours * hour);
@@ -214,6 +215,8 @@ namespace Deadswitch.Sim.Systems
                     ModuleNode node = ThreatSystem.PickLock(s);
                     if (node != ModuleNode.None)
                     {
+                        // a rollback during a collapse spoils the mastery
+                        s.CollapseWatchUntilTick = 0;
                         s.LockedModule = (int)node;
                         s.LockedUntilTick = s.Tick + (g.RollbackHours * hour);
                         hours = g.RollbackHours;

@@ -67,5 +67,8 @@ namespace Deadswitch.Sim.State
 
         /// <summary>Compute fragments, paid in energy.</summary>
         Compute = 2,
+
+        /// <summary>Blueprints, paid in energy: one makes the next field research cheaper (doc 10 s5).</summary>
+        Blueprints = 3,
     }
 }

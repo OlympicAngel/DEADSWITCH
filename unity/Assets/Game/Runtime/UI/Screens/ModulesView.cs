@@ -131,8 +131,16 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("detail-desc").text = ModuleTexts.Effect(_selected, c);
             int energy = c.Modules.ResearchEnergy[sel.Index];
             int compute = c.Modules.ResearchCompute[sel.Index];
+            bool blueprint = sel.Field != ModuleField.Trunk && s.Blueprints > 0;
+            if (blueprint)
+            {
+                // a traded blueprint is spent on the next field research (doc 10 s5)
+                energy = SimMath.PctFloor(energy, 100 - c.Living.BlueprintDiscountPct);
+                compute = SimMath.PctFloor(compute, 100 - c.Living.BlueprintDiscountPct);
+            }
+
             var e = _ui.Q<Label>("detail-energy");
-            e.text = Fmt.Num(energy) + " ENERGY";
+            e.text = Fmt.Num(energy) + " ENERGY" + (blueprint ? " // BLUEPRINT -" + c.Living.BlueprintDiscountPct + "%" : string.Empty);
             e.EnableInClassList("is-short", s.Energy < energy);
             var cp = _ui.Q<Label>("detail-compute");
             cp.text = Fmt.Num(compute) + " COMPUTE";

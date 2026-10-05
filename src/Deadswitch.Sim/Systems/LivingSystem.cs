@@ -31,7 +31,7 @@ namespace Deadswitch.Sim.Systems
                 return -1;
             }
 
-            int basePrice = good == TradeGood.Fuel ? l.TradeFuelPrice : good == TradeGood.EnergyCells ? l.TradeEnergyPrice : l.TradeComputePrice;
+            int basePrice = good == TradeGood.Fuel ? l.TradeFuelPrice : good == TradeGood.EnergyCells ? l.TradeEnergyPrice : good == TradeGood.Blueprints ? l.TradeBlueprintPrice : l.TradeComputePrice;
             int price = SimMath.PctFloor(basePrice, l.TradePricePctByLevel[(int)level]);
             if (DiplomacySystem.Ceasefire(s, f) || DiplomacySystem.Allied(s, f))
             {
@@ -44,7 +44,7 @@ namespace Deadswitch.Sim.Systems
         public static int Lot(SimConfig c, TradeGood good)
         {
             LivingConfig l = c.Living;
-            return good == TradeGood.Fuel ? l.TradeFuelLot : good == TradeGood.EnergyCells ? l.TradeEnergyLot : l.TradeComputeLot;
+            return good == TradeGood.Fuel ? l.TradeFuelLot : good == TradeGood.EnergyCells ? l.TradeEnergyLot : good == TradeGood.Blueprints ? 1 : l.TradeComputeLot;
         }
 
         public static void Hourly(SimContext ctx)
@@ -121,7 +121,7 @@ namespace Deadswitch.Sim.Systems
         {
             GameState s = ctx.State;
             SimConfig c = ctx.Config;
-            if (cmd.A < 0 || cmd.A >= WorldSystem.FactionCount || cmd.B < 0 || cmd.B > (int)TradeGood.Compute || cmd.C != 0)
+            if (cmd.A < 0 || cmd.A >= WorldSystem.FactionCount || cmd.B < 0 || cmd.B > (int)TradeGood.Blueprints || cmd.C != 0)
             {
                 return CommandResult.Reject(RejectReason.InvalidArgument);
             }
@@ -164,7 +164,7 @@ namespace Deadswitch.Sim.Systems
                 }
 
                 s.Energy -= price;
-                got = good == TradeGood.Fuel ? AddFuel(s, c, lot) : AddCompute(s, c, lot);
+                got = good == TradeGood.Fuel ? AddFuel(s, c, lot) : good == TradeGood.Blueprints ? AddBlueprints(s, c, lot) : AddCompute(s, c, lot);
             }
 
             s.TradesToday[cmd.A]++;
@@ -393,7 +393,14 @@ namespace Deadswitch.Sim.Systems
         /// <summary>How much of a good the Hub can still store.</summary>
         private static int Room(GameState s, SimConfig c, TradeGood good)
         {
-            return good == TradeGood.Fuel ? c.Fuel.Cap - s.Fuel : good == TradeGood.EnergyCells ? Economy.EnergyCap(s, c) - s.Energy : c.Compute.Cap - s.Compute;
+            return good == TradeGood.Fuel ? c.Fuel.Cap - s.Fuel : good == TradeGood.EnergyCells ? Economy.EnergyCap(s, c) - s.Energy : good == TradeGood.Blueprints ? c.Living.BlueprintMax - s.Blueprints : c.Compute.Cap - s.Compute;
+        }
+
+        private static int AddBlueprints(GameState s, SimConfig c, int amount)
+        {
+            int got = System.Math.Max(0, System.Math.Min(amount, c.Living.BlueprintMax - s.Blueprints));
+            s.Blueprints += got;
+            return got;
         }
 
         private static int AddEnergy(GameState s, SimConfig c, int amount)

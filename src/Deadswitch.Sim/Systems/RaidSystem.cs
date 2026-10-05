@@ -241,6 +241,7 @@ namespace Deadswitch.Sim.Systems
             if (s.RaidId == ai.FirstLieRaid)
             {
                 lie = true;
+                s.FirstLieTick = s.Tick;
             }
             else
             {

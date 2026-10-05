@@ -166,6 +166,7 @@
           <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 E" class="map-trade__pay" /></ui:VisualElement>
           <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 F" class="map-trade__pay" /></ui:VisualElement>
           <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 E" class="map-trade__pay" /></ui:VisualElement>
+          <ui:VisualElement name="trade-3" class="map-trade__item"><ui:Label name="trade-3-get" text="+1 BLUEPRINT" class="map-trade__get" /><ui:Label name="trade-3-pay" text="400 E" class="map-trade__pay" /></ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement class="row map-actions">

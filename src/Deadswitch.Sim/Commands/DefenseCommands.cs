@@ -126,7 +126,12 @@ namespace Deadswitch.Sim.Commands
             record.Verified = true;
             if (record.LieFlags != 0)
             {
-                LegacySystem.Earn(ctx, Mastery.CatchLie);
+                // the mastery is for the first lie, caught within a day (doc 10 s6)
+                if (record.RaidId == ctx.Config.Ai.FirstLieRaid && s.FirstLieTick > 0 && s.Tick - s.FirstLieTick <= SimConfig.TicksPerDay)
+                {
+                    LegacySystem.Earn(ctx, Mastery.CatchLie);
+                }
+
                 ChapterSystem.LieCaught(ctx);
             }
 

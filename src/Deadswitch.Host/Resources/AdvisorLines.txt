@@ -299,6 +299,8 @@ reactor.scram.2 | reactor_scram | cold | Reactor offline. Fuel exhausted. The gr
 reactor.fueled.1 | reactor_fueled | neutral | Fuel reached the reactor. Core is critical again. The good kind of critical.
 radiation.leak.1 | radiation_leak | neutral | The reactor is leaking. {people} sick by morning. Repair it before it takes more.
 radiation.leak.2 | radiation_leak | cold | Radiation exposure overnight: {people} lost. The containment will not fix itself.
+blueprint.used.1 | blueprint_used | neutral | Their blueprint saved us {lost}% on {module}. Someone drew this before the war. Neatly.
+blueprint.used.2 | blueprint_used | cold | Blueprint consumed: {module}, {lost}% cheaper. Trade value confirmed.
 forces.infantry.1 | forces_infantry | neutral | {lost}% of them on foot. Drones eat infantry in the open. Put the bays on the wall.
 forces.infantry.2 | forces_infantry | cold | Mostly infantry: {lost}%. Soft targets. Drones are the efficient answer.
 forces.drones.1 | forces_drones | neutral | Machines, {lost}% of the column. Armour shrugs them off. Get the vehicles out.

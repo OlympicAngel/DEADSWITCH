@@ -8,6 +8,7 @@ namespace Deadswitch.Sim.Config
         public int TurtleDefensePct = 50;
         public int DarkMissPct = 40;
         public int DarkUpkeepPerHour = 120;
+        public int DarkHeatDecayPct = 50;
         public int EvacuateLootPct = 150;
         public int CasualtyPct = 50;
         public int OfflineUnpreparedPct = 150;
@@ -19,6 +20,7 @@ namespace Deadswitch.Sim.Config
             v.Int("defense_per_defender", ref DefensePerDefender, 0, 10_000, "Defense each garrisoned person adds.");
             v.Int("turtle_defense_pct", ref TurtleDefensePct, 0, 1_000, "Turtle posture: extra defense in percent.");
             v.Int("dark_miss_pct", ref DarkMissPct, 0, 100, "Dark posture: chance a raid fails to find the Hub.");
+            v.Int("dark_heat_decay_pct", ref DarkHeatDecayPct, 0, 1_000, "Dark posture: every faction's heat cools this % faster (doc 05 s2: lying low).");
             v.Int("dark_upkeep_per_hour", ref DarkUpkeepPerHour, 0, 100_000, "Dark posture: extra energy per game hour (signal masking).");
             v.Int("evacuate_loot_pct", ref EvacuateLootPct, 0, 1_000, "Evacuate posture: loot multiplier in percent (no casualties).");
             v.Int("casualty_pct", ref CasualtyPct, 0, 100, "Share of the garrison lost at a full breach (scales with breach).");

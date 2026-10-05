@@ -36,6 +36,9 @@ namespace Deadswitch.Sim.Config
         public int TradeComputePrice = 150;
         public int[] TradePricePctByLevel = { 80, 100, 150 };
         public int TradesPerDay = 3;
+        public int TradeBlueprintPrice = 500;
+        public int BlueprintMax = 3;
+        public int BlueprintDiscountPct = 35;
         public int WorldEventFirstDay = 2;
         public int WorldEventEveryHours = 72;
         public int WorldEventHours = 24;
@@ -82,6 +85,9 @@ namespace Deadswitch.Sim.Config
             v.Int("trade_compute_price", ref TradeComputePrice, 0, 100_000, "Base energy price of a compute lot.");
             v.IntList("trade_price_pct_by_level", ref TradePricePctByLevel, 1, 1_000, 3, 3, "Price % by the seller's heat level (Cold, Watched, Hunted; Marked will not trade). doc 10: 0.8-1.5.");
             v.Int("trades_per_day", ref TradesPerDay, 0, 100, "Trades per faction per day.");
+            v.Int("trade_blueprint_price", ref TradeBlueprintPrice, 0, 100_000, "Base energy price of one blueprint (doc 10 s5).");
+            v.Int("blueprint_max", ref BlueprintMax, 0, 20, "Blueprints the Hub can hold.");
+            v.Int("blueprint_discount_pct", ref BlueprintDiscountPct, 0, 100, "A blueprint takes this % off the energy and compute of the next field research it is spent on.");
             v.Int("world_event_first_day", ref WorldEventFirstDay, 1, 1_000, "Day of the first world event.");
             v.Int("world_event_every_hours", ref WorldEventEveryHours, 1, 10_000, "Hours from one world event's start to the next.");
             v.Int("world_event_hours", ref WorldEventHours, 1, 10_000, "How long a world event lasts.");

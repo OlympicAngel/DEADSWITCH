@@ -91,7 +91,7 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q("ally-" + f).RegisterCallback<ClickEvent>(_ => Ally(faction));
             }
 
-            for (int g = 0; g <= (int)TradeGood.Compute; g++)
+            for (int g = 0; g <= (int)TradeGood.Blueprints; g++)
             {
                 var good = (TradeGood)g;
                 _ui.Q("trade-" + g).RegisterCallback<ClickEvent>(_ => Run(Command.Trade(WorldSystem.Sites[_selected].Owner, good)));
@@ -593,8 +593,8 @@ namespace Deadswitch.Game.UI.Screens
             bool wild = HazardSystem.Wild(WorldSystem.Sites[_selected].Kind);
             bool hostile = level == HeatLevel.Marked || wild;
             int left = System.Math.Max(0, c.Living.TradesPerDay - s.TradesToday[(int)owner]);
-            _ui.Q<Label>("trade-left").text = wild ? "NOBODY OUT THERE TO TRADE WITH" : hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant();
-            for (int g = 0; g <= (int)TradeGood.Compute; g++)
+            _ui.Q<Label>("trade-left").text = wild ? "NOBODY OUT THERE TO TRADE WITH" : hostile ? Names.Faction(owner) + " WILL NOT TRADE" : left + "/" + c.Living.TradesPerDay + " TODAY // " + level.ToString().ToUpperInvariant() + " // BLUEPRINTS " + s.Blueprints + "/" + c.Living.BlueprintMax;
+            for (int g = 0; g <= (int)TradeGood.Blueprints; g++)
             {
                 var good = (TradeGood)g;
                 int price = LivingSystem.Price(s, c, owner, good);
@@ -602,7 +602,8 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q<Label>("trade-" + g + "-get").text = "+" + Fmt.Num(LivingSystem.Lot(c, good)) + " " + LivingTexts.Good(good);
                 _ui.Q<Label>("trade-" + g + "-pay").text = hostile ? "-" : Fmt.Num(price) + (payFuel ? " F" : " E");
                 bool afford = price >= 0 && (payFuel ? s.Fuel >= price : s.Energy >= price);
-                _ui.Q("trade-" + g).EnableInClassList("is-disabled", hostile || left == 0 || !afford);
+                bool full = good == TradeGood.Blueprints && s.Blueprints >= c.Living.BlueprintMax;
+                _ui.Q("trade-" + g).EnableInClassList("is-disabled", hostile || left == 0 || !afford || full);
             }
         }
 

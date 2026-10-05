@@ -187,6 +187,9 @@ turtle_defense_pct = 50
 # Dark posture: chance a raid fails to find the Hub. [0..100]
 dark_miss_pct = 40
 
+# Dark posture: every faction's heat cools this % faster (doc 05 s2: lying low). [0..1000]
+dark_heat_decay_pct = 50
+
 # Dark posture: extra energy per game hour (signal masking). [0..100000]
 dark_upkeep_per_hour = 120
 
@@ -833,6 +836,15 @@ trade_price_pct_by_level = [80, 100, 150]
 
 # Trades per faction per day. [0..100]
 trades_per_day = 3
+
+# Base energy price of one blueprint (doc 10 s5). [0..100000]
+trade_blueprint_price = 500
+
+# Blueprints the Hub can hold. [0..20]
+blueprint_max = 3
+
+# A blueprint takes this % off the energy and compute of the next field research it is spent on. [0..100]
+blueprint_discount_pct = 35
 
 # Day of the first world event. [1..1000]
 world_event_first_day = 2

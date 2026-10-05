@@ -87,6 +87,7 @@ namespace Deadswitch.Game.Presentation
             {
                 case TradeGood.Fuel: return "FUEL";
                 case TradeGood.EnergyCells: return "CELLS";
+                case TradeGood.Blueprints: return "BLUEPRINT";
                 default: return "COMPUTE";
             }
         }

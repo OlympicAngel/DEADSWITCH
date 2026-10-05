@@ -264,6 +264,12 @@ namespace Deadswitch.Sim.Systems
             for (int f = 0; f < FactionCount; f++)
             {
                 int decay = Modules.Has(s, ModuleNode.ST3) ? SimMath.PctFloor(w.HeatDecayPerHour, 100 + ctx.Config.Modules.HeatSinkPct) : w.HeatDecayPerHour;
+                if (s.Posture == Posture.Dark)
+                {
+                    // lying low (doc 05 s2): they forget a Hub that has gone quiet
+                    decay = SimMath.PctFloor(decay, 100 + ctx.Config.Defense.DarkHeatDecayPct);
+                }
+
                 AddHeat(ctx, (Faction)f, -SimMath.PctFloor(decay, 100 + (s.Perks[(int)Perk.HeatDecay] * ctx.Config.Legacy.PerkHeatDecayPct)));
             }
 

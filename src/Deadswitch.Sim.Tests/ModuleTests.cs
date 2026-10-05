@@ -26,9 +26,16 @@ namespace Deadswitch.Sim.Tests
 
             Assert.True(Modules.Has(sim.State, ModuleNode.LG1));
             Assert.True(Economy.UpkeepPerHour(sim.State, sim.Config, sim.State.Slots[1]) < upkeepBefore);
+            // doc 10 s5: a traded blueprint makes the next field research cheaper, and is spent
+            sim.State.Energy = 2_000;
+            Assert.True(sim.Execute(Command.Trade(Faction.Rustborn, TradeGood.Blueprints)).Accepted);
+            Assert.Equal(1, sim.State.Blueprints);
             sim.State.Energy = 500;
             sim.State.Compute = 100;
+            Modules.TryDef(ModuleNode.LG2B, out ModuleDef lg2b);
             Assert.True(sim.Execute(Command.StartResearch(ModuleNode.LG2B)).Accepted);
+            Assert.Equal(500 - SimMath.PctFloor(sim.Config.Modules.ResearchEnergy[lg2b.Index], 100 - sim.Config.Living.BlueprintDiscountPct), sim.State.Energy);
+            Assert.Equal(0, sim.State.Blueprints);
             sim.Run(sim.Config.Modules.ResearchMinutes[5]);
             Assert.Equal(RejectReason.Excluded, sim.Execute(Command.StartResearch(ModuleNode.LG2A)).Reason);
         }

@@ -329,6 +329,9 @@ namespace Deadswitch.Sim.Events
 
         /// <summary>The warning names the attacking forces (SPEC-035). A: raid id, B: infantry %, C: drones %, D: vehicles %.</summary>
         RaidForces = 107,
+
+        /// <summary>A traded blueprint cut a field research's cost (doc 10 s5). A: module node, B: discount %.</summary>
+        BlueprintUsed = 108,
     }
 
     /// <summary>Immutable log entry. <see cref="Seq"/> is unique and increasing across the whole run.</summary>
