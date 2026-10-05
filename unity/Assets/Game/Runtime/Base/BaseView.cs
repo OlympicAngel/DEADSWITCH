@@ -193,6 +193,12 @@ namespace Deadswitch.Game.Base
             }
         }
 
+        /// <summary>True when the facility on a plot has power (as drawn now; empty plots count as powered).</summary>
+        public bool SlotPowered(int slot)
+        {
+            return slot < 0 || slot >= _slots.Count || _slots[slot].View.Kind == FacilityKind.None || _slots[slot].View.Powered;
+        }
+
         /// <summary>The slot whose plot contains a ground point, or -1.</summary>
         public int SlotAt(Vector3 ground)
         {
@@ -747,7 +753,8 @@ namespace Deadswitch.Game.Base
                     }
                 }
 
-                bool blink = Mathf.Repeat(_time, 1.1f) < 0.45f;
+                // beacons run on the facility's power too
+                bool blink = powered && Mathf.Repeat(_time, 1.1f) < 0.45f;
                 foreach (Light b in o.Beacons)
                 {
                     b.enabled = blink;

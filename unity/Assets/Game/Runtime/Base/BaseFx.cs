@@ -215,7 +215,9 @@ namespace Deadswitch.Game.Base
             {
                 float h = Mathf.Max(1.5f, view.SlotHeight(_focus));
                 _focusLight.transform.position = view.SlotGround(_focus) + new Vector3(0, h + 2.5f, 0);
-                _focusLight.intensity = (reduced ? 2.2f : 2f + (0.6f * Mathf.Sin(_time * 3f))) * effects;
+                // a building switched off stays dark under the selection: the key light drops to a faint outline
+                float key = view.SlotPowered(_focus) ? 1f : 0.2f;
+                _focusLight.intensity = (reduced ? 2.2f : 2f + (0.6f * Mathf.Sin(_time * 3f))) * effects * key;
                 _nextScan -= dt;
                 if (_nextScan <= 0f && !reduced)
                 {
