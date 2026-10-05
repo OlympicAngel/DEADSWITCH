@@ -14,9 +14,11 @@
 - [ ] Fix whatever the phone run finds; open Editor items: puddle reflections, ALLY/SABOTAGE/RECALL, reactor, themes
 
 ## Needs the owner (accounts, services or native tooling)
-- Cloud backup + account link (doc 10 s2, optional in v1): pick a provider (Unity Cloud Save, Play Games, iCloud).
-- Lock-screen / home-screen widget (doc 08 s5): native Android/iOS plugin, untestable without the platform SDKs.
-- Real rewarded-ad network and store IAP: needs the owner's accounts (grants and entitlements are already wired).
+Code is in; each service compiles only once its package is installed (package-gated asmdefs).
+- Cloud backup (doc 10 s2): install `com.unity.services.cloudsave` and link the Unity Cloud project (`Cloud/Services`).
+- Store and ads (ADR-0006): install `com.unity.purchasing` and `com.unity.ads`, fill `Resources/Store/StoreIds.json` (product ids, ad game ids).
+- Widget (doc 08 s5): copy `unity/NativeWidgets~` into place per its README (Android androidlib; iOS widget extension + App Group).
+- Editor resolve and device tests for all of the above.
 
 ## Blocked / questions
 - See "Needs the owner".
