@@ -201,7 +201,7 @@ namespace Deadswitch.Game.Base
             _time += dt;
             if (BaseView.Instance != null)
             {
-                _cam.backgroundColor = BaseLook.Srgb(BaseView.Instance.Lighting.fogColor);
+                _cam.backgroundColor = RenderSettings.fogColor;
             }
 
             bool reduced = GameHost.Instance != null && GameHost.Instance.Settings.ReducedMotion;

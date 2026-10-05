@@ -5,6 +5,7 @@
 .ds-root {
     /* Surfaces */
     --c-world: #12171A;            /* world charcoal, cooled toward blue-black (SPEC-039 accent pass) */
+    --c-void: #000000;             /* true black: the opening before the core wakes (SPEC-043 s4) */
     --c-panel: rgba(14, 20, 23, 0.88);
     --c-panel-solid: #161D21;
     --c-panel-raised: #1F282D;     /* panel graphite */

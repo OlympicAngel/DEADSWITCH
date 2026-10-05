@@ -36,6 +36,8 @@ namespace Deadswitch.Game.Audio
         private AudioClip[] _static;
         private AudioClip _tick;
         private AudioClip _chime;
+        private AudioClip _heartbeat;
+        private AudioClip _powerUp;
         private AudioClip[][] _syllables;
 
         private float _nextShelling;
@@ -80,6 +82,8 @@ namespace Deadswitch.Game.Audio
             _static = new[] { Synth.Static(9), Synth.Static(10) };
             _tick = Synth.Tick(1800f, 0.05f);
             _chime = Synth.Tick(660f, 0.5f);
+            _heartbeat = Synth.Heartbeat();
+            _powerUp = Synth.PowerUp(12);
 
             BuildVoice();
             _host.Settings.Changed += () =>
@@ -110,6 +114,36 @@ namespace Deadswitch.Game.Audio
         public void Tick()
         {
             OneShot(_tick, 0.25f, Random.Range(0.97f, 1.03f));
+        }
+
+        /// <summary>A sound of the opening film (SPEC-043 s4).</summary>
+        public void Opening(OpeningCue cue)
+        {
+            float master = _host != null ? _host.Settings.SoundPct / 100f : 1f;
+            switch (cue)
+            {
+                case OpeningCue.Heartbeat:
+                    OneShot(_heartbeat, 0.9f * master, 1f);
+                    break;
+                case OpeningCue.Static:
+                    OneShot(_static[Random.Range(0, _static.Length)], 0.4f * master, Random.Range(0.9f, 1.1f));
+                    break;
+                case OpeningCue.FarImpact:
+                    OneShot(_far[Random.Range(0, _far.Length)], 0.6f * master, Random.Range(0.85f, 1.1f));
+                    break;
+                case OpeningCue.Impact:
+                    OneShot(_close[Random.Range(0, _close.Length)], 0.75f * master, Random.Range(0.9f, 1.05f));
+                    break;
+                case OpeningCue.PowerUp:
+                    OneShot(_powerUp, 0.85f * master, 1f);
+                    break;
+            }
+        }
+
+        /// <summary>Drains the ambience for a while (the quiet before; the opening's blackout).</summary>
+        public void Hush(float seconds)
+        {
+            _silenceUntil = Mathf.Max(_silenceUntil, Time.time + seconds);
         }
 
         /// <summary>The AI starts speaking a line: a burst of synthetic syllables, more broken with corruption.</summary>
@@ -322,5 +356,15 @@ namespace Deadswitch.Game.Audio
             s.pitch = pitch;
             s.PlayOneShot(clip, volume);
         }
+    }
+
+    /// <summary>The opening film's sounds (SPEC-043 s4).</summary>
+    public enum OpeningCue
+    {
+        Heartbeat,
+        Static,
+        FarImpact,
+        Impact,
+        PowerUp,
     }
 }

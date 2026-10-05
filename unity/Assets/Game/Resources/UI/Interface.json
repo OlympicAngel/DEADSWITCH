@@ -30,6 +30,178 @@
     "shake": 0.35,
     "fov": 32
   },
+  "opening": {
+    "letterboxPct": 13,
+    "charsPerSecond": 30,
+    "crtSeconds": 0.9,
+    "waveDelay": 2.2,
+    "waveSeconds": 2.6,
+    "waveRadius": 70,
+    "blackoutSeconds": 3.2,
+    "warImpactEvery": 0.55,
+    "warShake": 0.45,
+    "flareIntensity": 30,
+    "flareRange": 36,
+    "ringWidth": 0.9,
+    "shots": [
+      {
+        "mood": "boot",
+        "from": {
+          "x": -34,
+          "y": 18,
+          "z": -24
+        },
+        "to": {
+          "x": -34,
+          "y": 18,
+          "z": -24
+        },
+        "lookFrom": {
+          "x": 0,
+          "y": 2,
+          "z": 6
+        },
+        "lookTo": {
+          "x": 0,
+          "y": 2,
+          "z": 6
+        },
+        "fovFrom": 46,
+        "fovTo": 46,
+        "seconds": 3.6
+      },
+      {
+        "mood": "before",
+        "from": {
+          "x": -34,
+          "y": 18,
+          "z": -24
+        },
+        "to": {
+          "x": -16,
+          "y": 24,
+          "z": -36
+        },
+        "lookFrom": {
+          "x": 0,
+          "y": 2,
+          "z": 6
+        },
+        "lookTo": {
+          "x": 0,
+          "y": 3,
+          "z": 6
+        },
+        "fovFrom": 46,
+        "fovTo": 42,
+        "seconds": 5
+      },
+      {
+        "mood": "war",
+        "from": {
+          "x": 14,
+          "y": 5,
+          "z": -16
+        },
+        "to": {
+          "x": -6,
+          "y": 6,
+          "z": -12
+        },
+        "lookFrom": {
+          "x": 2,
+          "y": 3,
+          "z": 8
+        },
+        "lookTo": {
+          "x": -2,
+          "y": 4,
+          "z": 10
+        },
+        "fovFrom": 52,
+        "fovTo": 48,
+        "seconds": 4.6
+      },
+      {
+        "mood": "dark",
+        "from": {
+          "x": 0,
+          "y": 9,
+          "z": -22
+        },
+        "to": {
+          "x": 0,
+          "y": 26,
+          "z": -34
+        },
+        "lookFrom": {
+          "x": 0,
+          "y": 3,
+          "z": 8
+        },
+        "lookTo": {
+          "x": 0,
+          "y": 2,
+          "z": 6
+        },
+        "fovFrom": 46,
+        "fovTo": 44,
+        "seconds": 5.2
+      },
+      {
+        "mood": "now",
+        "from": {
+          "x": 0,
+          "y": 8,
+          "z": -1
+        },
+        "to": {
+          "x": 0,
+          "y": 30,
+          "z": -30
+        },
+        "lookFrom": {
+          "x": 0,
+          "y": 6,
+          "z": 11.9
+        },
+        "lookTo": {
+          "x": 0,
+          "y": 1,
+          "z": 5
+        },
+        "fovFrom": 40,
+        "fovTo": 46,
+        "seconds": 6
+      },
+      {
+        "mood": "handler",
+        "from": {
+          "x": 0,
+          "y": 30,
+          "z": -30
+        },
+        "to": {
+          "x": 0,
+          "y": 38,
+          "z": -38
+        },
+        "lookFrom": {
+          "x": 0,
+          "y": 1,
+          "z": 5
+        },
+        "lookTo": {
+          "x": 0,
+          "y": 0,
+          "z": 5
+        },
+        "fovFrom": 46,
+        "fovTo": 36,
+        "seconds": 4
+      }
+    ]
+  },
   "toast": {
     "seconds": 2.8,
     "max": 3

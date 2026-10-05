@@ -40,6 +40,9 @@ namespace Deadswitch.Game.Base
 
         public static BaseFx Instance { get; private set; }
 
+        /// <summary>Hides the game's markers in the world (plot rings, links, scans) while the opening film plays.</summary>
+        public bool Hidden { get; set; }
+
         /// <summary>Highlights the framed slot (-1 clears).</summary>
         public void Focus(int slot)
         {
@@ -155,6 +158,11 @@ namespace Deadswitch.Game.Base
             if (_host == null || !_host.IsReady || view == null)
             {
                 return;
+            }
+
+            if (_root.gameObject.activeSelf == Hidden)
+            {
+                _root.gameObject.SetActive(!Hidden);
             }
 
             float dt = Time.deltaTime;

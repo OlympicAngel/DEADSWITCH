@@ -142,27 +142,6 @@ for (const m of document.querySelectorAll('.ds-meter')) {
 }
 const cs = getComputedStyle(document.querySelector('.ds-root') || document.body);
 const v = n => cs.getPropertyValue(n).trim();
-// PrologueWorld.cs mirror: the planet's crown and its cities, coloured by the prologue mood
-for (const el of document.querySelectorAll('.pro__world')) {
-  const w = el.clientWidth, h = el.clientHeight, st = getComputedStyle(el), mood = ([...el.closest('.pro').classList].find(c => c.startsWith('pro--')) || 'pro--boot').slice(5);
-  const lit = st.getPropertyValue('--lit-color').trim(), war = st.getPropertyValue('--war-color').trim(), rim = st.getPropertyValue('--rim-color').trim();
-  const R = w * 1.6, cx = w / 2, cy = h * 0.42 + R, half = Math.asin(Math.min(1, w * 0.62 / R)), top = -Math.PI / 2;
-  const pt = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
-  const arc = (r) => { const [x0, y0] = pt(top - half, r), [x1, y1] = pt(top + half, r); return 'M'+x0+','+y0+' A'+r+','+r+' 0 0 1 '+x1+','+y1; };
-  let svg = '<path d="'+arc(R - 18)+'" stroke="'+rim+'" stroke-opacity="0.18" stroke-width="30" fill="none"/><path d="'+arc(R)+'" stroke="'+rim+'" stroke-width="3" fill="none"/>';
-  for (let i = 0; i < 23; i++) {
-    const u = (i + 0.5) / 23, x = 0.06 + 0.88 * (u + 0.035 * Math.sin(i * 2.7)), ph = (i * 0.618) % 1;
-    const [px, py] = pt(top + (x - 0.5) * 2 * half * 0.94, R - 10);
-    let col = lit, a = 0.85, size = 7;
-    if (mood === 'boot') continue;
-    if (mood === 'war') { col = war; const f = ph > 0.5 ? 1 : 0.3; a = 0.55 + 0.45 * f; size = 7 + f * 9; }
-    if (mood === 'dark') { col = war; a = ph > 0.6 ? 0.7 : 0; }
-    if (mood === 'now' || mood === 'handler') { if (i !== 14) continue; size = 13; svg += '<circle cx="'+px+'" cy="'+py+'" r="'+size*3.4+'" fill="'+col+'" opacity="0.25"/>'; }
-    if (a <= 0) continue;
-    svg += '<circle cx="'+px+'" cy="'+py+'" r="'+size*2.4+'" fill="'+col+'" opacity="'+a*0.3+'"/><circle cx="'+px+'" cy="'+py+'" r="'+size*0.6+'" fill="#fff" opacity="'+a+'"/>';
-  }
-  el.innerHTML = '<svg width="'+w+'" height="'+h+'">'+svg+'</svg>';
-}
 // Icons.cs mirror: the same glyph file (Resources/UI/Icons.json)
 const GLYPH_SRC = ${JSON.stringify(JSON.parse(fs.readFileSync(path.join(UI, 'Icons.json'), 'utf8')).glyphs)};
 const arcPts = (r, cx, cy, d0, d1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = (d0 + (d1 - d0) * i / n) * Math.PI / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; });

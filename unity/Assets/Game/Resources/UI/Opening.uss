@@ -1,54 +1,76 @@
-/* Prologue overlay (SPEC-009, SPEC-041, SPEC-043 s4): the core wakes in the dark and tells its story over the world.
-   One mood class per beat (pro--boot/before/war/dark/now/handler) recolours the orb, kicker and world. Tokens only. */
+/* Opening (SPEC-043 s4): a letterboxed film over the real Hub. One mood class per beat (op--boot/before/war/dark/
+   now/handler) recolours the accents; the camera, lights and sound carry the picture. Bar heights, the black and
+   the flash are driven from code (OpeningFlow). Tokens only. */
 
-.pro { position: absolute; left: 0; right: 0; top: 0; bottom: 0; justify-content: center; padding: var(--s-12) var(--s-10); background-color: var(--c-scrim); }
-.pro__scrim { top: 0; bottom: 0; --sheen-color: var(--c-scrim-edge); --sheen-reach: 1; }
+.op { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
 
-/* the planet's crown and its cities, low on screen */
-.pro__world { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; --lit-color: var(--c-cyan); --war-color: var(--c-red); --rim-color: var(--c-cyan-dim); }
-.pro--war .pro__world, .pro--dark .pro__world { --rim-color: var(--c-red-glow); }
+/* the lower half darkens toward the subtitles so a line always reads over the world */
+.op__grade { bottom: 0; height: 62%; --sheen-reach: 1; }
 
-/* a hit of light on the war beat (opacity driven from code) */
-.pro__flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-red-glow); opacity: 0; }
+.op__flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-red-glow); opacity: 0; }
 
-.pro__top { position: absolute; left: var(--s-10); right: var(--s-10); top: 150px; align-items: center; justify-content: center; }
-.pro__rec { width: 12px; height: 12px; border-radius: 6px; margin-right: var(--s-2); background-color: var(--c-red); }
-.pro__head-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-cyan-dim); }
+/* before the core wakes: true black with a CRT trace across the middle */
+.op__black { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-void); justify-content: center; align-items: center; }
+.op__crt { width: 0; height: 3px; background-color: var(--c-cyan); }
 
-.pro__center { align-items: center; margin-bottom: 18%; }
-.pro__orb { width: 300px; height: 300px; margin-bottom: var(--s-8); --ring-color: var(--c-cyan); --core-color: var(--c-cyan-glow); }
-.pro--war .pro__orb, .pro--dark .pro__orb { --ring-color: var(--c-red); --core-color: var(--c-red-glow); }
-.pro--handler .pro__orb { --ring-color: var(--c-violet); --core-color: var(--c-cyan-glow); }
+/* letterbox bars (height from code: cinematic.letterboxPct) */
+.op__bar { position: absolute; left: 0; right: 0; height: 0; overflow: hidden; background-color: var(--c-void); padding: 0 var(--s-10); }
+.op__bar--top { top: 0; justify-content: flex-end; padding-bottom: var(--s-5); }
+.op__bar--bottom { bottom: 0; flex-direction: row; justify-content: space-between; align-items: center; }
+.op__bar-row { align-items: center; margin-bottom: var(--s-3); }
+.op__rec { width: 12px; height: 12px; border-radius: 6px; margin-right: var(--s-3); background-color: var(--c-red); }
+.op__bar-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-dim); }
 
-.pro__kicker {
+.op__pip { flex-grow: 1; height: 4px; margin-right: var(--s-2); border-radius: 2px; background-color: var(--c-line); }
+.op__pip.is-on { background-color: var(--c-cyan); }
+.op--war .op__pip.is-on, .op--dark .op__pip.is-on { background-color: var(--c-red); }
+.op--handler .op__pip.is-on { background-color: var(--c-violet); }
+
+/* subtitles: lower third, above the bottom bar */
+.op__sub { position: absolute; left: var(--s-10); right: var(--s-10); bottom: 21%; }
+.op__kicker-row { align-items: center; margin-bottom: var(--s-4); }
+.op__tick { width: 40px; height: 3px; margin-right: var(--s-3); background-color: var(--c-cyan); }
+.op__kicker {
     -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
     font-size: var(--fs-micro);
     letter-spacing: var(--ls-wide);
     color: var(--c-cyan);
-    margin-bottom: var(--s-4);
-    -unity-text-align: middle-center;
 }
-.pro--war .pro__kicker, .pro--dark .pro__kicker { color: var(--c-red); }
-.pro--handler .pro__kicker { color: var(--c-violet); }
 
-.pro__text {
-    -unity-font-definition: resource("Fonts/ChakraPetch-Regular");
+.op--war .op__kicker, .op--dark .op__kicker { color: var(--c-red); }
+.op--war .op__tick, .op--dark .op__tick { background-color: var(--c-red); }
+.op--before .op__kicker { color: var(--c-amber); }
+.op--before .op__tick { background-color: var(--c-amber); }
+
+.op__line {
+    -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
+    font-size: var(--fs-xl);
+    color: var(--c-white);
+    white-space: normal;
+    min-height: 240px;
+    text-shadow: 0 2px 14px var(--c-void);
+}
+
+/* the handler beat: the fragment's face and the one action */
+.op__hand { position: absolute; left: var(--s-10); right: var(--s-10); bottom: 19%; align-items: center; }
+.op__hand.is-hidden { display: none; }
+.op__orb { width: 220px; height: 220px; margin-bottom: var(--s-6); --ring-color: var(--c-violet); --core-color: var(--c-cyan-glow); }
+.op__hand-kicker { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-violet); margin-bottom: var(--s-4); }
+.op__hand-line {
+    -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold");
     font-size: var(--fs-lg);
     color: var(--c-white);
     white-space: normal;
-    min-height: 300px;
-    max-width: 900px;
     -unity-text-align: upper-center;
+    min-height: 200px;
+    text-shadow: 0 2px 14px var(--c-void);
 }
-.pro__pips { margin-top: var(--s-6); }
-.pro__pip { width: 44px; height: 6px; margin: 0 var(--s-1); border-radius: 3px; background-color: var(--c-line-mid); }
-.pro__pip.is-on { background-color: var(--c-cyan); }
-.pro--war .pro__pip.is-on, .pro--dark .pro__pip.is-on { background-color: var(--c-red); }
 
-.pro__take { margin-top: var(--s-8); min-width: 520px; height: 120px; border-radius: 60px; }
-.pro__take > .ds-btn__label { font-size: var(--fs-md); letter-spacing: var(--ls-wide); }
-.pro__take.is-hidden { display: none; }
-.pro__tap { margin-top: var(--s-6); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-faint); }
-.pro__tap.is-hidden { opacity: 0; }
+.op__take { margin-top: var(--s-8); min-width: 560px; height: var(--touch); border-radius: 64px; }
+.op__take > .ds-btn__label { font-size: var(--fs-md); letter-spacing: var(--ls-wide); }
 
-.pro__skip { position: absolute; right: var(--s-8); bottom: 140px; min-width: 240px; border-radius: 44px; }
+.op__tap { font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-text-faint); margin-top: var(--s-4); }
+.op__tap.is-hidden { opacity: 0; }
+.op__skip { flex-direction: row; align-items: center; min-width: var(--touch); height: var(--touch); justify-content: flex-end; }
+.op__skip-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-text-dim); }
+.op__skip-icon { width: 30px; height: 30px; margin-left: var(--s-2); --icon-color: var(--c-text-dim); }

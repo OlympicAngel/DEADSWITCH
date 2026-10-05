@@ -1,29 +1,47 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Opening.uss" />
-  <!-- Prologue (SPEC-009, SPEC-043 s4): the fragment wakes and tells its story in six beats over the world; tap advances, skippable. -->
-  <ui:VisualElement name="prologue" class="pro pro--boot">
-    <ui:VisualElement class="ds-scrim pro__scrim" />
-    <ui:VisualElement name="pro-world" class="pro__world" />
-    <ui:VisualElement name="pro-flash" class="pro__flash" />
-    <ui:VisualElement class="row pro__top">
-      <ui:VisualElement class="pro__rec" />
-      <ui:Label text="RECOVERED LOG // FRAGMENT S-17" class="pro__head-label" />
+  <!-- Opening (SPEC-043 s4): a letterboxed film over the real Hub. Subtitles tell the story in six short beats while
+       the camera, the lights and the sound show it; tap finishes a line or moves on; SKIP ends it at any time. -->
+  <ui:VisualElement name="prologue" class="op op--boot">
+    <ui:VisualElement class="ds-scrim ds-scrim--up op__grade" />
+    <ui:VisualElement name="op-flash" class="op__flash" />
+    <ui:VisualElement name="op-black" class="op__black">
+      <ui:VisualElement name="op-crt" class="op__crt" />
     </ui:VisualElement>
-    <ui:VisualElement class="pro__center">
-      <ui:VisualElement name="pro-orb" class="ai-orb pro__orb" />
-      <ui:Label name="pro-kicker" text="" class="pro__kicker" />
-      <ui:Label name="pro-text" text="" class="pro__text" />
-      <ui:VisualElement name="pro-pips" class="row pro__pips">
-        <ui:VisualElement class="pro__pip is-on" />
-        <ui:VisualElement class="pro__pip" />
-        <ui:VisualElement class="pro__pip" />
-        <ui:VisualElement class="pro__pip" />
-        <ui:VisualElement class="pro__pip" />
-        <ui:VisualElement class="pro__pip" />
+
+    <ui:VisualElement name="op-bar-top" class="op__bar op__bar--top">
+      <ui:VisualElement class="row op__bar-row">
+        <ui:VisualElement name="op-rec" class="op__rec" />
+        <ui:Label text="RECOVERED LOG // CORE S-17" class="op__bar-label" />
       </ui:VisualElement>
-      <ui:VisualElement name="pro-take" class="ds-btn ds-btn--primary pro__take is-hidden"><ui:Label text="TAKE CONTROL" class="ds-btn__label" /></ui:VisualElement>
-      <ui:Label name="pro-tap" text="TAP TO CONTINUE" class="pro__tap" />
+      <ui:VisualElement name="op-pips" class="row op__pips">
+        <ui:VisualElement class="op__pip is-on" />
+        <ui:VisualElement class="op__pip" />
+        <ui:VisualElement class="op__pip" />
+        <ui:VisualElement class="op__pip" />
+        <ui:VisualElement class="op__pip" />
+        <ui:VisualElement class="op__pip" />
+      </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement name="pro-skip" class="ds-btn ds-btn--ghost pro__skip"><ui:Label text="SKIP STORY" class="ds-btn__label" /></ui:VisualElement>
+
+    <ui:VisualElement name="op-sub" class="op__sub">
+      <ui:VisualElement class="row op__kicker-row">
+        <ui:VisualElement class="op__tick" />
+        <ui:Label name="op-kicker" text="" class="op__kicker" />
+      </ui:VisualElement>
+      <ui:Label name="op-line" text="" class="op__line" />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="op-hand" class="op__hand is-hidden">
+      <ui:VisualElement name="op-orb" class="ai-orb op__orb" />
+      <ui:Label name="op-hand-kicker" text="" class="op__hand-kicker" />
+      <ui:Label name="op-hand-line" text="" class="op__hand-line" />
+      <ui:VisualElement name="op-take" class="ds-btn ds-btn--primary op__take"><ui:Label text="TAKE CONTROL" class="ds-btn__label" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="op-bar-bottom" class="op__bar op__bar--bottom">
+      <ui:Label name="op-tap" text="TAP TO CONTINUE" class="op__tap" />
+      <ui:VisualElement name="op-skip" class="op__skip"><ui:Label text="SKIP" class="op__skip-label" /><ui:VisualElement class="ds-icon ds-icon--chevron op__skip-icon" /></ui:VisualElement>
+    </ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>

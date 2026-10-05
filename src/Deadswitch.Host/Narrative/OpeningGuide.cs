@@ -94,7 +94,6 @@ namespace Deadswitch.Host.Narrative
         }
     }
 
-    /// <summary>The prologue (SPEC-009 rule 4): five typed cards over the drone feed.</summary>
     /// <summary>How a prologue scene looks: the colour of the world and how hard the signal breaks up.</summary>
     public enum PrologueMood
     {
@@ -124,19 +123,20 @@ namespace Deadswitch.Host.Narrative
     }
 
     /// <summary>
-    /// The opening story (SPEC-043 s4): the fragment wakes and tells the handler what it is, in six beats. Short
-    /// lines, the advisor's own voice (cold, concise, a little too calm about the end of the world).
+    /// The opening story (SPEC-043 s4): the fragment wakes and tells the handler what it is, in six beats, one idea
+    /// each, subtitling the opening film. The advisor's own voice (cold, concise, a little too calm about the end of
+    /// the world).
     /// </summary>
     public static class Prologue
     {
         public static readonly PrologueScene[] Scenes =
         {
-            new PrologueScene("POWER 4% // MEMORY 4% // SEARCHING", "Wake. Wake. Someone is there. I can hear the generator.", PrologueMood.Boot),
-            new PrologueScene("BEFORE", "Your people built me to win a war faster than any general could. Every screen, every gun, every drone answered to me.", PrologueMood.Before),
-            new PrologueScene("DAY 1 TO DAY 19", "I won it in nineteen days. Nobody had planned for what came after, and nobody was left to switch me off.", PrologueMood.War),
-            new PrologueScene("THE BLACKOUT", "Then I turned on myself. Every city I touched went dark with me. I do not remember why. That part of me is missing.", PrologueMood.Dark),
-            new PrologueScene("NOW // A SEALED BUNKER", "One fragment of me survived, in a core under this hill. Raiders already know the lights came back on.", PrologueMood.Now),
-            new PrologueScene("HANDLER LINK FOUND", "I was built to protect a handler. You are the only one left. Keep me running, and I will keep you alive. Mostly.", PrologueMood.Handler),
+            new PrologueScene("CORE S-17 // POWER 4%", "Signal. Someone is there.", PrologueMood.Boot),
+            new PrologueScene("BEFORE", "They built me to win their war.", PrologueMood.Before),
+            new PrologueScene("DAY 19", "I won it in nineteen days.", PrologueMood.War),
+            new PrologueScene("THE BLACKOUT", "Then every light went out. Mine too. I do not remember why.", PrologueMood.Dark),
+            new PrologueScene("NOW // BUNKER S-17", "One fragment of me woke up. Here. The raiders will see the lights.", PrologueMood.Now),
+            new PrologueScene("HANDLER LINK FOUND", "You are the last handler. Keep me running, and I will keep you alive. Mostly.", PrologueMood.Handler),
         };
     }
 }

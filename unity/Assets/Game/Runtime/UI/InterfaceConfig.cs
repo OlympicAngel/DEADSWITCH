@@ -15,6 +15,7 @@ namespace Deadswitch.Game.UI
         public FocusRules focus = new FocusRules();
         public CameraRules camera = new CameraRules();
         public CinematicRules cinematic = new CinematicRules();
+        public OpeningRules opening = new OpeningRules();
         public ToastRules toast = new ToastRules();
         public OrbRules orb = new OrbRules();
         public AmbientRules ambient = new AmbientRules();
@@ -87,6 +88,39 @@ namespace Deadswitch.Game.UI
             public float aftermathSeconds = 3.2f;
             public float shake = 0.35f;
             public float fov = 32f;
+        }
+
+        /// <summary>The opening film (SPEC-043 s4): one shot per story beat, the blackout and the power wave.</summary>
+        [System.Serializable]
+        public sealed class OpeningRules
+        {
+            public int letterboxPct = 13;
+            public float charsPerSecond = 30f;
+            public float crtSeconds = 0.9f;
+            public float waveDelay = 2.2f;
+            public float waveSeconds = 2.6f;
+            public float waveRadius = 70f;
+            public float blackoutSeconds = 3.2f;
+            public float warImpactEvery = 0.55f;
+            public float warShake = 0.45f;
+            public float flareIntensity = 30f;
+            public float flareRange = 36f;
+            public float ringWidth = 0.9f;
+            public OpeningShot[] shots = new OpeningShot[0];
+        }
+
+        /// <summary>One camera move: from, to, the point it watches, the lens and how long the beat lasts.</summary>
+        [System.Serializable]
+        public sealed class OpeningShot
+        {
+            public string mood = "boot";
+            public Vector3 from;
+            public Vector3 to;
+            public Vector3 lookFrom;
+            public Vector3 lookTo;
+            public float fovFrom = 40f;
+            public float fovTo = 40f;
+            public float seconds = 4f;
         }
 
         [System.Serializable]

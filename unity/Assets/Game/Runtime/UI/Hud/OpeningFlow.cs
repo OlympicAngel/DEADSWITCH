@@ -1,3 +1,4 @@
+using Deadswitch.Game.Base;
 using Deadswitch.Game.Core;
 using Deadswitch.Host.Narrative;
 using Deadswitch.Sim.State;
@@ -7,16 +8,19 @@ using UnityEngine.UIElements;
 namespace Deadswitch.Game.UI.Hud
 {
     /// <summary>
-    /// The opening (SPEC-009, SPEC-043 s4): the fragment tells its story in six beats over the world while the drone
-    /// hangs in orbit (new runs only; tap advances, skippable), the drone descends onto the Hub, the HUD comes online
-    /// in steps, and the objective guide points at the control to use. Reduced motion shows still cards that wait
-    /// for a tap, with no camera move; essential information never waits on animation.
+    /// The opening (SPEC-009, SPEC-043 s4), new runs only. A letterboxed film on the real Hub: black and a heartbeat,
+    /// then six short subtitled beats while <see cref="OpeningFilm"/> shows them (the compound lit, the war, the
+    /// blackout rolling in, the core waking and powering the lights back on), and the handler card with TAKE CONTROL.
+    /// The HUD stays hidden until then and comes online piece by piece. Tap finishes a line or moves on; SKIP ends it.
+    /// Reduced motion or cinematics off: no camera or light moves, the cards wait for a tap. The objective guide then
+    /// points at the control to use.
     /// </summary>
     public sealed class OpeningFlow
     {
-        private const float CharsPerSecond = 34f;
-        private const float HoldSeconds = 1.9f;
-        private const float RevealStagger = 0.32f;
+        private const float RevealStagger = 0.28f;
+        private const float RevealDelay = 0.45f;
+        private const float HoldSeconds = 2.4f;
+        private const float FadeInSeconds = 0.7f;
         private const string GuideOffKey = "ds.guide.off";
 
         private readonly GameHost _host;
@@ -24,11 +28,28 @@ namespace Deadswitch.Game.UI.Hud
         private readonly AdvisorVoice _voice;
         private readonly Base.BaseScreen _base;
         private readonly VisualElement _guide;
+        private readonly InterfaceConfig.OpeningRules _rules = InterfaceConfig.Current.opening;
         private VisualElement _prologue;
-        private Label _proText;
+        private VisualElement _black;
+        private VisualElement _crt;
+        private VisualElement _barTop;
+        private VisualElement _barBottom;
+        private VisualElement _rec;
+        private VisualElement _sub;
+        private VisualElement _hand;
+        private VisualElement _tap;
+        private VisualElement _flashEl;
+        private Label _kicker;
+        private Label _line;
+        private Label _handLine;
+        private AiOrb _orb;
+        private OpeningFilm _film;
         private int _card = -1;
         private float _shown;
-        private float _hold;
+        private float _beat;
+        private float _flash;
+        private float _bars;
+        private float _clock;
         private GuideStep _step = GuideStep.Done;
         private bool _stepKnown;
         private VisualElement _highlight;
@@ -69,17 +90,17 @@ namespace Deadswitch.Game.UI.Hud
             RefreshGuide();
         }
 
-        private static string[] RevealOrder => new[] { "topbar", "frame", "world", "advisor", "tabbar" };
+        private static bool Cinematic => !Motion.Reduced && (GameHost.Instance == null || GameHost.Instance.Settings.Cinematics) && DroneCamera.Instance != null && BaseView.Instance != null;
+
+        private PrologueScene Scene => Prologue.Scenes[_card];
+
+        private bool Last => _card == Prologue.Scenes.Length - 1;
 
         public void Tick(float dt)
         {
             if (_prologue != null)
             {
                 TickPrologue(dt);
-            }
-            else if (_descent >= 0f && Deadswitch.Game.Base.DroneCamera.Instance != null)
-            {
-                TickDescent(dt);
             }
 
             if (_highlight != null && !Motion.Reduced)
@@ -102,91 +123,107 @@ namespace Deadswitch.Game.UI.Hud
             tree.pickingMode = PickingMode.Position;
             UiRoot.Instance.Root.Add(tree);
             _prologue = tree;
-            _proRoot = tree.Q("prologue");
-            _proText = tree.Q<Label>("pro-text");
-            _proKicker = tree.Q<Label>("pro-kicker");
-            _proFlash = tree.Q("pro-flash");
-            _proTake = tree.Q("pro-take");
-            _proTap = tree.Q("pro-tap");
-            tree.Q("pro-skip").RegisterCallback<ClickEvent>(e =>
+            _black = tree.Q("op-black");
+            _crt = tree.Q("op-crt");
+            _barTop = tree.Q("op-bar-top");
+            _barBottom = tree.Q("op-bar-bottom");
+            _rec = tree.Q("op-rec");
+            _sub = tree.Q("op-sub");
+            _hand = tree.Q("op-hand");
+            _tap = tree.Q("op-tap");
+            _flashEl = tree.Q("op-flash");
+            _kicker = tree.Q<Label>("op-kicker");
+            _line = tree.Q<Label>("op-line");
+            _handLine = tree.Q<Label>("op-hand-line");
+            tree.Q("op-skip").RegisterCallback<ClickEvent>(e =>
             {
                 e.StopPropagation();
                 EndPrologue();
             });
-            _proTake.RegisterCallback<ClickEvent>(e =>
+            tree.Q("op-take").RegisterCallback<ClickEvent>(e =>
             {
                 e.StopPropagation();
                 EndPrologue();
             });
 
             // tap anywhere: finish the line being typed, or move to the next beat
-            _proRoot.RegisterCallback<ClickEvent>(_ => Advance());
-            _proOrb = new AiOrb(tree.Q("pro-orb"));
-            _proOrb.Assemble();
-            _proWorld = new PrologueWorld(tree.Q("pro-world"));
-            _orbit = 0f;
-            _descent = -1f;
-            foreach (string part in RevealOrder)
+            tree.Q("prologue").RegisterCallback<ClickEvent>(_ => Advance());
+            _orb = new AiOrb(tree.Q("op-orb"));
+            _orb.Assemble();
+
+            // the HUD is not there yet: it comes online when the handler takes control
+            foreach (VisualElement child in _hud.Children())
             {
-                Group(part).style.opacity = 0f;
+                Motion.Cancel(child);
+                child.style.opacity = 0f;
             }
 
+            Motion.Cancel(UiRoot.Instance.World);
+            UiRoot.Instance.World.style.opacity = 0f;
+            _black.style.opacity = 1f;
+            _bars = 0f;
+            _clock = 0f;
+            _film = Cinematic ? OpeningFilm.Create() : null;
             NextCard();
         }
 
-        private VisualElement _proRoot;
-        private Label _proKicker;
-        private VisualElement _proFlash;
-        private VisualElement _proTake;
-        private VisualElement _proTap;
-        private AiOrb _proOrb;
-        private PrologueWorld _proWorld;
-        private float _orbit;
-        private float _descent = -1f;
-        private float _flash;
-
-        private static bool Cinematic => !Motion.Reduced && (GameHost.Instance == null || GameHost.Instance.Settings.Cinematics) && Deadswitch.Game.Base.DroneCamera.Instance != null;
-
         private void TickPrologue(float dt)
         {
-            PrologueScene scene = Prologue.Scenes[_card];
-            bool typing = _shown < scene.Text.Length;
-            _proOrb.Voice = typing ? 1f : 0.2f;
-            _proOrb.Tick(dt);
-            _proWorld.Tick(dt);
+            _beat += dt;
+            _clock += dt;
+            PrologueMood mood = Scene.Mood;
+            Label target = Last ? _handLine : _line;
+            bool typing = _shown < Scene.Text.Length;
+
+            // black until the core's signal finds the handler: a CRT trace draws across, then the picture fades in
+            if (mood == PrologueMood.Boot)
+            {
+                float crt = Motion.Reduced ? 1f : Mathf.Clamp01(_beat / _rules.crtSeconds);
+                _crt.style.width = Length.Percent(Ease.OutCubic(crt) * 100f);
+                _crt.style.opacity = Motion.Reduced ? 1f : 0.6f + (0.4f * Mathf.PerlinNoise(_clock * 18f, 0.2f));
+            }
+            else
+            {
+                _black.style.opacity = Motion.Reduced ? 0f : 1f - Mathf.Clamp01(_beat / FadeInSeconds);
+            }
+
+            // letterbox bars close in once the picture is up
+            float barsTarget = mood == PrologueMood.Boot ? 0f : 1f;
+            _bars = Motion.Reduced ? barsTarget : Mathf.MoveTowards(_bars, barsTarget, dt * 1.8f);
+            Length bar = Length.Percent(_rules.letterboxPct * Ease.InOutSine(_bars));
+            _barTop.style.height = bar;
+            _barBottom.style.height = bar;
+            _rec.style.opacity = Mathf.Repeat(_clock, 1.2f) < 0.7f ? 1f : 0.2f;
+
             if (_flash > 0f)
             {
                 _flash = Mathf.Max(0f, _flash - (dt * 1.6f));
-                _proFlash.style.opacity = _flash;
+                _flashEl.style.opacity = _flash;
             }
 
-            // the drone hangs in orbit high over the Hub while the story plays, turning slowly
-            if (Cinematic)
+            if (Last)
             {
-                _orbit += dt;
-                float az = _orbit * 0.05f;
-                Deadswitch.Game.Base.DroneCamera.Instance.Direct(new Vector3(Mathf.Sin(az) * 60f, 240f, -Mathf.Cos(az) * 60f), Vector3.zero, 50f);
+                _orb.Voice = typing ? 1f : 0.2f;
+                _orb.Tick(dt);
             }
 
             if (typing)
             {
-                _shown = Motion.Reduced ? scene.Text.Length : _shown + (dt * CharsPerSecond);
-                int n = Mathf.Min(scene.Text.Length, (int)_shown);
-                _proText.text = scene.Text.Substring(0, n) + (n < scene.Text.Length ? "_" : string.Empty);
+                _shown = Motion.Reduced ? Scene.Text.Length : _shown + (dt * _rules.charsPerSecond);
+                int n = Mathf.Min(Scene.Text.Length, (int)_shown);
+                target.text = Scene.Text.Substring(0, n) + (n < Scene.Text.Length ? "_" : string.Empty);
                 return;
             }
 
-            // the last beat waits for the handler's answer; the others move on by themselves (unless motion is reduced)
-            bool last = _card == Prologue.Scenes.Length - 1;
-            _proTake.EnableInClassList("is-hidden", !last);
-            _proTap.EnableInClassList("is-hidden", last);
-            if (last || Motion.Reduced)
+            // the last beat waits for the handler; the others move on with their shot (reduced motion waits for a tap)
+            _tap.EnableInClassList("is-hidden", Last);
+            if (Last || Motion.Reduced)
             {
                 return;
             }
 
-            _hold += dt;
-            if (_hold >= HoldSeconds + (scene.Text.Length * 0.02f))
+            float seconds = _film != null ? _film.Seconds(mood) : HoldSeconds + (Scene.Text.Length * 0.03f);
+            if (_beat >= seconds)
             {
                 NextCard();
             }
@@ -199,15 +236,14 @@ namespace Deadswitch.Game.UI.Hud
                 return;
             }
 
-            PrologueScene scene = Prologue.Scenes[_card];
-            if (_shown < scene.Text.Length)
+            if (_shown < Scene.Text.Length)
             {
-                _shown = scene.Text.Length;
-                _proText.text = scene.Text;
+                _shown = Scene.Text.Length;
+                (Last ? _handLine : _line).text = Scene.Text;
                 return;
             }
 
-            if (_card < Prologue.Scenes.Length - 1)
+            if (!Last)
             {
                 NextCard();
             }
@@ -222,42 +258,50 @@ namespace Deadswitch.Game.UI.Hud
                 return;
             }
 
-            PrologueScene scene = Prologue.Scenes[_card];
+            PrologueScene scene = Scene;
             _shown = 0f;
-            _hold = 0f;
-            _proText.text = string.Empty;
-            _proKicker.text = scene.Kicker;
-            _proTake.AddToClassList("is-hidden");
-            _proTap.RemoveFromClassList("is-hidden");
+            _beat = 0f;
+            _line.text = string.Empty;
+            _handLine.text = string.Empty;
+            _kicker.text = scene.Kicker;
+            _prologue.Q<Label>("op-hand-kicker").text = scene.Kicker;
             foreach (PrologueMood m in (PrologueMood[])System.Enum.GetValues(typeof(PrologueMood)))
             {
-                _proRoot.EnableInClassList("pro--" + m.ToString().ToLowerInvariant(), m == scene.Mood);
+                _prologue.Q("prologue").EnableInClassList("op--" + m.ToString().ToLowerInvariant(), m == scene.Mood);
             }
 
-            _proWorld.SetMood(scene.Mood);
-            _proOrb.Stutter = scene.Mood == PrologueMood.Dark ? 0.7f : scene.Mood == PrologueMood.War ? 0.3f : 0f;
-            UiRoot.Instance.SetGlitch(scene.Mood == PrologueMood.Dark ? 0.85f : scene.Mood == PrologueMood.War ? 0.5f : scene.Mood == PrologueMood.Boot ? 0.6f : 0.15f);
+            _sub.style.display = Last ? DisplayStyle.None : DisplayStyle.Flex;
+            _hand.EnableInClassList("is-hidden", !Last);
+            _tap.EnableInClassList("is-hidden", true);
+            if (Last)
+            {
+                _orb.Ping();
+                Motion.To(_hand, 0.6f, Ease.OutCubic, t =>
+                {
+                    _hand.style.opacity = t;
+                    _hand.style.translate = new Translate(0, 40f * (1f - t));
+                });
+            }
+
+            UiRoot.Instance.SetGlitch(scene.Mood == PrologueMood.Dark ? 0.7f : scene.Mood == PrologueMood.Boot ? 0.5f : scene.Mood == PrologueMood.War ? 0.35f : 0.1f);
             if (scene.Mood == PrologueMood.War && !Motion.Reduced)
             {
-                _flash = 0.9f;
+                _flash = 0.8f;
                 Feedback.Alert();
-                if (Cinematic)
-                {
-                    Deadswitch.Game.Base.DroneCamera.Instance.Shake(0.5f);
-                }
             }
 
-            _proOrb.Ping();
-            Motion.To(_proKicker, 0.4f, Ease.OutCubic, t =>
+            Motion.To(_sub, 0.45f, Ease.OutCubic, t =>
             {
-                _proKicker.style.opacity = t;
-                _proKicker.style.translate = new Translate(0, 16f * (1f - t));
+                _sub.style.opacity = t;
+                _sub.style.translate = new Translate(0, 24f * (1f - t));
             });
-            VisualElement pips = _prologue.Q("pro-pips");
+            VisualElement pips = _prologue.Q("op-pips");
             for (int i = 0; i < pips.childCount; i++)
             {
                 pips[i].EnableInClassList("is-on", i <= _card);
             }
+
+            _film?.Play(scene.Mood);
         }
 
         private void EndPrologue()
@@ -271,6 +315,8 @@ namespace Deadswitch.Game.UI.Hud
             _prologue = null;
             UiRoot.Instance.SetGlitch(0f);
             _voice.Paused = false;
+            _film?.Finish();
+            _film = null;
             if (Motion.Reduced)
             {
                 tree.RemoveFromHierarchy();
@@ -280,53 +326,28 @@ namespace Deadswitch.Game.UI.Hud
                 Motion.To(tree, 0.5f, Ease.OutCubic, t => tree.style.opacity = 1f - t, tree.RemoveFromHierarchy);
             }
 
-            // the drone falls out of orbit onto the Hub, then hands the camera back
-            _descent = Cinematic ? 0f : -1f;
-            if (_descent < 0f && Deadswitch.Game.Base.DroneCamera.Instance != null)
+            // Boot sequence (rule 5): the HUD comes online piece by piece while the camera settles on the drone;
+            // the top bar, the resource frame and the labels first, the rest together after them
+            var parts = new System.Collections.Generic.List<VisualElement> { _hud.Q("topbar"), _hud.Q("frame"), UiRoot.Instance.World };
+            foreach (VisualElement child in _hud.Children())
             {
-                Deadswitch.Game.Base.DroneCamera.Instance.Release();
+                if (!parts.Contains(child))
+                {
+                    parts.Add(child);
+                }
             }
 
-            // Boot sequence (rule 5): each system comes online in turn, after the drone has landed.
-            string[] parts = RevealOrder;
-            float start = _descent >= 0f ? DescentSeconds * 0.6f : 0f;
-            for (int i = 0; i < parts.Length; i++)
+            for (int i = 0; i < parts.Count; i++)
             {
-                VisualElement el = Group(parts[i]);
+                VisualElement el = parts[i];
                 if (Motion.Reduced)
                 {
-                    el.style.opacity = 1f;
+                    el.style.opacity = StyleKeyword.Null;
                     continue;
                 }
 
-                float delay = start + (i * RevealStagger);
-                Motion.To(el, 0.35f + delay, Ease.OutCubic, t => el.style.opacity = Mathf.Clamp01(((t * (0.35f + delay)) - delay) / 0.35f));
+                Motion.After(el, RevealDelay + (Mathf.Min(i, 3) * RevealStagger), 0.35f, Ease.OutCubic, t => el.style.opacity = t, () => el.style.opacity = StyleKeyword.Null);
             }
-        }
-
-        private const float DescentSeconds = 2.8f;
-
-        private void TickDescent(float dt)
-        {
-            _descent += dt;
-            float t = Mathf.Clamp01(_descent / DescentSeconds);
-            float k = Ease.InOutSine(t);
-            float az = _orbit * 0.05f;
-            Vector3 from = new Vector3(Mathf.Sin(az) * 60f, 240f, -Mathf.Cos(az) * 60f);
-            Vector3 to = new Vector3(0f, 62f, -58f);
-            Deadswitch.Game.Base.DroneCamera.Instance.Direct(Vector3.Lerp(from, to, k), Vector3.zero, Mathf.Lerp(50f, 42f, k));
-            if (t >= 1f)
-            {
-                _descent = -1f;
-                Deadswitch.Game.Base.DroneCamera.Instance.Shake(0.15f);
-                Deadswitch.Game.Base.DroneCamera.Instance.Release();
-            }
-        }
-
-        private VisualElement Group(string name)
-        {
-            // "world" is the floating facility labels: kept dark behind the prologue with the rest of the HUD
-            return name == "world" ? UiRoot.Instance.World : _hud.Q(name);
         }
 
         private void RefreshGuide()

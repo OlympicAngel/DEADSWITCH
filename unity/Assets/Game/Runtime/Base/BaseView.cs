@@ -41,6 +41,11 @@ namespace Deadswitch.Game.Base
         private float _flickerHold;
         private readonly List<SlotMove> _moves = new List<SlotMove>();
         private ParticleSystem _dust;
+        private bool _openingPower;
+        private float _powerRadius;
+        private float _powerLevel = 1f;
+        private Color _grade;
+        private float _gradeAmount;
 
         private static readonly int EmissionScaleId = Shader.PropertyToID("_DsEmissionScale");
         private static readonly int ConeScaleId = Shader.PropertyToID("_DsConeScale");
@@ -81,6 +86,44 @@ namespace Deadswitch.Game.Base
 
         /// <summary>World position of the core door (for the CORE label).</summary>
         public Vector3 CoreAnchor => new Vector3(Deadswitch.Art.Models.Core.DoorPoint.X, 6.6f, Deadswitch.Art.Models.Core.DoorPoint.Z);
+
+        /// <summary>
+        /// The opening's power (SPEC-043 s4): only lamps within <paramref name="radius"/> m of the core shine and
+        /// emissive surfaces glow at <paramref name="level"/> (0..1), so the blackout and the power wave play out on the
+        /// real Hub. Presentation only; <see cref="ClearOpeningPower"/> hands the lights back to the hour.
+        /// </summary>
+        public void OpeningPower(float radius, float level)
+        {
+            _openingPower = true;
+            _powerRadius = radius;
+            _powerLevel = Mathf.Clamp01(level);
+        }
+
+        public void ClearOpeningPower()
+        {
+            _openingPower = false;
+            _gradeAmount = 0f;
+        }
+
+        /// <summary>The opening's sky: fog and ambient pulled toward <paramref name="color"/> by <paramref name="amount"/> (the war's red glow).</summary>
+        public void OpeningGrade(Color color, float amount)
+        {
+            _grade = color;
+            _gradeAmount = Mathf.Clamp01(amount);
+        }
+
+        /// <summary>1 for a lamp the opening's power reaches, fading over the last few metres of the radius.</summary>
+        private float Reach(Light light)
+        {
+            if (!_openingPower)
+            {
+                return 1f;
+            }
+
+            Vector3 d = light.transform.position - CoreAnchor;
+            d.y = 0f;
+            return Mathf.Clamp01((_powerRadius - d.magnitude) / 4f);
+        }
 
         /// <summary>The slot whose plot contains a ground point, or -1.</summary>
         public int SlotAt(Vector3 ground)
@@ -209,8 +252,15 @@ namespace Deadswitch.Game.Base
             RenderSettings.ambientGroundColor = BaseLook.Srgb(k.groundColor, a);
             RenderSettings.fogDensity = k.fogDensity;
             RenderSettings.fogColor = BaseLook.Srgb(k.fogColor);
-            Shader.SetGlobalFloat(EmissionScaleId, k.emissionScale);
-            Shader.SetGlobalFloat(ConeScaleId, k.coneIntensity);
+            if (_gradeAmount > 0f)
+            {
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, _grade, _gradeAmount);
+                RenderSettings.ambientSkyColor = Color.Lerp(RenderSettings.ambientSkyColor, _grade * a * 2f, _gradeAmount);
+                RenderSettings.ambientEquatorColor = Color.Lerp(RenderSettings.ambientEquatorColor, _grade * a, _gradeAmount);
+            }
+            float level = _openingPower ? _powerLevel : 1f;
+            Shader.SetGlobalFloat(EmissionScaleId, k.emissionScale * level);
+            Shader.SetGlobalFloat(ConeScaleId, k.coneIntensity * level);
             // smoke takes the light of the hour: pale grey by day, near black against the night sky
             Shader.SetGlobalColor(SmokeLightId, Color.Lerp(RenderSettings.ambientSkyColor * 1.6f + new Color(0.05f, 0.05f, 0.05f), Color.white, Mathf.Clamp01(k.sunElevation / 25f)));
             float points = k.pointScale * _look.unityPointScale;
@@ -222,7 +272,7 @@ namespace Deadswitch.Game.Base
                     continue;
                 }
 
-                _points[i].light.intensity = _points[i].baseIntensity * points;
+                _points[i].light.intensity = _points[i].baseIntensity * points * Reach(_points[i].light);
             }
         }
 

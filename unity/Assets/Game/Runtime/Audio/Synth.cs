@@ -291,6 +291,61 @@ namespace Deadswitch.Game.Audio
             return Clip(name, trimmed, true);
         }
 
+        /// <summary>The opening's heartbeat: two low thumps (lub-dub) with a sub-bass body and a soft click on top.</summary>
+        public static AudioClip Heartbeat()
+        {
+            int n = (int)(0.9f * Rate);
+            var d = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                d[i] = Thump(t, 0f, 1f) + Thump(t, 0.24f, 0.7f);
+            }
+
+            return Clip("Heartbeat", d, true);
+        }
+
+        private static float Thump(float t, float at, float gain)
+        {
+            float u = t - at;
+            if (u < 0f)
+            {
+                return 0f;
+            }
+
+            // pitch falls 70 -> 42 Hz as the beat decays
+            float freq = 42f + (28f * Mathf.Exp(-u * 30f));
+            float body = Mathf.Sin(2f * Mathf.PI * freq * u) * Mathf.Exp(-u * 11f) * Mathf.Min(1f, u * 400f);
+            float click = Mathf.Sin(2f * Mathf.PI * 180f * u) * Mathf.Exp(-u * 90f) * 0.25f;
+            return (body + click) * gain;
+        }
+
+        /// <summary>The core powering up: a rising sweep over a noise swell that lands on a deep thunk.</summary>
+        public static AudioClip PowerUp(int seed)
+        {
+            var rng = new System.Random(seed);
+            const float Rise = 2.2f;
+            int n = (int)((Rise + 1.4f) * Rate);
+            var d = new float[n];
+            float lp = 0f;
+            float phase = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float u = Mathf.Clamp01(t / Rise);
+                float freq = 60f + (340f * u * u);
+                phase += 2f * Mathf.PI * freq / Rate;
+                float sweep = (Mathf.Sin(phase) + (0.35f * Mathf.Sin(phase * 2.01f))) * u * u * (t < Rise ? 1f : Mathf.Exp(-(t - Rise) * 14f));
+                float w = (float)rng.NextDouble() * 2f - 1f;
+                lp += (w - lp) * (0.02f + (0.2f * u));
+                float swell = lp * 2.2f * u * (t < Rise ? 1f : Mathf.Exp(-(t - Rise) * 10f));
+                float land = Thump(t, Rise, 1.6f);
+                d[i] = (sweep * 0.5f) + (swell * 0.5f) + land;
+            }
+
+            return Clip("Power Up", d, true);
+        }
+
         private static AudioClip Clip(string name, float[] d, bool normalize)
         {
             float peak = 0.0001f;
