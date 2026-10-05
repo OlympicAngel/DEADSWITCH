@@ -24,6 +24,8 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - Base: camera fly-in/inertia/double-tap/idle sway/shake/`Direct` override (`Base/DroneCamera`), `Base/BaseFx` (focus light, scans, plot rings, data links, siren), quick actions (`UI/Base/QuickActions`), `Base/AttackCinematic` (+ `Resources/UI/Cinematic.uss`).
 - Editor checks needed: focus framing (`focus.screenLift`, `orbitDegrees`), cinematic shot positions per gate, LineRenderer look with the additive particle material, link/plot alpha by day and night, siren spot intensity, toast placement under the pods.
 
+- F-101 (SPEC-040): `UI/Choreo` (stagger, ripples, shimmer, punch), `UI/Pager` (`ds-pager` pages, `ds-card--fold` folds; preview shows the `is-preview` page), quiet HUD (status rail, `is-compact` comms), `BaseView.Animate` (rise / punch / jolt). Editor: check pager rail placement after layout, fold inline display vs. code-driven visibility, ripple clipping on rounded controls, sheet overshoot (`ease-out-back`).
+
 ## Balance (latest, 2026-10-04)
 - Turret planning (F-044) plus adaptation and luck: active breach ~0-2%, casual-prepared ~12%, autopilot ~0%; Tier 2/3/4 on days ~6/20/40. All guards pass. Retune only from real play data.
 
