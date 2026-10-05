@@ -7,6 +7,7 @@ using Deadswitch.Sim;
 using Deadswitch.Sim.Commands;
 using Deadswitch.Sim.Config;
 using Deadswitch.Sim.Events;
+using Deadswitch.Sim.Persistence;
 using UnityEngine;
 
 namespace Deadswitch.Game.Core
@@ -122,6 +123,37 @@ namespace Deadswitch.Game.Core
             {
                 Debug.LogError("[DEADSWITCH] Save failed: " + ex.Message);
             }
+        }
+
+        /// <summary>The current run as save bytes (cloud backup).</summary>
+        public byte[] SaveBytes()
+        {
+            return SaveGame.Write(Sim);
+        }
+
+        /// <summary>
+        /// Replaces the run with a backed-up save (cloud restore). Validates before touching anything; returns a
+        /// player-facing line. Callers confirm with the player first.
+        /// </summary>
+        public string RestoreFrom(byte[] bytes)
+        {
+            LoadedGame loaded;
+            try
+            {
+                loaded = SaveGame.Load(bytes, Config);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("[DEADSWITCH] Backup unreadable: " + ex.Message);
+                return "The backup is damaged. Your run is untouched.";
+            }
+
+            Sim = loaded.Simulation;
+            _dispatchedEvents = Sim.Log.Count;
+            _tickAccumulator = 0f;
+            SaveNow();
+            Ticked?.Invoke();
+            return "Backup restored.";
         }
 
         /// <summary>Deletes the run and starts a new one. Callers confirm with the player first.</summary>
@@ -321,6 +353,10 @@ namespace Deadswitch.Game.Core
 
             SaveNow();
             Notifications.LocalAlerts.OnLeave(this);
+            if (Cloud.CloudBackup.Enabled)
+            {
+                Cloud.CloudBackup.BackUp();
+            }
         }
     }
 }

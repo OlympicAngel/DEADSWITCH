@@ -23,8 +23,8 @@ namespace Deadswitch.Game.UI.Screens
             _ui = tree;
             _reason = _ui.Q<Label>("prm-reason");
             _ui.Q("prm-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
-            _ui.Q("prm-buy").RegisterCallback<ClickEvent>(_ => Say(Entitlements.Instance.BuyPremium()));
-            _ui.Q("prm-restore").RegisterCallback<ClickEvent>(_ => Say(Entitlements.Instance.Restore()));
+            _ui.Q("prm-buy").RegisterCallback<ClickEvent>(_ => Entitlements.Instance.BuyPremium(Say));
+            _ui.Q("prm-restore").RegisterCallback<ClickEvent>(_ => Entitlements.Instance.Restore(Say));
             for (int i = 0; i < Theme.Count; i++)
             {
                 int theme = i;
@@ -41,10 +41,10 @@ namespace Deadswitch.Game.UI.Screens
                 });
             }
 
-            _ui.Q("ad-1").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.ThemeCold)));
-            _ui.Q("ad-2").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.ThemeBone)));
-            _ui.Q("ad-3").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.SalvageRoll)));
-            _ui.Q("ad-4").RegisterCallback<ClickEvent>(_ => Say(RewardedAds.Watch(ConvenienceGrant.IdleCap)));
+            _ui.Q("ad-1").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.ThemeCold, Say));
+            _ui.Q("ad-2").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.ThemeBone, Say));
+            _ui.Q("ad-3").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.SalvageRoll, Say));
+            _ui.Q("ad-4").RegisterCallback<ClickEvent>(_ => RewardedAds.Watch(ConvenienceGrant.IdleCap, Say));
             _ui.Q("prm-season").RegisterCallback<ClickEvent>(_ => openSeason());
             SeasonPass.Changed += Refresh;
             Entitlements.Instance.Changed += Refresh;

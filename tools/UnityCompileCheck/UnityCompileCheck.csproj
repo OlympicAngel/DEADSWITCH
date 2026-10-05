@@ -11,7 +11,7 @@
     <DefineConstants>$(DefineConstants);UNITY_COMPILE_CHECK</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../unity/Assets/Game/**/*.cs" Exclude="../../unity/Assets/Game/**/Editor/**;../../unity/Assets/Game/Runtime/Rendering/**;../../unity/Assets/Game/Runtime/Notifications/Mobile/**" />
+    <Compile Include="../../unity/Assets/Game/**/*.cs" Exclude="../../unity/Assets/Game/**/Editor/**;../../unity/Assets/Game/Runtime/Rendering/**;../../unity/Assets/Game/Runtime/Notifications/Mobile/**;../../unity/Assets/Game/Runtime/Cloud/Services/**;../../unity/Assets/Game/Runtime/Store/Services/**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" PrivateAssets="all" />

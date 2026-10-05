@@ -30,9 +30,12 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("ssn-close").RegisterCallback<ClickEvent>(_ => router.Show(_back));
             _ui.Q("ssn-buy").RegisterCallback<ClickEvent>(_ =>
             {
-                _reason.text = Entitlements.Instance.BuySeason(SeasonTrack.Id);
-                SeasonPass.GrantReached();
-                Refresh();
+                Entitlements.Instance.BuySeason(SeasonTrack.Id, line =>
+                {
+                    _reason.text = line;
+                    SeasonPass.GrantReached();
+                    Refresh();
+                });
             });
             Kit.BuildMeter(_ui.Q("ssn-meter"));
 

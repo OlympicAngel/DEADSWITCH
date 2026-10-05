@@ -1,0 +1,25 @@
+{
+  "name": "Deadswitch.Game.Store.Iap",
+  "rootNamespace": "Deadswitch.Game.Store",
+  "references": [
+    "Deadswitch.Game",
+    "UnityEngine.Purchasing",
+    "UnityEngine.Purchasing.Stores"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "autoReferenced": true,
+  "defineConstraints": [
+    "DS_UNITY_IAP"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.purchasing",
+      "expression": "[4.9.0,5.0.0)",
+      "define": "DS_UNITY_IAP"
+    }
+  ],
+  "noEngineReferences": false
+}

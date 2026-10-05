@@ -43,6 +43,23 @@ namespace Deadswitch.Game.UI.Screens
             });
             _ui.Q("dev").EnableInClassList("is-hidden", !Debug.isDebugBuild);
             _ui.Q("open-premium").RegisterCallback<ClickEvent>(_ => openPremium());
+
+            // optional cloud backup (doc 10 s2); restore asks twice before it replaces the run
+            Toggle("tog-cloud", () => Deadswitch.Game.Cloud.CloudBackup.SetEnabled(!Deadswitch.Game.Cloud.CloudBackup.Enabled));
+            _ui.Q("cloud-now").RegisterCallback<ClickEvent>(_ => Deadswitch.Game.Cloud.CloudBackup.BackUp(problem => CloudNote(problem ?? "Backed up.")));
+            _ui.Q("cloud-restore").RegisterCallback<ClickEvent>(_ =>
+            {
+                if (!_restoreArmed)
+                {
+                    _restoreArmed = true;
+                    Kit.SetButtonText(_ui.Q("cloud-restore"), "TAP AGAIN // REPLACES THIS RUN");
+                    return;
+                }
+
+                _restoreArmed = false;
+                Kit.SetButtonText(_ui.Q("cloud-restore"), "RESTORE");
+                Deadswitch.Game.Cloud.CloudBackup.Restore(CloudNote);
+            });
         }
 
         public string Id => "settings";
@@ -91,6 +108,7 @@ namespace Deadswitch.Game.UI.Screens
             SetToggle("tog-motion", _settings.ReducedMotion);
             SetToggle("tog-haptics", _settings.Haptics);
             SetToggle("tog-alerts", LocalAlerts.Enabled);
+            SetToggle("tog-cloud", Deadswitch.Game.Cloud.CloudBackup.Enabled);
         }
 
         private void Select(string name, int index)
@@ -107,6 +125,13 @@ namespace Deadswitch.Game.UI.Screens
             VisualElement t = _ui.Q(name);
             t.EnableInClassList("is-on", on);
             t.Q<Label>().text = on ? "ON" : "OFF";
+        }
+
+        private bool _restoreArmed;
+
+        private void CloudNote(string line)
+        {
+            _ui.Q<Label>("cloud-note").text = line;
         }
     }
 }

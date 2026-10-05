@@ -25,12 +25,25 @@ namespace Deadswitch.Game.Store
         IdleCap = 4,
     }
 
+    /// <summary>Platform ad network. The ad service assembly replaces the default when its package is installed.</summary>
+    public interface IAdBackend
+    {
+        /// <summary>True when an ad can be shown now.</summary>
+        bool Ready { get; }
+
+        /// <summary>Shows a rewarded ad; calls back true only when the viewer watched it to the end.</summary>
+        void Show(System.Action<bool> completed);
+    }
+
     /// <summary>
     /// Optional rewarded ads (free demo). No ad network is linked in this build: development builds simulate a
     /// completed view. Ads are never offered while an attack countdown, battle, purge or ultimatum is active.
     /// </summary>
     public static class RewardedAds
     {
+        /// <summary>Set by the ad service assembly; development builds simulate a completed view.</summary>
+        public static IAdBackend Backend { get; set; }
+
         /// <summary>Why an ad cannot be offered now, or null when it can.</summary>
         public static string Blocked()
         {
@@ -45,18 +58,32 @@ namespace Deadswitch.Game.Store
                 return "Not while the Hub is under threat.";
             }
 
-            return Entitlements.StoreAvailable ? null : "Ads are not available in this build.";
+            bool network = Backend != null && Backend.Ready;
+            return network || UnityEngine.Debug.isDebugBuild || UnityEngine.Application.isEditor ? null : "Ads are not available in this build.";
         }
 
-        /// <summary>Shows an ad and grants the whitelisted reward when it completes. Returns a player-facing line.</summary>
-        public static string Watch(ConvenienceGrant grant)
+        /// <summary>Shows an ad and grants the whitelisted reward only when it completes; calls back with a line.</summary>
+        public static void Watch(ConvenienceGrant grant, System.Action<string> done)
         {
             string blocked = Blocked();
             if (blocked != null)
             {
-                return blocked;
+                done(blocked);
+                return;
             }
 
+            if (Backend != null && Backend.Ready)
+            {
+                Backend.Show(completed => done(completed ? Grant(grant) : "The ad did not finish. Nothing granted."));
+                return;
+            }
+
+            // development builds: no ad network linked, simulate a completed view
+            done(Grant(grant));
+        }
+
+        private static string Grant(ConvenienceGrant grant)
+        {
             if (grant == ConvenienceGrant.SalvageRoll || grant == ConvenienceGrant.IdleCap)
             {
                 CommandResult r = GameHost.Instance.Execute(Command.ClaimAdGrant(grant == ConvenienceGrant.SalvageRoll ? AdGrant.SalvageRoll : AdGrant.IdleCap));
