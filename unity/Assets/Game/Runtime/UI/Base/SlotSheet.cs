@@ -26,6 +26,7 @@ namespace Deadswitch.Game.UI.Base
         private readonly VisualElement _content;
         private readonly System.Action _onClose;
         private bool _confirmDemolish;
+        private FacilityKind _recommend = FacilityKind.None;
         private string _reason = string.Empty;
 
         public SlotSheet(VisualElement layer, System.Action onClose)
@@ -57,9 +58,17 @@ namespace Deadswitch.Game.UI.Base
             Refresh();
         }
 
+        /// <summary>Puts a facility first and marks it (a resource shortcut led here, SPEC-039 idea 15).</summary>
+        public void Recommend(FacilityKind kind)
+        {
+            _recommend = kind;
+            Refresh();
+        }
+
         public void Close()
         {
             Slot = -1;
+            _recommend = FacilityKind.None;
             _root.AddToClassList("is-hidden");
         }
 
@@ -139,7 +148,13 @@ namespace Deadswitch.Game.UI.Base
         {
             Header("OPEN PLOT", "P" + (Slot + 1));
             _content.Add(Kit.Label("Cleared ground inside the wire. Tell me what to put here.", "ds-body", "sheet__blurb"));
-            foreach (FacilityKind kind in Buildable)
+            var order = new System.Collections.Generic.List<FacilityKind>(Buildable);
+            if (order.Remove(_recommend))
+            {
+                order.Insert(0, _recommend);
+            }
+
+            foreach (FacilityKind kind in order)
             {
                 // the reactor (SPEC-029) is offered only from its tier, and only one per Hub
                 if (kind == FacilityKind.Reactor && (host.Sim.State.Tier < host.Config.ReactorRules.MinTier || Economy.CountOfKind(host.Sim.State, kind) >= host.Config.ReactorRules.MaxCount))
@@ -160,6 +175,7 @@ namespace Deadswitch.Game.UI.Base
                 var opt = new VisualElement();
                 opt.AddToClassList("opt");
                 opt.EnableInClassList("is-disabled", !affordable);
+                opt.EnableInClassList("opt--recommended", kind == _recommend);
                 opt.Add(Icons.Create(Icons.ForFacility(kind), "opt__icon"));
                 var body = new VisualElement();
                 body.AddToClassList("opt__body");
@@ -307,6 +323,14 @@ namespace Deadswitch.Game.UI.Base
             CommandResult r = host.Execute(command);
             _reason = r.Accepted ? string.Empty : Texts.Reason(r.Reason);
             Hud.HudController.Instance?.Advisor.Say(r.Accepted ? Texts.Ack(command) : Texts.Reason(r.Reason));
+            if (r.Accepted)
+            {
+                Toasts.Show("check", "ORDER ACCEPTED", Toasts.Tone.Good);
+            }
+            else
+            {
+                Toasts.Show("alert", "REFUSED", Toasts.Tone.Bad);
+            }
             Refresh();
         }
 

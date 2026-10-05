@@ -1,0 +1,53 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <!-- Static mirror of UI/Hud/ResourceSheet (SPEC-039 B) for headless review -->
+  <Style src="Base.uss" />
+  <ui:VisualElement class="ds-sheet sheet rsheet" style="max-height: 1500px;">
+    <ui:VisualElement class="ds-sheet__grip" />
+    <ui:VisualElement class="rsheet__head">
+      <ui:VisualElement class="rsheet__well"><ui:VisualElement class="ds-icon ds-icon--bolt rsheet__icon" /></ui:VisualElement>
+      <ui:VisualElement class="rsheet__titles">
+        <ui:Label text="ENERGY" class="rsheet__name" />
+        <ui:VisualElement class="row--baseline"><ui:Label text="84" class="rsheet__value" /><ui:Label text=" / 500" class="rsheet__cap" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="ds-chip ds-chip--red"><ui:Label text="SHORT" class="ds-chip__label" /></ui:VisualElement>
+      <ui:VisualElement class="sheet__close"><ui:VisualElement class="ds-icon ds-icon--close rsheet__close-icon" /></ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement class="ds-progress ds-progress--red rsheet__bar"><ui:VisualElement class="ds-progress__fill" style="width: 17%;" /></ui:VisualElement>
+    <ui:VisualElement class="rsheet__rate">
+      <ui:VisualElement class="ds-delta ds-delta--down"><ui:VisualElement class="ds-icon ds-icon--trenddown ds-delta__icon" /><ui:Label text="-48/h" class="ds-delta__label" /></ui:VisualElement>
+      <ui:Label text="Runs dry in 1H 45M." class="rsheet__when" />
+    </ui:VisualElement>
+    <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--up ds-section__icon" /><ui:Label text="HOW TO GET MORE" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
+    <ui:VisualElement class="rsheet__help">
+      <ui:VisualElement class="rsheet__help-well"><ui:VisualElement class="ds-icon ds-icon--power rsheet__help-icon" /></ui:VisualElement>
+      <ui:VisualElement class="rsheet__help-body"><ui:Label text="SHED LOAD" class="rsheet__help-title" /><ui:Label text="SERVER RACK L2 draws the most (40/h)." class="rsheet__help-why" /></ui:VisualElement>
+      <ui:VisualElement class="ds-icon ds-icon--arrow rsheet__help-go" />
+    </ui:VisualElement>
+    <ui:VisualElement class="rsheet__help">
+      <ui:VisualElement class="rsheet__help-well"><ui:VisualElement class="ds-icon ds-icon--bolt rsheet__help-icon" /></ui:VisualElement>
+      <ui:VisualElement class="rsheet__help-body"><ui:Label text="MORE GENERATION" class="rsheet__help-title" /><ui:Label text="Upgrade GENERATOR L1. The steady source. Upgrades add the most per plot." class="rsheet__help-why" /></ui:VisualElement>
+      <ui:VisualElement class="ds-icon ds-icon--arrow rsheet__help-go" />
+    </ui:VisualElement>
+    <ui:VisualElement class="rsheet__help">
+      <ui:VisualElement class="rsheet__help-well"><ui:VisualElement class="ds-icon ds-icon--sun rsheet__help-icon" /></ui:VisualElement>
+      <ui:VisualElement class="rsheet__help-body"><ui:Label text="DAYLIGHT POWER" class="rsheet__help-title" /><ui:Label text="Build a SOLAR FIELD. Free by day, nothing at night." class="rsheet__help-why" /></ui:VisualElement>
+      <ui:VisualElement class="ds-icon ds-icon--arrow rsheet__help-go" />
+    </ui:VisualElement>
+    <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--trendup ds-section__icon" /><ui:Label text="PRODUCING" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
+    <ui:VisualElement class="rsheet__line is-link">
+      <ui:VisualElement class="ds-icon ds-icon--bolt rsheet__line-icon" /><ui:Label text="GENERATOR L1" class="rsheet__line-label" />
+      <ui:VisualElement class="ds-delta"><ui:VisualElement class="ds-icon ds-icon--trendup ds-delta__icon" /><ui:Label text="+60/h" class="ds-delta__label" /></ui:VisualElement>
+      <ui:VisualElement class="ds-icon ds-icon--chevron rsheet__chev" />
+    </ui:VisualElement>
+    <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--trenddown ds-section__icon" /><ui:Label text="DRAINING" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
+    <ui:VisualElement class="rsheet__line is-link">
+      <ui:VisualElement class="ds-icon ds-icon--server rsheet__line-icon" /><ui:Label text="SERVER RACK L2" class="rsheet__line-label" />
+      <ui:VisualElement class="ds-delta ds-delta--down"><ui:VisualElement class="ds-icon ds-icon--trenddown ds-delta__icon" /><ui:Label text="-40/h" class="ds-delta__label" /></ui:VisualElement>
+      <ui:VisualElement class="ds-icon ds-icon--chevron rsheet__chev" />
+    </ui:VisualElement>
+    <ui:VisualElement class="rsheet__line">
+      <ui:VisualElement class="ds-icon ds-icon--core rsheet__line-icon" /><ui:Label text="CORE UPKEEP" class="rsheet__line-label" />
+      <ui:VisualElement class="ds-delta ds-delta--down"><ui:VisualElement class="ds-icon ds-icon--trenddown ds-delta__icon" /><ui:Label text="-68/h" class="ds-delta__label" /></ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

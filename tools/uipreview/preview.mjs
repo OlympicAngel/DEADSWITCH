@@ -140,6 +140,24 @@ for (const el of document.querySelectorAll('.ds-icon')) {
   const s = Math.min(el.clientWidth, el.clientHeight), col = getComputedStyle(el).getPropertyValue('--icon-color').trim();
   el.innerHTML = '<svg width="'+s+'" height="'+s+'">' + GLYPHS[g].map(l => '<polyline fill="none" stroke="'+col+'" stroke-width="'+Math.min(5,Math.max(2,s*0.07))+'" stroke-linejoin="round" points="'+l.map(p => (p[0]*s)+','+(p[1]*s)).join(' ')+'"/>').join('') + '</svg>';
 }
+// AiOrb.cs / AiWave mirror (a still frame)
+for (const el of document.querySelectorAll('.ai-orb')) {
+  const st = getComputedStyle(el), ring = st.getPropertyValue('--ring-color').trim() || v('--c-cyan'), core = st.getPropertyValue('--core-color').trim() || v('--c-cyan-glow');
+  const w = Math.min(el.clientWidth, el.clientHeight), R = w / 2, c = R;
+  const arc = (r, a0, a1, sw, col, op = 1) => { const x0 = c + r * Math.cos(a0), y0 = c + r * Math.sin(a0), x1 = c + r * Math.cos(a1), y1 = c + r * Math.sin(a1); return '<path d="M'+x0+','+y0+' A'+r+','+r+' 0 '+((a1-a0)>Math.PI?1:0)+' 1 '+x1+','+y1+'" stroke="'+col+'" stroke-opacity="'+op+'" stroke-width="'+sw+'" fill="none"/>'; };
+  let svg = '<defs><radialGradient id="g'+w+'"><stop offset="0" stop-color="'+core+'"/><stop offset="1" stop-color="'+core+'" stop-opacity="0"/></radialGradient></defs>';
+  svg += '<circle cx="'+c+'" cy="'+c+'" r="'+(R*0.62)+'" fill="url(#g'+w+')"/><circle cx="'+c+'" cy="'+c+'" r="'+(R*0.2)+'" fill="'+ring+'" opacity="0.9"/>';
+  svg += '<circle cx="'+c+'" cy="'+c+'" r="'+(R*0.93)+'" stroke="'+ring+'" stroke-opacity="0.35" stroke-width="1.5" fill="none"/>';
+  for (let i = 0; i < 36; i++) { const t = Math.PI * 2 * i / 36, ri = i % 9 === 0 ? 0.8 : 0.86; svg += '<line x1="'+(c+Math.cos(t)*R*ri)+'" y1="'+(c+Math.sin(t)*R*ri)+'" x2="'+(c+Math.cos(t)*R*0.91)+'" y2="'+(c+Math.sin(t)*R*0.91)+'" stroke="'+ring+'" stroke-opacity="0.35" stroke-width="'+(i%9===0?2.5:1.2)+'"/>'; }
+  for (let i = 0; i < 3; i++) { const a = 0.4 + i * Math.PI * 2 / 3; svg += arc(R * 0.72, a, a + 1.25, 4, ring); }
+  for (let i = 0; i < 12; i++) { const a = i * Math.PI * 2 / 12; svg += arc(R * 0.52, a, a + 0.32, 2, ring, 0.7); }
+  el.insertAdjacentHTML('afterbegin', '<svg style="position:absolute;left:0;top:0" width="'+w+'" height="'+w+'">'+svg+'</svg>');
+}
+for (const el of document.querySelectorAll('.ai-wave')) {
+  const col = getComputedStyle(el).getPropertyValue('--wave-color').trim() || v('--c-cyan'), w = el.clientWidth, h = el.clientHeight, n = 18, step = w / n;
+  let svg = ''; for (let i = 0; i < n; i++) { const bh = Math.max(2, h * (0.25 + 0.6 * Math.abs(Math.sin(i * 1.7) * Math.sin(i * 0.6 + 1)))); svg += '<rect x="'+(i*step+1)+'" y="'+((h-bh)/2)+'" width="'+(step-3)+'" height="'+bh+'" fill="'+col+'"/>'; }
+  el.insertAdjacentHTML('afterbegin', '<svg style="position:absolute;left:0;top:0" width="'+w+'" height="'+h+'">'+svg+'</svg>');
+}
 for (const el of document.querySelectorAll('.ds-gauge')) {
   const w = el.clientWidth, r = w / 2 - 8, c = w / 2, f = 0.23, a0 = Math.PI * 0.75, a1 = a0 + Math.PI * 1.5 * f, aEnd = a0 + Math.PI * 1.5;
   const arc = (from, to) => { const x0 = c + r * Math.cos(from), y0 = c + r * Math.sin(from), x1 = c + r * Math.cos(to), y1 = c + r * Math.sin(to); return 'M'+x0+','+y0+' A'+r+','+r+' 0 '+((to-from)>Math.PI?1:0)+' 1 '+x1+','+y1; };

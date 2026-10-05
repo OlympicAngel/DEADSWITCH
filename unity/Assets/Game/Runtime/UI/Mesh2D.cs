@@ -136,6 +136,34 @@ namespace Deadswitch.Game.UI
             }
         }
 
+        /// <summary>Filled disc with a radial gradient (center color to rim color): glows and orb cores.</summary>
+        public static void Disc(MeshGenerationContext ctx, Vector2 center, float radius, Color32 inner, Color32 rim)
+        {
+            if (radius <= 0.5f)
+            {
+                return;
+            }
+
+            int segs = Mathf.Clamp(Mathf.CeilToInt(radius), 16, 64);
+            MeshWriteData m = ctx.Allocate(segs + 2, segs * 6);
+            m.SetNextVertex(V(center, inner));
+            for (int i = 0; i <= segs; i++)
+            {
+                float a = Mathf.PI * 2f * i / segs;
+                m.SetNextVertex(V(center + (new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius), rim));
+            }
+
+            for (int i = 0; i < segs; i++)
+            {
+                m.SetNextIndex(0);
+                m.SetNextIndex((ushort)(i + 1));
+                m.SetNextIndex((ushort)(i + 2));
+                m.SetNextIndex(0);
+                m.SetNextIndex((ushort)(i + 2));
+                m.SetNextIndex((ushort)(i + 1));
+            }
+        }
+
         public static Vertex V(Vector2 p, Color32 c)
         {
             return new Vertex { position = new Vector3(p.x, p.y, Vertex.nearZ), tint = c };

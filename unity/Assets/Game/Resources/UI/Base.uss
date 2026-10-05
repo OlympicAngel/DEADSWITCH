@@ -99,3 +99,53 @@
 .opt__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 3px; color: var(--c-text); }
 .opt__desc { font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; margin-top: var(--s-1); }
 .opt__time { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-text-dim); margin-left: var(--s-3); }
+
+/* ---------- Resource breakdown sheet (SPEC-039 B) ---------- */
+.rsheet { max-height: 78%; border-top-color: var(--c-cyan); }
+.rsheet__scroll { flex-shrink: 1; }
+.rsheet__head { flex-direction: row; align-items: center; margin-bottom: var(--s-3); }
+.rsheet__well { width: 96px; height: 96px; align-items: center; justify-content: center; margin-right: var(--s-4); border-radius: var(--r-lg); border-width: 1px; border-color: var(--c-cyan-dim); background-color: var(--c-cyan-wash); }
+.rsheet__icon { width: 60px; height: 60px; --icon-color: var(--c-cyan); }
+.rsheet__titles { flex-grow: 1; flex-shrink: 1; }
+.rsheet__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: 5px; color: var(--c-text-dim); }
+.rsheet__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xl); color: var(--c-text); }
+.rsheet__cap { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-sm); color: var(--c-text-dim); padding-bottom: var(--s-2); }
+.rsheet__close-icon { width: 40px; height: 40px; --icon-color: var(--c-text-dim); }
+.rsheet__bar { height: 18px; margin-bottom: var(--s-3); }
+.rsheet__rate { flex-direction: row; align-items: center; margin-bottom: var(--s-2); }
+.rsheet__when { font-size: var(--fs-xs); color: var(--c-text); margin-left: var(--s-3); white-space: normal; flex-shrink: 1; }
+.rsheet__note { font-size: var(--fs-xs); color: var(--c-amber); margin-bottom: var(--s-2); }
+.rsheet__empty { font-size: var(--fs-xs); color: var(--c-text-faint); margin-bottom: var(--s-3); }
+
+.rsheet__line { flex-direction: row; align-items: center; min-height: 80px; padding: 0 var(--s-3); margin-bottom: var(--s-2); border-radius: var(--r-md); background-color: var(--c-elev-2); }
+.rsheet__line.is-link:active { background-color: var(--c-cyan-wash); }
+.rsheet__line-icon { width: 40px; height: 40px; margin-right: var(--s-3); --icon-color: var(--c-text-dim); }
+.rsheet__line-label { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-xs); letter-spacing: 2px; color: var(--c-text); flex-grow: 1; }
+.rsheet__line > .ds-delta { align-self: center; }
+.rsheet__chev { width: 28px; height: 28px; margin-left: var(--s-2); --icon-color: var(--c-text-faint); }
+
+.rsheet__help {
+    flex-direction: row;
+    align-items: center;
+    min-height: var(--touch);
+    padding: var(--s-3);
+    margin-bottom: var(--s-2);
+    border-width: 1px;
+    border-radius: var(--r-md);
+    border-color: var(--c-cyan-line);
+    border-top-color: var(--c-cyan-dim);
+    background-color: var(--c-glass);
+    transition-property: scale, background-color;
+    transition-duration: 0.12s;
+}
+
+.rsheet__help:active { scale: 0.98 0.98; background-color: var(--c-cyan-wash); }
+.rsheet__help.is-disabled { opacity: 0.45; }
+.rsheet__help-well { width: 72px; height: 72px; align-items: center; justify-content: center; margin-right: var(--s-3); border-radius: var(--r-md); background-color: var(--c-cyan-wash); }
+.rsheet__help-icon { width: 44px; height: 44px; --icon-color: var(--c-cyan); }
+.rsheet__help-body { flex-grow: 1; flex-shrink: 1; }
+.rsheet__help-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: 3px; color: var(--c-cyan); }
+.rsheet__help-why { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: 2px; }
+.rsheet__help-go { width: 36px; height: 36px; margin-left: var(--s-2); --icon-color: var(--c-cyan); }
+.opt--recommended { border-color: var(--c-cyan); border-left-width: 6px; background-color: var(--c-cyan-wash); }
+.opt--recommended .opt__icon { --icon-color: var(--c-cyan); }

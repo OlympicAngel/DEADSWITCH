@@ -66,6 +66,13 @@ namespace Deadswitch.Game.UI.Base
 
         public VisualElement Root { get; }
 
+        /// <summary>Selects a slot and frames it (resource shortcuts, suggestion chips); recommends a facility on an empty plot.</summary>
+        public void Focus(int slot, Deadswitch.Sim.State.FacilityKind recommend)
+        {
+            Select(slot);
+            _sheet.Recommend(recommend);
+        }
+
         public void OnShow()
         {
             _visible = true;
@@ -86,11 +93,12 @@ namespace Deadswitch.Game.UI.Base
             if (slot < 0)
             {
                 _sheet.Close();
+                DroneCamera.Instance.ClearFocus();
                 return;
             }
 
             _sheet.Open(slot);
-            DroneCamera.Instance.Focus(BaseView.Instance.LabelAnchor(slot));
+            DroneCamera.Instance.FocusOn(BaseView.Instance.FocusPoint(slot));
         }
     }
 }

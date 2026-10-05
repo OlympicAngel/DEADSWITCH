@@ -45,6 +45,14 @@
         <ui:VisualElement name="tog-motion" class="set-toggle"><ui:Label text="OFF" class="set-toggle__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement class="set-row">
+        <ui:VisualElement class="grow"><ui:Label text="ATTACK CINEMATICS" class="ds-label" /><ui:Label text="Short camera shots when an attack makes contact. Tap to skip." class="ds-body t-dim set-note" /></ui:VisualElement>
+        <ui:VisualElement name="tog-cine" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="set-row">
+        <ui:VisualElement class="grow"><ui:Label text="FOCUS FLY-IN" class="ds-label" /><ui:Label text="The drone flies in to frame a facility you select." class="ds-body t-dim set-note" /></ui:VisualElement>
+        <ui:VisualElement name="tog-flyin" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="set-row">
         <ui:VisualElement class="grow"><ui:Label text="HAPTICS" class="ds-label" /><ui:Label text="Short pulses for raid warnings and confirmations." class="ds-body t-dim set-note" /></ui:VisualElement>
         <ui:VisualElement name="tog-haptics" class="set-toggle is-on"><ui:Label text="ON" class="set-toggle__label" /></ui:VisualElement>
       </ui:VisualElement>

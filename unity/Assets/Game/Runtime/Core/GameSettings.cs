@@ -16,6 +16,8 @@ namespace Deadswitch.Game.Core
         private const string KeySound = "ds.sound_pct";
         private const string KeyMusic = "ds.music";
         private const string KeyVoice = "ds.voice_pack";
+        private const string KeyCinematics = "ds.cinematics";
+        private const string KeyFlyIn = "ds.focus_fly_in";
 
         /// <summary>AI voice packs (F-048, cosmetic): 0 standard, then the season rewards in this order.</summary>
         public static readonly string[] VoicePacks = { "standard", "voice-low", "voice-static" };
@@ -45,6 +47,12 @@ namespace Deadswitch.Game.Core
         /// <summary>Index into <see cref="VoicePacks"/>; only owned packs can be chosen.</summary>
         public int VoicePack { get; private set; }
 
+        /// <summary>Attack cinematics (SPEC-039 D): letterboxed shots when an attack makes contact. Off under reduced motion.</summary>
+        public bool Cinematics { get; private set; } = true;
+
+        /// <summary>The drone flies in and frames a selected facility (SPEC-039 C).</summary>
+        public bool FocusFlyIn { get; private set; } = true;
+
         /// <summary>Development only: game minutes per real minute. 1 in release builds.</summary>
         public float DevTimeScale { get; private set; } = 1f;
 
@@ -62,6 +70,8 @@ namespace Deadswitch.Game.Core
                 SoundPct = Mathf.Clamp(PlayerPrefs.GetInt(KeySound, 75), 0, 100),
                 Music = PlayerPrefs.GetInt(KeyMusic, 1) == 1,
                 VoicePack = Mathf.Clamp(PlayerPrefs.GetInt(KeyVoice, 0), 0, VoicePacks.Length - 1),
+                Cinematics = PlayerPrefs.GetInt(KeyCinematics, 1) == 1,
+                FocusFlyIn = PlayerPrefs.GetInt(KeyFlyIn, 1) == 1,
             };
             return s;
         }
@@ -115,6 +125,20 @@ namespace Deadswitch.Game.Core
         {
             VoicePack = Mathf.Clamp(pack, 0, VoicePacks.Length - 1);
             PlayerPrefs.SetInt(KeyVoice, VoicePack);
+            Save();
+        }
+
+        public void SetCinematics(bool on)
+        {
+            Cinematics = on;
+            PlayerPrefs.SetInt(KeyCinematics, on ? 1 : 0);
+            Save();
+        }
+
+        public void SetFocusFlyIn(bool on)
+        {
+            FocusFlyIn = on;
+            PlayerPrefs.SetInt(KeyFlyIn, on ? 1 : 0);
             Save();
         }
 

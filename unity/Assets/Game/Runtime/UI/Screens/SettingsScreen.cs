@@ -33,6 +33,8 @@ namespace Deadswitch.Game.UI.Screens
             Toggle("tog-music", () => _settings.SetMusic(!_settings.Music));
             Bind("seg-time", i => _settings.SetDevTimeScale(TimeScales[i]));
             Toggle("tog-motion", () => _settings.SetReducedMotion(!_settings.ReducedMotion));
+            Toggle("tog-cine", () => _settings.SetCinematics(!_settings.Cinematics));
+            Toggle("tog-flyin", () => _settings.SetFocusFlyIn(!_settings.FocusFlyIn));
             Toggle("tog-haptics", () => _settings.SetHaptics(!_settings.Haptics));
             Toggle("tog-alerts", () => LocalAlerts.SetEnabled(!LocalAlerts.Enabled));
             _ui.Q("guide-reset").RegisterCallback<ClickEvent>(_ =>
@@ -106,6 +108,8 @@ namespace Deadswitch.Game.UI.Screens
             SetToggle("tog-music", _settings.Music);
             Select("seg-time", System.Array.IndexOf(TimeScales, _settings.DevTimeScale));
             SetToggle("tog-motion", _settings.ReducedMotion);
+            SetToggle("tog-cine", _settings.Cinematics);
+            SetToggle("tog-flyin", _settings.FocusFlyIn);
             SetToggle("tog-haptics", _settings.Haptics);
             SetToggle("tog-alerts", LocalAlerts.Enabled);
             SetToggle("tog-cloud", Deadswitch.Game.Cloud.CloudBackup.Enabled);

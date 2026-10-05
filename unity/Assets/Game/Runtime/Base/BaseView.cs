@@ -59,6 +59,12 @@ namespace Deadswitch.Game.Base
             return _slots[slot].Root.position + new Vector3(0, _slots[slot].Height + 0.8f, 0);
         }
 
+        /// <summary>Center of a slot's facility at half height (what the drone frames when focusing).</summary>
+        public Vector3 FocusPoint(int slot)
+        {
+            return _slots[slot].Root.position + new Vector3(0, _slots[slot].Height * 0.5f, 0);
+        }
+
         /// <summary>World position of the core door (for the CORE label).</summary>
         public Vector3 CoreAnchor => new Vector3(Deadswitch.Art.Models.Core.DoorPoint.X, 6.6f, Deadswitch.Art.Models.Core.DoorPoint.Z);
 

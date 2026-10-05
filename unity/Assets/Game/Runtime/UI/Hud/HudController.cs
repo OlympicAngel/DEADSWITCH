@@ -25,16 +25,21 @@ namespace Deadswitch.Game.UI.Hud
         private UiRoot _ui;
         private VisualElement _hud;
 
-        private AnimatedNumber _energy;
-        private AnimatedNumber _compute;
-        private AnimatedNumber _people;
+        private readonly System.Collections.Generic.List<ResourcePod> _pods = new System.Collections.Generic.List<ResourcePod>();
+        private ResourceSheet _resourceSheet;
         private AnimatedNumber _core;
-        private Label _energyCap;
-        private Label _energyNet;
-        private Label _computeCap;
-        private Label _computeRate;
-        private Label _peopleCap;
-        private Label _peopleCrew;
+        private AiOrb _orb;
+        private AiWave _wave;
+        private VisualElement _advisorChips;
+        private Label _advisorMood;
+        private VisualElement _frame;
+        private VisualElement _alarm;
+        private VisualElement _job;
+        private VisualElement _jobBar;
+        private Label _jobCount;
+        private string _chipKey = string.Empty;
+        private float _speak;
+        private float _alarmClock;
         private Label _coreBand;
         private Label _coreValue;
         private Label _clock;
@@ -42,7 +47,6 @@ namespace Deadswitch.Game.UI.Hud
         private Label _nextTime;
         private Label _raidTime;
         private Label _raidEstimate;
-        private VisualElement _nextPip;
         private VisualElement _raid;
         private VisualElement _raidDetail;
         private VisualElement _coreDot;
@@ -81,22 +85,30 @@ namespace Deadswitch.Game.UI.Hud
             _ui.Hud.Add(tree);
             Icons.Attach(tree);
 
-            _energy = new AnimatedNumber(Q<Label>("energy-value"), Fmt.Num);
-            _compute = new AnimatedNumber(Q<Label>("compute-value"), Fmt.Num);
-            _people = new AnimatedNumber(Q<Label>("people-value"), Fmt.Num);
+            _resourceSheet = new ResourceSheet(_ui.Sheets, OnHelp, slot => FocusSlot(slot, FacilityKind.None));
+            _pods.Add(new ResourcePod(_hud, "energy", ResKind.Energy, ToggleResource));
+            _pods.Add(new ResourcePod(_hud, "compute", ResKind.Compute, ToggleResource));
+            _pods.Add(new ResourcePod(_hud, "people", ResKind.People, ToggleResource));
+            _pods.Add(new ResourcePod(_hud, "fuel", ResKind.Fuel, ToggleResource));
             _core = new AnimatedNumber(Q<Label>("core-value"), Fmt.Num);
-            _energyCap = Q<Label>("energy-cap");
-            _energyNet = Q<Label>("energy-net");
-            _computeCap = Q<Label>("compute-cap");
-            _computeRate = Q<Label>("compute-rate");
-            _peopleCap = Q<Label>("people-cap");
-            _peopleCrew = Q<Label>("people-crew");
+            _orb = new AiOrb(Q<VisualElement>("advisor-orb"));
+            _wave = new AiWave(Q<VisualElement>("advisor-wave"));
+            _advisorChips = Q<VisualElement>("advisor-chips");
+            _advisorChips.Clear();
+            _advisorMood = Q<Label>("advisor-mood");
+            _frame = Q<VisualElement>("frame");
+            _alarm = Q<VisualElement>("frame-alarm");
+            _job = Q<VisualElement>("next-timer");
+            _jobBar = Q<VisualElement>("next-bar");
+            _jobCount = Q<Label>("next-count");
+            _job.RegisterCallback<ClickEvent>(_ => OnJobTapped());
+            Q<VisualElement>("advisor-orb").parent.RegisterCallback<ClickEvent>(_ => Router.Show("core"));
+            Toasts.Mount(_ui.Hud);
             _coreBand = Q<Label>("core-band");
             _coreValue = Q<Label>("core-value");
             _clock = Q<Label>("clock");
             _nextLabel = Q<Label>("next-label");
             _nextTime = Q<Label>("next-time");
-            _nextPip = Q<VisualElement>("next-pip");
             _raid = Q<VisualElement>("raid-banner");
             _raidDetail = Q<VisualElement>("raid-detail");
             _coreDot = Q<VisualElement>("core-dot");
@@ -107,6 +119,7 @@ namespace Deadswitch.Game.UI.Hud
             _overridePips = Q<VisualElement>("override-pips").Children().ToArray();
 
             Advisor = new AdvisorTicker(Q<Label>("advisor-text"));
+            Advisor.Spoke += _ => _orb.Ping();
             _voice = new AdvisorVoice(_host, Advisor);
 
             Router = new ScreenRouter(Q<VisualElement>("screen"));
@@ -138,7 +151,6 @@ namespace Deadswitch.Game.UI.Hud
             }));
             Store.Theme.Apply(UiRoot.Instance.Root);
             Router.Register(new WorkforceScreen(Router));
-            Q<VisualElement>("people-cell").RegisterCallback<ClickEvent>(_ => Router.Show("workforce"));
             _reportChip = Q<VisualElement>("report-chip");
             _reportChip.RegisterCallback<ClickEvent>(_ => OpenReport(_chipRaid));
             Router.Register(new MapScreen());
@@ -155,18 +167,19 @@ namespace Deadswitch.Game.UI.Hud
             Router.BindTab("ops", Q<VisualElement>("tab-ops"));
             Q<VisualElement>("raid-defend").RegisterCallback<ClickEvent>(_ => Router.Show("ops"));
             // The drone-feed frame belongs to BASE; over the other screens its text collides with their headers.
-            VisualElement frame = Q<VisualElement>("frame");
-            Router.Changed += id => frame.EnableInClassList("is-covered", id != "base");
+            Router.Changed += id =>
+            {
+                _frame.EnableInClassList("is-covered", id != "base");
+                _resourceSheet.Close();
+            };
             Router.Show("base");
             _opening = new OpeningFlow(_host, _hud, _voice, _baseScreen);
 
             _host.Ticked += Refresh;
             _host.EventRaised += OnSimEvent;
             _ui.Frame += OnFrame;
+            RefreshPods(true);
             Refresh();
-            _energy.Set(_host.Sim.State.Energy, true);
-            _compute.Set(_host.Sim.State.Compute, true);
-            _people.Set(_host.Sim.State.People, true);
             _core.Set(CorruptionSystem.Percent(ProjectSystem.ReportedCorruptionMilli(_host.Sim.State, _host.Sim.Config)), true);
         }
 
@@ -254,20 +267,10 @@ namespace Deadswitch.Game.UI.Hud
             SimConfig c = sim.Config;
             EconomyFlows f = Economy.Flows(s, c);
 
-            _energy.Set(s.Energy);
-            _energyCap.text = "/" + Fmt.Num(f.EnergyCap);
-            int net = f.NetEnergyPerHour;
-            _energyNet.text = s.Blackout ? "BLACKOUT" : Fmt.Signed(net) + "/h";
-            SetTone(_energyNet, s.Blackout ? "t-red" : (net >= 0 ? "t-phosphor" : "t-amber"));
-
-            _compute.Set(s.Compute);
-            _computeCap.text = "/" + Fmt.Num(c.Compute.Cap);
-            _computeRate.text = Fmt.Signed(f.ComputePerHour) + "/h";
-
-            _people.Set(s.People);
-            _peopleCap.text = "/" + Fmt.Num(f.PopulationCap);
-            _peopleCrew.text = (s.AutomationLoad > 0 ? "AI-RUN " + s.AutomationLoad : "CREW " + f.CrewAssigned + "/" + f.CrewNeeded);
-            SetTone(_peopleCrew, s.AutomationLoad > 0 ? "t-amber" : "t-dim");
+            RefreshPods(false);
+            _resourceSheet.Refresh();
+            RefreshComms(s, c);
+            RefreshBadges(s, c);
 
             // The readout is what the core reports (a bold AI under-reports, SPEC-007); the glitch is the true band.
             int reported = ProjectSystem.ReportedCorruptionMilli(s, c);
@@ -351,9 +354,16 @@ namespace Deadswitch.Game.UI.Hud
                 return;
             }
 
-            _energy.Tick(dt);
-            _compute.Tick(dt);
-            _people.Tick(dt);
+            foreach (ResourcePod pod in _pods)
+            {
+                pod.Tick(dt);
+            }
+
+            _speak = Advisor.Typing ? 1f : Mathf.Max(0f, _speak - (dt * 1.5f));
+            _orb.Voice = _speak;
+            _orb.Tick(dt);
+            _wave.Tick(dt, _speak);
+            TickAlarm(dt);
             _core.Tick(dt);
             _gauge.Tick(dt);
             _opening.Tick(dt);
@@ -400,14 +410,179 @@ namespace Deadswitch.Game.UI.Hud
             {
                 _nextLabel.text = Fmt.FacilityName(next.Kind) + " L" + next.TargetLevel;
                 _nextTime.text = Fmt.Countdown(SecondsUntil(next.CompleteTick));
-                _nextPip.EnableInClassList("ds-pip--off", false);
+                float total = Mathf.Max(1f, next.CompleteTick - next.StartTick);
+                Kit.SetProgress(_jobBar, ((s.Tick - next.StartTick) + _host.TickProgress) / total);
+                _job.RemoveFromClassList("is-idle");
+                Icons.SetGlyph(Q<VisualElement>("next-icon"), next.TargetLevel > 1 ? "up" : "hammer");
+                _jobCount.text = s.Jobs.Count > 1 ? "+" + (s.Jobs.Count - 1) : string.Empty;
             }
             else
             {
-                _nextLabel.text = "BUILD QUEUE IDLE";
-                _nextTime.text = string.Empty;
-                _nextPip.EnableInClassList("ds-pip--off", true);
+                _nextLabel.text = "BUILDERS IDLE";
+                _nextTime.text = "TAP TO BUILD";
+                _job.AddToClassList("is-idle");
+                Icons.SetGlyph(Q<VisualElement>("next-icon"), "hammer");
+                _jobCount.text = string.Empty;
             }
+        }
+
+        private void RefreshPods(bool instant)
+        {
+            GameState s = _host.Sim.State;
+            SimConfig c = _host.Sim.Config;
+            double secPerHour = 3600.0 / _host.Settings.DevTimeScale;
+            EconomyFlows f = Economy.Flows(s, c);
+            foreach (ResourcePod pod in _pods)
+            {
+                ResourceInfo r = ResourceInfo.Of(pod.Kind, s, c);
+                string rate = null;
+                if (pod.Kind == ResKind.People)
+                {
+                    rate = s.AutomationLoad > 0 ? "AI-RUN " + s.AutomationLoad : "CREW " + f.CrewAssigned + "/" + f.CrewNeeded;
+                }
+                else if (pod.Kind == ResKind.Energy && s.Blackout)
+                {
+                    rate = "BLACKOUT";
+                }
+
+                if (pod.Kind == ResKind.Fuel)
+                {
+                    // fuel matters once something burns it or the Hub holds some (Tier 2+ systems)
+                    pod.SetVisible(s.Fuel > 0 || r.Drains.Count > 0 || Economy.CountOfKind(s, FacilityKind.FuelDepot) > 0);
+                }
+
+                pod.Set(r, secPerHour, instant, rate);
+            }
+        }
+
+        private void ToggleResource(ResKind kind)
+        {
+            _resourceSheet.Toggle(kind);
+        }
+
+        /// <summary>A "how to get more" shortcut: open its screen or fly to the facility or plot that helps.</summary>
+        private void OnHelp(ResHelp help)
+        {
+            _resourceSheet.Close();
+            if (help.Screen != null)
+            {
+                Router.Show(help.Screen);
+                return;
+            }
+
+            FocusSlot(help.Slot, help.Kind);
+        }
+
+        /// <summary>Shows BASE, flies the drone to a slot and opens it (recommending a facility on an empty plot).</summary>
+        public void FocusSlot(int slot, FacilityKind recommend)
+        {
+            if (slot < 0)
+            {
+                Toasts.Show("lock", "NO FREE PLOT", Toasts.Tone.Warn);
+                return;
+            }
+
+            _resourceSheet.Close();
+            Router.Show("base");
+            _baseScreen.Focus(slot, recommend);
+        }
+
+        private void OnJobTapped()
+        {
+            GameState s = _host.Sim.State;
+            BuildJob next = null;
+            foreach (BuildJob job in s.Jobs)
+            {
+                if (next == null || job.CompleteTick < next.CompleteTick)
+                {
+                    next = job;
+                }
+            }
+
+            FocusSlot(next != null ? next.Slot : ResourceInfo.FreePlot(s), FacilityKind.None);
+        }
+
+        private void RefreshComms(GameState s, SimConfig c)
+        {
+            _advisorMood.text = AiSuggestions.Mood(s, c);
+            System.Collections.Generic.List<Suggestion> list = AiSuggestions.For(s, c, !_reportChip.ClassListContains("is-hidden"));
+            string key = string.Empty;
+            foreach (Suggestion sg in list)
+            {
+                key += sg.Label + "|";
+            }
+
+            if (key == _chipKey)
+            {
+                return;
+            }
+
+            _chipKey = key;
+            _advisorChips.Clear();
+            _advisorChips.EnableInClassList("is-hidden", list.Count == 0);
+            foreach (Suggestion sg in list)
+            {
+                var chip = new VisualElement();
+                chip.AddToClassList("ai-chip");
+                chip.EnableInClassList("ai-chip--urgent", sg.Urgent);
+                chip.Add(Icons.Create(sg.Glyph, "ai-chip__icon"));
+                chip.Add(Kit.Label(sg.Label, "ai-chip__label"));
+                Suggestion captured = sg;
+                chip.RegisterCallback<ClickEvent>(e =>
+                {
+                    e.StopPropagation();
+                    Act(captured);
+                });
+                _advisorChips.Add(chip);
+            }
+        }
+
+        private void Act(Suggestion sg)
+        {
+            switch (sg.Action)
+            {
+                case SuggestionAction.Resource:
+                    Router.Show("base");
+                    _resourceSheet.Toggle(sg.Resource);
+                    break;
+                case SuggestionAction.Plot:
+                    FocusSlot(sg.Slot, FacilityKind.None);
+                    break;
+                default:
+                    if (sg.Screen == "report")
+                    {
+                        OpenReport(_chipRaid);
+                    }
+                    else
+                    {
+                        Router.Show(sg.Screen);
+                    }
+
+                    break;
+            }
+        }
+
+        private void RefreshBadges(GameState s, SimConfig c)
+        {
+            bool threat = s.RaidId != 0 || s.Ultimatum == UltimatumStage.Issued;
+            Q<VisualElement>("ops-badge").EnableInClassList("is-hidden", !threat);
+            int plot = ResourceInfo.FreePlot(s);
+            bool idle = s.Jobs.Count == 0 && plot >= 0;
+            Q<VisualElement>("base-badge").EnableInClassList("is-hidden", !idle);
+            Q<Label>("base-badge-label").text = "+";
+            HeatLevel heat = WorldSystem.Level(s.Heat[(int)WorldSystem.Hottest(s)]);
+            Q<VisualElement>("map-badge").EnableInClassList("is-hidden", heat < HeatLevel.Hunted);
+            Q<Label>("map-badge-label").text = "!";
+            _frame.EnableInClassList("is-alarm", s.RaidId != 0);
+        }
+
+        /// <summary>The red edge breathes while an attack is inbound (idea 45); still under reduced motion.</summary>
+        private void TickAlarm(float dt)
+        {
+            bool raid = _host.Sim.State.RaidId != 0;
+            _alarmClock += dt;
+            float weight = raid ? (Motion.Reduced ? 0.6f : 0.35f + (0.35f * Mathf.Sin(_alarmClock * 3f))) * Mathf.Max(0.3f, _host.Settings.Effects) : 0f;
+            _alarm.style.opacity = weight;
         }
 
         private static void SetTone(VisualElement el, string tone)
