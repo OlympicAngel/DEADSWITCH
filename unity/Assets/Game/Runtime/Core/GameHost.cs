@@ -353,6 +353,7 @@ namespace Deadswitch.Game.Core
 
             SaveNow();
             Notifications.LocalAlerts.OnLeave(this);
+            Notifications.WidgetBridge.OnLeave(this);
             if (Cloud.CloudBackup.Enabled)
             {
                 Cloud.CloudBackup.BackUp();
