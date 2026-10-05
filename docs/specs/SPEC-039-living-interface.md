@@ -81,7 +81,7 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 50. Scan-sweep when the AI "thinks" (before a recommendation). *Done*
 51. Corruption shows as orb ring stutter and color drift, never on the buttons. *Done*
 52. Core screen: orb as the focal hero, diagnostics in grouped holo cards around it. *Done*
-53. Boot / wake line when the app opens: the orb assembles. *Planned*
+53. Boot / wake line when the app opens: the orb assembles. *Done*
 
 ### F. Screens and QOL
 54. OPS regrouped: Threat card, Posture grid, Forces, Autonomy, Away settings, each a titled card with icons; scrolls. *Done*

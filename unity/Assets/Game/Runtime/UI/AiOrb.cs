@@ -21,6 +21,7 @@ namespace Deadswitch.Game.UI
         private float _spin;
         private float _voice;
         private float _skip;
+        private float _build = 1f;
 
         public AiOrb(VisualElement el)
         {
@@ -49,6 +50,12 @@ namespace Deadswitch.Game.UI
         /// <summary>Corruption stutter 0..1.</summary>
         public float Stutter { get; set; }
 
+        /// <summary>Boot (idea 53): rings unfold from the heart outward over about a second.</summary>
+        public void Assemble()
+        {
+            _build = Motion.Reduced ? 1f : 0f;
+        }
+
         /// <summary>A short brighter flash when the AI "thinks" (idea 50).</summary>
         public void Ping()
         {
@@ -58,6 +65,7 @@ namespace Deadswitch.Game.UI
         public void Tick(float dt)
         {
             _time += dt;
+            _build = Mathf.Min(1f, _build + (dt * 0.9f));
             _voice = Mathf.Lerp(_voice, Voice, 1f - Mathf.Exp(-dt * 6f));
             if (!Motion.Reduced)
             {
@@ -84,7 +92,12 @@ namespace Deadswitch.Game.UI
             }
 
             Vector2 c = r.center;
-            float R = size * 0.5f;
+            float R = size * 0.5f * Ease.OutBack(_build);
+            if (R <= 1f)
+            {
+                return;
+            }
+
             float wobble = Motion.Reduced ? 0f : Mathf.Sin(_time * 2.1f) * InterfaceConfig.Current.orb.wobble;
             float a = _spin + _skip;
 

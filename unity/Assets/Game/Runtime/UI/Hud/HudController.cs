@@ -93,6 +93,7 @@ namespace Deadswitch.Game.UI.Hud
             _pods.Add(new ResourcePod(_hud, "fuel", ResKind.Fuel, ToggleResource));
             _core = new AnimatedNumber(Q<Label>("core-value"), Fmt.Num);
             _orb = new AiOrb(Q<VisualElement>("advisor-orb"));
+            _orb.Assemble();
             _wave = new AiWave(Q<VisualElement>("advisor-wave"));
             _advisorChips = Q<VisualElement>("advisor-chips");
             _advisorChips.Clear();
