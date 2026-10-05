@@ -346,6 +346,39 @@ namespace Deadswitch.Game.Audio
             return Clip("Power Up", d, true);
         }
 
+        /// <summary>After the big one: the ears ring, a high thin tone that fades over seconds.</summary>
+        public static AudioClip Whine()
+        {
+            int n = (int)(4.5f * Rate);
+            var d = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / Rate;
+                float env = Mathf.Min(1f, t * 3f) * Mathf.Exp(-t * 0.7f);
+                d[i] = (Mathf.Sin(2f * Mathf.PI * 3150f * t) + (0.3f * Mathf.Sin(2f * Mathf.PI * 3170f * t))) * env * 0.25f;
+            }
+
+            return Clip("Whine", d, false);
+        }
+
+        /// <summary>Time passing: a reversed noise swell that rises and cuts dead.</summary>
+        public static AudioClip Swell(int seed)
+        {
+            var rng = new System.Random(seed);
+            int n = (int)(1.8f * Rate);
+            var d = new float[n];
+            float lp = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float u = (float)i / n;
+                lp += (((float)rng.NextDouble() * 2f) - 1f - lp) * (0.02f + (0.25f * u * u));
+                float t = (float)i / Rate;
+                d[i] = ((lp * 2.5f) + (Mathf.Sin(2f * Mathf.PI * (50f + (60f * u)) * t) * 0.4f)) * u * u * u;
+            }
+
+            return Clip("Swell", d, true);
+        }
+
         /// <summary>A building restored: welding sparks crackle over a rising hum that locks in with a thunk.</summary>
         public static AudioClip Restore(int seed)
         {

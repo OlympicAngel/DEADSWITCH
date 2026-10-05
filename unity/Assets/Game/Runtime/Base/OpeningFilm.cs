@@ -136,11 +136,19 @@ namespace Deadswitch.Game.Base
             _cut = -1;
             _nextImpact = 0.2f;
             AudioDirector audio = AudioDirector.Instance;
+            audio?.SetOpeningBed(Bed(mood));
             switch (mood)
             {
                 case PrologueMood.Signal:
-                    audio?.Hush(600f);
                     audio?.Opening(OpeningCue.Heartbeat);
+                    break;
+                case PrologueMood.After:
+                    audio?.Opening(OpeningCue.Swell);
+                    break;
+                case PrologueMood.Outposts:
+                case PrologueMood.Attack:
+                    // a voice on the band, cut by static
+                    audio?.Opening(OpeningCue.Radio);
                     break;
                 case PrologueMood.Hold:
                     // the compound as it was: every plot built, people in the street, lamps lit
@@ -178,9 +186,35 @@ namespace Deadswitch.Game.Base
             NextCut();
         }
 
+        /// <summary>The sound bed under a beat.</summary>
+        private static OpeningBed Bed(PrologueMood mood)
+        {
+            switch (mood)
+            {
+                case PrologueMood.Signal: return OpeningBed.Space;
+                case PrologueMood.Command: return OpeningBed.Room;
+                case PrologueMood.Launch: return OpeningBed.Alarm;
+                case PrologueMood.Fire: return OpeningBed.War;
+                case PrologueMood.Dark: return OpeningBed.Cold;
+                case PrologueMood.After: return OpeningBed.Silence;
+                case PrologueMood.Outposts: return OpeningBed.Night;
+                case PrologueMood.Hold: return OpeningBed.Calm;
+                case PrologueMood.Attack: return OpeningBed.Battle;
+                case PrologueMood.Ash: return OpeningBed.Ash;
+                case PrologueMood.Deadswitch: return OpeningBed.Dread;
+                default: return OpeningBed.Ruin;
+            }
+        }
+
         private void OnLanded(float size)
         {
             AudioDirector.Instance?.Opening(size >= 2f ? OpeningCue.Impact : OpeningCue.FarImpact);
+            if (size >= 2f)
+            {
+                // the ears ring after the big one
+                AudioDirector.Instance?.Opening(OpeningCue.Whine);
+            }
+
             DroneCamera.Instance?.Shake(_rules.warShake * (size >= 2f ? 1.2f : 0.35f));
             if (size >= 2f)
             {
@@ -204,6 +238,7 @@ namespace Deadswitch.Game.Base
                 _globe = null;
             }
 
+            AudioDirector.Instance?.SetOpeningBed(OpeningBed.Ruin);
             if (!_stage.Burning)
             {
                 // a resumed run: rebuild the ruin the attack left
@@ -327,6 +362,7 @@ namespace Deadswitch.Game.Base
                 BaseFx.Instance.Hidden = false;
             }
 
+            AudioDirector.Instance?.SetOpeningBed(OpeningBed.None);
             AudioDirector.Instance?.Hush(0f);
             Destroy(gameObject);
         }
@@ -577,6 +613,7 @@ namespace Deadswitch.Game.Base
                     DrawRings(w < 1f ? lamps : -1f);
                     if (_wakeT - dt < _rules.wakeBreath)
                     {
+                        AudioDirector.Instance?.SetOpeningBed(OpeningBed.Calm);
                         AudioDirector.Instance?.Opening(OpeningCue.PowerUp);
                         DroneCamera.Instance?.Shake(_rules.warShake * 0.5f);
                         Feedback.Alert();

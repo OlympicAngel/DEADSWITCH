@@ -40,6 +40,11 @@ namespace Deadswitch.Game.Audio
         private AudioClip _powerUp;
         private AudioClip _restore;
         private AudioClip _subDrop;
+        private AudioClip _whine;
+        private AudioClip _swell;
+        private OpeningBed _bed;
+        private readonly float[] _bedLevel = new float[5];
+        private float _nextBedShot;
         private AudioClip[][] _syllables;
 
         private float _nextShelling;
@@ -88,6 +93,8 @@ namespace Deadswitch.Game.Audio
             _powerUp = Synth.PowerUp(12);
             _restore = Synth.Restore(13);
             _subDrop = Synth.SubDrop(14);
+            _whine = Synth.Whine();
+            _swell = Synth.Swell(15);
 
             BuildVoice();
             _host.Settings.Changed += () =>
@@ -147,6 +154,87 @@ namespace Deadswitch.Game.Audio
                 case OpeningCue.SubDrop:
                     OneShot(_subDrop, 1f * master, 1f);
                     break;
+                case OpeningCue.Whine:
+                    OneShot(_whine, 0.5f * master, 1f);
+                    break;
+                case OpeningCue.Swell:
+                    OneShot(_swell, 0.8f * master, 1f);
+                    break;
+                case OpeningCue.Blip:
+                    OneShot(_tick, 0.35f * master, Random.Range(1.3f, 1.8f));
+                    break;
+                case OpeningCue.Radio:
+                    OneShot(_static[Random.Range(0, _static.Length)], 0.5f * master, Random.Range(1.05f, 1.25f));
+                    _speech.Clear();
+                    for (int i = 0; i < 7; i++)
+                    {
+                        _speech.Enqueue(Random.Range(0.05f, 0.09f));
+                    }
+
+                    _nextSyllable = Time.time + 0.25f;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// The opening film's sound bed (SPEC-044): while set, the ambient loops follow the beat instead of the run
+        /// (pad, drone, wind, crackle, siren; battle adds guns and blasts). None hands them back to the run.
+        /// </summary>
+        public void SetOpeningBed(OpeningBed bed)
+        {
+            _bed = bed;
+            _nextBedShot = Time.time + 0.3f;
+        }
+
+        /// <summary>Loop levels for a bed: pad, drone, wind, crackle, siren.</summary>
+        private static float[] BedLevels(OpeningBed bed)
+        {
+            switch (bed)
+            {
+                case OpeningBed.Space: return new[] { 0.55f, 0.12f, 0f, 0f, 0f };
+                case OpeningBed.Room: return new[] { 0.2f, 0.35f, 0f, 0f, 0f };
+                case OpeningBed.Alarm: return new[] { 0f, 0.5f, 0f, 0f, 0.55f };
+                case OpeningBed.War: return new[] { 0f, 0.6f, 0f, 0f, 0f };
+                case OpeningBed.Cold: return new[] { 0.15f, 0.1f, 0.35f, 0f, 0f };
+                case OpeningBed.Night: return new[] { 0f, 0.15f, 0.4f, 0.3f, 0f };
+                case OpeningBed.Calm: return new[] { 0.4f, 0.05f, 0.2f, 0f, 0f };
+                case OpeningBed.Battle: return new[] { 0f, 0.35f, 0.15f, 0.45f, 0.45f };
+                case OpeningBed.Ash: return new[] { 0f, 0.1f, 0.5f, 0.5f, 0f };
+                case OpeningBed.Dread: return new[] { 0f, 0.5f, 0.25f, 0.25f, 0f };
+                case OpeningBed.Ruin: return new[] { 0.15f, 0.12f, 0.35f, 0.3f, 0f };
+                default: return new[] { 0f, 0f, 0f, 0f, 0f };
+            }
+        }
+
+        private void TickBed(float master, float music)
+        {
+            float[] target = BedLevels(_bed);
+            for (int i = 0; i < _bedLevel.Length; i++)
+            {
+                _bedLevel[i] = Mathf.MoveTowards(_bedLevel[i], target[i], Time.deltaTime * 0.5f);
+            }
+
+            _pad.volume = _bedLevel[0] * music;
+            _pad.pitch = _bed == OpeningBed.Dread ? 0.8f : 1f;
+            _drone.volume = _bedLevel[1] * master;
+            _drone.pitch = _bed == OpeningBed.Dread ? 0.7f : 1f;
+            _wind.volume = _bedLevel[2] * master;
+            _crackle.volume = _bedLevel[3] * master;
+            _siren.volume = _bedLevel[4] * master;
+            if (_bedLevel[4] > 0.01f && !_siren.isPlaying)
+            {
+                _siren.Play();
+            }
+            else if (_bedLevel[4] <= 0.01f && _siren.isPlaying)
+            {
+                _siren.Stop();
+            }
+
+            // the fight at the wall: guns, close blasts
+            if (_bed == OpeningBed.Battle && Time.time >= _nextBedShot)
+            {
+                _nextBedShot = Time.time + Random.Range(0.15f, 0.5f);
+                OneShot(_guns[Random.Range(0, _guns.Length)], 0.4f * master, Random.Range(0.9f, 1.1f));
             }
         }
 
@@ -204,10 +292,18 @@ namespace Deadswitch.Game.Audio
             float musicTarget = hush ? 0f : 0.08f + (0.42f * tension);
             _music = Mathf.MoveTowards(_music, musicTarget, Time.deltaTime * 0.08f);
 
+            if (_bed != OpeningBed.None)
+            {
+                TickBed(master, music);
+                TickSpeech();
+                return;
+            }
+
             _wind.volume = 0.32f * _ambient * master;
             _drone.volume = 0.18f * _ambient * master;
             _pad.volume = _music * music;
             _pad.pitch = 1f + (0.06f * tension);
+            _drone.pitch = 1f;
 
             int fires = 0;
             foreach (FacilitySlot f in s.Slots)
@@ -249,18 +345,26 @@ namespace Deadswitch.Game.Audio
                 OneShot(boom ? _close[Random.Range(0, _close.Length)] : _guns[Random.Range(0, _guns.Length)], (boom ? 0.55f : 0.45f) * master, Random.Range(0.9f, 1.1f));
             }
 
-            // the AI's voice: syllables while the line types out
-            if (_speech.Count > 0 && Time.time >= _nextSyllable)
+            TickSpeech();
+        }
+
+        /// <summary>The AI's voice: syllables while the line types out.</summary>
+        private void TickSpeech()
+        {
+            if (_speech.Count == 0 || Time.time < _nextSyllable)
             {
-                float gap = _speech.Dequeue();
-                _nextSyllable = Time.time + gap;
-                bool dropout = _band >= 2 && Random.value < 0.12f * _band;
-                if (!dropout)
-                {
-                    AudioClip[] set = _syllables[Mathf.Clamp(_band, 0, 3)];
-                    float waver = 1f + (Random.Range(-0.03f, 0.03f) * (1 + (_band * 2)));
-                    OneShot(set[Random.Range(0, set.Length)], 0.22f * master, waver);
-                }
+                return;
+            }
+
+            float master = _host.Settings.SoundPct / 100f;
+            float gap = _speech.Dequeue();
+            _nextSyllable = Time.time + gap;
+            bool dropout = _band >= 2 && Random.value < 0.12f * _band;
+            if (!dropout)
+            {
+                AudioClip[] set = _syllables[Mathf.Clamp(_band, 0, 3)];
+                float waver = 1f + (Random.Range(-0.03f, 0.03f) * (1 + (_band * 2)));
+                OneShot(set[Random.Range(0, set.Length)], 0.22f * master, waver);
             }
         }
 
@@ -378,5 +482,27 @@ namespace Deadswitch.Game.Audio
         PowerUp,
         Restore,
         SubDrop,
+        Whine,
+        Swell,
+        Blip,
+        Radio,
+    }
+
+    /// <summary>The opening film's ambient beds (SPEC-044).</summary>
+    public enum OpeningBed
+    {
+        None,
+        Space,
+        Room,
+        Alarm,
+        War,
+        Cold,
+        Night,
+        Calm,
+        Battle,
+        Ash,
+        Dread,
+        Ruin,
+        Silence,
     }
 }

@@ -77,6 +77,10 @@ namespace Deadswitch.Game.UI.Hud
             {
                 _logShown = 0;
                 _log.Clear();
+                foreach (Panel p in _panels)
+                {
+                    p.Woke = false;
+                }
             }
 
             _eye.Stutter = red ? 0.4f : 0f;
@@ -94,6 +98,13 @@ namespace Deadswitch.Game.UI.Hud
             {
                 Panel p = _panels[i];
                 float on = _red ? 1f : Mathf.Clamp01((_t - 0.2f - (i * 0.35f)) * 3f);
+                if (!_red && on > 0f && !p.Woke)
+                {
+                    // each screen chirps as it wakes
+                    p.Woke = true;
+                    Audio.AudioDirector.Instance?.Opening(Audio.OpeningCue.Blip);
+                }
+
                 float flicker = on < 1f && on > 0f ? (Mathf.PerlinNoise(_t * 30f, i) > 0.4f ? 1f : 0.2f) : 1f;
                 p.Element.style.opacity = on * flicker;
                 p.Canvas.MarkDirtyRepaint();
@@ -282,6 +293,7 @@ namespace Deadswitch.Game.UI.Hud
         {
             public VisualElement Element;
             public VisualElement Canvas;
+            public bool Woke;
         }
     }
 }
