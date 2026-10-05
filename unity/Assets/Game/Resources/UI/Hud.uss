@@ -234,3 +234,65 @@
 .hud-tab.is-active > .hud-tab__icon { --icon-color: var(--c-cyan); }
 .hud-tab__dot { position: absolute; top: var(--s-2); right: var(--s-5); width: 14px; height: 14px; border-radius: 7px; background-color: var(--c-amber); }
 .hud-tab__dot.is-hidden { display: none; }
+
+/* Next goal (SPEC-043 s5): slim card above the dock; amber while building toward it, cyan when ready */
+.hud-goal {
+    flex-direction: row;
+    align-items: center;
+    margin: 0 var(--s-5) var(--s-2) var(--s-5);
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-lg);
+    border-width: 1px;
+    border-color: var(--c-amber-dim);
+    border-left-width: 4px;
+    border-left-color: var(--c-amber);
+    background-color: rgba(14, 12, 8, 0.9);
+}
+.hud-goal.is-hidden { display: none; }
+.hud-goal__well { width: 76px; height: 76px; border-radius: 38px; margin-right: var(--s-3); align-items: center; justify-content: center; background-color: var(--c-amber-wash); }
+.hud-goal__icon { width: 44px; height: 44px; --icon-color: var(--c-amber); }
+.hud-goal__body { flex-grow: 1; flex-shrink: 1; }
+.hud-goal__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-amber); }
+.hud-goal__gates { flex-wrap: wrap; margin-top: 4px; }
+.hud-goal__gate { align-items: center; margin-right: var(--s-3); }
+.hud-goal__gate-icon { width: 26px; height: 26px; margin-right: 4px; --icon-color: var(--c-text-dim); }
+.hud-goal__gate-label { font-size: var(--fs-nano); color: var(--c-text); }
+.hud-goal__gate.is-met .hud-goal__gate-icon { --icon-color: var(--c-phosphor); }
+.hud-goal__gate.is-met .hud-goal__gate-label { color: var(--c-phosphor); }
+.hud-goal__bar { height: 8px; margin-top: var(--s-1); }
+.hud-goal__chev { width: 36px; height: 36px; margin-left: var(--s-2); --icon-color: var(--c-amber); }
+.hud-goal.is-ready { border-color: var(--c-cyan); background-color: rgba(6, 22, 26, 0.92); }
+.hud-goal.is-ready .hud-goal__bar > .ds-progress__fill { background-color: var(--c-cyan-dim); border-color: var(--c-cyan); }
+.hud-goal.is-ready .hud-goal__title { color: var(--c-cyan); }
+.hud-goal.is-ready .hud-goal__well { background-color: var(--c-cyan-wash); }
+.hud-goal.is-ready .hud-goal__icon, .hud-goal.is-ready .hud-goal__chev { --icon-color: var(--c-cyan); }
+
+/* Celebration banner (SPEC-043 s5): full width under the context strip; ignores the pointer */
+.celeb { position: absolute; left: 0; right: 0; top: 330px; align-items: center; }
+.celeb.is-hidden { display: none; }
+.celeb__band {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    padding: var(--s-4) var(--s-8);
+    overflow: hidden;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-color: var(--c-amber);
+    background-color: rgba(20, 16, 8, 0.92);
+}
+.celeb__ray { position: absolute; top: 0; bottom: 0; left: -30%; width: 30%; background-color: rgba(255, 255, 255, 0.08); rotate: 12deg; opacity: 0; }
+.celeb__well { width: 132px; height: 132px; border-radius: 66px; margin-right: var(--s-6); align-items: center; justify-content: center; border-width: 3px; border-color: var(--c-amber); background-color: var(--c-amber-wash); }
+.celeb__icon { width: 76px; height: 76px; --icon-color: var(--c-amber); }
+.celeb__body { flex-grow: 1; flex-shrink: 1; }
+.celeb__kicker { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-wide); color: var(--c-amber); }
+.celeb__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: var(--ls-tight); color: var(--c-white); white-space: normal; }
+.celeb__line { font-size: var(--fs-micro); color: var(--c-text); white-space: normal; margin-top: 2px; }
+.celeb--module .celeb__band { border-color: var(--c-violet); background-color: rgba(16, 12, 30, 0.92); }
+.celeb--module .celeb__well { border-color: var(--c-violet); background-color: var(--c-violet-wash); }
+.celeb--module .celeb__icon { --icon-color: var(--c-violet); }
+.celeb--module .celeb__kicker { color: var(--c-violet); }
+.celeb--win .celeb__band, .celeb--max .celeb__band { border-color: var(--c-cyan); background-color: rgba(6, 22, 26, 0.92); }
+.celeb--win .celeb__well, .celeb--max .celeb__well { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
+.celeb--win .celeb__icon, .celeb--max .celeb__icon { --icon-color: var(--c-cyan); }
+.celeb--win .celeb__kicker, .celeb--max .celeb__kicker { color: var(--c-cyan); }

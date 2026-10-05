@@ -17,7 +17,7 @@ namespace Deadswitch.Game.UI.Screens
     {
         private const long ArmMs = 4000;
 
-        private static readonly string[] MasteryNames =
+        public static readonly string[] MasteryNames =
         {
             "SURVIVE A PURGE WITHOUT THE AI", "REACH TIER 2 WITHOUT LOSING AN OUTPOST", "WIN A LIVE BATTLE WITH NO CASUALTIES",
             "COMPLETE A TIER WITH YOU DECIDING", "CATCH MY FIRST LIE WITHIN A DAY", "KEEP CORRUPTION UNDER 40% FOR A TIER", "RELOCATE AT PEAK POWER",

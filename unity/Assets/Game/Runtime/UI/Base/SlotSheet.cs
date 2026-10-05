@@ -316,7 +316,7 @@ namespace Deadswitch.Game.UI.Base
             _content.Add(Kit.Label(Fmt.Countdown(SecondsUntil(host, job.CompleteTick)), "ds-value", "sheet__eta"));
             if (!slot.IsEmpty)
             {
-                _content.Add(Kit.Label("Still running at level " + slot.Level + " while the crew works.", "ds-body", "sheet__blurb"));
+                _content.Add(Kit.Label("Still running at level " + slot.Level + " while the work goes on.", "ds-body", "sheet__blurb"));
             }
 
             var actions = Row("sheet__actions");
@@ -367,7 +367,7 @@ namespace Deadswitch.Game.UI.Base
                 // battle scars (SPEC-018): what the damage costs and what fixing it takes
                 int lost = ScarSystem.PenaltyPct(s, c, slot);
                 _content.Add(Kit.Label(repairing
-                    ? "Crews are on it. Full output in " + Fmt.Countdown(SecondsUntil(host, slot.RepairUntilTick)) + "."
+                    ? "Workers are on it. Full output in " + Fmt.Countdown(SecondsUntil(host, slot.RepairUntilTick)) + "."
                     : (lost > 0 ? "Battle damage: output -" + lost + "% until repaired." : "Battle damage. It still works; it looks like it lost."), "ds-body", "sheet__blurb", "t-amber"));
             }
 

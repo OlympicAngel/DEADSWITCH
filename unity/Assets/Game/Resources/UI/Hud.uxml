@@ -141,7 +141,7 @@
           <ui:VisualElement class="ds-icon ds-icon--core hud-raidrow__plan-icon" />
           <ui:VisualElement class="hud-raidrow__plan-body">
             <ui:Label text="AI PLAN" class="hud-raidrow__plan-key" />
-            <ui:Label name="raid-plan" text="TURTLE // 5 DEFENDERS" class="hud-raidrow__plan-value" />
+            <ui:Label name="raid-plan" text="FORTIFY // 5 DEFENDERS" class="hud-raidrow__plan-value" />
           </ui:VisualElement>
           <ui:VisualElement name="raid-apply" class="ds-btn ds-btn--primary hud-raidrow__apply"><ui:Label name="raid-apply-label" text="APPLY" class="ds-btn__label" /></ui:VisualElement>
         </ui:VisualElement>
@@ -163,6 +163,22 @@
         <ui:Label name="guide-reason" text="More stored energy for builds and raids. Tap an empty plot." class="hud-guide__reason" />
       </ui:VisualElement>
       <ui:VisualElement name="guide-close" class="hud-guide__close"><ui:Label text="X" class="hud-guide__x" /></ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- Next goal (SPEC-043 s5): the next tier's gates with progress, once the opening objectives are done; tap opens MODULES -->
+    <ui:VisualElement name="goal" class="hud-goal is-hidden">
+      <ui:VisualElement class="hud-goal__well"><ui:VisualElement class="ds-icon ds-icon--up hud-goal__icon" /></ui:VisualElement>
+      <ui:VisualElement class="hud-goal__body">
+        <ui:Label name="goal-title" text="" class="hud-goal__title" />
+        <ui:VisualElement class="row hud-goal__gates">
+          <ui:VisualElement name="goal-levels" class="row hud-goal__gate"><ui:VisualElement class="ds-icon ds-icon--hammer hud-goal__gate-icon" /><ui:Label text="" class="hud-goal__gate-label" /></ui:VisualElement>
+          <ui:VisualElement name="goal-power" class="row hud-goal__gate"><ui:VisualElement class="ds-icon ds-icon--bolt hud-goal__gate-icon" /><ui:Label text="" class="hud-goal__gate-label" /></ui:VisualElement>
+          <ui:VisualElement name="goal-memory" class="row hud-goal__gate"><ui:VisualElement class="ds-icon ds-icon--memory hud-goal__gate-icon" /><ui:Label text="" class="hud-goal__gate-label" /></ui:VisualElement>
+          <ui:VisualElement name="goal-people" class="row hud-goal__gate"><ui:VisualElement class="ds-icon ds-icon--people hud-goal__gate-icon" /><ui:Label text="" class="hud-goal__gate-label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="goal-bar" class="ds-progress ds-progress--amber hud-goal__bar"><ui:VisualElement class="ds-progress__fill" /></ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement class="ds-icon ds-icon--chevron hud-goal__chev" />
     </ui:VisualElement>
 
     <!-- Floating dock: the AI's voice above the command bar -->

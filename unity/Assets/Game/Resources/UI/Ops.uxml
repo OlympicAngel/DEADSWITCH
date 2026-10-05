@@ -41,7 +41,7 @@
             <ui:Label text="AI ESTIMATE" class="ds-chip__label" />
           </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label name="threat-quiet" text="Perimeter quiet. Posture and garrison stay as you set them." class="ds-prose ops-threat__quiet is-hidden" />
+        <ui:Label name="threat-quiet" text="Perimeter quiet. Your stance and defenders stay as you set them." class="ds-prose ops-threat__quiet is-hidden" />
         <ui:VisualElement name="last-report" class="ds-btn ops-lastreport">
           <ui:Label name="last-report-label" text="LAST REPORT // RAID 2" class="ds-btn__label" />
         </ui:VisualElement>
@@ -82,7 +82,7 @@
         <ui:Label text="DEFEND" class="ds-page__title" />
         <ui:Label text="shield" class="ds-page__glyph" />
       <!-- Posture -->
-      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--shield ds-section__icon" /><ui:Label text="POSTURE" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
+      <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--shield ds-section__icon" /><ui:Label text="STANCE" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ops-card">
         <ui:Label text="How the base meets the next attack. One at a time." class="ds-card__sub ops-card__lead" />
         <ui:VisualElement class="ops-postures">
@@ -151,12 +151,12 @@
         <!-- forces and counters (SPEC-035): what is coming, and how each part of our line fares against it -->
         <ui:VisualElement class="ops-forces">
           <ui:Label name="forces" text="FORCES // 60% INFANTRY  10% DRONES  30% VEHICLES" class="ds-label t-amber" />
-          <ui:Label name="forces-line" text="OUR LINE // GARRISON 48 (+8%)  DRONES 24 (+20%)  VEHICLES 0" class="ds-prose ops-forces__line" />
+          <ui:Label name="forces-line" text="OUR LINE // DEFENDERS 48 (+8%)  DRONES 24 (+20%)  VEHICLES 0" class="ds-prose ops-forces__line" />
         </ui:VisualElement>
         <ui:VisualElement class="row ops-go">
           <ui:VisualElement class="grow">
             <ui:Label text="AI RECOMMENDS" class="ds-label" />
-            <ui:Label name="recommend" text="TURTLE // 5 DEFENDERS" class="ops-go__rec" />
+            <ui:Label name="recommend" text="FORTIFY // 5 DEFENDERS" class="ops-go__rec" />
           </ui:VisualElement>
           <ui:VisualElement name="set-go" class="ds-btn ds-btn--ai ops-go__btn">
             <ui:Label text="SET &amp; GO" class="ds-btn__label" />

@@ -173,7 +173,7 @@
               <ui:Label name="heat-0-level" text="WATCHED 31" class="map-heat__level" />
             </ui:VisualElement>
             <ui:VisualElement name="heat-0-meter" class="ds-meter ds-meter--amber map-heat__meter" />
-            <ui:Label name="adapt-0" text="KNOWS TURTLE 2 // FORT 1" class="map-adapt" />
+            <ui:Label name="adapt-0" text="" class="map-adapt is-hidden" />
             <ui:VisualElement class="row map-spy__line">
               <ui:VisualElement class="ds-icon ds-icon--eye map-spy__icon" />
               <ui:Label name="spy-0-state" text="NO AGENT" class="map-spy__state" />

@@ -9,7 +9,7 @@
 - [x] 2. Plain language: one name per concept, no cryptic abbreviations, Field Guide screen, hints on jargon
 - [x] 3. Leftovers: dead code, hard-coded names, sample text, unexplained numbers
 - [x] 4. New opening: story, boot sequence, camera descent, effects
-- [ ] 5. Engagement layer: next-milestone tracker, celebration moments
+- [x] 5. Engagement layer: next-milestone tracker, celebration moments
 - [ ] 6. Docs, screenshots
 
 F-100 to F-103 are code complete; their Editor checklists are in `docs/agents/HANDOFF.md`.

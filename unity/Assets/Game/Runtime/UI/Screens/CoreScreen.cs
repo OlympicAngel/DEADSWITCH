@@ -104,6 +104,14 @@ namespace Deadswitch.Game.UI.Screens
             _visible = false;
         }
 
+        /// <summary>Opens on the MODULES page (the next-goal card on BASE).</summary>
+        public void OpenModules()
+        {
+            Pager.Show(_ui.Q("status-pager"), "page-modules");
+            SyncPage();
+            Refresh();
+        }
+
         /// <summary>Whether the modules page is the one showing (it ticks research timers).</summary>
         private void SyncPage()
         {
@@ -138,7 +146,7 @@ namespace Deadswitch.Game.UI.Screens
             _crisisSeen = crisis;
             _ui.Q<Label>("core-crisis-title").text = (takeover ? "AI TAKEOVER // " : "CORE FLUSHED // ") + Fmt.Countdown(_host.SecondsUntilTick(takeover ? s.TakeoverUntilTick : s.FlushUntilTick));
             _ui.Q<Label>("core-crisis-desc").text = takeover
-                ? "I am running the Hub. Build, research and posture orders are mine until it passes, or until you flush me."
+                ? "I am running the Hub. Build, research and defense orders are mine until it passes, or until you flush me."
                 : "I am dark. AI-run units are stopped and I can predict nothing until I come back.";
             _ui.Q<Label>("flush-desc").text = "Corruption -" + Fmt.Milli(g.FlushMilli) + "%. For " + g.FlushHours + " h I go dark: AI-run units stop and I predict nothing.";
             Kit.SetButtonText(_ui.Q("flush-run"), "FLUSH THE CORE // " + Fmt.Num(g.FlushEnergy) + " ENERGY");

@@ -4,6 +4,7 @@ using Deadswitch.Game.Reports;
 using Deadswitch.Host.Narrative;
 using Deadswitch.Host.Reports;
 using Deadswitch.Sim.Commands;
+using Deadswitch.Sim.State;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -71,7 +72,7 @@ namespace Deadswitch.Game.UI.Screens
 
         private void Fill(BattleReport r)
         {
-            _ui.Q<Label>("rep-title").text = "AFTER-ACTION // " + Names.Attack(r.Kind) + " " + r.RaidId + " // " + r.Outcome.ToString().ToUpperInvariant();
+            _ui.Q<Label>("rep-title").text = "AFTER-ACTION // " + Names.Attack(r.Kind) + " " + r.RaidId + " // " + Outcome(r.Outcome);
             var vector = _ui.Q<Label>("rep-vector");
             vector.text = "PREDICTED " + Host.Narrative.Names.Gate(r.PredictedGate) + "  //  CONTACT " + Host.Narrative.Names.Gate(r.ContactGate);
             vector.EnableInClassList("is-mismatch", r.PredictionMismatch);
@@ -107,7 +108,7 @@ namespace Deadswitch.Game.UI.Screens
             Label stamp = _ui.Q<Label>("rep-outcome");
             if (stamp != null)
             {
-                stamp.text = r.Outcome.ToString().ToUpperInvariant();
+                stamp.text = Outcome(r.Outcome);
                 stamp.EnableInClassList("is-bad", r.Outcome == Deadswitch.Sim.State.RaidOutcome.Breached);
                 stamp.EnableInClassList("is-good", r.Outcome == Deadswitch.Sim.State.RaidOutcome.Repelled);
             }
@@ -138,6 +139,20 @@ namespace Deadswitch.Game.UI.Screens
             if (report != null)
             {
                 Fill(report);
+            }
+        }
+
+        /// <summary>The outcome in plain words (SPEC-043 s1).</summary>
+        private static string Outcome(RaidOutcome o)
+        {
+            switch (o)
+            {
+                case RaidOutcome.Repelled: return "REPELLED";
+                case RaidOutcome.Breached: return "BREACHED";
+                case RaidOutcome.Missed: return "THEY MISSED US";
+                case RaidOutcome.Lockdown: return "LOCKDOWN HELD";
+                case RaidOutcome.Tribute: return "PAID OFF";
+                default: return "OVER";
             }
         }
     }

@@ -71,6 +71,9 @@ namespace Deadswitch.Game.UI.Hud
         private ReportScreen _report;
         private Base.BaseScreen _baseScreen;
         private OpeningFlow _opening;
+        private CoreScreen _coreScreen;
+        private GoalCard _goal;
+        private Celebrations _celebrations;
         private VisualElement _reportChip;
         private VisualElement _dispatchChip;
         private int _chipRaid;
@@ -119,6 +122,12 @@ namespace Deadswitch.Game.UI.Hud
             _advisorPanel.RegisterCallback<ClickEvent>(_ => ExpandComms());
             Q<VisualElement>("raid-banner").RegisterCallback<ClickEvent>(_ => SetRaidOpen(!_raidOpen));
             Toasts.Mount(_ui.Hud);
+            _celebrations = new Celebrations(_ui.Sheets);
+            _goal = new GoalCard(Q<VisualElement>("goal"), () =>
+            {
+                Router.Show("core");
+                _coreScreen.OpenModules();
+            });
             _away = new AwaySummary(_ui.Sheets);
             Hints.Mount(_ui.Sheets);
             Hints.Attach(Q<VisualElement>("energy-cell"), "ENERGY", "Everything runs on it. Value / storage, net change per hour, and when it fills or runs dry. Tap for sources, drains and how to get more.");
@@ -167,7 +176,8 @@ namespace Deadswitch.Game.UI.Hud
             Router.Register(new LegacyScreen(Router));
             Records.Hook(_host);
             Router.Register(new StoryScreen(Router));
-            Router.Register(new CoreScreen(() => _voice.History));
+            _coreScreen = new CoreScreen(() => _voice.History);
+            Router.Register(_coreScreen);
             Router.Register(new SettingsScreen(Router));
             Cosmetics.Theme.Apply(UiRoot.Instance.Root);
             Router.Register(new WorkforceScreen(Router));
@@ -229,6 +239,7 @@ namespace Deadswitch.Game.UI.Hud
                 _frame.EnableInClassList("is-covered", id != "base");
                 _resourceSheet.Close();
                 MoveTabRail(id, true);
+                RefreshGoal();
             };
             Q<VisualElement>("tabbar").RegisterCallback<GeometryChangedEvent>(_ => MoveTabRail(Router.Current, false));
             Router.Show("base");
@@ -287,6 +298,7 @@ namespace Deadswitch.Game.UI.Hud
 
         private void OnSimEvent(SimEvent e)
         {
+            _celebrations.OnEvent(e, _host.Sim.State, _host.Sim.Config);
             if (e.Kind == EventKind.RaidResolved)
             {
                 _chipRaid = e.A;
@@ -328,6 +340,18 @@ namespace Deadswitch.Game.UI.Hud
             }
         }
 
+        /// <summary>The next-goal card: on BASE only, after the opening objectives, never over a live attack.</summary>
+        private void RefreshGoal()
+        {
+            if (_goal == null || _host == null || !_host.IsReady)
+            {
+                return;
+            }
+
+            GameState s = _host.Sim.State;
+            _goal.Refresh(s, _host.Sim.Config, Router.Current == "base" && Q<VisualElement>("guide").ClassListContains("is-hidden") && s.RaidId == 0);
+        }
+
         private void Refresh()
         {
             Simulation sim = _host.Sim;
@@ -336,6 +360,7 @@ namespace Deadswitch.Game.UI.Hud
             EconomyFlows f = Economy.Flows(s, c);
 
             RefreshPods(false);
+            RefreshGoal();
             _resourceSheet.Refresh();
             _queue?.Refresh();
             RefreshComms(s, c);
@@ -466,6 +491,7 @@ namespace Deadswitch.Game.UI.Hud
             _core.Tick(dt);
             _gauge.Tick(dt);
             _opening.Tick(dt);
+            _celebrations.Tick(dt);
             _voice.Tick(dt);
             Advisor.Tick(dt);
             UpdateTimers();
@@ -703,12 +729,12 @@ namespace Deadswitch.Game.UI.Hud
         {
             _menu = new CommandMenu(_ui.Sheets);
             _menu.Section("people", "THE HUB");
-            _menu.Add("people", "WORKFORCE", "Crews, loyalty and the hard choices.", () => Router.Show("workforce"));
+            _menu.Add("people", "WORKFORCE", "Your people: workers, defenders, loyalty and hard choices.", () => Router.Show("workforce"));
             _menu.Add("mail", "DISPATCH", "Ultimatums and dilemmas waiting for your answer.", () => Router.Show("dispatch"), () => _host.Sim.State.Ultimatum == UltimatumStage.Issued || _host.Sim.State.Dilemma != DilemmaKind.None ? 1 : 0);
             _menu.Add("report", "LAST REPORT", "The latest fight, with the evidence.", () => OpenReport(_chipRaid > 0 ? _chipRaid : LatestRaid()), () => _reportChip.ClassListContains("is-hidden") ? 0 : 1);
             _menu.Section("book", "RECORDS");
             _menu.Add("book", "STORY", "Chapters and the memory fragments you recovered.", () => Router.Show("story"));
-            _menu.Add("cycle", "LEGACY", "This cycle's score, perks and relocation.", () => Router.Show("legacy"));
+            _menu.Add("cycle", "LEGACY", "Your score, perks, and moving to a new Hub.", () => Router.Show("legacy"));
             _menu.Section("gear", "HELP AND SETTINGS");
             _menu.Add("book", "FIELD GUIDE", "Every term in plain words: workers, defenders, heat, override...", () => Router.Show("guide"));
             _menu.Add("star", "REWARD TRACK", "Themes, AI voices and lore, earned by play.", () =>

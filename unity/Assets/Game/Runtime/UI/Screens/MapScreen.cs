@@ -541,11 +541,11 @@ namespace Deadswitch.Game.UI.Screens
                 foreach (Posture p in new[] { Posture.Turtle, Posture.Dark, Posture.Evacuate })
                 {
                     int lv = AdaptSystem.Learned(s, (Faction)f, p);
-                    learned += lv > 0 ? (learned.Length > 0 ? " " : "KNOWS ") + Fmt.PostureName(p) + " " + lv : string.Empty;
+                    learned += lv > 0 ? (learned.Length > 0 ? " " : "READ OUR ") + Fmt.PostureName(p) + " " + lv : string.Empty;
                 }
 
                 int fort = s.Fortified[f];
-                string adapt = learned + (fort > 0 ? (learned.Length > 0 ? " // " : string.Empty) + "FORT " + fort : string.Empty);
+                string adapt = learned + (fort > 0 ? (learned.Length > 0 ? " // " : string.Empty) + "DUG IN " + fort : string.Empty);
                 if (LuckSystem.Regrouping(s, (Faction)f))
                 {
                     // an opportunity window (SPEC-028): their sites are thin right now

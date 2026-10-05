@@ -277,7 +277,7 @@ namespace Deadswitch.Game.Presentation
             }
 
             AddHelp(r, s, c, FacilityKind.LifeSupport, "cross", "Room for more", "Life support raises how many people the Hub holds.");
-            r.Help.Add(new ResHelp { Glyph = "people", Title = "Workforce", Why = "Crews, loyalty and hard choices.", Screen = "workforce" });
+            r.Help.Add(new ResHelp { Glyph = "people", Title = "Workforce", Why = "Workers, defenders, loyalty and hard choices.", Screen = "workforce" });
         }
 
         private static void Fuel(ResourceInfo r, GameState s, SimConfig c)

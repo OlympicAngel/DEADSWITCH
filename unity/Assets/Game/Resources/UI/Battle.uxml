@@ -47,7 +47,7 @@
       </ui:VisualElement>
       <ui:VisualElement class="row bat-foot">
         <ui:VisualElement name="bat-slow" class="bat-toggle"><ui:VisualElement class="ds-icon ds-icon--clock bat-toggle__icon" /><ui:Label name="bat-slow-label" text="SLOW-MO OFF" class="bat-toggle__label" /></ui:VisualElement>
-        <ui:VisualElement name="bat-posture" class="ds-btn grow bat-gap"><ui:Label text="POSTURE AND GARRISON" class="ds-btn__label" /></ui:VisualElement>
+        <ui:VisualElement name="bat-posture" class="ds-btn grow bat-gap"><ui:Label text="STANCE AND DEFENDERS" class="ds-btn__label" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:Label name="bat-reason" text="" class="ds-body t-amber bat-reason" />
     </ui:VisualElement>

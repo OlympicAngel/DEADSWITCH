@@ -270,7 +270,7 @@ namespace Deadswitch.Game.UI.Screens
             Q<Label>("forces").text = !raid ? "FORCES // NO CONTACT" : forces
                 ? "FORCES // " + s.RaidInfantryPct + "% INFANTRY  " + s.RaidDronePct + "% DRONES  " + s.RaidVehiclePct + "% VEHICLES"
                 : "FORCES // UNKNOWN";
-            Q<Label>("forces-line").text = "OUR LINE // " + Line(s, c, UnitFamily.Infantry, "GARRISON", forces) + "  " + Line(s, c, UnitFamily.Drones, "DRONES", forces) + "  " + Line(s, c, UnitFamily.Vehicles, "VEHICLES", forces);
+            Q<Label>("forces-line").text = "OUR LINE // " + Line(s, c, UnitFamily.Infantry, "DEFENDERS", forces) + "  " + Line(s, c, UnitFamily.Drones, "DRONES", forces) + "  " + Line(s, c, UnitFamily.Vehicles, "VEHICLES", forces);
 
             AiSystem.Recommend(s, c, out Posture rec, out int recGarrison);
             Q<Label>("recommend").text = !raid ? "NOTHING TO DEFEND AGAINST"
@@ -357,7 +357,7 @@ namespace Deadswitch.Game.UI.Screens
             {
                 // doc 10 s1.2: Ironman has no shield
                 Q<Label>("shield-title").text = "VACATION SHIELD // OFF IN HARDCORE";
-                Q<Label>("shield-desc").text = "This run is Ironman: there is no shield. Plan your absences.";
+                Q<Label>("shield-desc").text = "This run is Hardcore: there is no vacation shield. Plan your absences.";
                 Q("shield-toggle").EnableInClassList("is-disabled", true);
                 Q<Label>("shield-label").text = "NONE";
             }
