@@ -206,6 +206,9 @@ namespace Deadswitch.Sim.Systems
 
                     hours = g.CollapseStallHours;
                     s.CollapseWatchUntilTick = s.Tick + (g.CollapseStallHours * hour);
+
+                    // doc 03 s3: a collapse is a world-wide disaster phase (SPEC-036 phases)
+                    LivingSystem.StartPhase(ctx, PhaseSystem.Phase((int)(SimMath.Hash((uint)(s.Tick / hour) ^ 0xC011u, (uint)(s.Rng.State >> 32)) % 3u)));
                     break;
                 case CrisisKind.Takeover:
                     s.TakeoverUntilTick = s.Tick + (g.TakeoverHours * hour);

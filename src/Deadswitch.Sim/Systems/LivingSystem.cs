@@ -396,6 +396,21 @@ namespace Deadswitch.Sim.Systems
             ctx.Emit(EventKind.WorldEventStarted, (int)s.WorldEvent, l.WorldEventHours, (int)busy);
         }
 
+        /// <summary>A breakdown phase starts now, replacing whatever the wastes were doing (a collapse crisis, doc 03 s3).</summary>
+        public static void StartPhase(SimContext ctx, WorldEventKind phase)
+        {
+            GameState s = ctx.State;
+            LivingConfig l = ctx.Config.Living;
+            if (s.WorldEvent != WorldEventKind.None)
+            {
+                ctx.Emit(EventKind.WorldEventEnded, (int)s.WorldEvent);
+            }
+
+            s.WorldEvent = phase;
+            s.WorldEventUntilTick = s.Tick + ((long)l.WorldEventHours * SimConfig.TicksPerHour);
+            ctx.Emit(EventKind.WorldEventStarted, (int)phase, l.WorldEventHours, (int)WorldSystem.Hottest(s));
+        }
+
         /// <summary>How much of a good the Hub can still store.</summary>
         private static int Room(GameState s, SimConfig c, TradeGood good)
         {
