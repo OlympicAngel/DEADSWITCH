@@ -246,6 +246,7 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("tabbar").RegisterCallback<GeometryChangedEvent>(_ => MoveTabRail(Router.Current, false));
             Router.Show("base");
             _opening = new OpeningFlow(_host, _hud, _voice, _baseScreen);
+            _opening.GuideChanged += RefreshGoal;
 
             _host.Ticked += Refresh;
             _host.EventRaised += OnSimEvent;

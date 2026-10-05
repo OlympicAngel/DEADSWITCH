@@ -36,6 +36,8 @@ namespace Deadswitch.Game.UI.Hud
         public Celebrations(VisualElement layer)
         {
             _root = new VisualElement { pickingMode = PickingMode.Ignore };
+            // the banner sits in the sheet layer, outside the HUD tree: it brings the HUD's styles with it
+            _root.styleSheets.Add(Resources.Load<StyleSheet>("UI/Hud"));
             _root.AddToClassList("celeb");
             _root.AddToClassList("is-hidden");
             _band = new VisualElement { pickingMode = PickingMode.Ignore };

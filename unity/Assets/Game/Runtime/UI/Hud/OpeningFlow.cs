@@ -583,10 +583,19 @@ namespace Deadswitch.Game.UI.Hud
             ShowGuide(PlayerPrefs.GetInt(GuideOffKey, 0) == 1 ? default : o);
         }
 
+        /// <summary>Raised when the objective guide shows or hides (the goal card makes room for it).</summary>
+        public event System.Action GuideChanged;
+
         private void ShowGuide(GuideObjective o)
         {
             bool on = o.Title != null && o.Title.Length > 0 && o.Step != GuideStep.Done && PlayerPrefs.GetInt(GuideOffKey, 0) == 0;
+            bool changed = _guide.ClassListContains("is-hidden") == on;
             _guide.EnableInClassList("is-hidden", !on);
+            if (changed)
+            {
+                GuideChanged?.Invoke();
+            }
+
             SetHighlight(null);
             _base.Guide(-1);
             if (!on)
