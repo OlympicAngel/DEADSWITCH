@@ -8,6 +8,7 @@
 .op__grade { bottom: 0; height: 62%; --sheen-reach: 1; }
 
 .op__flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-red-glow); opacity: 0; }
+.op__white { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-white); opacity: 0; }
 
 /* before the core wakes: true black with a CRT trace across the middle */
 .op__black { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-void); justify-content: center; align-items: center; }

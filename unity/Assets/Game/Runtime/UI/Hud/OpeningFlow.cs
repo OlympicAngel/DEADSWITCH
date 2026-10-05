@@ -39,6 +39,8 @@ namespace Deadswitch.Game.UI.Hud
         private VisualElement _hand;
         private VisualElement _tap;
         private VisualElement _flashEl;
+        private VisualElement _whiteEl;
+        private float _white;
         private Label _kicker;
         private Label _line;
         private Label _handLine;
@@ -132,6 +134,7 @@ namespace Deadswitch.Game.UI.Hud
             _hand = tree.Q("op-hand");
             _tap = tree.Q("op-tap");
             _flashEl = tree.Q("op-flash");
+            _whiteEl = tree.Q("op-white");
             _kicker = tree.Q<Label>("op-kicker");
             _line = tree.Q<Label>("op-line");
             _handLine = tree.Q<Label>("op-hand-line");
@@ -171,7 +174,12 @@ namespace Deadswitch.Game.UI.Hud
             _black.style.opacity = 1f;
             _bars = 0f;
             _clock = 0f;
+            OpeningGlobe.Prewarm();
             _film = Cinematic ? OpeningFilm.Create() : null;
+            if (_film != null)
+            {
+                _film.Whiteout += strength => _white = Mathf.Max(_white, strength);
+            }
             NextCard();
         }
 
@@ -184,7 +192,7 @@ namespace Deadswitch.Game.UI.Hud
             bool typing = _shown < Scene.Text.Length;
 
             // the log opens on black with a CRT trace; beats shot on the Hub fade the picture in
-            bool hub = OpeningFilm.OnHub(mood) && _film != null;
+            bool hub = OpeningFilm.ShowsWorld(mood) && _film != null;
             _crt.style.display = mood == PrologueMood.Signal ? DisplayStyle.Flex : DisplayStyle.None;
             if (mood == PrologueMood.Signal)
             {
@@ -193,7 +201,9 @@ namespace Deadswitch.Game.UI.Hud
                 _crt.style.opacity = Motion.Reduced ? 1f : 0.6f + (0.4f * Mathf.PerlinNoise(_clock * 18f, 0.2f));
             }
 
-            float black = hub ? 1f - Mathf.Clamp01(_beat / FadeInSeconds) : 1f;
+            // the log opens on the CRT trace; the planet fades in behind it
+            float fadeFrom = mood == PrologueMood.Signal ? _rules.crtSeconds + 0.5f : 0f;
+            float black = hub ? 1f - Mathf.Clamp01((_beat - fadeFrom) / (mood == PrologueMood.Signal ? 2f : FadeInSeconds)) : 1f;
             _black.style.opacity = Motion.Reduced && hub ? 0f : black;
 
             // letterbox bars close in once the log is running
@@ -209,6 +219,10 @@ namespace Deadswitch.Game.UI.Hud
                 _flash = Mathf.Max(0f, _flash - (dt * 1.6f));
                 _flashEl.style.opacity = _flash;
             }
+
+            // a warhead the size of a city: the frame burns white and fades back slowly
+            _white = Mathf.Max(0f, _white - (dt * 0.55f));
+            _whiteEl.style.opacity = Ease.InOutSine(_white);
 
             if (Last)
             {
@@ -321,6 +335,7 @@ namespace Deadswitch.Game.UI.Hud
             switch (mood)
             {
                 case PrologueMood.Signal:
+                    return 0.2f;
                 case PrologueMood.After:
                     return 0.5f;
                 case PrologueMood.Launch:

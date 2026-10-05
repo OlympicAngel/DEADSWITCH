@@ -37,17 +37,35 @@ namespace Deadswitch.Game.Base
         private ParticleSystem _fire;
         private ParticleSystem _smoke;
         private Vector3 _core;
+        private OpeningGlobe _globe;
+        private readonly System.Random _rng = new System.Random(19);
+        private readonly List<float> _launchAt = new List<float>();
 
         public static OpeningFilm Create()
         {
             return new GameObject("Opening Film").AddComponent<OpeningFilm>();
         }
 
-        /// <summary>True when a beat is shot on the Hub (the others are drawn over black for now).</summary>
+        /// <summary>True when a beat is shot on the Hub.</summary>
         public static bool OnHub(PrologueMood mood)
         {
             return mood >= PrologueMood.Hold;
         }
+
+        /// <summary>True when a beat is shot on the planet.</summary>
+        public static bool OnGlobe(PrologueMood mood)
+        {
+            return mood == PrologueMood.Signal || mood == PrologueMood.Fire || mood == PrologueMood.Dark;
+        }
+
+        /// <summary>True when the film draws the picture for a beat (the others are the overlay's own).</summary>
+        public static bool ShowsWorld(PrologueMood mood)
+        {
+            return OnHub(mood) || OnGlobe(mood);
+        }
+
+        /// <summary>Raised when a hit should white out the frame (argument: strength 0..1).</summary>
+        public event System.Action<float> Whiteout;
 
         private void Awake()
         {
@@ -112,7 +130,36 @@ namespace Deadswitch.Game.Base
                     break;
             }
 
+            if (OnGlobe(mood) && _globe == null)
+            {
+                _globe = OpeningGlobe.Create(transform);
+                _globe.Landed += OnLanded;
+            }
+            else if (!OnGlobe(mood) && _globe != null && mood != PrologueMood.Command && mood != PrologueMood.Launch)
+            {
+                Destroy(_globe.gameObject);
+                _globe = null;
+            }
+
+            _launchAt.Clear();
+            if (mood == PrologueMood.Fire)
+            {
+                // a first wave, the big one, then everyone answers
+                float[] at = { 0.2f, 0.45f, 0.7f, 0.9f, 1.4f, 2.0f, 2.25f, 2.5f, 2.7f, 2.9f, 3.1f, 3.3f };
+                _launchAt.AddRange(at);
+            }
+
             NextCut();
+        }
+
+        private void OnLanded(float size)
+        {
+            AudioDirector.Instance?.Opening(size >= 2f ? OpeningCue.Impact : OpeningCue.FarImpact);
+            DroneCamera.Instance?.Shake(_rules.warShake * (size >= 2f ? 1.2f : 0.35f));
+            if (size >= 2f)
+            {
+                Whiteout?.Invoke(1f);
+            }
         }
 
         /// <summary>Hands the camera, the lights and the view back and removes the film's objects.</summary>
@@ -146,6 +193,7 @@ namespace Deadswitch.Game.Base
 
             Frame();
             Lights(dt);
+            Planet();
             if (_mood == PrologueMood.Attack)
             {
                 Incoming(dt);
@@ -203,14 +251,16 @@ namespace Deadswitch.Game.Base
 
         private void Frame()
         {
-            if (_cut < 0 || _cut >= _cuts.Count || DroneCamera.Instance == null || !OnHub(_mood))
+            if (_cut < 0 || _cut >= _cuts.Count || DroneCamera.Instance == null || !ShowsWorld(_mood))
             {
                 return;
             }
 
+            // planet shots are given relative to the planet centre
+            Vector3 origin = OnGlobe(_mood) ? OpeningGlobe.Center : Vector3.zero;
             InterfaceConfig.OpeningShot s = _cuts[_cut];
             float k = Ease.InOutSine(Mathf.Clamp01(_cutT / Mathf.Max(0.01f, s.seconds)));
-            DroneCamera.Instance.Direct(Vector3.Lerp(s.from, s.to, k), Vector3.Lerp(s.lookFrom, s.lookTo, k), Mathf.Lerp(s.fovFrom, s.fovTo, k));
+            DroneCamera.Instance.Direct(origin + Vector3.Lerp(s.from, s.to, k), origin + Vector3.Lerp(s.lookFrom, s.lookTo, k), Mathf.Lerp(s.fovFrom, s.fovTo, k));
         }
 
         private void Lights(float dt)
@@ -251,6 +301,12 @@ namespace Deadswitch.Game.Base
                     break;
             }
 
+            if (!OnHub(_mood))
+            {
+                // off the Hub the sky is space: black fog, black background
+                view.OpeningGrade(Color.black, 1f);
+            }
+
             _flare.color = flareColor;
             _flare.enabled = flare > 0.01f;
             _flare.intensity = flare * _rules.flareIntensity;
@@ -258,6 +314,38 @@ namespace Deadswitch.Game.Base
             _flash = Mathf.Max(0f, _flash - (dt * 2.5f));
             _blast.enabled = _flash > 0.01f;
             _blast.intensity = _flash * _blastScale * _rules.blastIntensity;
+        }
+
+        private void Planet()
+        {
+            if (_globe == null)
+            {
+                return;
+            }
+
+            float u = Mathf.Clamp01(_t / Seconds(_mood));
+            switch (_mood)
+            {
+                case PrologueMood.Signal:
+                    _globe.Lights = Mathf.Clamp01(_t / 2.5f);
+                    break;
+                case PrologueMood.Fire:
+                    _globe.Burn = Mathf.Clamp01(u * 1.3f);
+                    while (_launchAt.Count > 0 && _t >= _launchAt[0])
+                    {
+                        _launchAt.RemoveAt(0);
+                        Vector3 cam = DroneCamera.Instance != null ? DroneCamera.Instance.Camera.transform.position : OpeningGlobe.Center;
+                        bool big = _launchAt.Count == 7;
+                        _globe.Fire(_globe.FacingPoint(cam, _rng), _globe.FacingPoint(cam, _rng), big ? 1.4f : 1.0f, big ? 2f : 1f);
+                    }
+
+                    break;
+                case PrologueMood.Dark:
+                    _globe.Burn = 1f;
+                    _globe.Dark = Mathf.Clamp01(u * 1.25f);
+                    _globe.Embers = Mathf.Clamp01(u * 1.4f);
+                    break;
+            }
         }
 
         private void Incoming(float dt)

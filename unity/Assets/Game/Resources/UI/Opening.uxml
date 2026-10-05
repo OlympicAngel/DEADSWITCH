@@ -5,6 +5,7 @@
   <ui:VisualElement name="prologue" class="op op--boot">
     <ui:VisualElement class="ds-scrim ds-scrim--up op__grade" />
     <ui:VisualElement name="op-flash" class="op__flash" />
+    <ui:VisualElement name="op-white" class="op__white" />
     <ui:VisualElement name="op-black" class="op__black">
       <ui:VisualElement name="op-crt" class="op__crt" />
     </ui:VisualElement>

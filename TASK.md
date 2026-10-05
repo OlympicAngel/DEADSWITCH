@@ -8,7 +8,7 @@
 - [x] 0. Foundation: letterboxed overlay over the Hub, directed shots, blackout and power wave, war tracers, heartbeat and power-up sounds
 - [x] 1. Staged base: `BaseView` shows a scripted layout (full Tier 2), breaks it building by building, ends in the ruin
 - [x] 2. Act 5-6 film: calm Hub, attack cuts, ruin wide shot, DEADSWITCH TRIGGERED
-- [ ] 3. Globe: procedural planet, city lights, launch arcs, blooms, whiteout, blackout
+- [x] 3. Globe: procedural planet, city lights, launch arcs, blooms, whiteout, blackout
 - [ ] 4. War room: terminal wall that wakes and goes red
 - [ ] 5. Time skip and the sector map shot
 - [ ] 6. Restore tutorial: framed buildings, field cards, RESTORE, WAKE THE CORE, handover to the real run, resume after quit
