@@ -478,7 +478,8 @@
 .ds-tile--primary { border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
 .ds-tile--warn { border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .ds-tile--warn > .ds-tile__icon { --icon-color: var(--c-amber); }
-.ds-tile.is-disabled { opacity: 0.4; }
+.ds-tile.is-disabled { opacity: 0.8; border-color: var(--c-line-mid); background-color: var(--c-elev-1); }
+.ds-tile.is-disabled > .ds-tile__icon { --icon-color: var(--c-text-dim); }
 .ds-tile__cost.is-short { color: var(--c-red); }
 
 /* ---------- Toasts ---------- */

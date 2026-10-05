@@ -11,7 +11,7 @@
 - [x] 2. Resource pods: capacity bars, rate pills, FULL/LOW/SHORT states, time to full/empty
 - [x] 3. Resource breakdown sheet with producers/drains and "how to get more" shortcuts
 - [x] 4. Camera: fly-to focus (pan+zoom+orbit), inertia, double-tap zoom, idle orbit, settings toggles
-- [ ] 5. Focus mode: dimmed labels, quick-action ring, plot markers, build-complete moment
+- [x] 5. Focus mode: dimmed labels, quick-action ring, plot markers, build-complete moment
 - [ ] 6. JARVIS layer: core orb + waveform, comms panel with suggestion chips, toasts
 - [ ] 7. Attack cinematic: letterbox, title card, shot sequence, shake, impacts, siren, aftermath stamp
 - [ ] 8. Screen rework: OPS regrouped into titled cards, CORE with the orb as hero, command bar badges

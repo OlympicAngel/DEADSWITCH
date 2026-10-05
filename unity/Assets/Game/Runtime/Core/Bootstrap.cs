@@ -32,6 +32,7 @@ namespace Deadswitch.Game.Core
             Root.AddComponent<UI.Hud.HudController>();
             Root.AddComponent<Base.BaseView>();
             Root.AddComponent<Base.DroneCamera>();
+            Root.AddComponent<Base.BaseFx>();
             Root.AddComponent<Audio.AudioDirector>();
             Root.AddComponent<Base.LiveBattle>();
             if (SmokeRun.Requested())

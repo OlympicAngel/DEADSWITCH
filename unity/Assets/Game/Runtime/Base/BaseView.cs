@@ -59,6 +59,18 @@ namespace Deadswitch.Game.Base
             return _slots[slot].Root.position + new Vector3(0, _slots[slot].Height + 0.8f, 0);
         }
 
+        /// <summary>Ground position of a slot (plot center).</summary>
+        public Vector3 SlotGround(int slot)
+        {
+            return _slots[slot].Root.position;
+        }
+
+        /// <summary>Height of the facility standing on a slot (0 for an empty plot).</summary>
+        public float SlotHeight(int slot)
+        {
+            return _slots[slot].Height;
+        }
+
         /// <summary>Center of a slot's facility at half height (what the drone frames when focusing).</summary>
         public Vector3 FocusPoint(int slot)
         {

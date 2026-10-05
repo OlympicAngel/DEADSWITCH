@@ -27,6 +27,7 @@ namespace Deadswitch.Game.UI.Base
         private readonly System.Action _onClose;
         private bool _confirmDemolish;
         private FacilityKind _recommend = FacilityKind.None;
+        private bool _expanded;
         private string _reason = string.Empty;
 
         public SlotSheet(VisualElement layer, System.Action onClose)
@@ -39,8 +40,10 @@ namespace Deadswitch.Game.UI.Base
             var grip = new VisualElement();
             grip.AddToClassList("ds-sheet__grip");
             _root.Add(grip);
-            _content = new VisualElement();
-            _root.Add(_content);
+            var scroll = new ScrollView(ScrollViewMode.Vertical);
+            scroll.AddToClassList("sheet__scroll");
+            _root.Add(scroll);
+            _content = scroll.contentContainer;
             _root.RegisterCallback<PointerDownEvent>(e => e.StopPropagation());
             layer.Add(_root);
         }
@@ -52,9 +55,17 @@ namespace Deadswitch.Game.UI.Base
         public void Open(int slot)
         {
             Slot = slot;
+            _expanded = false;
             _confirmDemolish = false;
             _reason = string.Empty;
             _root.RemoveFromClassList("is-hidden");
+            Refresh();
+        }
+
+        /// <summary>Shows the full stats and every action (the compact card shows status only, idea 24).</summary>
+        public void Expand()
+        {
+            _expanded = true;
             Refresh();
         }
 
@@ -260,6 +271,13 @@ namespace Deadswitch.Game.UI.Base
                 _content.Add(Kit.Label(repairing
                     ? "Crews are on it. Full output in " + Fmt.Countdown(SecondsUntil(host, slot.RepairUntilTick)) + "."
                     : (lost > 0 ? "Battle damage: output -" + lost + "% until repaired." : "Battle damage. It still works; it looks like it lost."), "ds-body", "sheet__blurb", "t-amber"));
+            }
+
+            if (!_expanded)
+            {
+                // compact card: the quick-action tiles beside the facility carry the common actions
+                _content.Add(Kit.Button("ALL DETAILS AND ACTIONS", Expand, "ds-btn--ghost", "sheet__more"));
+                return;
             }
 
             bool max = slot.Level >= f.MaxLevel;

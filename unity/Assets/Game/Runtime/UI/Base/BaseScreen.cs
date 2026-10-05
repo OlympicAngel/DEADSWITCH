@@ -12,6 +12,7 @@ namespace Deadswitch.Game.UI.Base
     {
         private readonly BaseLabels _labels;
         private readonly SlotSheet _sheet;
+        private readonly QuickActions _quick;
         private readonly ScreenRouter _router;
         private bool _visible;
 
@@ -22,6 +23,7 @@ namespace Deadswitch.Game.UI.Base
             UiRoot ui = UiRoot.Instance;
             _labels = new BaseLabels(ui.World, Select, () => _router.Show("core"));
             _sheet = new SlotSheet(ui.Sheets, () => Select(-1));
+            _quick = new QuickActions(ui.World, () => _sheet.Expand());
 
             DroneCamera cam = DroneCamera.Instance;
             cam.SlotTapped += slot =>
@@ -44,12 +46,14 @@ namespace Deadswitch.Game.UI.Base
             {
                 _labels.Refresh();
                 _sheet.Refresh();
+                _quick.Refresh();
             };
             ui.Frame += _ =>
             {
                 if (_visible)
                 {
                     _labels.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height);
+                    _quick.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height);
                     _sheet.Tick();
                 }
             };
@@ -90,6 +94,8 @@ namespace Deadswitch.Game.UI.Base
         {
             _labels.Select(slot);
             BaseView.Instance?.Select(slot);
+            BaseFx.Instance?.Focus(slot);
+            _quick.Show(slot);
             if (slot < 0)
             {
                 _sheet.Close();

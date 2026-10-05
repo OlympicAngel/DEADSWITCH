@@ -4,8 +4,9 @@
 .lbl {
     position: absolute;
     padding: var(--s-1) var(--s-3) var(--s-1) var(--s-3);
-    background-color: rgba(8, 12, 10, 0.72);
+    background-color: var(--c-scrim);
     border-width: 1px;
+    border-radius: var(--r-md);
     border-color: var(--c-line-mid);
     translate: -50% -100%;
     min-width: 150px;
@@ -43,17 +44,20 @@
 
 .lbl .ds-pip { width: 10px; height: 10px; margin-right: var(--s-2); }
 
-.lbl--empty { border-color: var(--c-line); background-color: rgba(8, 12, 10, 0.45); }
+.lbl--empty { border-color: var(--c-cyan-line); background-color: var(--c-panel-sunken); }
 .lbl--empty > .ds-corner { border-color: var(--c-text-faint); }
-.lbl--empty .lbl__name { color: var(--c-text-dim); }
+.lbl--empty .lbl__name { color: var(--c-cyan-dim); }
+.lbl--empty .lbl__level { color: var(--c-cyan); }
 .lbl--warn > .ds-corner { border-color: var(--c-amber); }
 .lbl--warn .lbl__level { color: var(--c-amber); }
 .lbl--off > .ds-corner { border-color: var(--c-red); }
 .lbl--off .lbl__level { color: var(--c-red); }
 .lbl--core > .ds-corner { border-color: var(--c-phosphor); }
 .lbl--core .lbl__name { color: var(--c-phosphor); text-shadow: 0 0 8px var(--c-phosphor-glow); }
-.lbl.is-selected { border-color: var(--c-phosphor); scale: 1.08 1.08; }
-.lbl.is-faded { opacity: 0.25; }
+.lbl.is-selected { border-color: var(--c-cyan); background-color: var(--c-glass); scale: 1.12 1.12; }
+.lbl.is-selected > .ds-corner { border-color: var(--c-cyan); }
+.lbl.is-selected .lbl__name { color: var(--c-cyan); text-shadow: 0 0 8px var(--c-cyan-glow); }
+.lbl.is-faded { opacity: 0.15; }
 
 /* ---------- Slot sheet ---------- */
 .sheet { padding-bottom: 180px; }
@@ -149,3 +153,10 @@
 .rsheet__help-go { width: 36px; height: 36px; margin-left: var(--s-2); --icon-color: var(--c-cyan); }
 .opt--recommended { border-color: var(--c-cyan); border-left-width: 6px; background-color: var(--c-cyan-wash); }
 .opt--recommended .opt__icon { --icon-color: var(--c-cyan); }
+
+/* ---------- Focus: quick actions under the framed facility (SPEC-039 C) ---------- */
+.qa { position: absolute; flex-direction: row; width: 640px; translate: -50% 24px; }
+.qa.is-hidden { display: none; }
+.qa > .ds-tile { min-height: 132px; }
+.sheet__scroll { flex-shrink: 1; max-height: 1100px; }
+.sheet__more { margin-top: var(--s-2); }

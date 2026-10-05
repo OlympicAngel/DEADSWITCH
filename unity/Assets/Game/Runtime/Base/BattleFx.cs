@@ -14,6 +14,16 @@ namespace Deadswitch.Game.Base
         private static Material _smoke;
         private static Material _fire;
 
+        /// <summary>Additive glow material (tracers, scan rings, data links, holographic markers).</summary>
+        public static Material Additive
+        {
+            get
+            {
+                Build();
+                return _fire;
+            }
+        }
+
         /// <summary>Adds the fire and smoke emitters of a scar set under <paramref name="parent"/> (scar-local space).</summary>
         public static void Attach(ScarSet set, Transform parent, float effects, bool reduced, List<ParticleSystem> into)
         {
