@@ -49,3 +49,25 @@ test('old saves missing new fields still load', () => {
   assert.equal(s.res.energy, 0 + E.newState().res.energy);
   assert.deepEqual(s.items, {});
 });
+
+test('being away never brings more than one raid', () => {
+  const s = E.newState(3);
+  Object.assign(s.levels, { core: 4 });
+  E.catchUp(s, 24 * 3600);
+  assert.equal(s.stats.raidsWon + s.stats.raidsLost, 1);
+  assert.ok(s.raid, 'the next raid is scheduled and waits for the player');
+});
+
+test('same seed and inputs give the same war outcomes', () => {
+  const run = () => {
+    const s = E.newState(42);
+    Object.assign(s.levels, { core: 3, armory: 1 });
+    s.items.rifles = 6;
+    s.res.money = 1e5;
+    s.res.energy = 100;
+    E.launchOp(s, 'rust');
+    E.catchUp(s, 3 * 3600);
+    return JSON.stringify([s.sectors, s.stats, s.rng]);
+  };
+  assert.equal(run(), run());
+});

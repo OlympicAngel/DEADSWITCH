@@ -1,7 +1,7 @@
 // Host: owns the clock, the save slot and the loop. The engine never sees wall time.
 import { BALANCE } from './data.js';
 import * as E from './engine.js';
-import { createUI } from './ui.js';
+import { createUI } from './ui/index.js';
 import { time } from './format.js';
 
 const SAVE_KEY = 'deadswitch.save';
@@ -27,13 +27,26 @@ function save() {
   }
 }
 
+const commit = (ok) => {
+  if (ok) {
+    save();
+  }
+  return ok;
+};
+const seed = () => (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
 const encode = (obj) => btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
 const decode = (str) => JSON.parse(decodeURIComponent(escape(atob(str))));
 
 game.act = {
-  build: (id) => E.startBuild(game.state, id) && save(),
-  cancel: () => E.cancelBuild(game.state) && save(),
+  build: (id) => commit(E.startBuild(game.state, id)),
+  cancel: () => commit(E.cancelBuild(game.state)),
   buy: (id, n) => E.buyItem(game.state, id, n),
+  launch: (id) => commit(E.launchOp(game.state, id)),
+  choose: (i) => {
+    const res = E.resolveEvent(game.state, i);
+    save();
+    return res;
+  },
   toggle: (id) => E.togglePause(game.state, id),
   save,
   exportSave: () => encode({ state: game.state, savedAt: Date.now() }),
@@ -44,6 +57,7 @@ game.act = {
         return false;
       }
       game.state = E.migrate(data.state);
+      ui.reset();
       save();
       return true;
     } catch {
@@ -51,13 +65,14 @@ game.act = {
     }
   },
   reset: () => {
-    game.state = E.newState();
+    game.state = E.newState(seed());
+    ui.reset();
     save();
   },
 };
 
 const saved = readSave();
-game.state = saved ? E.migrate(saved.state) : E.newState();
+game.state = saved ? E.migrate(saved.state) : E.newState(seed());
 const ui = createUI(document.getElementById('app'), game);
 
 if (saved && saved.savedAt) {
@@ -91,6 +106,9 @@ function tick() {
   }
   ui.render();
 }
+
+// Exposed for debugging from the browser console.
+window.deadswitch = game;
 
 ui.render();
 setInterval(tick, BALANCE.tickSeconds * 1000);
