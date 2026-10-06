@@ -20,6 +20,7 @@
 .dsp-card__note { margin-top: var(--s-2); font-size: var(--fs-micro); white-space: normal; }
 .dsp-card__actions { margin-top: var(--s-3); }
 .dsp-gap { margin-left: var(--s-3); }
+.dsp-card__terms { align-items: stretch; }
 .dsp-kv { flex-grow: 1; flex-basis: 0; padding: var(--s-2) var(--s-3); margin-right: var(--s-3); border-width: 0; border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
 .dsp-kv--danger { margin-right: 0; background-color: var(--c-red-wash); }
 .dsp-kv__value { min-height: 50px; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-text); margin-top: var(--s-1); }

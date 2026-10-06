@@ -43,7 +43,7 @@
         <ui:VisualElement class="row dsp-card__terms">
           <ui:VisualElement class="dsp-kv">
             <ui:Label text="PAY THE PRICE" class="ds-label" />
-            <ui:Label name="dsp-ult-price" text="800 E  100 F" class="dsp-kv__value" />
+            <ui:Label name="dsp-ult-price" text="400 ENERGY&#10;100 FUEL" class="dsp-kv__value" />
           </ui:VisualElement>
           <ui:VisualElement class="dsp-kv dsp-kv--danger">
             <ui:Label text="OR REFUSE" class="ds-label" />
