@@ -8,6 +8,8 @@
 .set-note--pad { margin-top: var(--s-2); margin-bottom: var(--s-2); }
 
 .set-seg__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); }
+/* five theme names share one track: a step smaller so VERDIGRIS and PHOSPHOR fit their cells */
+#seg-theme .set-seg__label { font-size: var(--fs-nano); letter-spacing: 0; }
 
 .set-row { margin-top: var(--s-1); }
 .set-row__well { width: 56px; height: 56px; align-items: center; justify-content: center; margin-right: var(--s-3); border-width: 0; border-radius: var(--r-md); background-color: var(--c-cyan-wash); }
