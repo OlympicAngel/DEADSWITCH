@@ -24,9 +24,11 @@ namespace Deadswitch.Game.UI.Screens
         /// <summary>Panel px a press may wander before it counts as a drag (8 dp at the 1080 reference).</summary>
         private const float DragSlop = 24f;
 
-        /// <summary>Plot heights (0 top, 1 bottom): a tapped site below the first sits under the open sheet and moves to the second.</summary>
-        private const float RevealBelow = 0.36f;
-        private const float RevealAt = 0.24f;
+        /// <summary>Plot height (0..1) kept clear above the open sheet: a tapped site closer to it than this pans into view.</summary>
+        private const float RevealMargin = 0.12f;
+
+        /// <summary>Wait for the opened sheet to lay out before measuring it.</summary>
+        private const long RevealDelayMs = 60;
 
         private static readonly string[] FactionClass = { "map-site--rust", "map-site--vanguard", "map-site--church", "map-site--holdout" };
 
@@ -281,7 +283,10 @@ namespace Deadswitch.Game.UI.Screens
             SetView(new Vector2(v.Focus.x - (delta.x / perX), v.Focus.y + (delta.y / perZ)), v.Zoom);
         }
 
-        /// <summary>Pans a tapped site that the open sheet would cover up into the strip of map above it.</summary>
+        /// <summary>
+        /// Pans a tapped site that the open sheet covers (or nearly) to the middle of the strip of map above it. Runs
+        /// after the sheet's layout so its real top edge is known.
+        /// </summary>
         private void Reveal(int site)
         {
             if (_layer == null || site < 0 || site >= _layer.SiteAnchors.Length)
@@ -289,10 +294,17 @@ namespace Deadswitch.Game.UI.Screens
                 return;
             }
 
-            float y = _layer.SiteAnchors[site].Y;
-            if (y > RevealBelow)
+            Rect plot = _plot.worldBound;
+            if (plot.height < 32f)
             {
-                Pan(new Vector2(0f, (RevealAt - y) * _plot.contentRect.height));
+                return;
+            }
+
+            float clear = Mathf.Clamp01((_pager.worldBound.yMin - plot.yMin) / plot.height);
+            float y = _layer.SiteAnchors[site].Y;
+            if (y > clear - RevealMargin)
+            {
+                Pan(new Vector2(0f, ((clear * 0.5f) - y) * plot.height));
             }
         }
 
@@ -367,7 +379,7 @@ namespace Deadswitch.Game.UI.Screens
                     _selected = index;
                     _reason.text = string.Empty;
                     OpenSheet("page-site");
-                    Reveal(index);
+                    _plot.schedule.Execute(() => Reveal(index)).ExecuteLater(RevealDelayMs);
                     Refresh();
                 });
 

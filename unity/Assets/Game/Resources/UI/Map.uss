@@ -4,12 +4,12 @@
 /* Header, event and plot keep their size; the plot gives up height first on short screens, the scroll takes the rest. */
 .map > * { flex-shrink: 0; }
 .map > .map-plot { flex-shrink: 1; flex-grow: 1; flex-basis: 0; }
-.map > .map-pager { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; padding: var(--s-3) var(--s-5) 0 var(--s-5); background-color: var(--c-panel-solid); border-top-width: 1px; border-top-color: var(--c-cyan-dim); border-top-left-radius: var(--r-lg); border-top-right-radius: var(--r-lg); }
+.map > .map-pager { position: absolute; left: 0; right: 0; bottom: 0; max-height: 58%; padding: var(--s-3) var(--s-5) 0 var(--s-5); background-color: var(--c-panel-solid); border-top-width: 1px; border-top-color: var(--c-cyan-dim); border-top-left-radius: var(--r-lg); border-top-right-radius: var(--r-lg); }
 /* F-107: folded, the sheet is only its docked tab row; a tab or a pin opens it */
-.map > .map-pager.is-collapsed { height: auto; padding-bottom: var(--s-3); }
+.map > .map-pager.is-collapsed { padding-bottom: var(--s-3); }
 .map-pager.is-collapsed > .map-page { position: absolute; visibility: hidden; }
-.map-pager > .map-page { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
-.map-page > .map-scroll { flex-grow: 1; flex-basis: 0; }
+.map-pager > .map-page { flex-grow: 0; flex-shrink: 1; flex-basis: auto; }
+.map-page > .map-scroll { flex-grow: 0; flex-shrink: 1; flex-basis: auto; }
 .map-scroll > .unity-scroll-view__content-container { padding: 0 0 var(--s-6) 0; flex-shrink: 0; }
 .map-empty { font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; padding: var(--s-4) 0; }
 .map-empty.is-hidden { display: none; }
