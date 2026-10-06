@@ -1,6 +1,6 @@
 # SPEC-006: Battle report
 
-- Status: Done (F-013); Unity stills unverified in the Editor
+- Status: Done (F-013); stills checked in the Editor 2026-10-06 (SIEGE 10: four graded panels with captions)
 - Pillar: Defense & offline, AI relationship
 - Touches: raids (SPEC-001 events and ledger), AI lies (SPEC-004 gate lie, report edits), compute economy (Verify cost), 3D base (panels are rendered stills of the compound, SPEC-003)
 - Source rules: doc 10 s4 "Battle report format" + s7, ADR-0003 (the report is a view over the true log), ADR-0007 (rendered stills), doc 07 s7
