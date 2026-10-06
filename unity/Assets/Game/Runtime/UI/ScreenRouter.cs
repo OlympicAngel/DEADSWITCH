@@ -110,6 +110,9 @@ namespace Deadswitch.Game.UI
                 return;
             }
 
+            // a route that did not come from a tap (a notification, the back stack) still clears open sheets
+            Popovers.Opening("screen");
+
             // layers slide in the direction of travel; detail screens rise from below (SPEC-040)
             int from = Current != null ? _layers.IndexOf(Current) : -1;
             int to = _layers.IndexOf(id);
