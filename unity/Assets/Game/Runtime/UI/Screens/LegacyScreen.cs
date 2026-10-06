@@ -194,7 +194,7 @@ namespace Deadswitch.Game.UI.Screens
                 int price = LegacySystem.PerkPrice(s, c, (Perk)i);
                 _ui.Q<Label>("p-" + i + "-fx").text = effects[i] + "  LEVEL " + level + "/" + l.PerkMaxLevel;
                 VisualElement buy = _ui.Q("p-" + i + "-buy");
-                Kit.SetButtonText(buy, max ? "MAX" : "BUY // " + price + " LEGACY");
+                Kit.SetButtonText(buy, max ? "MAX" : "BUY\n" + price + " LEGACY");
                 buy.EnableInClassList("is-disabled", max || s.LegacyPoints < price);
                 affordable += max || s.LegacyPoints < price ? 0 : 1;
             }

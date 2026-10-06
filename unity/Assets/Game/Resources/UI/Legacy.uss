@@ -33,10 +33,10 @@
 .lgc-perk__icon { width: 38px; height: 38px; --icon-color: var(--c-violet); }
 .lgc-perk__body { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
 .lgc-perk__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text); }
-.lgc-perk__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
+.lgc-perk__fx { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
 .lgc-perk__btn { width: 240px; margin-left: var(--s-3); padding: 0 var(--s-3); }
 .lgc-perk .lgc-perk__btn { background-color: var(--c-violet-wash); }
-.lgc-perk .lgc-perk__btn > .ds-btn__label { color: var(--c-violet); font-size: var(--fs-xs); letter-spacing: var(--ls-label); }
+.lgc-perk .lgc-perk__btn > .ds-btn__label { color: var(--c-violet); font-size: var(--fs-xs); letter-spacing: var(--ls-label); white-space: normal; -unity-text-align: middle-center; }
 
 /* ironman */
 .lgc-iron__head { margin-bottom: var(--s-2); }
@@ -47,7 +47,7 @@
 .lgc-iron.is-on > .lgc-iron__head .ds-card__icon { --icon-color: var(--c-red); }
 .lgc-iron.is-on .lgc-iron__btn { background-color: var(--c-red-wash); }
 .lgc-iron.is-on .lgc-iron__btn > .ds-btn__label { color: var(--c-red); }
-.lgc-note { font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; }
+.lgc-note { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; }
 
 /* relocation */
 .lgc-move { margin-bottom: var(--s-2); }
