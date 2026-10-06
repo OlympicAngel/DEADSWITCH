@@ -23,7 +23,7 @@ A short, living snapshot for the next agent. **Edit in place; do not append sess
 - New kit (Components.uss bottom section), tokens (cyan/violet accent, depth edges), shared icons in `Resources/UI/Icons.json` (Unity + uipreview), tunables in `Resources/UI/Interface.json` (`UI/InterfaceConfig`).
 - HUD: resource pods (`UI/Hud/ResourcePod`, read model `Presentation/ResourceInfo`), breakdown sheet (`UI/Hud/ResourceSheet`), comms orb (`UI/AiOrb`), suggestion chips (`UI/Hud/AiSuggestions`), toasts (`UI/Toasts`).
 - Base: camera fly-in/inertia/double-tap/idle sway/shake/`Direct` override (`Base/DroneCamera`), `Base/BaseFx` (focus light, scans, plot rings, data links, siren), quick actions (`UI/Base/QuickActions`), `Base/AttackCinematic` (+ `Resources/UI/Cinematic.uss`).
-- Editor checks needed: focus framing (`focus.screenLift`, `orbitDegrees`), cinematic shot positions per gate, LineRenderer look with the additive particle material, link/plot alpha by day and night, siren spot intensity, toast placement under the pods.
+- Editor checks: focus framing, link/plot alpha by day and night, and toast placement under the status row checked 2026-10-06 (quick actions widened, tags step out while framed, toasts opaque). Still open: cinematic shot positions per gate, siren spot intensity.
 
 - F-101 (SPEC-040): `UI/Choreo` (stagger, ripples, shimmer, punch), `UI/Pager` (`ds-pager` pages, `ds-card--fold` folds; preview shows the `is-preview` page), quiet HUD (status rail, `is-compact` comms), `BaseView.Animate` (rise / punch / jolt). Editor: check pager rail placement after layout, fold inline display vs. code-driven visibility, ripple clipping on rounded controls, sheet overshoot (`ease-out-back`).
 
