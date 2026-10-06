@@ -59,6 +59,7 @@ namespace Deadswitch.Host.Narrative
         private float _sinceShown;
         private float _idleWait = IdleSeconds;
         private ProjectStage _stage;
+        private bool _silenced;
         private int _idleCount;
         private Priority _shownPriority;
         private string _lastId = string.Empty;
@@ -136,6 +137,13 @@ namespace Deadswitch.Host.Narrative
         /// <summary>State-driven lines (low energy, with hysteresis).</summary>
         public void ObserveState(GameState state, SimConfig config)
         {
+            // silenced (SPEC-011 rule 3): no warnings and no idle chatter either
+            _silenced = state.Tick < state.SilencedUntilTick;
+            if (_silenced)
+            {
+                return;
+            }
+
             int cap = Economy.EnergyCap(state, config);
             bool low = state.Energy * 100 < cap * 15 && Economy.Flows(state, config).NetEnergyPerHour < 0;
             if (low && _lowEnergyArmed)
@@ -193,7 +201,7 @@ namespace Deadswitch.Host.Narrative
                 }
             }
 
-            if (_queue.Count == 0 && _sinceShown >= _idleWait)
+            if (_queue.Count == 0 && _sinceShown >= _idleWait && !_silenced)
             {
                 // Alive, not noisy: ambient lines back off until something happens.
                 _idleWait = System.Math.Min(_idleWait * 2f, IdleMaxSeconds);
