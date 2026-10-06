@@ -66,15 +66,16 @@
     --s-10: 40px;
     --s-12: 48px;
 
-    /* Type scale v2 (SPEC-041): one step larger at the bottom so nothing reads below ~10 pt on a phone */
-    --fs-nano: 19px;
-    --fs-micro: 22px;
-    --fs-xs: 26px;
-    --fs-sm: 30px;
-    --fs-md: 36px;
-    --fs-lg: 46px;
-    --fs-xl: 64px;
-    --fs-hero: 92px;
+    /* Type scale v3 (SPEC-046): the UI scales from a 1080 px reference (3 px per dp), so 33 px is the 11 dp floor;
+       body 13 dp, decision numbers 15 dp and up. nano and micro are the same floor step. */
+    --fs-nano: 33px;
+    --fs-micro: 33px;
+    --fs-xs: 36px;
+    --fs-sm: 39px;
+    --fs-md: 45px;
+    --fs-lg: 54px;
+    --fs-xl: 72px;
+    --fs-hero: 104px;
 
     /* Tracking: labels breathe, they do not shout */
     --ls-tight: 1px;
@@ -93,7 +94,7 @@
     --r-xl: 18px;
     --bw: 2px;
     --corner: 18px;
-    --touch: 112px;               /* >= 44pt on a typical phone at the reference scale */
+    --touch: 132px;               /* 44 dp at the 1080 reference */
 
     /* Motion (seconds) */
     --t-fast: 0.12s;
@@ -108,27 +109,42 @@
 
 /* Text size assist (doc 10): type and touch targets scale together. */
 .ds-root.ds-scale-115 {
-    --fs-nano: 22px;
-    --fs-micro: 25px;
-    --fs-xs: 30px;
-    --fs-sm: 34px;
-    --fs-md: 41px;
-    --fs-lg: 52px;
-    --fs-xl: 72px;
-    --fs-hero: 104px;
-    --touch: 128px;
+    --fs-nano: 38px;
+    --fs-micro: 38px;
+    --fs-xs: 41px;
+    --fs-sm: 45px;
+    --fs-md: 52px;
+    --fs-lg: 62px;
+    --fs-xl: 83px;
+    --fs-hero: 120px;
+    --touch: 152px;
 }
 
 .ds-root.ds-scale-130 {
-    --fs-nano: 25px;
-    --fs-micro: 28px;
-    --fs-xs: 33px;
-    --fs-sm: 39px;
-    --fs-md: 47px;
-    --fs-lg: 60px;
-    --fs-xl: 82px;
-    --fs-hero: 118px;
-    --touch: 144px;
+    --fs-nano: 43px;
+    --fs-micro: 43px;
+    --fs-xs: 47px;
+    --fs-sm: 51px;
+    --fs-md: 59px;
+    --fs-lg: 70px;
+    --fs-xl: 94px;
+    --fs-hero: 135px;
+    --touch: 172px;
+}
+
+/* The fixed HUD chrome (pods, context row, tabs) stops at the 115 step: four pods and the context row
+   cannot widen on a phone, and 115 is already above the 11 dp floor. Screens and sheets take the full 130. */
+.ds-root.ds-scale-130 .hud-top,
+.ds-root.ds-scale-130 .hud-context,
+.ds-root.ds-scale-130 .hud-tabs {
+    --fs-nano: 38px;
+    --fs-micro: 38px;
+    --fs-xs: 41px;
+    --fs-sm: 45px;
+    --fs-md: 52px;
+    --fs-lg: 62px;
+    --fs-xl: 83px;
+    --fs-hero: 120px;
 }
 
 /* HUD themes (F-036): cosmetic only, earned from optional ads. Signal meanings (amber, red, magenta) never change. */

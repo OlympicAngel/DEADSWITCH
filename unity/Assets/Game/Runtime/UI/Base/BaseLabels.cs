@@ -15,6 +15,9 @@ namespace Deadswitch.Game.UI.Base
     /// </summary>
     public sealed class BaseLabels
     {
+        /// <summary>Panel px kept between a tag and the screen edge.</summary>
+        private const float EdgeMargin = 12f;
+
         private readonly VisualElement _layer;
         private readonly List<Tag> _tags = new List<Tag>();
         private readonly Tag _core;
@@ -153,7 +156,16 @@ namespace Deadswitch.Game.UI.Base
             Vector3 sp = cam.WorldToScreenPoint(world);
             bool visible = sp.z > 0f;
             t.Root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-            t.Root.style.left = sp.x / Screen.width * pw;
+            // the tag is centred on its anchor (translate -50%); keep it whole on screen so a plot near the edge
+            // still shows its full name
+            float x = sp.x / Screen.width * pw;
+            float half = float.IsNaN(t.Root.resolvedStyle.width) ? 0f : t.Root.resolvedStyle.width * 0.5f;
+            if (half > 0f && half < (pw * 0.5f) - EdgeMargin)
+            {
+                x = Mathf.Clamp(x, half + EdgeMargin, pw - half - EdgeMargin);
+            }
+
+            t.Root.style.left = x;
             t.Root.style.top = (Screen.height - sp.y) / Screen.height * ph;
         }
 

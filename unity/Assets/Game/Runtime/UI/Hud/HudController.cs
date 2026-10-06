@@ -801,7 +801,8 @@ namespace Deadswitch.Game.UI.Hud
                 string rate = null;
                 if (pod.Kind == ResKind.People)
                 {
-                    rate = s.AutomationLoad > 0 ? s.AutomationLoad + " RUN BY AI" : "WORKERS " + f.CrewAssigned + "/" + f.CrewNeeded;
+                    // short enough for a pod at the type floor; the sheet spells it out
+                    rate = s.AutomationLoad > 0 ? "AI RUNS " + s.AutomationLoad : "CREW " + f.CrewAssigned + "/" + f.CrewNeeded;
                 }
                 else if (pod.Kind == ResKind.Energy && s.Blackout)
                 {

@@ -7,9 +7,9 @@
 .lgc-body { padding: var(--s-5) var(--s-5) var(--s-4) var(--s-5); }
 
 /* score */
-.lgc-lp { min-height: 44px; flex-direction: row; align-items: center; padding: var(--s-1) var(--s-3); border-width: 0; border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
+.lgc-lp { min-height: 44px; flex-shrink: 1; max-width: 45%; flex-direction: row; align-items: center; padding: var(--s-1) var(--s-3); border-width: 0; border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
 .lgc-lp__icon { width: 28px; height: 28px; margin-right: var(--s-2); --icon-color: var(--c-violet); }
-.lgc-lp__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-violet); }
+.lgc-lp__value { flex-shrink: 1; white-space: normal; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-xs); color: var(--c-violet); }
 .lgc-score__value { margin: var(--s-1) 0 var(--s-3) 0; min-height: 96px; }
 .lgc-score__unit { margin-left: var(--s-3); }
 .lgc-fact { flex-direction: row; align-items: flex-start; margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }

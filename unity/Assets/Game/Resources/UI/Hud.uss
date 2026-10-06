@@ -8,7 +8,7 @@
 .hud-scrim--bottom { bottom: 0; height: 560px; }
 
 /* ---------- Resource pods ---------- */
-.hud-top { flex-direction: row; align-items: stretch; padding: var(--s-4) var(--s-3) var(--s-2) var(--s-3); }
+.hud-top { flex-direction: row; align-items: stretch; padding: var(--s-6) var(--s-3) var(--s-2) var(--s-3); }
 
 .pod {
     flex-grow: 1;
@@ -26,21 +26,22 @@
 
 .pod:active { scale: 0.96 0.96; }
 .pod.is-hidden { display: none; }
-.pod__top { align-items: flex-end; }
-.pod__icon { width: 30px; height: 30px; margin-right: var(--s-2); margin-bottom: 6px; --icon-color: var(--c-cyan); }
+.pod__top { align-items: flex-end; overflow: hidden; }
+.pod__icon { flex-shrink: 0; width: 30px; height: 30px; margin-right: var(--s-2); margin-bottom: 6px; --icon-color: var(--c-cyan); }
 .pod__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-white); }
-.pod__cap { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-faint); padding-bottom: 6px; margin-left: 2px; }
+.pod__cap { flex-shrink: 1; -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-faint); padding-bottom: 6px; margin-left: 2px; }
 .pod__bar { height: 6px; margin: var(--s-1) 0; border-radius: 3px; background-color: var(--c-panel-sunken); overflow: hidden; }
 .pod__fill { height: 100%; width: 50%; border-radius: 3px; background-color: var(--c-cyan); }
-.pod__foot { justify-content: space-between; }
-.pod__rate { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-phosphor); }
-.pod__eta { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-dim); }
+.pod__foot { justify-content: space-between; overflow: hidden; }
+.pod__rate { flex-shrink: 0; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-phosphor); }
+.pod__eta { flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; margin-left: var(--s-2); -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-dim); }
 .pod__rate.is-down { color: var(--c-red); }
 .pod__rate.is-flat { color: var(--c-text-dim); }
 .pod__value.is-up { color: var(--c-phosphor); }
 .pod__value.is-down { color: var(--c-red); }
 
-.pod__flag { position: absolute; top: 6px; right: 8px; padding: 0 var(--s-2); border-radius: var(--r-sm); background-color: var(--c-amber); }
+/* a badge on the pod's top edge, clear of the value */
+.pod__flag { position: absolute; top: -20px; right: 8px; padding: 0 var(--s-2); border-radius: var(--r-sm); background-color: var(--c-amber); }
 .pod__flag.is-hidden { display: none; }
 .pod__flag-label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-tight); color: var(--c-world); }
 
@@ -95,7 +96,7 @@
 .hud-opip.is-cooldown { border-color: var(--c-text-faint); background-color: var(--c-amber-wash); }
 
 /* ---------- The view: alarm edge + status rail ---------- */
-.hud-frame { position: absolute; left: var(--s-4); right: var(--s-4); top: 200px; bottom: 360px; }
+.hud-frame { position: absolute; left: var(--s-4); right: var(--s-4); top: 290px; bottom: 360px; }
 .hud-frame.is-covered { display: none; }
 .hud-alarm { position: absolute; left: -16px; right: -16px; top: -60px; bottom: -40px; border-width: 8px; border-color: var(--c-red-glow); opacity: 0; }
 .hud-rail { position: absolute; right: 0; top: 0; align-items: flex-end; }

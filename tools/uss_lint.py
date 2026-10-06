@@ -31,6 +31,8 @@ transition-timing-function translate visibility white-space width word-spacing
 -unity-text-overflow-position
 """.split())
 PSEUDO = {"hover", "active", "inactive", "focus", "disabled", "enabled", "checked", "selected", "root"}
+# SPEC-046: the UI scales from a 1080 px reference (3 px per dp); essential text never goes below 11 dp
+FONT_FLOOR_PX = 33
 
 
 def lint(path):
@@ -51,9 +53,12 @@ def lint(path):
         for decl in m.group(2).split(";"):
             if ":" not in decl:
                 continue
-            prop = decl.split(":", 1)[0].strip()
+            prop, value = (p.strip() for p in decl.split(":", 1))
             if prop and not prop.startswith("--") and prop not in PROPS:
                 problems.append((line, f"unknown USS property '{prop}'"))
+            size = re.fullmatch(r"(\d+)px", value)
+            if size and (prop == "font-size" or prop.startswith("--fs-")) and int(size.group(1)) < FONT_FLOOR_PX:
+                problems.append((line, f"{prop} {value} is below the {FONT_FLOOR_PX} px type floor (use a --fs-* token)"))
     return problems
 
 
