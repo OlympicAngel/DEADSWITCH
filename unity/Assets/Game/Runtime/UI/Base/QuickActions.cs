@@ -17,6 +17,9 @@ namespace Deadswitch.Game.UI.Base
     /// </summary>
     public sealed class QuickActions
     {
+        /// <summary>Panel px kept between the tile row and the screen edge.</summary>
+        private const float EdgeMargin = 12f;
+
         private readonly VisualElement _root;
         private readonly System.Action _onInfo;
         private int _slot = -1;
@@ -94,7 +97,15 @@ namespace Deadswitch.Game.UI.Base
             }
 
             Vector3 sp = cam.WorldToScreenPoint(view.SlotGround(_slot));
-            _root.style.left = sp.x / Screen.width * panelWidth;
+            // centred under the facility (translate -50%) but kept whole on screen
+            float x = sp.x / Screen.width * panelWidth;
+            float half = float.IsNaN(_root.resolvedStyle.width) ? 0f : _root.resolvedStyle.width * 0.5f;
+            if (half > 0f && half < (panelWidth * 0.5f) - EdgeMargin)
+            {
+                x = Mathf.Clamp(x, half + EdgeMargin, panelWidth - half - EdgeMargin);
+            }
+
+            _root.style.left = x;
             _root.style.top = (Screen.height - sp.y) / Screen.height * panelHeight;
         }
 

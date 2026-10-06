@@ -61,6 +61,7 @@ namespace Deadswitch.Game.UI.Base
             {
                 _tags[i].Root.EnableInClassList("is-selected", i == slot);
                 _tags[i].Root.EnableInClassList("is-faded", slot >= 0 && i != slot);
+                _tags[i].Hidden = slot >= 0;
             }
 
             // a quiet open plot shows its label while it is the one selected
@@ -148,13 +149,15 @@ namespace Deadswitch.Game.UI.Base
                 Place(_tags[i], cam, view.LabelAnchor(i), panelWidth, panelHeight);
             }
 
+            _core.Hidden = _selected >= 0;
             Place(_core, cam, view.CoreAnchor, panelWidth, panelHeight);
         }
 
         private static void Place(Tag t, Camera cam, Vector3 world, float pw, float ph)
         {
             Vector3 sp = cam.WorldToScreenPoint(world);
-            bool visible = sp.z > 0f;
+            // while a facility is framed every tag steps out: the close shot pushes them under the HUD and the sheet names it
+            bool visible = sp.z > 0f && !t.Hidden;
             t.Root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             // the tag is centred on its anchor (translate -50%); keep it whole on screen so a plot near the edge
             // still shows its full name
@@ -197,6 +200,7 @@ namespace Deadswitch.Game.UI.Base
             public Label Level;
             public Label State;
             public VisualElement Pip;
+            public bool Hidden;
         }
     }
 }

@@ -166,9 +166,10 @@
 .opt--recommended .opt__icon { --icon-color: var(--c-cyan); }
 
 /* ---------- Focus: quick actions under the framed facility (SPEC-039 C) ---------- */
-.qa { position: absolute; flex-direction: row; width: 640px; translate: -50% 24px; }
+.qa { position: absolute; flex-direction: row; width: 960px; translate: -50% 24px; }
+.qa .ds-tile__label, .qa .ds-tile__cost { white-space: normal; -unity-text-align: middle-center; }
 .qa.is-hidden { display: none; }
-.qa > .ds-tile { min-height: 132px; }
+.qa > .ds-tile { min-height: 132px; background-color: var(--c-panel-solid); }
 .sheet__scroll { flex-shrink: 1; max-height: 1100px; }
 .sheet__more { margin-top: var(--s-2); }
 

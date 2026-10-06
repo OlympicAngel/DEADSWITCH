@@ -19,7 +19,7 @@
     "_doc": "Unity-only battle-scar look: fire/smoke multipliers and the pulsing red rim glow on damaged facilities.",
     "fireRate": 1.6, "fireSize": 1.4, "fireSpread": 2.2, "fireBrightness": 0.55,
     "smokeRate": 0.8, "smokeSize": 1.0, "smokeDark": 0.0,
-    "damageColor": [1.0, 0.1, 0.04], "damageGlow": 4.5, "damageTint": 0.2, "damagePulseHz": 1.1
+    "damageColor": [1.0, 0.1, 0.04], "damageGlow": 2.5, "damageTint": 0.02, "damagePulseHz": 1.1
   },
   "reportNightBoost": 1.8,
   "map": {
