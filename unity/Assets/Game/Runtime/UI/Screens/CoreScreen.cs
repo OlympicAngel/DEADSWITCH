@@ -17,7 +17,6 @@ namespace Deadswitch.Game.UI.Screens
     public sealed class CoreScreen : IGameScreen
     {
         private static readonly string[] StageNames = { "DORMANT", "ACTIVE", "ADVANCED", "IMMINENT" };
-        private static readonly string[] DelegationNames = { "YOU DECIDE", "AI ASSISTS", "AI DECIDES" };
 
         private readonly GameHost _host;
         private readonly VisualElement _ui;
@@ -28,6 +27,8 @@ namespace Deadswitch.Game.UI.Screens
         private bool _visible;
         private bool _showModules;
         private bool _crisisSeen;
+        private float _second;
+        private string _delegNote;
         private System.Action _next;
 
         public CoreScreen(System.Func<IReadOnlyList<string>> history)
@@ -39,6 +40,17 @@ namespace Deadswitch.Game.UI.Screens
             Root.Add(tree);
             _ui = tree;
             _ui.Q("audit-run").RegisterCallback<ClickEvent>(_ => Audit());
+            for (int i = 0; i < 3; i++)
+            {
+                var level = (DelegationLevel)i;
+                _ui.Q("core-deleg-" + i).RegisterCallback<ClickEvent>(_ =>
+                {
+                    CommandResult r = _host.Execute(Command.SetDelegation(level));
+                    _delegNote = r.Accepted ? null : Texts.Reason(r.Reason);
+                    Refresh();
+                });
+            }
+
             _ui.Q("secret-dismantle").RegisterCallback<ClickEvent>(_ =>
             {
                 CommandResult r = _host.Execute(Command.DismantleSecrets());
@@ -76,6 +88,14 @@ namespace Deadswitch.Game.UI.Screens
             };
             UiRoot.Instance.Frame += dt =>
             {
+                // countdowns show seconds, so the page redraws every real second, not only on a sim tick (F-112)
+                _second += dt;
+                if (_visible && _second >= 1f)
+                {
+                    _second = 0f;
+                    Refresh();
+                }
+
                 if (_visible && _showModules)
                 {
                     _modules.Tick();
@@ -96,6 +116,7 @@ namespace Deadswitch.Game.UI.Screens
         public void OnShow()
         {
             _visible = true;
+            _delegNote = null;
             _ui.Q<Label>("audit-reason").text = string.Empty;
             SyncPage();
             Refresh();
@@ -179,7 +200,17 @@ namespace Deadswitch.Game.UI.Screens
             _orbEl.EnableInClassList("core-orb--amber", band == CorruptionBand.Glitchy);
             _orbEl.EnableInClassList("core-orb--red", band >= CorruptionBand.Unstable);
             _orb.Stutter = GlitchText.BandWeight((int)band) * _host.Settings.Effects;
-            _ui.Q<Label>("core-deleg").text = DelegationNames[(int)s.Delegation];
+            // silenced, the AI runs nothing: the other levels say so before a tap does (F-112)
+            bool silenced = ClimaxSystem.Silenced(s);
+            for (int i = 0; i < 3; i++)
+            {
+                _ui.Q("core-deleg-" + i).EnableInClassList("is-selected", (int)s.Delegation == i);
+                _ui.Q("core-deleg-" + i).EnableInClassList("is-disabled", silenced && i != 0);
+            }
+
+            _ui.Q<Label>("core-deleg-desc").text = silenced
+                ? "You silenced me. I run nothing for " + Fmt.Countdown(_host.SecondsUntilTick(s.SilencedUntilTick)) + ". Then you can hand me more."
+                : _delegNote ?? OpsScreen.DelegationLines[(int)s.Delegation];
             _ui.Q<Label>("core-ovr").text = s.OverrideCharges + " / " + OverrideSystem.MaxCharges(s, c);
 
             bool ready = s.Tick >= s.AuditReadyTick;

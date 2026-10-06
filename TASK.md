@@ -7,7 +7,7 @@
 ## Steps
 - [x] 1. Map: sites spread +100%, larger ground, view clamped to the sites and the ground (no overscroll), tapped site flies in and centers above the sheet
 - [x] 2. CORE screen fully covers the base (no 3D showing at the top)
-- [ ] 3. CORE: locked items not tappable, timers tick live, MODULES shows only what matters (next actions, in progress), AI CONTROL easy to find and change
+- [x] 3. CORE: locked items not tappable, timers tick live, MODULES shows only what matters (next actions, in progress), AI CONTROL easy to find and change
 - [ ] 4. Confirmations and plain-language explanations on heavy or jargon buttons
 - [ ] 5. Type a step smaller; layout checked on small and large phones, notched screens and tablets
 

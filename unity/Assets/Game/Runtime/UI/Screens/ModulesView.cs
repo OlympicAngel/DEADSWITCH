@@ -39,7 +39,24 @@ namespace Deadswitch.Game.UI.Screens
             for (int f = (int)ModuleField.Logistics; f <= (int)ModuleField.Stealth; f++)
             {
                 var field = (ModuleField)f;
-                _ui.Q("tab-" + f).RegisterCallback<ClickEvent>(_ => ShowField(field));
+                VisualElement tab = _ui.Q("tab-" + f);
+                tab.RegisterCallback<ClickEvent>(_ => ShowField(field));
+                // a dot marks a field with a module ready to restore (F-112)
+                var count = new VisualElement();
+                count.AddToClassList("mod-tab__count");
+                count.name = "tab-" + f + "-count";
+                count.pickingMode = PickingMode.Ignore;
+                tab.Add(count);
+            }
+
+            _selected = FirstOpen(ModuleField.Trunk);
+            if (_selected == ModuleNode.None)
+            {
+                for (int f = (int)ModuleField.Logistics; f <= (int)ModuleField.Stealth && _selected == ModuleNode.None; f++)
+                {
+                    _selected = FirstOpen((ModuleField)f);
+                    _field = _selected == ModuleNode.None ? _field : (ModuleField)f;
+                }
             }
 
             BuildField();
@@ -62,7 +79,8 @@ namespace Deadswitch.Game.UI.Screens
                 _ui.Q(gate).parent.style.display = final ? DisplayStyle.None : DisplayStyle.Flex;
             }
 
-            _ui.Q("tier-up").style.display = final ? DisplayStyle.None : DisplayStyle.Flex;
+            // the button only appears once every gate is met: a dead button reads as an action (F-112)
+            _ui.Q("tier-up").style.display = final || !g.All ? DisplayStyle.None : DisplayStyle.Flex;
             Gate("gate-build", g.Build, "FACILITY LEVELS " + g.Levels + " / " + g.LevelsNeeded + "  //  NET POWER " + Fmt.Signed(g.NetEnergy) + " / " + Fmt.Signed(g.NetEnergyNeeded) + " H");
             Gate("gate-module", g.ModuleRestored, (g.Module == ModuleNode.None ? "NO FURTHER MEMORY" : ModuleTexts.Name(g.Module)) + (g.ModuleRestored ? " RESTORED" : " NOT RESTORED"));
             Gate("gate-people", g.PeopleAvailable, "HUMAN COST: " + g.PeopleCost + " PEOPLE LEAVE TO EXPAND");
@@ -105,9 +123,26 @@ namespace Deadswitch.Game.UI.Screens
                     : why == RejectReason.Locked ? (s.Tier < d.Tier ? "TIER " + d.Tier : "NEEDS " + d.Prereq) : why == RejectReason.NeedsFragment ? "NEEDS FRAGMENT" : "AVAILABLE";
             }
 
+            var ready = new int[(int)ModuleField.Stealth + 1];
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (!Modules.IsRestored(s, d.Node) && !Modules.Restoring(s, d.Node) && Modules.Availability(s, d.Node) == RejectReason.None)
+                {
+                    ready[(int)d.Field]++;
+                }
+            }
+
             for (int f = (int)ModuleField.Logistics; f <= (int)ModuleField.Stealth; f++)
             {
                 _ui.Q("tab-" + f).EnableInClassList("is-selected", f == (int)_field);
+                _ui.Q("tab-" + f + "-count").EnableInClassList("is-hidden", ready[f] == 0);
+            }
+
+            // nothing worth showing in this field (all locked): no detail card, the hint says why
+            _ui.Q("detail").EnableInClassList("is-hidden", _selected == ModuleNode.None);
+            if (_selected == ModuleNode.None)
+            {
+                return;
             }
 
             // detail
@@ -141,6 +176,7 @@ namespace Deadswitch.Game.UI.Screens
             var cp = _ui.Q<Label>("detail-compute");
             cp.text = Fmt.Num(compute) + " COMPUTE";
             cp.EnableInClassList("is-short", s.Compute < compute);
+            _ui.Q("detail-cost").style.display = Modules.IsRestored(s, _selected) ? DisplayStyle.None : DisplayStyle.Flex;
             _ui.Q<Label>("detail-time").text = Fmt.Countdown(c.Modules.ResearchMinutes[sel.Index] * 60.0 / _host.Settings.DevTimeScale);
             VisualElement start = _ui.Q("detail-start");
             bool laneBusy = sel.Field == ModuleField.Trunk ? s.MemoryNode != 0 : s.ResearchNode != 0;
@@ -149,7 +185,9 @@ namespace Deadswitch.Game.UI.Screens
             start.EnableInClassList("ds-btn--primary", canStart);
             start.EnableInClassList("ds-btn--ghost", selActive);
             start.EnableInClassList("is-disabled", !canStart && !selActive);
-            Kit.SetButtonText(start, selActive ? "CANCEL RESTORATION" : "RESTORE");
+            // a dead button says why it is dead (F-112)
+            int busyNode = sel.Field == ModuleField.Trunk ? s.MemoryNode : s.ResearchNode;
+            Kit.SetButtonText(start, selActive ? "CANCEL RESTORATION" : laneBusy ? "WAIT // " + (ModuleNode)busyNode + " RESTORES FIRST" : "RESTORE");
         }
 
         /// <summary>Live research bar and time left.</summary>
@@ -174,14 +212,7 @@ namespace Deadswitch.Game.UI.Screens
         {
             _field = field;
             BuildField();
-            foreach (ModuleDef d in Modules.Catalog)
-            {
-                if (d.Field == field)
-                {
-                    _selected = d.Node;
-                    break;
-                }
-            }
+            _selected = FirstOpen(field);
 
             _ui.Q<Label>("mod-reason").text = string.Empty;
             Refresh();
@@ -270,13 +301,55 @@ namespace Deadswitch.Game.UI.Screens
             return el;
         }
 
+        /// <summary>The field's first module worth a look: restoring, then ready, then restored. None when all are locked.</summary>
+        private ModuleNode FirstOpen(ModuleField field)
+        {
+            GameState s = _host.Sim.State;
+            ModuleNode ready = ModuleNode.None;
+            ModuleNode done = ModuleNode.None;
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (d.Field != field)
+                {
+                    continue;
+                }
+
+                if (Modules.Restoring(s, d.Node))
+                {
+                    return d.Node;
+                }
+
+                if (ready == ModuleNode.None && !Modules.IsRestored(s, d.Node) && Modules.Availability(s, d.Node) == RejectReason.None)
+                {
+                    ready = d.Node;
+                }
+
+                if (done == ModuleNode.None && Modules.IsRestored(s, d.Node))
+                {
+                    done = d.Node;
+                }
+            }
+
+            return ready != ModuleNode.None ? ready : done;
+        }
+
         private void Hook(VisualElement el, ModuleNode node)
         {
             el.RegisterCallback<ClickEvent>(_ =>
             {
+                // locked and ruled-out modules are scenery: no focus, no detail (F-112)
+                GameState s = _host.Sim.State;
+                RejectReason why = Modules.Availability(s, node);
+                if (!Modules.IsRestored(s, node) && !Modules.Restoring(s, node) && (why == RejectReason.Locked || why == RejectReason.NeedsFragment || why == RejectReason.Excluded))
+                {
+                    return;
+                }
+
                 _selected = node;
                 _ui.Q<Label>("mod-reason").text = string.Empty;
                 Refresh();
+                // the detail sits under the tree: bring it into view (F-112)
+                _ui.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(_ui.Q("detail"));
             });
         }
 

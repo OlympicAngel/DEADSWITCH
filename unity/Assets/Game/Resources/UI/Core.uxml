@@ -51,9 +51,18 @@
           </ui:VisualElement>
           <ui:VisualElement name="core-meter" class="ds-meter core-hero__meter" />
           <ui:VisualElement class="row core-pills">
-            <ui:VisualElement class="core-pill"><ui:VisualElement class="ds-icon ds-icon--chip core-pill__icon" /><ui:Label text="AI CONTROL" class="core-pill__key" /><ui:Label name="core-deleg" text="AI DECIDES" class="core-kv__value" /></ui:VisualElement>
             <ui:VisualElement class="core-pill"><ui:VisualElement class="ds-icon ds-icon--hand core-pill__icon" /><ui:Label text="OVERRIDE" class="core-pill__key" /><ui:Label name="core-ovr" text="2 / 3" class="core-kv__value" /></ui:VisualElement>
             <ui:VisualElement class="core-pill"><ui:VisualElement class="ds-icon ds-icon--eye core-pill__icon" /><ui:Label text="LIES ON RECORD" class="core-pill__key" /><ui:Label name="core-lies" text="?" class="core-kv__value" /></ui:VisualElement>
+          </ui:VisualElement>
+          <!-- AI CONTROL (SPEC-004) set right here, not only in OPS (F-112) -->
+          <ui:VisualElement class="core-ctl">
+            <ui:Label text="AI CONTROL // HOW MUCH I RUN" class="ds-label core-ctl__key" />
+            <ui:VisualElement class="ds-seg core-ctl__seg">
+              <ui:VisualElement name="core-deleg-0" class="ds-seg__item core-ctl__item is-selected"><ui:VisualElement class="ds-icon ds-icon--hand core-ctl__icon" /><ui:Label text="YOU DECIDE" class="core-ctl__label" /></ui:VisualElement>
+              <ui:VisualElement name="core-deleg-1" class="ds-seg__item core-ctl__item"><ui:VisualElement class="ds-icon ds-icon--cycle core-ctl__icon" /><ui:Label text="AI ASSISTS" class="core-ctl__label" /></ui:VisualElement>
+              <ui:VisualElement name="core-deleg-2" class="ds-seg__item core-ctl__item"><ui:VisualElement class="ds-icon ds-icon--chip core-ctl__icon" /><ui:Label text="AI DECIDES" class="core-ctl__label" /></ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="core-deleg-desc" text="I only advise. You run everything." class="ds-prose core-ctl__desc" />
           </ui:VisualElement>
         </ui:VisualElement>
 

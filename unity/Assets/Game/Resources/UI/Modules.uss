@@ -4,7 +4,7 @@
 .mod { flex-grow: 1; }
 
 /* tier gate */
-.mod-tier { padding-bottom: var(--s-4); }
+.mod-tier { margin-top: var(--s-4); padding-bottom: var(--s-4); }
 .mod-tier__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: var(--ls-label); color: var(--c-text); }
 .mod-tier__next { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); flex-shrink: 1; white-space: normal; -unity-text-align: middle-right; max-width: 55%; }
 .mod-gate { flex-direction: row; align-items: center; margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
@@ -22,7 +22,7 @@
 
 /* what is restoring now */
 .mod-research { margin-bottom: var(--s-4); padding-bottom: var(--s-4); }
-.mod-research.is-hidden { display: none; }
+.mod-research.is-hidden, .mod-detail.is-hidden { display: none; }
 .mod-research__icon { width: 34px; height: 34px; margin-right: var(--s-2); --icon-color: var(--c-amber); }
 .mod-research__tag { color: var(--c-amber); letter-spacing: var(--ls-label); }
 .mod-research__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text); margin-left: var(--s-3); white-space: normal; flex-shrink: 1; }
@@ -57,6 +57,8 @@
 .mod-tab { flex-direction: column; min-height: var(--touch); padding: var(--s-1) 0; }
 .mod-tab__icon { width: 36px; height: 36px; --icon-color: var(--c-text-dim); }
 .mod-tab__label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-text-dim); margin-top: var(--s-1); }
+.mod-tab__count { position: absolute; top: var(--s-2); right: var(--s-3); width: 20px; height: 20px; border-radius: 10px; background-color: var(--c-cyan); }
+.mod-tab__count.is-hidden { display: none; }
 .mod-tab.is-selected > .mod-tab__icon { --icon-color: var(--c-cyan); }
 .mod-tab.is-selected > .mod-tab__label { color: var(--c-cyan); }
 .mod-tierlabel { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-wide); color: var(--c-text-dim); margin: var(--s-2) 0 var(--s-2) 0; padding-bottom: var(--s-1); border-bottom-width: 1px; border-color: var(--c-cyan-line); }
@@ -85,9 +87,10 @@
 .mod-node__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-tight); color: var(--c-text); white-space: normal; margin-top: 2px; }
 .mod-node__state { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-faint); margin-top: var(--s-1); }
 
-.mod-node.is-locked { opacity: 0.6; }
+.mod-node.is-locked { opacity: 0.5; background-color: var(--c-panel-sunken); }
+.mod-node.is-locked:active, .mod-node.is-excluded:active { scale: 1 1; }
 .mod-node.is-locked .mod-node__ic--lock { display: flex; }
-.mod-node.is-excluded { opacity: 0.4; }
+.mod-node.is-excluded { opacity: 0.35; background-color: var(--c-panel-sunken); }
 .mod-node.is-excluded .mod-node__ic--out { display: flex; }
 .mod-node.is-available { border-left-width: 6px; border-color: var(--c-cyan); background-color: var(--c-cyan-wash); }
 .mod-node.is-available .mod-node__ic--open { display: flex; --icon-color: var(--c-cyan); }
@@ -95,7 +98,7 @@
 .mod-node.is-active { border-left-width: 6px; border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .mod-node.is-active .mod-node__ic--active { display: flex; --icon-color: var(--c-amber); }
 .mod-node.is-active .mod-node__state { color: var(--c-amber); }
-.mod-node.is-restored { border-left-width: 6px; border-color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
+.mod-node.is-restored { border-left-width: 6px; border-color: var(--c-phosphor-dim); opacity: 0.8; }
 .mod-node.is-restored .mod-node__ic--done { display: flex; --icon-color: var(--c-phosphor); }
 .mod-node.is-restored .mod-node__ic--lock { display: none; }
 .mod-node.is-restored .mod-node__state { color: var(--c-phosphor); }

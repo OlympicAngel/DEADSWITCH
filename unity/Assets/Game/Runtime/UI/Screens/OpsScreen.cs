@@ -23,7 +23,7 @@ namespace Deadswitch.Game.UI.Screens
         private static readonly string[] PostureIds = { "posture-none", "posture-turtle", "posture-dark", "posture-evacuate" };
         private static readonly string[] DelegationIds = { "deleg-manual", "deleg-routines", "deleg-autopilot" };
 
-        private static readonly string[] DelegationLines =
+        internal static readonly string[] DelegationLines =
         {
             "I only advise. You run everything.",
             "I run the build queue and routine upkeep. You keep the final word.",

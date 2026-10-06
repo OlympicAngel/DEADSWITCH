@@ -1,22 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Modules.uss" />
   <!-- MODULES (inside CORE, SPEC-008). Sample states for the preview; CoreScreen fills everything.
-       Reads top to bottom: tier gate (what unlocks the next tier), what is restoring now, the tech tree with a state
-       legend (locked / available / restoring / restored: each has its own icon, color and word), then the selected
-       module's detail and its one action. -->
+       Reads top to bottom: what is restoring now, the tech tree (locked / available /
+       restoring / restored: each has its own icon, color and word), then the selected
+       module's detail and its one action, then the tier gate (what unlocks the next tier). -->
   <ui:VisualElement name="modules" class="mod">
-
-    <ui:VisualElement name="tier" class="ds-card ds-card--holo mod-tier">
-      <ui:VisualElement class="ds-card__head">
-        <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--up ds-card__icon" /></ui:VisualElement>
-        <ui:VisualElement class="ds-card__titles"><ui:Label text="TIER GATE" class="ds-card__sub" /><ui:Label name="tier-title" text="TIER 1 // BUNKER" class="mod-tier__title" /></ui:VisualElement>
-        <ui:Label name="tier-next" text="NEXT: DISTRICT" class="mod-tier__next" />
-      </ui:VisualElement>
-      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-build-pip" class="mod-gate__pip is-ok"><ui:VisualElement class="ds-icon ds-icon--check mod-gate__ic mod-gate__ic--ok" /><ui:VisualElement class="ds-icon ds-icon--alert mod-gate__ic mod-gate__ic--no" /></ui:VisualElement><ui:Label name="gate-build" text="FACILITY LEVELS 11 / 10  //  NET POWER +140 / +100 H" class="mod-gate__text" /></ui:VisualElement>
-      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-module-pip" class="mod-gate__pip"><ui:VisualElement class="ds-icon ds-icon--check mod-gate__ic mod-gate__ic--ok" /><ui:VisualElement class="ds-icon ds-icon--alert mod-gate__ic mod-gate__ic--no" /></ui:VisualElement><ui:Label name="gate-module" text="MEMORY SECTOR M1 NOT RESTORED" class="mod-gate__text" /></ui:VisualElement>
-      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-people-pip" class="mod-gate__pip is-ok"><ui:VisualElement class="ds-icon ds-icon--check mod-gate__ic mod-gate__ic--ok" /><ui:VisualElement class="ds-icon ds-icon--alert mod-gate__ic mod-gate__ic--no" /></ui:VisualElement><ui:Label name="gate-people" text="HUMAN COST: 6 PEOPLE LEAVE TO EXPAND" class="mod-gate__text" /></ui:VisualElement>
-      <ui:VisualElement name="tier-up" class="ds-btn mod-tier__btn is-disabled"><ui:Label text="ADVANCE TO TIER 2" class="ds-btn__label" /></ui:VisualElement>
-    </ui:VisualElement>
 
     <ui:VisualElement name="research" class="ds-card ds-card--amber mod-research">
       <ui:VisualElement class="row">
@@ -33,10 +21,7 @@
       <ui:Label text="MODULE TREE // RESTORE TO UPGRADE THE CORE" class="ds-section__title" />
       <ui:VisualElement class="ds-section__rule" />
     </ui:VisualElement>
-    <ui:VisualElement class="row mod-legend">
-      <ui:VisualElement class="mod-leg mod-leg--locked"><ui:VisualElement class="ds-icon ds-icon--lock mod-leg__icon" /><ui:Label text="LOCKED" class="mod-leg__label" /></ui:VisualElement><ui:VisualElement class="mod-leg mod-leg--open"><ui:VisualElement class="ds-icon ds-icon--bolt mod-leg__icon" /><ui:Label text="AVAILABLE" class="mod-leg__label" /></ui:VisualElement><ui:VisualElement class="mod-leg mod-leg--active"><ui:VisualElement class="ds-icon ds-icon--clock mod-leg__icon" /><ui:Label text="RESTORING" class="mod-leg__label" /></ui:VisualElement><ui:VisualElement class="mod-leg mod-leg--done"><ui:VisualElement class="ds-icon ds-icon--check mod-leg__icon" /><ui:Label text="RESTORED" class="mod-leg__label" /></ui:VisualElement>
-    </ui:VisualElement>
-    <ui:Label text="OR between two modules: restoring one rules out the other." class="mod-hint" />
+    <ui:Label text="Tap a lit module to see what it does and restore it. Dim ones open with the next tier or the module before them. OR: restoring one rules out the other for good." class="mod-hint" />
 
     <ui:VisualElement class="row mod-tree">
       <ui:VisualElement class="mod-trunk">
@@ -71,13 +56,25 @@
       </ui:VisualElement>
       <ui:Label name="detail-state" text="AVAILABLE" class="ds-label t-phosphor mod-detail__state" />
       <ui:Label name="detail-desc" text="Battery Bank capacity +30%. Excludes Overclocked Racks." class="ds-prose mod-detail__desc" />
-      <ui:VisualElement class="row mod-detail__cost">
+      <ui:VisualElement name="detail-cost" class="row mod-detail__cost">
         <ui:VisualElement class="mod-chip"><ui:VisualElement class="ds-icon ds-icon--bolt mod-chip__icon" /><ui:Label name="detail-energy" text="300 ENERGY" class="mod-cost" /></ui:VisualElement>
         <ui:VisualElement class="mod-chip"><ui:VisualElement class="ds-icon ds-icon--chip mod-chip__icon" /><ui:Label name="detail-compute" text="60 COMPUTE" class="mod-cost" /></ui:VisualElement>
         <ui:VisualElement class="mod-chip"><ui:VisualElement class="ds-icon ds-icon--clock mod-chip__icon" /><ui:Label name="detail-time" text="02:30:00" class="mod-cost t-dim" /></ui:VisualElement>
       </ui:VisualElement>
       <ui:VisualElement name="detail-start" class="ds-btn ds-btn--primary mod-detail__btn"><ui:Label name="detail-start-label" text="RESTORE" class="ds-btn__label" /></ui:VisualElement>
       <ui:Label name="mod-reason" text="" class="ds-body mod-reason" />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="tier" class="ds-card ds-card--holo mod-tier">
+      <ui:VisualElement class="ds-card__head">
+        <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--up ds-card__icon" /></ui:VisualElement>
+        <ui:VisualElement class="ds-card__titles"><ui:Label text="TIER GATE" class="ds-card__sub" /><ui:Label name="tier-title" text="TIER 1 // BUNKER" class="mod-tier__title" /></ui:VisualElement>
+        <ui:Label name="tier-next" text="NEXT: DISTRICT" class="mod-tier__next" />
+      </ui:VisualElement>
+      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-build-pip" class="mod-gate__pip is-ok"><ui:VisualElement class="ds-icon ds-icon--check mod-gate__ic mod-gate__ic--ok" /><ui:VisualElement class="ds-icon ds-icon--alert mod-gate__ic mod-gate__ic--no" /></ui:VisualElement><ui:Label name="gate-build" text="FACILITY LEVELS 11 / 10  //  NET POWER +140 / +100 H" class="mod-gate__text" /></ui:VisualElement>
+      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-module-pip" class="mod-gate__pip"><ui:VisualElement class="ds-icon ds-icon--check mod-gate__ic mod-gate__ic--ok" /><ui:VisualElement class="ds-icon ds-icon--alert mod-gate__ic mod-gate__ic--no" /></ui:VisualElement><ui:Label name="gate-module" text="MEMORY SECTOR M1 NOT RESTORED" class="mod-gate__text" /></ui:VisualElement>
+      <ui:VisualElement class="mod-gate"><ui:VisualElement name="gate-people-pip" class="mod-gate__pip is-ok"><ui:VisualElement class="ds-icon ds-icon--check mod-gate__ic mod-gate__ic--ok" /><ui:VisualElement class="ds-icon ds-icon--alert mod-gate__ic mod-gate__ic--no" /></ui:VisualElement><ui:Label name="gate-people" text="HUMAN COST: 6 PEOPLE LEAVE TO EXPAND" class="mod-gate__text" /></ui:VisualElement>
+      <ui:VisualElement name="tier-up" class="ds-btn mod-tier__btn is-disabled"><ui:Label text="ADVANCE TO TIER 2" class="ds-btn__label" /></ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>
