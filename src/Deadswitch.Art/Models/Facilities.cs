@@ -1226,7 +1226,11 @@ namespace Deadswitch.Art.Models
                 b.BoxOn(x, y0, z, 0.66f, 1.4f, 0.7f, Mat.DarkSteel, 0.04f);
                 b.Box(new Vector3(x - 0.14f, y0 + 1.44f, z), new Vector3(0.1f, 0.08f, 0.1f), Mat.Copper, 0.02f);
                 b.Box(new Vector3(x + 0.14f, y0 + 1.44f, z), new Vector3(0.1f, 0.08f, 0.1f), Mat.Copper, 0.02f);
-                b.Box(new Vector3(x, y0 + 1.1f, z - 0.36f), new Vector3(0.1f, 0.06f, 0.02f), Mat.LampPhosphor, 0f);
+                // the charge lamp is a gauge part: cabinets light left to right as the store fills
+                b.Box(new Vector3(x, y0 + 1.1f, z - 0.355f), new Vector3(0.46f, 0.14f, 0.02f), Mat.Rubber, 0f);
+                var cell = new MeshBuilder(seed + (uint)i);
+                cell.Box(Vector3.Zero, new Vector3(0.4f, 0.09f, 0.02f), Mat.LampPhosphor, 0f);
+                m.Parts.Add(new AnimPart(cell.Mesh, new Vector3(x, y0 + 1.1f, z - 0.37f), AnimKind.Gauge, 0f, (i + 0.5f) / cabinets));
                 b.Box(new Vector3(x, y0 + 0.65f, z - 0.36f), new Vector3(0.4f, 0.3f, 0.02f), Mat.PaintWhite, 0f);
                 b.Strut(new Vector3(x, y0 + 1.48f, z), new Vector3(x, y0 + hFront - 0.2f, zFront + 0.3f), 0.025f, Mat.Rubber);
             }

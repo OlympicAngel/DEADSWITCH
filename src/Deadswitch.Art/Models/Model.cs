@@ -16,6 +16,9 @@ namespace Deadswitch.Art.Models
 
         /// <summary>Continuous spin around local Z (wind turbine rotors facing -Z).</summary>
         SpinZ = 3,
+
+        /// <summary>A store gauge lamp (SPEC-039 idea 18): shown while the facility's store is at least <c>Range</c> full (0..1).</summary>
+        Gauge = 4,
     }
 
     /// <summary>A moving part: its own mesh around a pivot, animated only while the facility is powered.</summary>

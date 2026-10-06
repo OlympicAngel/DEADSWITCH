@@ -730,8 +730,21 @@ namespace Deadswitch.Game.Base
             foreach (SlotObject o in _slots)
             {
                 bool powered = o.View.Powered;
+                float fill = StoreFill(o.View.Kind);
                 foreach (PartState p in o.Parts)
                 {
+                    if (p.Spec.Kind == AnimKind.Gauge)
+                    {
+                        // storage reads on the model: cells light as the store fills, all dark without power
+                        bool lit = powered && fill >= p.Spec.Range;
+                        if (p.Pivot.gameObject.activeSelf != lit)
+                        {
+                            p.Pivot.gameObject.SetActive(lit);
+                        }
+
+                        continue;
+                    }
+
                     if (!powered)
                     {
                         continue;
@@ -952,6 +965,20 @@ namespace Deadswitch.Game.Base
             public int Kind;
             public float Seconds;
             public float Time;
+        }
+
+        /// <summary>How full the store a facility holds is (0..1): energy for battery banks, fuel for fuel depots, 0 for the rest.</summary>
+        private float StoreFill(FacilityKind kind)
+        {
+            if ((kind != FacilityKind.BatteryBank && kind != FacilityKind.FuelDepot) || _host == null || !_host.IsReady)
+            {
+                return 0f;
+            }
+
+            GameState s = _host.Sim.State;
+            bool fuel = kind == FacilityKind.FuelDepot;
+            int cap = fuel ? Deadswitch.Sim.Systems.Economy.FuelCap(s, _host.Config) : Deadswitch.Sim.Systems.Economy.EnergyCap(s, _host.Config);
+            return cap > 0 ? Mathf.Clamp01((fuel ? s.Fuel : s.Energy) / (float)cap) : 0f;
         }
 
         private sealed class SlotObject

@@ -191,6 +191,16 @@ namespace Deadswitch.Art.Models
                 KitParts.TankH(b, Vector3.Zero, 0.72f, 3.2f, i % 2 == 0 ? Mat.OliveSteel : Mat.SandSteel);
                 b.Pop();
                 b.Strut(new Vector3(x, 1.95f, 1.2f), new Vector3(x, 2.4f, 1.2f), 0.08f, Mat.DarkSteel);
+
+                // a level gauge on a post before each tank: amber segments light as the fuel store fills (SPEC-039 idea 18)
+                b.Strut(new Vector3(x + 0.5f, 0.12f, -1.75f), new Vector3(x + 0.5f, 1.6f, -1.75f), 0.04f, Mat.DarkSteel);
+                b.Box(new Vector3(x + 0.5f, 1.05f, -1.8f), new Vector3(0.22f, 0.9f, 0.04f), Mat.DarkSteel, 0.01f);
+                for (int j = 0; j < 4; j++)
+                {
+                    var seg = new MeshBuilder(seed + (uint)((i * 4) + j));
+                    seg.Box(Vector3.Zero, new Vector3(0.14f, 0.16f, 0.02f), Mat.LampAmber, 0f);
+                    m.Parts.Add(new AnimPart(seg.Mesh, new Vector3(x + 0.5f, 0.72f + (j * 0.22f), -1.83f), AnimKind.Gauge, 0f, (j + 0.5f) / 4f));
+                }
             }
 
             KitParts.Pipe(b, new[] { new Vector3(-1.8f, 0.5f, 1.8f), new Vector3(1.8f, 0.5f, 1.8f), new Vector3(2.6f, 0.5f, 1.8f), new Vector3(2.6f, 0.5f, -2.0f) }, 0.08f, Mat.Rust);

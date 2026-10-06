@@ -122,6 +122,8 @@ namespace Deadswitch.Game.UI.Hud
             });
             _advisorPanel.RegisterCallback<ClickEvent>(_ => ExpandComms());
             Q<VisualElement>("raid-banner").RegisterCallback<ClickEvent>(_ => SetRaidOpen(!_raidOpen));
+            // the threat card is one card among the others: a sheet, the menu or a tap elsewhere folds it (SPEC-040 rule 2)
+            Popovers.Register("raid", () => _raidOpen, () => SetRaidOpen(false), Q<VisualElement>("raid-banner"), Q<VisualElement>("raid-detail"));
             Toasts.Mount(_ui.Hud);
             _celebrations = new Celebrations(_ui.Sheets);
             _goal = new GoalCard(Q<VisualElement>("goal"), () =>
@@ -523,9 +525,9 @@ namespace Deadswitch.Game.UI.Hud
             {
                 double left = SecondsUntil(s.RaidArriveTick);
                 _raidTime.text = Fmt.Countdown(left);
-                if (!_raidAutoOpened && (left < ImminentSeconds || s.BattleLive))
+                if (!_raidAutoOpened && (left < ImminentSeconds || s.BattleLive) && !Popovers.AnyOpen)
                 {
-                    // an imminent attack opens its own card (SPEC-040 rule 2)
+                    // an imminent attack opens its own card (SPEC-040 rule 2), once the player is not in another panel
                     _raidAutoOpened = true;
                     SetRaidOpen(true);
                 }
@@ -592,6 +594,7 @@ namespace Deadswitch.Game.UI.Hud
             _raidDetail.EnableInClassList("is-collapsed", !open);
             if (open)
             {
+                Popovers.Opening("raid");
                 Choreo.Enter(_raidDetail);
                 Motion.To(_raidDetail, 0.3f, Ease.OutBack, t =>
                 {
@@ -768,8 +771,6 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("menu-btn").RegisterCallback<ClickEvent>(_ =>
             {
                 GameState s = _host.Sim.State;
-                // the open threat card sits above the sheet layer and would read through the drawer
-                SetRaidOpen(false);
                 _menu.Open("HUB S-17 // TIER " + s.Tier + " // " + Fmt.Clock(s.Tick).Split(' ')[0] + " " + Fmt.Clock(s.Tick).Split(' ')[1]);
             });
         }
