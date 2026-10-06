@@ -48,6 +48,9 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.BatteryBank:
                     Battery(b, m, level, seed);
                     break;
+                case FacilityKind.Turret when stage > 0:
+                    TurretStage(b, m, stage, seed);
+                    break;
                 case FacilityKind.Turret:
                     Turret(b, m, level, seed);
                     break;
@@ -1305,6 +1308,28 @@ namespace Deadswitch.Art.Models
         // ---------- Turret: octagonal emplacement, raised gun tower, radar, tank traps ----------
         private static void Turret(MeshBuilder b, Model m, int level, uint seed)
         {
+            TurretCore(b, m, seed, level >= 3, level >= 5 ? 4 : (level >= 2 ? 2 : 1), level >= 5 ? 3 : 2, level >= 2, level >= 4, level >= 5, 0.08f + (level * 0.01f), 0);
+        }
+
+        /// <summary>
+        /// Turret by visual stage 1-10 (SPEC-045 stage plan). Preview only, like <see cref="GeneratorStage"/>. Stages 1-2
+        /// are a machine-gun nest; the emplacement arrives at 3 and the level features follow, then bunker, armour, laser.
+        /// </summary>
+        private static void TurretStage(MeshBuilder b, Model m, int stage, uint seed)
+        {
+            stage = Math.Min(10, Math.Max(1, stage));
+            if (stage <= 2)
+            {
+                TurretNest(b, m, stage, seed);
+                return;
+            }
+
+            TurretCore(b, m, seed, stage >= 5, stage >= 7 ? 4 : (stage >= 4 ? 2 : 1), stage >= 7 ? 3 : 2, stage >= 4, stage >= 6, stage >= 7, 0.08f + (Math.Min(stage - 2, 5) * 0.01f), stage);
+        }
+
+        /// <param name="stage">SPEC-045 stage for the stage-only extras (8 bunker, 9 armour, 10 laser); 0 for the level models.</param>
+        private static void TurretCore(MeshBuilder b, Model m, uint seed, bool tower, int guns, int layers, bool pole, bool searchRadar, bool topLight, float sweep, int stage)
+        {
             var rng = new ArtRandom(seed + 5);
 
             // octagonal concrete emplacement with a broken corner and a ladder
@@ -1318,7 +1343,7 @@ namespace Deadswitch.Art.Models
             }
 
             float top = 1.22f;
-            if (level >= 3)
+            if (tower)
             {
                 // steel gun tower on the emplacement
                 const float hw = 1.0f;
@@ -1344,13 +1369,13 @@ namespace Deadswitch.Art.Models
                 }
             }
 
-            Shapes.SandbagRing(b, new Vector3(0, top, 0), level >= 3 ? 1.3f : 1.85f, level >= 3 ? 14 : 18, level >= 5 ? 3 : 2, 70f, 40f);
+            Shapes.SandbagRing(b, new Vector3(0, top, 0), tower ? 1.3f : 1.85f, tower ? 14 : 18, layers, 70f, 40f);
             b.Frustum(new Vector3(0, top, 0), 0.8f, 0.65f, 0.45f, 14, Mat.DarkSteel, 0.05f);
             float pivotY = top + 0.45f;
 
             // pintle-mounted gun behind an angled, patched gunner shield (no box housing)
             var head = new MeshBuilder(seed + 7) { GroundOffset = pivotY + PadTop };
-            float w = level >= 3 ? 1.5f : 1.3f;
+            float w = tower ? 1.5f : 1.3f;
             head.Frustum(Vector3.Zero, 0.62f, 0.6f, 0.1f, 20, Mat.DarkSteel, 0.02f);
             head.Frustum(new Vector3(0, 0.1f, 0.1f), 0.14f, 0.12f, 0.5f, 12, Mat.OliveSteel, 0.02f);
             foreach (int s in new[] { -1, 1 })
@@ -1359,7 +1384,6 @@ namespace Deadswitch.Art.Models
                 head.Box(new Vector3(s * 0.2f, 0.62f, 0.05f), new Vector3(0.03f, 0.34f, 0.7f), Mat.OliveSteel, 0.01f);
             }
 
-            int guns = level >= 5 ? 4 : (level >= 2 ? 2 : 1);
             for (int i = 0; i < guns; i++)
             {
                 float x = guns == 1 ? 0f : (-0.13f * (guns - 1)) + (i * 0.26f);
@@ -1391,16 +1415,22 @@ namespace Deadswitch.Art.Models
             // optics box with the red status lamp, grips and a seat behind
             head.Box(new Vector3(w * 0.22f, 0.98f, -0.1f), new Vector3(0.16f, 0.14f, 0.22f), Mat.DarkSteel, 0.02f);
             head.Box(new Vector3(w * 0.22f, 0.98f, -0.22f), new Vector3(0.09f, 0.06f, 0.02f), Mat.LampRed, 0f);
+            if (stage >= 10)
+            {
+                // AI fire control: a cyan rangefinder housing and its aiming line along the guns
+                head.Box(new Vector3(-w * 0.22f, 0.98f, -0.1f), new Vector3(0.16f, 0.14f, 0.3f), Mat.DarkSteel, 0.02f);
+                head.Box(new Vector3(-w * 0.22f, 0.98f, -1.4f), new Vector3(0.02f, 0.02f, 2.3f), Mat.NeonCyan, 0f);
+            }
             head.Strut(new Vector3(-0.16f, 0.62f, 0.55f), new Vector3(-0.16f, 0.5f, 0.75f), 0.03f, Mat.Rubber);
             head.Strut(new Vector3(0.16f, 0.62f, 0.55f), new Vector3(0.16f, 0.5f, 0.75f), 0.03f, Mat.Rubber);
             head.Strut(new Vector3(0, 0.1f, 0.2f), new Vector3(0, 0.42f, 0.9f), 0.04f, Mat.DarkSteel);
             head.Box(new Vector3(0, 0.44f, 0.95f), new Vector3(0.34f, 0.05f, 0.3f), Mat.Rubber, 0.02f);
-            if (level >= 3)
+            if (tower)
             {
                 head.Box(new Vector3(0, 0.12f, 0.75f), new Vector3(0.5f, 0.2f, 0.32f), Mat.OliveSteel, 0.02f);
             }
 
-            m.Parts.Add(new AnimPart(head.Mesh, new Vector3(0, pivotY, 0), AnimKind.SweepY, 0.08f + (level * 0.01f), 55f));
+            m.Parts.Add(new AnimPart(head.Mesh, new Vector3(0, pivotY, 0), AnimKind.SweepY, sweep, 55f));
             m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(0.5f, pivotY + 0.7f, -0.9f)), Model.Red, 0.7f, 2.2f, LightRole.Status));
 
             // ammo store and camo net behind the gun, tank traps out front
@@ -1414,15 +1444,15 @@ namespace Deadswitch.Art.Models
             Shapes.SandbagWall(b, new Vector3(-1.3f, 0, -2.75f), new Vector3(1.4f, 0, -2.85f), 2);
             KitModules.CrateStack(b, new Vector3(2.3f, 0, 2.3f), rng);
 
-            if (level >= 2)
+            if (pole)
             {
-                Vector3 pole = new Vector3(2.6f, 0, 0.6f);
-                b.Frustum(pole, 0.1f, 0.08f, 4.6f, 8, Mat.DarkSteel, 0.01f);
-                KitParts.Spotlight(b, m, pole + new Vector3(0, 4.5f, -0.25f), 10f);
-                KitParts.Cable(b, pole + new Vector3(0, 4.2f, 0), new Vector3(1.0f, top + 0.3f, 1.0f), 0.4f);
+                Vector3 lightPole = new Vector3(2.6f, 0, 0.6f);
+                b.Frustum(lightPole, 0.1f, 0.08f, 4.6f, 8, Mat.DarkSteel, 0.01f);
+                KitParts.Spotlight(b, m, lightPole + new Vector3(0, 4.5f, -0.25f), 10f);
+                KitParts.Cable(b, lightPole + new Vector3(0, 4.2f, 0), new Vector3(1.0f, top + 0.3f, 1.0f), 0.4f);
             }
 
-            if (level >= 4)
+            if (searchRadar)
             {
                 // rotating search radar on its own mast
                 Vector3 mb = new Vector3(-2.55f, 0, 0.4f);
@@ -1434,13 +1464,66 @@ namespace Deadswitch.Art.Models
                 m.Parts.Add(new AnimPart(radar.Mesh, mb + new Vector3(0, 5.4f, 0), AnimKind.SpinY, 60f));
             }
 
-            if (level >= 5)
+            if (topLight)
             {
                 KitParts.Spotlight(b, m, new Vector3(-1.0f, top + 1.2f, -1.0f), -20f);
                 b.Strut(new Vector3(-1.0f, top, -1.0f), new Vector3(-1.0f, top + 1.1f, -1.0f), 0.06f, Mat.DarkSteel);
             }
 
+            if (stage >= 8)
+            {
+                // concrete ammo bunker with a blast door and a caged ladder up the tower
+                b.BoxOn(2.2f, 0, -0.9f, 1.4f, 1.3f, 1.8f, Mat.ConcreteDark, 0.06f);
+                b.Box(new Vector3(1.48f, 0.6f, -0.9f), new Vector3(0.04f, 1.0f, 0.8f), Mat.OliveSteel, 0.01f);
+                Shapes.Hazard(b, 1.5f, 2.9f, 1.15f, 1.3f, -1.81f, 6);
+            }
+
+            if (stage >= 9)
+            {
+                // heavier armour: a second ring of plates around the gun deck and extra tank traps
+                for (int i = 0; i < 8; i++)
+                {
+                    b.Push(new Vector3(0, top, 0), (i * 45f) + 22.5f);
+                    KitParts.Plate(b, new Vector3(0, 0.45f, -1.75f), 1.3f, 0.9f, 8f, Mat.DarkSteel);
+                    b.Pop();
+                }
+
+                KitModules.Hedgehog(b, new Vector3(0.2f, 0, -3.0f), 10f);
+            }
+
             Beacon(b, m, new Vector3(-1.5f, top + 0.5f, -1.4f));
+        }
+
+        /// <summary>Turret stages 1-2: a machine gun on a tripod behind sandbags, then a full sandbag ring and ammo crates.</summary>
+        private static void TurretNest(MeshBuilder b, Model m, int stage, uint seed)
+        {
+            var rng = new ArtRandom(seed + 5);
+            if (stage >= 2)
+            {
+                Shapes.SandbagRing(b, Vector3.Zero, 1.5f, 16, 2, 70f, 40f);
+                KitModules.CrateStack(b, new Vector3(2.0f, 0, 1.8f), rng);
+                KitModules.Hedgehog(b, new Vector3(-2.4f, 0, -2.4f), 20f);
+            }
+            else
+            {
+                Shapes.SandbagWall(b, new Vector3(-1.2f, 0, -1.0f), new Vector3(1.2f, 0, -1.0f), 2);
+            }
+
+            // tripod and the gun on a pivot, sweeping slowly
+            foreach (float a in new[] { 0f, 120f, 240f })
+            {
+                float r = MeshBuilder.Deg(a + 30f);
+                b.Strut(new Vector3((float)Math.Cos(r) * 0.55f, 0, (float)Math.Sin(r) * 0.55f), new Vector3(0, 0.75f, 0), 0.03f, Mat.DarkSteel);
+            }
+
+            var head = new MeshBuilder(seed + 7) { GroundOffset = 0.8f + PadTop };
+            head.Box(new Vector3(0, 0.05f, 0.15f), new Vector3(0.13f, 0.15f, 0.7f), Mat.DarkSteel, 0.015f);
+            head.CylinderZ(new Vector3(0, 0.05f, -0.5f), 0.05f, 0.65f, 12, Mat.DarkSteel, 0.008f);
+            head.Box(new Vector3(0.17f, -0.05f, 0.2f), new Vector3(0.11f, 0.19f, 0.3f), Mat.OliveSteel, 0.01f);
+            m.Parts.Add(new AnimPart(head.Mesh, new Vector3(0, 0.8f, 0), AnimKind.SweepY, 0.06f, 40f));
+            m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(0.4f, 1.3f, -0.6f)), Model.Red, 0.5f, 2.0f, LightRole.Status));
+            KitModules.Barrels(b, new Vector3(-2.2f, 0, 1.8f), 2, rng);
+            Beacon(b, m, new Vector3(-1.0f, 1.2f, -1.0f));
         }
 
         // ---------- shared pieces ----------
