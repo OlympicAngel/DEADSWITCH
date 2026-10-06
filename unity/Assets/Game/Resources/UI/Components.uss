@@ -591,6 +591,9 @@
 .ds-seg__item.is-selected .unity-label, .ds-seg__item.is-on .unity-label, .ds-seg__item.is-active .unity-label { color: var(--c-cyan); }
 
 /* Icon button: round, borderless (close, back, info) */
+/* a full screen covers the 3D base edge to edge, safe-area strips included (F-112) */
+.ds-layer-hud.is-opaque { background-color: var(--c-world); }
+
 /* icons keep their size next to long text */
 .ds-icon { flex-shrink: 0; }
 .ds-iconbtn { width: 88px; height: 88px; align-items: center; justify-content: center; border-width: 0; border-radius: 44px; background-color: var(--c-panel-sunken); }
