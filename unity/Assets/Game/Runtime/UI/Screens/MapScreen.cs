@@ -526,7 +526,18 @@ namespace Deadswitch.Game.UI.Screens
                 VisualElement m = i < n ? _markers[i] : _hubMarker;
                 m.style.left = Length.Percent(pins[i].X * 100f);
                 m.style.top = Length.Percent(pins[i].Y * 100f);
-                m.EnableInClassList("map-site--left", sides[i] % 2 == 1);
+                // a tag that would run off the plot edge flips to the pin's other side
+                bool left = sides[i] % 2 == 1;
+                if (!left && pins[i].X + widths[i] > 1f)
+                {
+                    left = true;
+                }
+                else if (left && pins[i].X - widths[i] < 0f)
+                {
+                    left = false;
+                }
+
+                m.EnableInClassList("map-site--left", left);
                 m.EnableInClassList("map-site--low", sides[i] >= 2);
                 bool inView = pins[i].X >= 0f && pins[i].X <= 1f && pins[i].Y >= 0f && pins[i].Y <= 1f;
                 m.style.display = inView ? DisplayStyle.Flex : DisplayStyle.None;
