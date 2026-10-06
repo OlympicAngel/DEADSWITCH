@@ -1,6 +1,6 @@
 # SPEC-007: Hidden project clock and the Audit tool
 
-- Status: Done (F-014); Editor play check pending
+- Status: Done (F-014); checked in the Editor 2026-10-06 (Audit cost and cooldown, Core Profile with true values, CORE pages at phone size)
 - Pillar: AI relationship
 - Touches: economy (compute skim), corruption (bold AI under-reports it), reports (edits, SPEC-006), delegation (Boldness drives the project, SPEC-004)
 - Source rules: doc 03 s5 (hidden agenda, counterplay), doc 10 s1.4 (Core Profile) and s2 (project clock), doc 10 s7 (lie rules)

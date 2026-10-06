@@ -1,6 +1,6 @@
 # SPEC-008: Module tree (trunk + four fields) and the Tier 2 gate
 
-- Status: Done (F-015); Editor play check pending
+- Status: Done (F-015); checked in the Editor 2026-10-06 (tier gate checklist, trunk and field tabs, node detail with costs, refusal reason when short)
 - Pillar: AI relationship, Base & economy
 - Touches: economy (node effects on upkeep, output, caps, build time, refunds, unmanned output), people (tier-up cost, population cap), AI (restoring memory)
 - Source rules: doc 10 s6 (trunk M1-M3, 8 nodes per field, 3 in Tier 1 + 5 in Tier 2, one exclusive pair per field per tier), doc 03 s7, doc 06 s2 (three tier-up gates), doc 10 s1.3 (tier base population cap, Habitat Management node)
