@@ -34,6 +34,7 @@
 .map-site__tag { position: absolute; left: 46px; top: 4px; padding: 2px var(--s-2); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
 .map-site--left > .map-site__tag { left: auto; right: 46px; }
 .map-site--low > .map-site__tag { top: 40px; }
+.map-site--bare > .map-site__tag { display: none; }
 .map-site__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-text); white-space: nowrap; }
 .map-site__est { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-amber); white-space: nowrap; }
 .map-site__est.is-known { color: var(--c-text-dim); }

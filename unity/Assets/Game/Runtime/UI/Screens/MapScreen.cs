@@ -520,7 +520,10 @@ namespace Deadswitch.Game.UI.Screens
 
             pins[n] = _layer.HubAnchor;
             widths[n] = ((8 * 0.62f * font) + 24f) / r.width;
-            int[] sides = SectorOverlay.PlaceLabels(pins, widths, (font * 2.9f) / r.height, 28f / r.height);
+            float tagHeight = (font * 2.9f) / r.height;
+            float pinSize = 28f / r.height;
+            int[] sides = SectorOverlay.PlaceLabels(pins, widths, tagHeight, pinSize);
+            var final = new int[n + 1];
             for (int i = 0; i <= n; i++)
             {
                 VisualElement m = i < n ? _markers[i] : _hubMarker;
@@ -541,6 +544,58 @@ namespace Deadswitch.Game.UI.Screens
                 m.EnableInClassList("map-site--low", sides[i] >= 2);
                 bool inView = pins[i].X >= 0f && pins[i].X <= 1f && pins[i].Y >= 0f && pins[i].Y <= 1f;
                 m.style.display = inView ? DisplayStyle.Flex : DisplayStyle.None;
+                final[i] = (left ? 1 : 0) + (sides[i] >= 2 ? 2 : 0);
+            }
+
+            HideCrowdedTags(pins, widths, final, tagHeight, pinSize);
+        }
+
+        /// <summary>
+        /// Where the map is too crowded for every tag (zoomed out, large text), the Hub and then the selected site keep
+        /// theirs and the rest, top to bottom, drop any tag that would still overlap one already shown. The pin stays
+        /// tappable; zooming in brings the tag back.
+        /// </summary>
+        private void HideCrowdedTags(System.Numerics.Vector2[] pins, float[] widths, int[] sides, float height, float pin)
+        {
+            int n = _markers.Count;
+            var order = new List<int> { n };
+            if (_selected >= 0 && _selected < n)
+            {
+                order.Add(_selected);
+            }
+
+            var rest = new List<int>();
+            for (int i = 0; i < n; i++)
+            {
+                if (i != _selected)
+                {
+                    rest.Add(i);
+                }
+            }
+
+            rest.Sort((a, b) => pins[a].Y.CompareTo(pins[b].Y) != 0 ? pins[a].Y.CompareTo(pins[b].Y) : a.CompareTo(b));
+            order.AddRange(rest);
+            var shown = new List<System.Numerics.Vector4>();
+            foreach (int i in order)
+            {
+                if (pins[i].X < 0f || pins[i].X > 1f || pins[i].Y < 0f || pins[i].Y > 1f)
+                {
+                    continue;
+                }
+
+                System.Numerics.Vector4 box = SectorOverlay.LabelBox(pins[i], widths[i], height, pin, sides[i]);
+                bool clear = true;
+                foreach (System.Numerics.Vector4 o in shown)
+                {
+                    clear &= box.Z <= o.X || box.X >= o.Z || box.W <= o.Y || box.Y >= o.W;
+                }
+
+                VisualElement m = i < n ? _markers[i] : _hubMarker;
+                m.EnableInClassList("map-site--bare", !clear);
+                if (clear)
+                {
+                    shown.Add(box);
+                }
             }
         }
 
