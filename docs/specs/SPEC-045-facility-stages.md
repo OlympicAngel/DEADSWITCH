@@ -43,17 +43,17 @@ Signature = the shape that identifies the kind at every stage.
 **Motor Pool** (signature: vehicle + garage shed) — reference build in `Military.MotorPoolStage` (shares `MotorPoolCore` with the level models)
 1 a pickup under a tarp, jerrycans; 2 tool rack and an A-frame hoist with an engine; 3 apron and deep garage shed with the eight-wheeled carrier; 4 gun truck and fuel bowser; 5 crane gantry over the carrier; 6 second bay with a tarp-covered pickup; 7 armour plates racked on the back wall; 8 service ramp and a fuel pump; 9 sandbags and a tank trap at the apron mouth; 10 cyan running lights on the carrier, shielded conduit.
 
-**Solar Field** (signature: tilted panel rows)
-1 three loose panels propped on bricks; 2 a row on a timber frame; 3 steel frame row; 4 two rows; 5 inverter cabinet; 6 three rows; 7 tracking mounts; 8 fenced field, cleaning walkway; 9 armoured inverter house; 10 raised array with cyan output meters.
+**Solar Field** (signature: tilted panel rows) — reference build in `Utilities.SolarFieldStage` (shares `SolarFieldCore` with the level models)
+1 three loose panels propped on blocks, a car battery on a crate; 2 a timber-frame row, three batteries; 3-5 steel racks with two to four rows, then the inverter and cable tray, then lamp and barrels; 6 dual-axis tracker on a pole; 7 front fence; 8 inverter house container; 9 armour plates and a tank trap at the front; 10 cyan output strips under the rows, shielded conduit.
 
-**Fuel Depot** (signature: horizontal tanks + bund wall)
-1 drum stack on pallets; 2 hand pump and jerrycans; 3 one horizontal tank on cradles; 4 bund wall; 5 second tank; 6 pump house; 7 vertical tank; 8 loading arm; 9 blast walls and fire suppression; 10 buried tanks with armoured manifold and cyan level gauges.
+**Fuel Depot** (signature: horizontal tanks + bund) — reference build in `Utilities.FuelDepotStage` (shares `FuelDepotCore` with the level models)
+1 drums on two pallets; 2 hand pump, jerrycans, one small tank on cradles; 3-5 slab, sandbag bund and two to three tanks, then the tall tank and ladder, then more drums and a red lamp; 6 pump house; 7 loading arm; 8 foam tank and hydrant; 9 blast wall along the back; 10 cyan level gauges on the tanks, shielded conduit.
 
-**Cooling Tower** (signature: tower with fan)
-1 fan box and water barrel; 2 cooling coil on a frame; 3 timber slat tower; 4 steel tower with fan; 5 second fan; 6 basin and pumps; 7 tall hyperbolic shell; 8 pipe bridge to the server racks; 9 louvered armour; 10 twin towers with cyan plume lights.
+**Cooling Tower** (signature: waisted concrete stack) — reference build in `Utilities.CoolingTowerStage` (shares `CoolingTowerCore` with the level models)
+1 fan box over a water barrel; 2 copper radiator coil on a frame, piped to the barrel; 3-5 the stack with growing fan units, then a second stack and the turning exhaust fan; 6 cold-water basin with pumps; 7 pipe bridge toward the server racks; 8 armour plates around the stack skirt; 9 sandbags and a warning lamp; 10 cyan ring on the stack lip, shielded conduit.
 
-**Memory Restoration Chamber** (signature: chamber + cable crown)
-1 a terminal on a crate wired to a drive stack; 2 shielded drive cabinet; 3 small vault; 4 chamber pod; 5 cable crown; 6 cooling jacket; 7 second pod; 8 Faraday cage; 9 armoured vault doors; 10 restoration core with cyan data rings (violet for memory, per doc 11).
+**Memory Restoration Chamber** (signature: armoured vault + blast door seam) — reference build in `Utilities.MemoryChamberStage` (shares `MemoryChamberCore` with the level models)
+1 a terminal on a crate wired to a drive stack; 2 shielded drive cabinet with a violet seam, a genset; 3-5 the vault with blast door, then cold cylinders, then mast and spotlight; 6 cable crown on the roof; 7 a second restoration pod; 8 copper Faraday cage; 9 armour plates by the door, sandbags; 10 violet data rings on the crown (memory, doc 11), cyan status line over the door.
 
 ## State treatment (every stage)
 - **Powered:** lamps, status strips, moving parts (fans, rotors, dishes) on.

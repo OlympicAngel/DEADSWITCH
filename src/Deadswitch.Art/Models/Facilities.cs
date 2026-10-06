@@ -72,14 +72,26 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.MotorPool:
                     Military.MotorPool(b, m, level, seed);
                     break;
+                case FacilityKind.SolarField when stage > 0:
+                    Utilities.SolarFieldStage(b, m, stage, seed);
+                    break;
                 case FacilityKind.SolarField:
                     Utilities.SolarField(b, m, level, seed);
+                    break;
+                case FacilityKind.FuelDepot when stage > 0:
+                    Utilities.FuelDepotStage(b, m, stage, seed);
                     break;
                 case FacilityKind.FuelDepot:
                     Utilities.FuelDepot(b, m, level, seed);
                     break;
+                case FacilityKind.CoolingTower when stage > 0:
+                    Utilities.CoolingTowerStage(b, m, stage, seed);
+                    break;
                 case FacilityKind.CoolingTower:
                     Utilities.CoolingTower(b, m, level, seed);
+                    break;
+                case FacilityKind.MemoryChamber when stage > 0:
+                    Utilities.MemoryChamberStage(b, m, stage, seed);
                     break;
                 case FacilityKind.MemoryChamber:
                     Utilities.MemoryChamber(b, m, level, seed);
