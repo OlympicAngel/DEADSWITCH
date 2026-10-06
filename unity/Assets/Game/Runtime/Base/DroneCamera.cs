@@ -19,8 +19,8 @@ namespace Deadswitch.Game.Base
         private const float TapSlop = 18f;
         private const float BasePanX = 8f;
         private const float PanLimitZ = 7f;
-        private const float DistrictPanZ = 15f;
-        private const float StrongholdPanZ = 25f;
+        private const float DistrictPanZ = 23f;
+        private const float StrongholdPanZ = 43f;
         private const float SectorPanX = 13f;
 
         private readonly Dictionary<int, Vector2> _pointers = new Dictionary<int, Vector2>();
@@ -82,6 +82,7 @@ namespace Deadswitch.Game.Base
         public void Focus(Vector3 world)
         {
             _velocity = Vector3.zero;
+            _idle = 0f;
             _panTarget = ClampPan(world - _look.Target);
         }
 

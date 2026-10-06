@@ -1,6 +1,6 @@
 # SPEC-013: Tier 2 District
 
-- Status: Done (F-023); Editor play check pending
+- Status: Done (F-023); checked in the Editor 2026-10-06 (tier-up banner, four district plots, camera pans to the district wall, plot tap opens the build sheet)
 - Pillar: Base & economy (growth), Defense & offline (threat scaling)
 - Touches: tier-up (plots), raids (strength, daily cap), hub scene (district, terrain), base view and camera, art export
 - Source rules: doc 06 s2-3 (tiers, visual evolution), doc 10 s1.3 (pop caps), doc 10 s4 (4 attacks per 24h in Tier 2)

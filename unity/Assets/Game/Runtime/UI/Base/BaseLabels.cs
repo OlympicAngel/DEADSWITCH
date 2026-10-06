@@ -20,6 +20,7 @@ namespace Deadswitch.Game.UI.Base
 
         private readonly VisualElement _layer;
         private readonly List<Tag> _tags = new List<Tag>();
+        private readonly List<Tag> _order = new List<Tag>();
         private readonly Tag _core;
         private readonly System.Action<int> _onSlot;
         private int _selected = -1;
@@ -155,6 +156,47 @@ namespace Deadswitch.Game.UI.Base
 
             _core.Hidden = _selected >= 0;
             Place(_core, cam, view.CoreAnchor, panelWidth, panelHeight, topClear, keepOut);
+            Declutter(view.SlotCount);
+        }
+
+        /// <summary>
+        /// Seen from the district the old compound's tags crowd into one row. The selected tag keeps its place, then
+        /// the tags nearest the camera (lowest on screen); a tag that would overlap one already kept steps out.
+        /// </summary>
+        private void Declutter(int slots)
+        {
+            _order.Clear();
+            for (int i = 0; i < _tags.Count && i < slots; i++)
+            {
+                _order.Add(_tags[i]);
+            }
+
+            _order.Add(_core);
+            Tag selected = _selected >= 0 && _selected < _tags.Count ? _tags[_selected] : null;
+            _order.Sort((a, b) =>
+            {
+                int rank = (a == selected ? 0 : 1).CompareTo(b == selected ? 0 : 1);
+                return rank != 0 ? rank : b.Box.yMax.CompareTo(a.Box.yMax);
+            });
+            for (int i = 0; i < _order.Count; i++)
+            {
+                Tag t = _order[i];
+                if (!t.Shown)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < i; j++)
+                {
+                    if (_order[j].Shown && _order[j].Box.Overlaps(t.Box))
+                    {
+                        // visibility, not display: the tag keeps its size for next frame's test
+                        t.Shown = false;
+                        t.Root.style.visibility = Visibility.Hidden;
+                        break;
+                    }
+                }
+            }
         }
 
         private static void Place(Tag t, Camera cam, Vector3 world, float pw, float ph, float topClear, Rect keepOut)
@@ -162,7 +204,15 @@ namespace Deadswitch.Game.UI.Base
             Vector3 sp = cam.WorldToScreenPoint(world);
             // while a facility is framed every tag steps out: the close shot pushes them under the HUD and the sheet names it
             bool visible = sp.z > 0f && !t.Hidden;
+            // the tag hangs above its anchor (translate -50% -100%)
+            float y = (Screen.height - sp.y) / Screen.height * ph;
+            // a building panned under the HUD loses its tag: clamping them all to the top row piles them up
+            visible &= y > topClear;
             t.Root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            // quiet open plots are already hidden by style and never push a tag aside
+            t.Shown = visible && !t.Root.ClassListContains("is-quiet");
+            t.Root.style.visibility = StyleKeyword.Null;
+
             // the tag is centred on its anchor (translate -50%); keep it whole on screen so a plot near the edge
             // still shows its full name
             float x = sp.x / Screen.width * pw;
@@ -172,8 +222,6 @@ namespace Deadswitch.Game.UI.Base
                 x = Mathf.Clamp(x, half + EdgeMargin, pw - half - EdgeMargin);
             }
 
-            // the tag hangs above its anchor (translate -50% -100%)
-            float y = (Screen.height - sp.y) / Screen.height * ph;
             float h = float.IsNaN(t.Root.resolvedStyle.height) ? 0f : t.Root.resolvedStyle.height;
             y = Mathf.Max(y, topClear + h + EdgeMargin);
             if (half > 0f && keepOut.width > 0f && x + half > keepOut.xMin && x - half < keepOut.xMax && y > keepOut.yMin && y - h < keepOut.yMax)
@@ -193,6 +241,7 @@ namespace Deadswitch.Game.UI.Base
 
             t.Root.style.left = x;
             t.Root.style.top = y;
+            t.Box = new Rect(x - half, y - h, half * 2f, h);
         }
 
         private Tag NewTag()
@@ -224,6 +273,8 @@ namespace Deadswitch.Game.UI.Base
             public Label State;
             public VisualElement Pip;
             public bool Hidden;
+            public bool Shown;
+            public Rect Box;
         }
     }
 }
