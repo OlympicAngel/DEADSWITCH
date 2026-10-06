@@ -1,6 +1,6 @@
 # SPEC-009: Opening (prologue, boot sequence, first raids, guided first steps)
 
-- Status: Done (F-016); Editor play check pending
+- Status: Done (F-016); checked in the Editor 2026-10-06 (prologue now the SPEC-044 film, both motion paths; guide advanced from defense set to Build a Battery Bank)
 - Pillar: AI relationship (first impression of the AI), Defense & offline
 - Touches: raids (scripted opening raid, protection window, first-lie raid), UI (boot reveal, guide), advisor (boot lines)
 - Source rules: doc 01 s7 (opening, first 30 minutes), doc 10 s7.4 (first lie in Tier 1), quality bar (no punitive pressure)
