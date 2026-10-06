@@ -30,6 +30,9 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.Generator:
                     Generator(b, m, level, seed);
                     break;
+                case FacilityKind.ServerRack when stage > 0:
+                    ComputeStage(b, m, stage, seed);
+                    break;
                 case FacilityKind.ServerRack:
                     Compute(b, m, level, seed);
                     break;
@@ -85,13 +88,12 @@ namespace Deadswitch.Art.Models
         /// of building material and a survey flag on the levelled ground, so the yard does not read as a grid of
         /// rectangles; the next free plot is marked by the AI's ring and the build prompt instead.
         /// </summary>
-        /// <param name="slab">False for improvised stages (SPEC-045 stages 1-2): trodden ground and duckboards, no slab.</param>
+        /// <param name="slab">False for improvised stages (SPEC-045 stages 1-2): duckboards on the bare ground, no slab.</param>
         public static MeshData Pad(uint seed, bool empty, bool slab = true)
         {
             var b = new MeshBuilder(seed) { AoFloor = 0.55f, AoHeight = 0.4f, FaceJitter = 0.12f };
             if (!empty && !slab)
             {
-                b.BoxOn(-0.3f, -0.1f, 0.2f, 5.2f, 0.12f, 4.4f, Mat.Ground, 0.04f);
                 for (int i = 0; i < 3; i++)
                 {
                     b.BoxOn(0.4f, 0.02f, -0.9f - (i * 0.55f), 1.6f, 0.05f, 0.4f, Mat.Wood, 0.01f);
@@ -622,6 +624,190 @@ namespace Deadswitch.Art.Models
             }
 
             Beacon(b, m, new Vector3(3.0f, 3.0f, 0.1f));
+        }
+
+        /// <summary>
+        /// Server Rack by visual stage 1-10 (SPEC-045 stage plan). Preview only, like <see cref="GeneratorStage"/>.
+        /// Stages 1-3 are open rack rows before the container; from stage 4 each stage adds to the one before.
+        /// </summary>
+        private static void ComputeStage(MeshBuilder b, Model m, int stage, uint seed)
+        {
+            var rng = new ArtRandom(seed + 2);
+            stage = Math.Min(10, Math.Max(1, stage));
+            if (stage <= 3)
+            {
+                ComputeYard(b, m, stage, rng, seed);
+                Beacon(b, m, new Vector3(1.6f, 2.0f, -0.4f));
+                return;
+            }
+
+            // 4: server container, two outdoor racks under a lean-to, roof condensers, ground chiller, antenna mast
+            b.BoxOn(0.3f, 0, 1.3f, 5.8f, 0.2f, 2.8f, Mat.Concrete, 0.05f);
+            KitModules.ContainerBlock(b, m, new Vector3(0.3f, 0.2f, 1.3f), 5.4f, Mat.SandSteel, true, "SERVER", rng, 1, false);
+            for (int r = 0; r < 2; r++)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    b.Box(new Vector3(2.4f + (r * 0.16f), 0.7f + (i * 0.22f), 0.0f), new Vector3(0.06f, 0.04f, 0.02f), i % 4 == 3 ? Mat.LampAmber : Mat.LampPhosphor, 0f);
+                }
+            }
+
+            KitModules.LeanTo(b, new Vector3(-1.25f, 0, 0.08f), 2.5f, 1.7f, 2.75f, 2.3f, Mat.Rust);
+            for (int i = 0; i < (stage >= 5 ? 4 : 2); i++)
+            {
+                Rack(b, new Vector3(-2.1f + (i * 0.62f), 0, -0.55f));
+            }
+
+            m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(-1.4f, 1.3f, -1.4f)), Model.Phosphor, 1.1f, 4f, LightRole.Status));
+            KitParts.Truss(b, new Vector3(-2.4f, 2.25f, -0.2f), new Vector3(-0.1f, 2.25f, -0.2f), 0.14f, 0.025f, Mat.DarkSteel);
+            Chiller(b, m, new Vector3(2.15f, 0, -1.35f), 2, seed + 7);
+            KitParts.Pipe(b, new[] { new Vector3(1.55f, 0.5f, -1.0f), new Vector3(1.2f, 0.5f, -1.0f), new Vector3(1.2f, 0.5f, -0.3f), new Vector3(1.2f, 1.1f, -0.05f) }, 0.07f, Mat.DarkSteel);
+            KitParts.Pipe(b, new[] { new Vector3(1.55f, 0.8f, -1.3f), new Vector3(0.95f, 0.8f, -1.3f), new Vector3(0.95f, 0.8f, -0.3f), new Vector3(0.95f, 1.3f, -0.05f) }, 0.07f, Mat.DarkSteel);
+
+            // 8 raises the mast and doubles its panel antennas
+            float mastH = stage >= 8 ? 12.5f : 7.5f;
+            Vector3 mb = new Vector3(-2.7f, 0, 2.75f);
+            KitParts.Mast(b, m, mb, mastH, true);
+            for (int i = 0; i < (stage >= 8 ? 6 : 3); i++)
+            {
+                float a = MeshBuilder.Deg((i * 120f) + 30f);
+                float y = mastH - 1.6f - ((i / 3) * 2.4f);
+                Vector3 c = mb + new Vector3((float)Math.Cos(a) * 0.32f, y, (float)Math.Sin(a) * 0.32f);
+                b.Push(c, (-i * 120f) - 30f);
+                b.Box(Vector3.Zero, new Vector3(0.08f, 1.1f, 0.3f), Mat.PaintWhite, 0.02f);
+                b.Pop();
+            }
+
+            KitParts.Cable(b, mb + new Vector3(0.1f, mastH - 2f, 0), new Vector3(-1.9f, 2.85f, 1.8f), 0.5f, 0.04f);
+            KitParts.Cable(b, mb + new Vector3(0.1f, mastH - 2.3f, 0.05f), new Vector3(-1.8f, 2.85f, 2.0f), 0.6f, 0.04f);
+            KitParts.Truss(b, new Vector3(-2.3f, 2.85f, 1.9f), new Vector3(-0.4f, 2.85f, 1.9f), 0.12f, 0.025f, Mat.DarkSteel);
+            if (stage < 7)
+            {
+                Condenser(b, m, new Vector3(0.9f, 2.8f, 1.35f), seed + 11);
+                Condenser(b, m, new Vector3(2.2f, 2.8f, 1.35f), seed + 12);
+            }
+
+            KitModules.CrateStack(b, new Vector3(-2.3f, 0, -2.5f), rng);
+            b.CylinderZ(new Vector3(0.2f, 0.45f, -2.45f), 0.45f, 0.08f, 14, Mat.Wood, 0.01f);
+            b.CylinderZ(new Vector3(0.2f, 0.45f, -2.0f), 0.45f, 0.08f, 14, Mat.Wood, 0.01f);
+            b.CylinderZ(new Vector3(0.2f, 0.45f, -2.22f), 0.32f, 0.4f, 14, Mat.Rubber, 0.02f);
+
+            if (stage >= 6)
+            {
+                Dish(b, m, new Vector3(-1.35f, 2.8f, 1.25f), 0.95f, seed + 13);
+            }
+
+            if (stage >= 7)
+            {
+                // uplink container stacked on the server hall, ladder and railing
+                b.Push(new Vector3(1.3f, 2.8f, 1.45f), -4f);
+                KitModules.ContainerBlock(b, m, Vector3.Zero, 3.1f, Mat.OliveSteel, true, "UPLINK", rng, 1, false);
+                Condenser(b, m, new Vector3(-0.6f, 2.6f, 0.1f), seed + 14);
+                KitParts.AcUnit(b, new Vector3(0.8f, 2.6f, 0.2f));
+                b.Pop();
+                KitParts.Ladder(b, new Vector3(3.1f, 0, 1.0f), 2.8f, -90f);
+                Props.Railing(b, new Vector3(-0.3f, 2.8f, 0.15f), new Vector3(-0.3f, 2.8f, 2.4f));
+            }
+
+            if (stage >= 8)
+            {
+                Dish(b, m, new Vector3(1.9f, 5.4f, 1.6f), 0.75f, seed + 15);
+            }
+
+            if (stage >= 9)
+            {
+                // military: armour plates in front of the rack row, sandbags on the open flank, a camera over the yard
+                for (int i = 0; i < 2; i++)
+                {
+                    KitParts.Plate(b, new Vector3(-1.85f + (i * 1.25f), 0.95f, -1.45f), 1.15f, 1.7f, 6f, Mat.DarkSteel);
+                }
+
+                Shapes.SandbagWall(b, new Vector3(-3.05f, 0, -2.1f), new Vector3(-3.05f, 0, 0.0f), 3);
+                Vector3 cam = new Vector3(3.0f, 0, -2.9f);
+                b.Strut(cam, cam + new Vector3(0, 3.4f, 0), 0.06f, Mat.DarkSteel);
+                b.Box(cam + new Vector3(0, 3.45f, 0.12f), new Vector3(0.18f, 0.16f, 0.4f), Mat.PaintWhite, 0.02f);
+                Shapes.Lamp(b, m, cam + new Vector3(0, 3.45f, -0.1f), Mat.LampRed, Model.Red, 0.3f, 1.2f, LightRole.Status, 0.04f);
+            }
+
+            if (stage >= 10)
+            {
+                // integrated: cyan status rails on the rack row and the uplink, a shielded conduit to the plot edge
+                b.Box(new Vector3(-1.25f, 2.1f, -0.92f), new Vector3(2.4f, 0.04f, 0.04f), Mat.NeonCyan, 0f);
+                b.Box(new Vector3(1.3f, 5.42f, 0.2f), new Vector3(2.9f, 0.05f, 0.05f), Mat.NeonCyan, 0f);
+                b.BoxOn(-0.2f, 0, -2.0f, 0.45f, 0.3f, 2.2f, Mat.DarkSteel, 0.02f);
+                b.Box(new Vector3(-0.2f, 0.31f, -2.0f), new Vector3(0.1f, 0.02f, 2.0f), Mat.NeonCyan, 0f);
+                Shapes.Lamp(b, m, new Vector3(-1.25f, 2.0f, -1.0f), Mat.NeonCyan, Model.Neon, 0.8f, 3.5f, LightRole.Status, 0.08f);
+            }
+
+            Beacon(b, m, new Vector3(3.0f, 3.0f, 0.1f));
+        }
+
+        /// <summary>Server Rack stages 1-3: racks on pallets under a tarp, then a roofed row on a plinth.</summary>
+        private static void ComputeYard(MeshBuilder b, Model m, int stage, ArtRandom rng, uint seed)
+        {
+            int racks = stage == 1 ? 2 : (stage == 2 ? 3 : 4);
+            float y = 0f;
+            if (stage >= 3)
+            {
+                // stabilized: plinth, block back wall, lean-to with a truss, two-fan chiller piped to the row
+                y = 0.2f;
+                b.BoxOn(-0.4f, 0, 0.3f, 5.4f, y, 2.6f, Mat.Concrete, 0.05f);
+                b.BoxOn(-0.4f, y, 1.5f, 5.4f, 2.6f, 0.25f, Mat.ConcreteDark, 0.06f);
+                KitModules.LeanTo(b, new Vector3(-1.1f, y, 1.35f), 3.2f, 2.1f, 2.6f, 2.2f, Mat.Rust);
+                KitParts.Truss(b, new Vector3(-2.6f, 2.3f, -0.2f), new Vector3(0.4f, 2.3f, -0.2f), 0.14f, 0.025f, Mat.DarkSteel);
+                Chiller(b, m, new Vector3(1.75f, y, 0.3f), 2, seed + 7);
+                KitParts.Pipe(b, new[] { new Vector3(0.8f, y + 0.6f, 0.3f), new Vector3(0.45f, y + 0.6f, 0.3f), new Vector3(0.45f, y + 0.6f, 0.95f) }, 0.07f, Mat.DarkSteel);
+            }
+            else
+            {
+                // improvised: pallets, a blue tarp on timber poles, a box fan blowing on the racks
+                float[] px = { -2.6f, 0.2f };
+                float[] pz = { -1.0f, 0.8f };
+                foreach (float x in px)
+                {
+                    foreach (float z in pz)
+                    {
+                        b.Strut(new Vector3(x, 0, z), new Vector3(x, z > 0f ? 2.6f : 2.25f, z), 0.06f, Mat.Wood);
+                    }
+                }
+
+                b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-12f)) * Matrix4x4.CreateTranslation(new Vector3(-1.2f, 2.45f, -0.1f)));
+                b.Box(Vector3.Zero, new Vector3(3.3f, 0.03f, 2.1f), Mat.TarpBlue, 0.01f);
+                b.Pop();
+                for (int i = 0; i < racks; i++)
+                {
+                    KitModules.Pallet(b, new Vector3(-2.1f + (i * 0.62f), 0, -0.2f), 0f, 1);
+                }
+
+                y = 0.14f;
+                b.BoxOn(-0.1f, 0, -0.9f, 0.5f, 0.5f, 0.2f, Mat.SandSteel, 0.03f);
+                m.Parts.Add(Fan(new Vector3(-0.1f, 0.5f, -0.9f), 0.2f, 600f, seed + 9));
+                KitParts.Barrel(b, new Vector3(0.9f, 0, -0.9f), Mat.Rust);
+            }
+
+            for (int i = 0; i < racks; i++)
+            {
+                Rack(b, new Vector3(-2.1f + (i * 0.62f), y, -0.2f));
+            }
+
+            m.Lights.Add(new LightSpec(b.TransformPoint(new Vector3(-1.4f, 1.3f, -1.1f)), Model.Phosphor, stage >= 3 ? 1.0f : 0.7f, 3.5f, LightRole.Status));
+            if (stage >= 2)
+            {
+                // car batteries on a bench and a short antenna pole
+                b.BoxOn(1.6f, 0, -1.9f, 1.4f, 0.55f, 0.6f, Mat.Wood, 0.03f);
+                for (int i = 0; i < 4; i++)
+                {
+                    b.BoxOn(1.1f + (i * 0.33f), 0.55f, -1.9f, 0.26f, 0.2f, 0.17f, Mat.Rubber, 0.01f);
+                }
+
+                b.Strut(new Vector3(-2.9f, 0, 1.6f), new Vector3(-2.9f, 4.5f, 1.6f), 0.05f, Mat.DarkSteel);
+                b.Box(new Vector3(-2.9f, 4.2f, 1.6f), new Vector3(0.08f, 0.8f, 0.25f), Mat.PaintWhite, 0.02f);
+                KitParts.Cable(b, new Vector3(-2.9f, 3.8f, 1.6f), new Vector3(-2.1f, y + 2.0f, -0.2f), 0.4f, 0.03f);
+                KitModules.CrateStack(b, new Vector3(-2.3f, 0, -2.5f), rng);
+            }
+
+            KitParts.Cable(b, new Vector3(-1.5f, y + 0.2f, -0.2f), new Vector3(-1.2f, 0.05f, -3.1f), 0.1f, 0.04f);
+            b.CylinderZ(new Vector3(0.2f, 0.45f, -2.3f), 0.45f, 0.08f, 14, Mat.Wood, 0.01f);
         }
 
         // ---------- Habitat: stacked homes, porch, balconies, laundry, water tower, greenhouse ----------
