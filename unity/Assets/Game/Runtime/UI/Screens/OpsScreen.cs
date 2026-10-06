@@ -195,6 +195,7 @@ namespace Deadswitch.Game.UI.Screens
             RefreshAway(s, c);
             Pager.Badge(_pager, "page-threat", raid || s.PurgeStage != PurgeStage.None ? 1 : 0);
             Q<Label>("threat-time").EnableInClassList("is-hidden", !raid);
+            Q("threat-cap").EnableInClassList("is-hidden", !raid);
             Q("threat-intel").EnableInClassList("is-hidden", !raid);
             Q("threat-quiet").EnableInClassList("is-hidden", raid);
             if (raid)

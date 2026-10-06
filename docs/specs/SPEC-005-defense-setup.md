@@ -1,6 +1,6 @@
 # SPEC-005: Defense setup (OPS screen)
 
-- Status: Done (F-012); Editor play check pending
+- Status: Done (F-012); checked in the Editor 2026-10-06 (no contact and raid states, posture, garrison, confidence, Set & Go, lockdown gating, delegation)
 - Pillar: Defense & offline (feeds AI relationship)
 - Touches: raids (SPEC-001 posture, garrison, OVERRIDE lockdown), crew (garrison takes people off duty), AI (estimate, Confidence, delegation ladder of SPEC-004)
 - Source rules: doc 10 s4 "Defense setup UI", doc 03 s2, SPEC-001 rules 5-6, SPEC-004 rules 3-4

@@ -23,7 +23,7 @@
           <ui:VisualElement class="ops-threat__well"><ui:VisualElement name="threat-pip" class="ds-pip ds-pip--diamond ds-pip--amber ops-threat__pip" /></ui:VisualElement>
           <ui:VisualElement class="grow">
             <ui:Label name="threat-kind" text="RAID INCOMING" class="ds-label t-amber ops-threat__kind" />
-            <ui:Label text="ARRIVES IN" class="ops-threat__cap" />
+            <ui:Label name="threat-cap" text="ARRIVES IN" class="ops-threat__cap" />
           </ui:VisualElement>
           <ui:Label name="threat-time" text="17:42" class="ds-value t-amber ops-threat__time" />
         </ui:VisualElement>
