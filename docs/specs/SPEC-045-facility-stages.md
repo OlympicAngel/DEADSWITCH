@@ -37,11 +37,11 @@ Signature = the shape that identifies the kind at every stage.
 **Reactor** (signature: containment drum + cooling tower) — reference build in `Facilities.ReactorStage` (shares `ReactorCore` with the level models)
 1 two finned RTG casks on a pallet behind a hazard fence; 2 four casks behind a lead-sheet shield; 3 a first small containment drum on a plinth, control hut, short exhaust; 4 full drum and dome, cooling tower, coolant loop, control room; 5 second smaller tower and a relief stack; 6 gantry crane over the dome; 7 coolant pump skid; 8 radiation placards and a sandbagged control entrance; 9 blast berm walls behind and beside the drum; 10 cyan containment rings on the drum, shielded conduit.
 
-**Drone Bay** (signature: launch pad + hangar door)
-1 crate workbench and a quadcopter; 2 painted pad, charging cable; 3 tent hangar; 4 container hangar; 5 launch rail; 6 second pad, parts racks; 7 antenna mast; 8 armoured hangar door; 9 roof launch deck; 10 automated launcher with cyan pad lights.
+**Drone Bay** (signature: launch pad + hangar) — reference build in `Military.DroneBayStage` (shares `DroneBayCore` with the level models)
+1 crate workbench and one quadcopter on the dirt; 2 painted pad, a charging lead from a battery box; 3 slab pad with landing ring and the open hangar of racks, one drone; 4 two drones, operator console, control mast and dish; 5 three drones, one hovering; 6 four drones, sandbag flanks; 7 inclined launch rail on trestles; 8 blast plates across the hangar ends; 9 a second flyer on station, mast floodlight; 10 cyan landing lights on the pad ring.
 
-**Motor Pool** (signature: vehicle + ramp)
-1 a buggy under a tarp, jerrycans; 2 tool rack, engine hoist; 3 inspection pit; 4 container workshop; 5 vehicle ramp; 6 second bay; 7 gantry crane; 8 armour plate racks; 9 armoured garage with roller door; 10 assembly line rails and a finished APC with cyan running lights.
+**Motor Pool** (signature: vehicle + garage shed) — reference build in `Military.MotorPoolStage` (shares `MotorPoolCore` with the level models)
+1 a pickup under a tarp, jerrycans; 2 tool rack and an A-frame hoist with an engine; 3 apron and deep garage shed with the eight-wheeled carrier; 4 gun truck and fuel bowser; 5 crane gantry over the carrier; 6 second bay with a tarp-covered pickup; 7 armour plates racked on the back wall; 8 service ramp and a fuel pump; 9 sandbags and a tank trap at the apron mouth; 10 cyan running lights on the carrier, shielded conduit.
 
 **Solar Field** (signature: tilted panel rows)
 1 three loose panels propped on bricks; 2 a row on a timber frame; 3 steel frame row; 4 two rows; 5 inverter cabinet; 6 three rows; 7 tracking mounts; 8 fenced field, cleaning walkway; 9 armoured inverter house; 10 raised array with cyan output meters.
