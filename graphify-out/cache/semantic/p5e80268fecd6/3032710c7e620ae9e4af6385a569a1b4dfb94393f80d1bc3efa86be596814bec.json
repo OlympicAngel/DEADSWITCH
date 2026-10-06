@@ -1,1 +1,0 @@
-{"nodes": [{"id": "docs_specs_spec_014_balance_runner", "label": "SPEC-014: Balance Runner", "file_type": "document", "source_file": "docs/specs/SPEC-014-balance-runner.md", "rationale": "CLI tool for simulating long-term game balance across many seeds."}], "edges": [], "hyperedges": []}

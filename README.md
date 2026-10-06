@@ -1,36 +1,28 @@
 # DEADSWITCH
 
-> You control the last fragment of the war AI that ended the world. It keeps you alive. It might be lying to you.
+A browser strategy / idle game. You are the last fragment of the war AI that ended the world: build an economy from the ruins and turn it into Power, Defense and Experts.
 
-Mobile, offline-first (online-ready), post-apocalyptic strategy. Hard, rough, infinitely scaling. Unity front end over a deterministic C# simulation core.
+**Play:** served by GitHub Pages from `main`. Locally: `npm run serve`, then open http://localhost:8000.
 
-## Quick start (Windows)
-```powershell
-powershell -ExecutionPolicy Bypass -File tools\setup-env.ps1  # toolchains, caches, and temp files on D:
-powershell -ExecutionPolicy Bypass -File tools\check.ps1      # restore, format, build (warnings as errors), test
-& "$env:DOTNET_ROOT\dotnet.exe" run --project src\Deadswitch.Cli -- 42 24  # headless sim: seed 42, 24 hours
+- No build step, no dependencies: plain HTML, CSS and ES modules.
+- Saves in `localStorage`; export/import from the ☰ menu.
+- Design: [`docs/DESIGN.md`](docs/DESIGN.md).
+
+```
+npm test            # engine tests (Node 20+)
+npm run balance     # headless bot plays 24h, prints milestones
 ```
 
-Linux/macOS: `tools/check.sh` runs the same gate.
+## Layout
+| Path | Purpose |
+|------|---------|
+| `js/data.js` | All content and balance numbers |
+| `js/engine.js` | Pure game logic (no DOM, no clock) |
+| `js/ui.js` | Rendering and input |
+| `js/main.js` | Loop, save/load, offline catch-up |
+| `css/style.css` | Styles and design tokens |
+| `tests/` | `node:test` engine tests |
+| `tools/balance-sim.mjs` | Headless balance bot |
 
-The check script prefers the SDK in `DOTNET_ROOT`. For direct .NET CLI commands, use that SDK explicitly so a machine-wide .NET installation earlier on `PATH` does not select a different SDK.
-Unity: see [`unity/README.md`](unity/README.md).
-
-## Where things are
-| | |
-|--|--|
-| Game design | [`docs/design/`](docs/design/00_index.md) - start with `10_resolved_decisions.md` |
-| Architecture decisions | [`docs/adr/`](docs/adr/README.md) |
-| What to build next | [`docs/roadmap/ROADMAP.md`](docs/roadmap/ROADMAP.md) |
-| Active feature specs | [`docs/specs/`](docs/specs/) |
-| AI advisor writing | [`docs/narrative/ADVISOR_VOICE.md`](docs/narrative/ADVISOR_VOICE.md) |
-| Agent instructions | [`AGENTS.md`](AGENTS.md) (Codex and humans), [`CLAUDE.md`](CLAUDE.md) (Claude Code) |
-| Session handoff log | [`docs/agents/HANDOFF.md`](docs/agents/HANDOFF.md) |
-| Balance numbers | [`src/Deadswitch.Sim/Resources/DeadswitchBalance.toml`](src/Deadswitch.Sim/Resources/DeadswitchBalance.toml) (ADR-0008) |
-| Active feature / queue | [`TASK.md`](TASK.md), [`docs/roadmap/BACKLOG.md`](docs/roadmap/BACKLOG.md) |
-
-## Design pillars (ranked)
-1. AI relationship  2. Base & economy  3. Defense & offline attacks  4. Offense & diplomacy
-
-## Status
-M0 foundations. See the roadmap.
+## Deploy
+`.github/workflows/pages.yml` tests and deploys on every push to `main`. One-time setup: repo **Settings → Pages → Source: GitHub Actions**.
