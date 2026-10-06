@@ -106,6 +106,7 @@
 .mod-detail { margin-top: var(--s-4); margin-bottom: 0; }
 .mod-detail__icon { width: 36px; height: 36px; margin-right: var(--s-3); --icon-color: var(--c-cyan); }
 .mod-detail__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-text); white-space: normal; flex-shrink: 1; }
+.mod-detail__state { margin-top: var(--s-2); white-space: normal; }
 .mod-detail__desc { margin-top: var(--s-2); font-size: var(--fs-xs); }
 .mod-detail__cost { margin-top: var(--s-3); }
 .mod-chip { flex-direction: row; align-items: center; margin-right: var(--s-2); padding: var(--s-1) var(--s-3); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }

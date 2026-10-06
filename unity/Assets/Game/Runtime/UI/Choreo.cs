@@ -172,12 +172,14 @@ namespace Deadswitch.Game.UI
                     continue;
                 }
 
+                VisualElement bar = b.Q(className: "ds-shimmer");
                 if (b.resolvedStyle.display == DisplayStyle.None || b.ClassListContains("is-disabled"))
                 {
+                    // a sweep cut short (screen hidden, button disabled) must not leave the bar parked on the face
+                    bar.style.left = -120f;
                     continue;
                 }
 
-                VisualElement bar = b.Q(className: "ds-shimmer");
                 float w = b.layout.width;
                 Motion.To(bar, 0.9f, Ease.InOutSine, t => bar.style.left = Mathf.Lerp(-120f, w + 40f, t));
             }

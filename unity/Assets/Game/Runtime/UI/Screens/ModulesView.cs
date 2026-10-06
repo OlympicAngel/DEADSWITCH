@@ -98,11 +98,11 @@ namespace Deadswitch.Game.UI.Screens
                 el.EnableInClassList("is-restored", restored);
                 el.EnableInClassList("is-active", active);
                 el.EnableInClassList("is-available", !restored && !active && why == RejectReason.None);
-                el.EnableInClassList("is-locked", why == RejectReason.Locked);
+                el.EnableInClassList("is-locked", why == RejectReason.Locked || why == RejectReason.NeedsFragment);
                 el.EnableInClassList("is-excluded", why == RejectReason.Excluded);
                 el.EnableInClassList("is-selected", d.Node == _selected);
                 el.Q<Label>("node-" + d.Node + "-state").text = restored ? (Modules.Has(s, d.Node) ? "RESTORED" : "LOCKED") : active ? "RESTORING" : why == RejectReason.Excluded ? "EXCLUDED"
-                    : why == RejectReason.Locked ? (s.Tier < d.Tier ? "TIER " + d.Tier : "NEEDS " + d.Prereq) : "AVAILABLE";
+                    : why == RejectReason.Locked ? (s.Tier < d.Tier ? "TIER " + d.Tier : "NEEDS " + d.Prereq) : why == RejectReason.NeedsFragment ? "NEEDS FRAGMENT" : "AVAILABLE";
             }
 
             for (int f = (int)ModuleField.Logistics; f <= (int)ModuleField.Stealth; f++)
@@ -117,6 +117,13 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q<Label>("detail-title").text = _selected + " // " + ModuleTexts.Name(_selected);
             _ui.Q<Label>("detail-state").text = Modules.IsRestored(s, _selected) ? (Modules.Has(s, _selected) ? "RESTORED" : "LOCKED // INTRUSION") : selActive ? "RESTORING" : state == RejectReason.None ? (Modules.NeedsFragment(_selected) ? "AVAILABLE // USES 1 OF " + s.DataFragments + " DATA FRAGMENTS" : "AVAILABLE")
                 : state == RejectReason.NeedsFragment ? "NEEDS A DATA FRAGMENT // RAID A DEAD DATA CENTER" : state == RejectReason.Locked ? "LOCKED" : state == RejectReason.Excluded ? "EXCLUDED // YOU CHOSE THE OTHER PATH" : Texts.Reason(state).ToUpperInvariant();
+            // green when it can go (or is done), amber when something is missing, dim when out of reach
+            bool open = Modules.IsRestored(s, _selected) || selActive || state == RejectReason.None;
+            bool far = state == RejectReason.Locked || state == RejectReason.Excluded;
+            var st = _ui.Q<Label>("detail-state");
+            st.EnableInClassList("t-phosphor", open);
+            st.EnableInClassList("t-amber", !open && !far);
+            st.EnableInClassList("t-dim", !open && far);
             _ui.Q<Label>("detail-desc").text = ModuleTexts.Effect(_selected, c);
             int energy = c.Modules.ResearchEnergy[sel.Index];
             int compute = c.Modules.ResearchCompute[sel.Index];

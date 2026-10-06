@@ -68,8 +68,8 @@
       <ui:VisualElement class="row">
         <ui:VisualElement class="ds-icon ds-icon--chip mod-detail__icon" />
         <ui:Label name="detail-title" text="LG2B // DEEP CELLS" class="mod-detail__title grow" />
-        <ui:Label name="detail-state" text="AVAILABLE" class="ds-label t-phosphor" />
       </ui:VisualElement>
+      <ui:Label name="detail-state" text="AVAILABLE" class="ds-label t-phosphor mod-detail__state" />
       <ui:Label name="detail-desc" text="Battery Bank capacity +30%. Excludes Overclocked Racks." class="ds-prose mod-detail__desc" />
       <ui:VisualElement class="row mod-detail__cost">
         <ui:VisualElement class="mod-chip"><ui:VisualElement class="ds-icon ds-icon--bolt mod-chip__icon" /><ui:Label name="detail-energy" text="300 ENERGY" class="mod-cost" /></ui:VisualElement>
