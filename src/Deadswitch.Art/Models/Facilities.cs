@@ -36,6 +36,9 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.ServerRack:
                     Compute(b, m, level, seed);
                     break;
+                case FacilityKind.LifeSupport when stage > 0:
+                    HabitatStage(b, m, stage, seed);
+                    break;
                 case FacilityKind.LifeSupport:
                     Habitat(b, m, level, seed);
                     break;
@@ -838,7 +841,12 @@ namespace Deadswitch.Art.Models
             b.Strut(pole, pole + new Vector3(0, 2.3f, 0), 0.06f, Mat.Wood);
             Laundry(b, new Vector3(0.35f, 2.15f, -1.45f), pole + new Vector3(0, 2.2f, 0), rng);
 
-            KitModules.Workbench(b, m, new Vector3(-2.0f, 0, -2.3f), 0f);
+            if (level < 3)
+            {
+                // the greenhouse takes this corner from level 3
+                KitModules.Workbench(b, m, new Vector3(-2.0f, 0, -2.3f), 0f);
+            }
+
             KitModules.Barrels(b, new Vector3(2.55f, 0, -0.5f), 2, rng);
             KitModules.Pallet(b, new Vector3(0.9f, 0, -2.5f), -8f, 1);
 
@@ -892,6 +900,152 @@ namespace Deadswitch.Art.Models
             }
 
             Beacon(b, m, new Vector3(-2.9f, 3.0f, 0.1f));
+        }
+
+        /// <summary>
+        /// Life Support by visual stage 1-10 (SPEC-045 stage plan). Preview only, like <see cref="GeneratorStage"/>.
+        /// Stages 1-2 are tents; the med bay container arrives at 3 and each later stage adds to the one before.
+        /// </summary>
+        private static void HabitatStage(MeshBuilder b, Model m, int stage, uint seed)
+        {
+            var rng = new ArtRandom(seed + 3);
+            stage = Math.Min(10, Math.Max(1, stage));
+            if (stage <= 2)
+            {
+                HabitatCamp(b, m, stage, rng);
+                Beacon(b, m, new Vector3(1.5f, 1.9f, 0.4f));
+                return;
+            }
+
+            // 3: med bay container on a plinth, decked porch under a lean-to, clinic sign, laundry, workbench
+            b.BoxOn(-0.2f, 0, 1.35f, 6.0f, 0.2f, 2.8f, Mat.Concrete, 0.05f);
+            KitModules.ContainerBlock(b, m, new Vector3(-0.2f, 0.2f, 1.35f), 5.6f, Mat.Rust, true, "MED BAY", rng, 2, false);
+            KitModules.LeanTo(b, new Vector3(-1.1f, 0, 0.13f), 2.9f, 1.6f, 2.75f, 2.3f, Mat.OliveSteel);
+            b.BoxOn(-1.1f, 0, -0.65f, 2.9f, 0.12f, 1.5f, Mat.Wood, 0.01f);
+            Props.Lamp(b, m, new Vector3(-1.1f, 2.15f, -0.4f), true, 1.3f, LightRole.Status);
+            b.Strut(new Vector3(1.4f, 2.8f, 0.2f), new Vector3(1.4f, 3.7f, 0.2f), 0.06f, Mat.DarkSteel);
+            b.Strut(new Vector3(2.2f, 2.8f, 0.2f), new Vector3(2.2f, 3.7f, 0.2f), 0.06f, Mat.DarkSteel);
+            b.Box(new Vector3(1.8f, 3.55f, 0.16f), new Vector3(1.0f, 0.7f, 0.05f), Mat.PaintWhite, 0.02f);
+            b.Box(new Vector3(1.8f, 3.55f, 0.12f), new Vector3(0.5f, 0.15f, 0.03f), Mat.PaintGreen, 0f);
+            b.Box(new Vector3(1.8f, 3.55f, 0.12f), new Vector3(0.15f, 0.5f, 0.03f), Mat.PaintGreen, 0f);
+            Vector3 pole = new Vector3(2.85f, 0, -2.3f);
+            b.Strut(pole, pole + new Vector3(0, 2.3f, 0), 0.06f, Mat.Wood);
+            Laundry(b, new Vector3(0.35f, 2.15f, -1.45f), pole + new Vector3(0, 2.2f, 0), rng);
+            if (stage < 6)
+            {
+                // the greenhouse takes this corner from stage 6
+                KitModules.Workbench(b, m, new Vector3(-2.0f, 0, -2.3f), 0f);
+            }
+
+            KitModules.Barrels(b, new Vector3(2.55f, 0, -0.5f), 2, rng);
+            KitModules.Pallet(b, new Vector3(0.9f, 0, -2.5f), -8f, 1);
+
+            if (stage >= 4)
+            {
+                // roof services: header tank, solar water heater, AC unit
+                KitParts.TankV(b, new Vector3(-2.4f, 2.8f, 1.7f), 0.42f, 0.9f, Mat.OliveSteel, seed + 4);
+                SolarPanel(b, new Vector3(-0.9f, 2.8f, 1.6f), 1.5f, 1.1f, 25f);
+                KitParts.AcUnit(b, new Vector3(0.6f, 2.8f, 1.9f));
+                KitModules.TarpPile(b, new Vector3(1.9f, 2.8f, 1.8f), 1.0f, rng);
+            }
+
+            if (stage >= 5)
+            {
+                // bunk container stacked on top with a cantilevered balcony and stairs up the side
+                b.Push(new Vector3(0.45f, 2.8f, 1.45f), -3f);
+                KitModules.ContainerBlock(b, m, Vector3.Zero, 4.3f, Mat.OliveSteel, true, "BUNKS", rng, 1, true);
+                b.Pop();
+                b.BoxOn(0.6f, 2.8f, -0.2f, 4.6f, 0.1f, 0.85f, Mat.DarkSteel, 0.01f);
+                for (int i = 0; i < 4; i++)
+                {
+                    float x = -1.5f + (i * 1.4f);
+                    b.Strut(new Vector3(x, 2.0f, 0.12f), new Vector3(x, 2.8f, -0.6f), 0.06f, Mat.DarkSteel);
+                }
+
+                Props.Railing(b, new Vector3(-1.7f, 2.9f, -0.6f), new Vector3(2.6f, 2.9f, -0.6f));
+                Props.Stairs(b, new Vector3(3.05f, 0, 2.4f), 2.8f, 0f);
+                Laundry(b, new Vector3(-1.6f, 3.8f, -0.55f), new Vector3(0.4f, 3.75f, -0.55f), rng);
+            }
+
+            if (stage >= 6)
+            {
+                // greenhouse tunnel in the front-left yard corner
+                Shapes.ArchX(b, new Vector3(-1.95f, 0, -2.45f), 0.68f, 2.3f, 8, Mat.Glass, Mat.DarkSteel);
+                for (int i = 0; i < 5; i++)
+                {
+                    b.Sphere(new Vector3(-2.85f + (i * 0.45f), 0.15f, -2.45f), new Vector3(0.2f, 0.28f, 0.2f), 3, 6, Mat.Foliage);
+                }
+
+                Shapes.Lamp(b, m, new Vector3(-1.95f, 0.55f, -2.45f), Mat.LampPhosphor, Model.Phosphor, 0.7f, 2.5f, LightRole.Status, 0.07f);
+            }
+
+            if (stage >= 7)
+            {
+                ElevatedTank(b, new Vector3(-2.55f, 0, 3.05f), 3.6f, 0.62f, 1.5f, Mat.SandSteel, seed + 5);
+                KitParts.Pipe(b, new[] { new Vector3(-2.55f, 3.6f, 2.5f), new Vector3(-2.55f, 3.0f, 2.3f), new Vector3(-2.4f, 2.8f, 2.1f) }, 0.05f, Mat.DarkSteel);
+            }
+
+            if (stage >= 8)
+            {
+                // rooftop shack on the bunks, aerial, string of lamps along the balcony
+                KitModules.Shed(b, new Vector3(0.9f, 5.4f, 1.6f), 2.2f, 1.6f, 1.9f, 2.2f, Mat.Rust, false);
+                b.BoxOn(0.9f, 5.4f, 2.3f, 2.2f, 1.9f, 0.06f, Mat.Rust, 0.01f);
+                b.Frustum(new Vector3(-0.6f, 5.4f, 2.1f), 0.04f, 0.02f, 3.2f, 6, Mat.DarkSteel, 0.01f);
+                for (int i = 0; i < 4; i++)
+                {
+                    Shapes.Lamp(b, m, new Vector3(-1.4f + (i * 1.2f), 4.15f - (i % 2 * 0.06f), -0.62f), Mat.LampAmber, Model.Amber, 0.5f, 2.5f, LightRole.Ambient, 0.06f);
+                }
+            }
+
+            if (stage >= 9)
+            {
+                // hardened: sandbag wall across the yard front, armour shutters on the balcony, extra AC on the bunks
+                Shapes.SandbagWall(b, new Vector3(0.3f, 0, -3.0f), new Vector3(2.4f, 0, -3.0f), 3);
+                for (int i = 0; i < 3; i++)
+                {
+                    KitParts.Plate(b, new Vector3(-0.9f + (i * 1.5f), 3.4f, -0.68f), 1.3f, 0.9f, 4f, Mat.DarkSteel);
+                }
+
+                KitParts.AcUnit(b, new Vector3(-1.3f, 5.4f, 1.9f));
+            }
+
+            if (stage >= 10)
+            {
+                // integrated: cyan status line under the balcony, shielded conduit out, cyan lamp over the porch
+                b.Box(new Vector3(0.6f, 2.74f, -0.62f), new Vector3(4.4f, 0.04f, 0.04f), Mat.NeonCyan, 0f);
+                b.BoxOn(2.9f, 0, -0.9f, 0.45f, 0.3f, 3.6f, Mat.DarkSteel, 0.02f);
+                b.Box(new Vector3(2.9f, 0.31f, -0.9f), new Vector3(0.1f, 0.02f, 3.4f), Mat.NeonCyan, 0f);
+                Shapes.Lamp(b, m, new Vector3(-1.1f, 2.0f, -0.1f), Mat.NeonCyan, Model.Neon, 0.7f, 3.0f, LightRole.Status, 0.07f);
+            }
+
+            Beacon(b, m, new Vector3(-2.9f, 3.0f, 0.1f));
+        }
+
+        /// <summary>Life Support stages 1-2: a canvas tent with a water barrel and hand pump, then a second tent and rain catcher.</summary>
+        private static void HabitatCamp(MeshBuilder b, Model m, int stage, ArtRandom rng)
+        {
+            Shapes.ArchX(b, new Vector3(-1.2f, 0, 0.9f), 1.05f, 2.6f, 8, Mat.Tarp, Mat.Tarp);
+            Props.Lamp(b, m, new Vector3(-1.2f, 0.9f, -0.5f), false, 0.8f, LightRole.Status);
+            KitParts.Barrel(b, new Vector3(0.9f, 0, -0.6f), Mat.TarpBlue);
+            b.Strut(new Vector3(1.4f, 0, -0.6f), new Vector3(1.4f, 0.95f, -0.6f), 0.05f, Mat.DarkSteel);
+            b.Strut(new Vector3(1.4f, 0.95f, -0.6f), new Vector3(1.0f, 1.05f, -0.6f), 0.03f, Mat.DarkSteel);
+            Vector3 pole = new Vector3(2.6f, 0, 1.4f);
+            b.Strut(pole, pole + new Vector3(0, 2.0f, 0), 0.05f, Mat.Wood);
+            Laundry(b, new Vector3(0.2f, 1.4f, 1.6f), pole + new Vector3(0, 1.9f, 0), rng);
+            KitModules.CrateStack(b, new Vector3(-2.6f, 0, -1.9f), rng);
+            if (stage >= 2)
+            {
+                // second tent across the yard, a tarp catching rain into barrels, a workbench in the open
+                Shapes.ArchX(b, new Vector3(1.3f, 0, -2.0f), 0.85f, 2.2f, 8, Mat.Tarp, Mat.Tarp);
+                b.Strut(new Vector3(-2.9f, 0, 2.4f), new Vector3(-2.9f, 2.2f, 2.4f), 0.05f, Mat.Wood);
+                b.Strut(new Vector3(-1.3f, 0, 2.4f), new Vector3(-1.3f, 2.2f, 2.4f), 0.05f, Mat.Wood);
+                b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(25f)) * Matrix4x4.CreateTranslation(new Vector3(-2.1f, 1.7f, 2.8f)));
+                b.Box(Vector3.Zero, new Vector3(1.9f, 0.02f, 1.2f), Mat.TarpBlue, 0.01f);
+                b.Pop();
+                KitParts.Barrel(b, new Vector3(-2.4f, 0, 3.2f), Mat.Rust);
+                KitParts.Barrel(b, new Vector3(-1.8f, 0, 3.2f), Mat.Rust);
+                KitModules.Workbench(b, m, new Vector3(-1.0f, 0, -2.4f), 0f);
+            }
         }
 
         // ---------- Battery: solar canopy, cell cabinets, capacitor towers, bus-bar gantry ----------
