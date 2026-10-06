@@ -861,7 +861,7 @@ namespace Deadswitch.Game.UI.Screens
                 bool cooling = s.Tick < s.CeasefireReadyTick || (s.CeasefireFaction >= 0 && !peace);
                 _ui.Q("pact-" + f).EnableInClassList("is-on", peace);
                 _ui.Q<Label>("pact-" + f + "-label").text = peace ? "PACT // " + Fmt.Countdown(_host.SecondsUntilTick(s.CeasefireUntilTick))
-                    : !talks ? "WILL NOT TALK" : "CEASEFIRE // " + Fmt.Num(pe) + " ENERGY " + Fmt.Num(pf) + " FUEL";
+                    : !talks ? "WILL NOT TALK" : "CEASEFIRE // " + Fmt.Num(pe) + " ENERGY\n+ " + Fmt.Num(pf) + " FUEL";
                 _ui.Q("pact-" + f).EnableInClassList("is-disabled", !peace && (!talks || cooling || s.CeasefireFaction >= 0 || s.Energy < pe || s.Fuel < pf));
 
                 // alliance (SPEC-025): only with a Cold faction; their fighters man the wall for a daily share
@@ -873,7 +873,7 @@ namespace Deadswitch.Game.UI.Screens
                 ally.EnableInClassList("is-armed", armed);
                 _ui.Q("heat-" + f).EnableInClassList("is-allied", allied);
                 _ui.Q<Label>("ally-" + f + "-label").text = armed ? "CONFIRM // END" : allied ? "ALLIED // +" + DiplomacySystem.AllyDefense(s, c) + " DEF"
-                    : level != HeatLevel.Cold ? "ALLY // NEEDS COLD" : "ALLY // " + Fmt.Num(d.AllianceEnergy) + " ENERGY " + Fmt.Num(d.AllianceFuel) + " FUEL";
+                    : level != HeatLevel.Cold ? "ALLY // NEEDS COLD" : "ALLY // " + Fmt.Num(d.AllianceEnergy) + " ENERGY\n+ " + Fmt.Num(d.AllianceFuel) + " FUEL";
                 ally.EnableInClassList("is-disabled", !allied && (level != HeatLevel.Cold || s.AllyFaction >= 0 || s.Energy < d.AllianceEnergy || s.Fuel < d.AllianceFuel));
             }
 
@@ -948,8 +948,9 @@ namespace Deadswitch.Game.UI.Screens
             int estimate = WorldSystem.EstimatedDefense(s, c, _selected);
             _ui.Q<Label>("site-def-label").text = st.Scouted ? "DEFENSE (SCOUTED)" : !wild && IntelSystem.Has(s, d.Owner) ? "DEFENSE (AGENT)" : "DEFENSE (AI EST)";
             _ui.Q<Label>("site-def").text = (st.Scouted ? string.Empty : "~") + estimate + (d.Cyber > 0 ? "  CYBER " + d.Cyber : string.Empty);
-            _ui.Q<Label>("site-loot").text = d.Energy + " ENERGY  " + d.Fuel + " FUEL  " + d.Compute + " COMPUTE" + (d.CleanData > 0 ? "  + CLEAN DATA" : string.Empty) + Bonus(d.Kind, c)
-                + (d.Kind == SiteKind.DataCenter ? "  + FRAGMENT " + c.Modules.FragmentPctDataCenter + "%" : d.Kind == SiteKind.Ruins ? "  + FRAGMENT " + c.Modules.FragmentPctRuins + "%" : string.Empty);
+            // one good per line: the narrow column must never split an amount from its name
+            _ui.Q<Label>("site-loot").text = d.Energy + " ENERGY\n" + d.Fuel + " FUEL\n" + d.Compute + " COMPUTE" + (d.CleanData > 0 ? "\n+ CLEAN DATA" : string.Empty) + Bonus(d.Kind, c)
+                + (d.Kind == SiteKind.DataCenter ? "\n+ FRAGMENT " + c.Modules.FragmentPctDataCenter + "%" : d.Kind == SiteKind.Ruins ? "\n+ FRAGMENT " + c.Modules.FragmentPctRuins + "%" : string.Empty);
 
             if ((_kind == OpKind.Hack && d.Cyber == 0) || (_kind == OpKind.Sabotage && wild))
             {
@@ -990,8 +991,8 @@ namespace Deadswitch.Game.UI.Screens
         {
             switch (kind)
             {
-                case SiteKind.Plague: return "  + " + c.Hazards.PlaguePeople + " SURVIVORS";
-                case SiteKind.Graveyard: return "  + PARTS (" + c.Hazards.GraveyardRepairPoints + " REPAIRS)";
+                case SiteKind.Plague: return "\n+ " + c.Hazards.PlaguePeople + " SURVIVORS";
+                case SiteKind.Graveyard: return "\n+ PARTS (" + c.Hazards.GraveyardRepairPoints + " REPAIRS)";
                 default: return string.Empty;
             }
         }
