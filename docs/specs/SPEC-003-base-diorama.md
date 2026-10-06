@@ -1,6 +1,6 @@
 # SPEC-003: Living base diorama (3D)
 
-- Status: Done (F-010); Unity play-mode check pending on the owner's machine
+- Status: Done (F-010); checked in the Editor 2026-10-06 (base at day and night, plot sheet build picker with refusal reasons, facility focus, roofs)
 - Pillar: Base & economy (presentation), AI relationship (the drone camera is the AI's eye)
 - Touches: economy (facility kinds, levels, power, crew, construction), defense (turrets, raid damage later), corruption (sensor noise)
 - Source rules: ADR-0007, doc 11 (world, camera, base), doc 06 s3 (visible progression), quality bar

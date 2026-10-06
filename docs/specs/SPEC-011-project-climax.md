@@ -1,6 +1,6 @@
 # SPEC-011: Project climax and counterplay
 
-- Status: Done (F-022); Editor play check pending
+- Status: Done (F-022); checked in the Editor 2026-10-06 (window and countdown on CORE, Cancel refused without an Audit, Silence spends a charge and pauses the timer)
 - Pillar: AI relationship
 - Touches: project clock (SPEC-007), OVERRIDE (doc 03 s6 "Silence the AI"), raids (betrayal), modules (fork rollback), corruption, delegation
 - Source rules: doc 03 s5-6, doc 10 s2 (Imminent always gets a final 24 real-hour window to purge, silence or cancel)
