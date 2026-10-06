@@ -7,7 +7,7 @@
       <ui:VisualElement class="ds-head__well"><ui:VisualElement class="ds-icon ds-icon--map ds-head__icon" /></ui:VisualElement>
       <ui:VisualElement class="ds-head__body">
         <ui:Label text="SECTOR MAP" class="ds-head__title" />
-        <ui:Label name="map-ops-count" text="OPS 1/2 // FUEL 64" class="ds-head__status" />
+        <ui:Label name="map-ops-count" text="OPS 1/2 // FUEL 64" class="ds-head__status ds-head__status--data" />
       </ui:VisualElement>
     </ui:VisualElement>
 

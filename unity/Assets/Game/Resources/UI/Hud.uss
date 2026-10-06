@@ -166,6 +166,8 @@
 .hud-raidrow__cmd.is-on { background-color: var(--c-phosphor-wash); }
 
 .hud-screen { flex-grow: 1; }
+/* SPEC-046 r6: decision screens sit on a solid surface; only BASE, BATTLE and REPORT show the world */
+.hud-screen.is-opaque { background-color: var(--c-world); }
 
 .hud-guide {
     flex-direction: row;

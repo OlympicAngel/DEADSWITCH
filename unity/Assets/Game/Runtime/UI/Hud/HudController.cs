@@ -241,6 +241,7 @@ namespace Deadswitch.Game.UI.Hud
                 _frame.EnableInClassList("is-covered", id != "base");
                 // off BASE the objective keeps only its title line so the open screen gets the room (SPEC-046 r5)
                 Q<VisualElement>("guide").EnableInClassList("is-compact", id != "base");
+                Q<VisualElement>("screen").EnableInClassList("is-opaque", id != "base" && id != "battle" && id != "report");
                 _resourceSheet.Close();
                 MoveTabRail(id, true);
                 RefreshGoal();
