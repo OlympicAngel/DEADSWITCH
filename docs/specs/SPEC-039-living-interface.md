@@ -54,7 +54,7 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 27. Camera inertia: flick pans glide and settle; rubber-band at bounds. *Done*
 28. Idle drift: after 20 s untouched, the drone slowly orbits (reduced motion: off). *Done*
 29. Build-complete moment: camera nudges to the building, scan sweep, "ONLINE" stamp. *Done*
-30. Upgrade construction: scaffold flicker and sparks while building. *Editor*
+30. Upgrade construction: scaffold flicker and sparks while building. *Done* (`BaseView.Weld`: spark bursts with a blue-white arc flash on the scaffold frame; off with reduced motion or zero effects)
 31. Holographic plot markers on empty plots ("+ BUILD" ring that breathes). *Done*
 32. Data links: thin animated cyan lines from powered facilities to the core. *Done*
 33. Ambient drones circling the compound, more at higher tiers. *Done*

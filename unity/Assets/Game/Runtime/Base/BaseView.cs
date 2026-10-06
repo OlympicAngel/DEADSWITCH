@@ -41,6 +41,15 @@ namespace Deadswitch.Game.Base
         private float _flickerHold;
         private readonly List<SlotMove> _moves = new List<SlotMove>();
         private ParticleSystem _dust;
+
+        /// <summary>Welding sparks on facilities under construction (SPEC-039 idea 30), one burst every this many seconds per site.</summary>
+        private const float SparkEvery = 0.3f;
+
+        private const float WeldArcPeak = 10f;
+
+        private static readonly Color WeldArc = new Color(0.7f, 0.85f, 1f);
+
+        private ParticleSystem _sparks;
         private bool _openingPower;
         private float _powerRadius;
         private float _powerLevel = 1f;
@@ -775,6 +784,14 @@ namespace Deadswitch.Game.Base
                 }
 
                 DamageGlow(o, reduced);
+                if (o.View.UnderConstruction && !reduced && _host != null && _host.Settings.Effects > 0f)
+                {
+                    Weld(o, dt);
+                }
+                else if (o.Arc != null && o.Arc.enabled)
+                {
+                    o.Arc.enabled = false;
+                }
             }
 
             foreach (Walker w in _walkers)
@@ -967,6 +984,44 @@ namespace Deadswitch.Game.Base
             public float Time;
         }
 
+        /// <summary>Now and then a small shower of welding sparks somewhere on the scaffold.</summary>
+        private void Weld(SlotObject o, float dt)
+        {
+            if (o.Arc == null)
+            {
+                o.Arc = new GameObject("Weld Arc").AddComponent<Light>();
+                o.Arc.transform.SetParent(o.Root, false);
+                o.Arc.type = LightType.Point;
+                o.Arc.color = WeldArc;
+                o.Arc.range = 5f;
+                o.Arc.shadows = LightShadows.None;
+            }
+
+            // the arc flares with each burst and dies quickly: a flicker that reads from the overview
+            o.Arc.intensity = Mathf.MoveTowards(o.Arc.intensity, 0f, dt * WeldArcPeak * 8f);
+            o.Arc.enabled = o.Arc.intensity > 0.01f;
+            o.NextSpark -= dt;
+            if (o.NextSpark > 0f)
+            {
+                return;
+            }
+
+            o.NextSpark = SparkEvery * Random.Range(0.6f, 1.8f);
+            _sparks ??= BattleFx.BurstEmitter(_world, false);
+            // on the scaffold's outer frame (Facilities.Scaffold: posts at x +-2.9, z +-1.7), where the camera can see it
+            bool side = Random.value < 0.35f;
+            float sign = Random.value < 0.5f ? -1f : 1f;
+            Vector3 local = side
+                ? new Vector3(sign * 2.95f, 0, Random.Range(-1.7f, 1.7f))
+                : new Vector3(Random.Range(-2.9f, 2.9f), 0, sign * 1.75f);
+            local.y = Random.Range(1f, Mathf.Max(1.4f, o.Height));
+            Vector3 at = o.Root.TransformPoint(local);
+            BattleFx.Burst(_sparks, at, Mathf.Max(1, Mathf.RoundToInt(3 * _host.Settings.Effects)), 0.16f);
+            o.Arc.transform.position = at;
+            o.Arc.intensity = WeldArcPeak * _host.Settings.Effects;
+            o.Arc.enabled = true;
+        }
+
         /// <summary>How full the store a facility holds is (0..1): energy for battery banks, fuel for fuel depots, 0 for the rest.</summary>
         private float StoreFill(FacilityKind kind)
         {
@@ -991,6 +1046,8 @@ namespace Deadswitch.Game.Base
             public bool Glowing;
             public bool Razed;
             public readonly List<PartState> Parts = new List<PartState>();
+            public float NextSpark;
+            public Light Arc;
             public readonly List<Light> Beacons = new List<Light>();
             public readonly List<Light> StatusLights = new List<Light>();
             public readonly List<Light> Lamps = new List<Light>();
