@@ -1,6 +1,6 @@
 # SPEC-033: 2.5D sector map
 
-- Status: Implemented; full-screen pan/zoom map and site sheet done 2026-10-06 (F-107)
+- Status: Done; full-screen pan/zoom map and site sheet 2026-10-06 (F-107); checked in the Editor 2026-10-06
 - Pillar: Offense & world (presentation)
 - Touches: map screen (F-019), hazard zones and fallout (SPEC-032), intel (scouting, AI estimate), corruption glitches
 - Source rules: owner brief 2026-10-04 (blend of the 3D kit and an illustrated map); doc 05 s6 (layered views, fog of war, node regions); doc 11 (heroic realism, never toy-like); ADR-0007 (procedural 3D)
