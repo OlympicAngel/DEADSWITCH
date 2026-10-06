@@ -12,7 +12,7 @@
 
 .wf-loyalty__pct { min-height: 50px; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); margin-left: var(--s-3); }
 .wf-note { margin-top: var(--s-3); white-space: normal; }
-.wf-surge { margin-top: var(--s-2); }
+.wf-surge { margin-top: var(--s-2); white-space: normal; }
 .wf-surge.is-hidden { display: none; }
 
 .wf-lead { margin-bottom: var(--s-3); white-space: normal; }
