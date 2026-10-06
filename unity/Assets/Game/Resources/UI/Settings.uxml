@@ -11,7 +11,7 @@
       <ui:VisualElement name="set-close" class="ds-iconbtn set-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="set-scroll" class="grow set-scroll">
+    <ui:ScrollView name="set-scroll" class="grow set-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
 
       <ui:VisualElement class="ds-card ds-card--raised ">
         <ui:VisualElement class="ds-card__head">

@@ -158,7 +158,8 @@ namespace Deadswitch.Game.UI.Screens
                 VisualElement equip = _ui.Q("r-" + i + "-equip");
                 if (equip != null)
                 {
-                    equip.EnableInClassList("is-disabled", !unlocked);
+                    // a locked reward shows when it unlocks, not a dead EQUIP button
+                    equip.style.display = unlocked ? DisplayStyle.Flex : DisplayStyle.None;
                     Kit.SetButtonText(equip, equipped ? (r.Kind == RewardKind.Voice ? "UNEQUIP" : "ON") : "EQUIP");
                 }
             }

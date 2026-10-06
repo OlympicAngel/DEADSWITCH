@@ -573,12 +573,12 @@
    ===================================================================================== */
 
 /* Switch: a pill track with a knob (Kit adds .ds-switch__knob); the ON/OFF word stays for accessibility */
-.ds-switch { width: 132px; height: 64px; min-height: 64px; flex-direction: row; align-items: center; justify-content: flex-end; padding: 0 var(--s-4); border-width: 0; border-radius: 32px; background-color: var(--c-panel-sunken); transition-property: background-color; transition-duration: 0.2s; }
+.ds-switch { width: 160px; height: 64px; min-height: 64px; flex-direction: row; align-items: center; justify-content: flex-end; padding: 0 var(--s-4); border-width: 0; border-radius: 32px; background-color: var(--c-panel-sunken); transition-property: background-color; transition-duration: 0.2s; }
 .ds-switch > .unity-label { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-nano); letter-spacing: var(--ls-label); color: var(--c-text-faint); }
 .ds-switch__knob { position: absolute; left: 6px; top: 6px; width: 52px; height: 52px; border-radius: 26px; background-color: var(--c-text-dim); transition-property: left, background-color; transition-duration: 0.22s; transition-timing-function: ease-out-back; }
 .ds-switch.is-on { justify-content: flex-start; background-color: var(--c-cyan-line); }
 .ds-switch.is-on > .unity-label { color: var(--c-cyan); }
-.ds-switch.is-on > .ds-switch__knob { left: 74px; background-color: var(--c-cyan); }
+.ds-switch.is-on > .ds-switch__knob { left: 102px; background-color: var(--c-cyan); }
 
 /* Segmented track: one sunken rail, the chosen item is a lit raised pill */
 .ds-seg { flex-direction: row; padding: 6px; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-panel-sunken); }
