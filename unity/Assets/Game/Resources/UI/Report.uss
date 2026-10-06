@@ -3,6 +3,8 @@
 .rep { flex-grow: 1; background-color: var(--c-world); }
 .rep-scroll { padding: var(--s-4) var(--s-5) var(--s-2) var(--s-5); }
 
+/* the report header keeps two lines: what happened, and where it was predicted against where it came */
+.rep-head .ds-head__body { flex-direction: column; align-items: flex-start; justify-content: center; }
 .rep-title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-text); white-space: normal; }
 .rep-vector { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
 .rep-vector.is-mismatch { color: var(--c-amber); }
@@ -29,7 +31,9 @@
     position: absolute;
     left: var(--s-3);
     top: var(--s-3);
-    max-width: 78%;
+    /* a set width, not max-width: an absolute label with a percent max-width measures its height unwrapped
+       and clips the lines that wrap */
+    width: 78%;
     padding: var(--s-2) var(--s-3);
     background-color: var(--c-text);
     color: var(--c-world);

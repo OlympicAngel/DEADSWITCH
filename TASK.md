@@ -10,7 +10,7 @@
 - [x] 2. HUD v4 (part): pod ETA moves to the pod sheet; the objective keeps only its title off BASE. Merged objective+comms strip waits on the SPEC-046 open question (owner)
 - [x] 3. Opaque surfaces (all screens but BASE, BATTLE, REPORT) and one-line headers (taglines hidden; data status right of the title)
 - [x] 4. CORE decision-first: NEXT FROM YOU card (tier up, module ready, audit, restoring) above a smaller orb; empty transcript hidden. Primary actions already carry their cost in the label
-- [ ] 5. Per-screen pass (OPS, WORKFORCE, STORY, SEASON, SETTINGS, GUIDE, LEGACY, DISPATCH, REPORT, BATTLE)
+- [x] 5. Per-screen pass at the new floor (all 13 screens captured; REPORT header and evidence captions fixed)
 - [ ] 6. First-time task check at 720x1280 and 1080x2340
 
 Previous: F-108 done; F-110 on `feat/f110-fog` (awaiting merge).
