@@ -64,6 +64,11 @@ namespace Deadswitch.Game.UI.Hud
 
             _last = r.Value;
             _cap.text = "/" + Fmt.Compact(r.Cap);
+            // four-digit stores (Tier 2 batteries) do not fit beside the icon: the icon steps out so the cap stays whole;
+            // when even that is too long the cap goes too (the bar and the FULL / LOW flag still read the store)
+            int chars = Fmt.Compact(r.Value).Length + _cap.text.Length;
+            _root.EnableInClassList("pod--long", chars > 7);
+            _root.EnableInClassList("pod--longer", chars > 8);
             _fillTarget = r.Fill;
             if (instant || _fillShown < 0f)
             {

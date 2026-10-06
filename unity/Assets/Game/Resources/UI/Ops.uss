@@ -58,7 +58,7 @@
 .ops-purge__desc { margin-top: var(--s-3); font-size: var(--fs-micro); white-space: normal; }
 .ops-purge__answers { margin-top: var(--s-3); justify-content: space-between; }
 .ops-purge__btn { width: 32%; padding: 0 var(--s-2); }
-.ops-purge__btn > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: var(--ls-label); }
+.ops-purge__btn > .ds-btn__label { font-size: var(--fs-micro); letter-spacing: var(--ls-label); white-space: normal; -unity-text-align: middle-center; padding: var(--s-2) 0; }
 .ops-purge .ds-card__well { margin-right: var(--s-3); }
 
 /* Posture options: tonal tiles, the chosen one lifts and gets a cyan top edge (no outline) */

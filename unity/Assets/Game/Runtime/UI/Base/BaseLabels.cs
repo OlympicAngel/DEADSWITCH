@@ -140,9 +140,10 @@ namespace Deadswitch.Game.UI.Base
         /// <summary>
         /// Positions every tag over its world anchor (call each frame after the camera moved). Tags stay below
         /// <paramref name="topClear"/> (panel px; the HUD status rows) and step out of <paramref name="keepOut"/> (the
-        /// alert rail) so a world tag never sits under the HUD.
+        /// alert rail) so a world tag never sits under the HUD. A building under the bottom docks (from
+        /// <paramref name="bottomClear"/> down) shows no tag.
         /// </summary>
-        public void Track(Camera cam, BaseView view, float panelWidth, float panelHeight, float topClear, Rect keepOut)
+        public void Track(Camera cam, BaseView view, float panelWidth, float panelHeight, float topClear, float bottomClear, Rect keepOut)
         {
             if (cam == null || view == null || panelWidth <= 0f)
             {
@@ -151,11 +152,11 @@ namespace Deadswitch.Game.UI.Base
 
             for (int i = 0; i < _tags.Count && i < view.SlotCount; i++)
             {
-                Place(_tags[i], cam, view.LabelAnchor(i), panelWidth, panelHeight, topClear, keepOut);
+                Place(_tags[i], cam, view.LabelAnchor(i), panelWidth, panelHeight, topClear, bottomClear, keepOut);
             }
 
             _core.Hidden = _selected >= 0;
-            Place(_core, cam, view.CoreAnchor, panelWidth, panelHeight, topClear, keepOut);
+            Place(_core, cam, view.CoreAnchor, panelWidth, panelHeight, topClear, bottomClear, keepOut);
             Declutter(view.SlotCount);
         }
 
@@ -199,15 +200,15 @@ namespace Deadswitch.Game.UI.Base
             }
         }
 
-        private static void Place(Tag t, Camera cam, Vector3 world, float pw, float ph, float topClear, Rect keepOut)
+        private static void Place(Tag t, Camera cam, Vector3 world, float pw, float ph, float topClear, float bottomClear, Rect keepOut)
         {
             Vector3 sp = cam.WorldToScreenPoint(world);
             // while a facility is framed every tag steps out: the close shot pushes them under the HUD and the sheet names it
             bool visible = sp.z > 0f && !t.Hidden;
             // the tag hangs above its anchor (translate -50% -100%)
             float y = (Screen.height - sp.y) / Screen.height * ph;
-            // a building panned under the HUD loses its tag: clamping them all to the top row piles them up
-            visible &= y > topClear;
+            // a building under the HUD loses its tag: clamping them all to the top row piles them up
+            visible &= y > topClear && y < bottomClear;
             t.Root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             // quiet open plots are already hidden by style and never push a tag aside
             t.Shown = visible && !t.Root.ClassListContains("is-quiet");

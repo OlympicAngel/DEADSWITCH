@@ -1,6 +1,6 @@
 # SPEC-015: Threat signatures and protection tools
 
-- Status: Done (F-018); Editor play check pending
+- Status: Done (F-018); checked in the Editor 2026-10-06 (siege card and HUD banner, purge ultimatum with the three answers, shield held off while the ladder runs, tribute order)
 - Pillar: Defense & offline
 - Touches: raids (attack kind), facilities (damage), modules (locks), corruption, presence, OPS / HUD / report / advisor / notifications, state v8, events
 - Source rules: doc 04 s3-5, doc 10 s4 (cadence, purge warning ladder, alert presentation), ROADMAP M3

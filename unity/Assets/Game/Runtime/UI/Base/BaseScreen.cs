@@ -11,6 +11,9 @@ namespace Deadswitch.Game.UI.Base
     /// </summary>
     public sealed class BaseScreen : IGameScreen
     {
+        /// <summary>HUD docks along the bottom; a building under them shows no tag.</summary>
+        private static readonly string[] BottomDocks = { "guide", "goal", "advisor" };
+
         private readonly BaseLabels _labels;
         private readonly SlotSheet _sheet;
         private readonly QuickActions _quick;
@@ -68,7 +71,17 @@ namespace Deadswitch.Game.UI.Base
                     VisualElement rail = frame?.Q(className: "hud-rail");
                     float topClear = frame != null ? frame.worldBound.yMin - ui.Root.worldBound.yMin : 0f;
                     Rect keepOut = rail != null && rail.resolvedStyle.display == DisplayStyle.Flex ? new Rect(rail.worldBound.position - ui.Root.worldBound.position, rail.worldBound.size) : Rect.zero;
-                    _labels.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height, topClear, keepOut);
+                    float bottomClear = ui.Root.layout.height;
+                    foreach (string dock in BottomDocks)
+                    {
+                        VisualElement d = ui.Root.Q(dock);
+                        if (d != null && d.resolvedStyle.display == DisplayStyle.Flex && d.worldBound.height > 0f)
+                        {
+                            bottomClear = Mathf.Min(bottomClear, d.worldBound.yMin - ui.Root.worldBound.yMin);
+                        }
+                    }
+
+                    _labels.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height, topClear, bottomClear, keepOut);
                     _quick.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height);
                     _sheet.Tick();
                 }
