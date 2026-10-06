@@ -469,7 +469,7 @@ namespace Deadswitch.Art.World
         private static void Pylons(MeshBuilder b, ArtRandom rng, uint seed)
         {
             Vector3? last = null;
-            for (float x = -100f; x <= 100f; x += 26f)
+            for (float x = SectorScene.MinX + 10f; x <= SectorScene.MaxX - 10f; x += 26f)
             {
                 float z = -4f + ((float)Math.Sin(x * 0.03f) * 6f);
                 if (!Clear(x, z, -4f))
@@ -504,7 +504,7 @@ namespace Deadswitch.Art.World
         /// <summary>Collapsed blocks: shells of concrete buildings in a few clusters of the old town.</summary>
         private static void Blocks(MeshBuilder b, ArtRandom rng, uint seed)
         {
-            var towns = new[] { new Vector3(-6f, 0, 30f), new Vector3(45f, 0, 8f), new Vector3(-60f, 0, -55f), new Vector3(70f, 0, 60f), new Vector3(-75f, 0, 20f) };
+            var towns = new[] { new Vector3(-6f, 0, 30f), new Vector3(70f, 0, 12f), new Vector3(-95f, 0, -85f), new Vector3(112f, 0, 95f), new Vector3(-120f, 0, 30f), new Vector3(30f, 0, 150f), new Vector3(-60f, 0, 160f), new Vector3(140f, 0, -60f) };
             foreach (Vector3 town in towns)
             {
                 for (int i = 0; i < 9; i++)
@@ -575,10 +575,10 @@ namespace Deadswitch.Art.World
 
         private static void Rocks(MeshBuilder b, ArtRandom rng, uint seed)
         {
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < 110; i++)
             {
                 float x = rng.Range(SectorScene.MinX + 6f, SectorScene.MaxX - 6f);
-                float z = rng.Range(SectorScene.MinZ + 6f, 120f);
+                float z = rng.Range(SectorScene.MinZ + 6f, 230f);
                 float slope = Math.Abs(SectorScene.Height(x + 1f, z, seed) - SectorScene.Height(x - 1f, z, seed)) + Math.Abs(SectorScene.Height(x, z + 1f, seed) - SectorScene.Height(x, z - 1f, seed));
                 if (slope < 0.35f || !Clear(x, z, 0f))
                 {
@@ -593,10 +593,10 @@ namespace Deadswitch.Art.World
         /// <summary>Dead trees along the dry river and in scattered stands.</summary>
         private static void Trees(MeshBuilder b, ArtRandom rng, uint seed)
         {
-            for (int i = 0; i < 46; i++)
+            for (int i = 0; i < 120; i++)
             {
-                float z = rng.Range(SectorScene.MinZ + 6f, 110f);
-                float x = i < 30 ? -30f + ((float)Math.Sin(z * 0.045f) * 9f) + rng.Range(-9f, 9f) : rng.Range(SectorScene.MinX + 6f, SectorScene.MaxX - 6f);
+                float z = rng.Range(SectorScene.MinZ + 6f, 220f);
+                float x = i < 60 ? -30f + ((float)Math.Sin(z * 0.045f) * 9f) + rng.Range(-9f, 9f) : rng.Range(SectorScene.MinX + 6f, SectorScene.MaxX - 6f);
                 if (!Clear(x, z, -2f))
                 {
                     continue;

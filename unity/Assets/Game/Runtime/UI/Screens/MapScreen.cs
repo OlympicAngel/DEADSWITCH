@@ -25,7 +25,6 @@ namespace Deadswitch.Game.UI.Screens
         private const float DragSlop = 24f;
 
         /// <summary>Plot height (0..1) kept clear above the open sheet: a tapped site closer to it than this pans into view.</summary>
-        private const float RevealMargin = 0.12f;
 
         /// <summary>Wait for the opened sheet to lay out before measuring it.</summary>
         private const long RevealDelayMs = 60;
@@ -198,6 +197,7 @@ namespace Deadswitch.Game.UI.Screens
                     float spread = Spread();
                     if (_pinchFrom > 1f && spread > 1f)
                     {
+                        Motion.Cancel(this);
                         SetView(MapView.Instance.Focus, _pinchZoom * _pinchFrom / spread);
                     }
 
@@ -231,6 +231,7 @@ namespace Deadswitch.Game.UI.Screens
                 if (MapView.Instance != null && Mathf.Abs(e.delta.y) > 0.01f)
                 {
                     float step = MapView.Instance.Look.zoomStep;
+                    Motion.Cancel(this);
                     SetView(MapView.Instance.Focus, MapView.Instance.Zoom * (e.delta.y > 0f ? 1f + step : 1f - step));
                     e.StopPropagation();
                 }
@@ -280,32 +281,50 @@ namespace Deadswitch.Game.UI.Screens
                 return;
             }
 
+            // a drag takes the camera back from a fly-in
+            Motion.Cancel(this);
             SetView(new Vector2(v.Focus.x - (delta.x / perX), v.Focus.y + (delta.y / perZ)), v.Zoom);
         }
 
         /// <summary>
-        /// Pans a tapped site that the open sheet covers (or nearly) to the middle of the strip of map above it. Runs
-        /// after the sheet's layout so its real top edge is known.
+        /// Flies in to a tapped site (F-112): zooms to the focus zoom and centers the site in the strip of map above
+        /// the open sheet. Runs after the sheet's layout so its real top edge is known.
         /// </summary>
         private void Reveal(int site)
         {
-            if (_layer == null || site < 0 || site >= _layer.SiteAnchors.Length)
-            {
-                return;
-            }
-
+            MapView v = MapView.Instance;
             Rect plot = _plot.worldBound;
-            if (plot.height < 32f)
+            if (v == null || site < 0 || site >= WorldSystem.Sites.Count || plot.height < 32f)
             {
                 return;
             }
 
             float clear = Mathf.Clamp01((_pager.worldBound.yMin - plot.yMin) / plot.height);
-            float y = _layer.SiteAnchors[site].Y;
-            if (y > clear - RevealMargin)
+            var goal = new System.Numerics.Vector2(0.5f, clear * 0.5f);
+            float zoom = Mathf.Min(v.Zoom, v.Look.focusZoom);
+            System.Numerics.Vector3 at = SectorScene.SitePosition(site, BaseView.Seed);
+
+            // the camera only slides, so a few corrections on the projected offset land the site on the goal point
+            var focus = new System.Numerics.Vector2(at.X, at.Z);
+            for (int i = 0; i < 3; i++)
             {
-                Pan(new Vector2(0f, ((clear * 0.5f) - y) * plot.height));
+                CameraPose pose = SectorScene.View(v.Aspect, focus.X, focus.Y, zoom);
+                System.Numerics.Vector2 p = pose.Project(at, v.Aspect);
+                System.Numerics.Vector2 o = pose.Project(pose.Target, v.Aspect);
+                float perX = pose.Project(pose.Target + System.Numerics.Vector3.UnitX, v.Aspect).X - o.X;
+                float perZ = o.Y - pose.Project(pose.Target + System.Numerics.Vector3.UnitZ, v.Aspect).Y;
+                if (perX <= 0.0001f || perZ <= 0.0001f)
+                {
+                    break;
+                }
+
+                focus = new System.Numerics.Vector2(focus.X + ((p.X - goal.X) / perX), focus.Y - ((p.Y - goal.Y) / perZ));
             }
+
+            Vector2 fromFocus = v.Focus;
+            float fromZoom = v.Zoom;
+            var toFocus = new Vector2(focus.X, focus.Y);
+            Motion.To(this, v.Look.focusSeconds, Ease.OutCubic, t => SetView(Vector2.Lerp(fromFocus, toFocus, t), Mathf.Lerp(fromZoom, zoom, t)));
         }
 
         private void SetView(Vector2 focus, float zoom)

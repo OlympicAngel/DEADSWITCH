@@ -1,14 +1,14 @@
-# TASK: F-107 Interactive sector map
+# TASK: F-112 Owner feedback pass (2026-10-06)
 
-- Status: Done 2026-10-06
-- Branch: feat/f107-map
-- Spec: `docs/specs/SPEC-033-sector-map.md` (rule 4)
+- Status: In progress
+- Branch: feat/f111-generator-stages (continues the open UI work)
+- Specs: `docs/specs/SPEC-033-sector-map.md` (map), `docs/specs/SPEC-046-ui-redesign.md` (CORE, type)
 
 ## Steps
-- [x] 1. Camera view over the map: focus + zoom (`SectorScene.View`, `MapView.SetView`), tunables in `BaseLook.json` `map`
-- [x] 2. Full-screen plot; pager becomes a bottom sheet, folded to its tab row by default
-- [x] 3. Drag pan, pinch and wheel zoom; drag slop keeps pin taps; off-view pins hide
-- [x] 4. Pin tap opens the SITE sheet and pans a covered site into view (`panSlack` lets edge sites clear the sheet)
-- [x] 5. Editor check at 380x800: opening view, pan, sheet open/fold, edge site reveal, zoom limits (zoomMax 0.62 keeps the ground clear of haze and tags apart)
+- [x] 1. Map: sites spread +100%, larger ground, view clamped to the sites and the ground (no overscroll), tapped site flies in and centers above the sheet
+- [ ] 2. CORE screen fully covers the base (no 3D showing at the top)
+- [ ] 3. CORE: locked items not tappable, timers tick live, MODULES shows only what matters (next actions, in progress), AI CONTROL easy to find and change
+- [ ] 4. Confirmations and plain-language explanations on heavy or jargon buttons
+- [ ] 5. Type a step smaller; layout checked on small and large phones, notched screens and tablets
 
-Previous: F-106 on `feat/f106-ui-redesign`, F-110 on `feat/f110-fog` (both awaiting merge).
+Previous: F-107 on `feat/f107-map` (done, awaiting merge).

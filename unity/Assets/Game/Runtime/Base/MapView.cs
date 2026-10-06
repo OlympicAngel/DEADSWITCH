@@ -60,8 +60,8 @@ namespace Deadswitch.Game.Base
         public void SetView(Vector2 focus, float zoom)
         {
             zoom = Mathf.Clamp(zoom, _look.map.zoomMin, Mathf.Min(1f, _look.map.zoomMax));
-            float limit = 100f * SectorScene.Unit * Mathf.Clamp01(1f - zoom + _look.map.panSlack);
-            focus = new Vector2(Mathf.Clamp(focus.x, -limit, limit), Mathf.Clamp(focus.y, -limit, limit));
+            System.Numerics.Vector2 held = SectorScene.ClampFocus(Aspect, focus.x, focus.y, zoom);
+            focus = new Vector2(held.X, held.Y);
             if ((focus - Focus).sqrMagnitude > 0.0001f || Mathf.Abs(zoom - Zoom) > 0.0001f)
             {
                 Focus = focus;
@@ -108,7 +108,8 @@ namespace Deadswitch.Game.Base
             }
 
             Aspect = width / (float)height;
-            Pose = SectorScene.View(Aspect, Focus.x, Focus.y, Zoom, _look.map.panSlack);
+            Pose = SectorScene.View(Aspect, Focus.x, Focus.y, Zoom);
+            Focus = new Vector2(Pose.Target.X, Pose.Target.Z);
             _viewDirty = false;
             _cam.fieldOfView = Pose.Fov;
             _cam.aspect = Aspect;

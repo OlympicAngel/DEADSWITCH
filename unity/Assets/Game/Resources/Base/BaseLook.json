@@ -27,12 +27,13 @@
     "fogScale": 0.2,
     "shadowExtent": 80,
     "shadowDistance": 360,
-    "_zoom": "F-107: the map opens over the Hub at zoomStart (1 = whole map), pans and zooms between zoomMin and zoomMax; panSlack lets the view run past the edge (fraction of half the map) so an edge site clears the open sheet.",
-    "zoomStart": 0.42,
+    "_zoom": "F-107/F-112: the map opens over the Hub at zoomStart (1 = the view fit around the Hub), pans and zooms between zoomMin and zoomMax; the view never runs past the ground's edge. A tapped site flies in to focusZoom over focusSeconds.",
+    "zoomStart": 0.6,
     "zoomMin": 0.22,
-    "zoomMax": 0.62,
+    "zoomMax": 0.9,
     "zoomStep": 0.08,
-    "panSlack": 0.3
+    "focusZoom": 0.3,
+    "focusSeconds": 0.45
   },
   "moonPhases": [
     1.0,

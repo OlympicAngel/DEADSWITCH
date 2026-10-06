@@ -20,7 +20,7 @@
 /* ---------- world event banner ---------- */
 .map-event { align-items: center; padding: var(--s-2) var(--s-5); border-left-width: 6px; border-color: var(--c-amber); background-color: var(--c-amber-wash); }
 .map-event__icon { width: 34px; height: 34px; margin-right: var(--s-3); --icon-color: var(--c-amber); }
-.map-event__text { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-amber); white-space: normal; }
+.map-event__text { flex-basis: 0; flex-shrink: 1; min-width: 0; -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-amber); white-space: normal; }
 
 /* ---------- plot: render behind, illustrated layer, then pins with tags ---------- */
 .map-plot { min-height: 360px; margin: var(--s-3) 0 0 0; border-width: 0; border-top-width: 1px; border-radius: 0; border-top-color: var(--c-cyan-dim); background-color: var(--c-panel-sunken); overflow: hidden; }

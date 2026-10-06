@@ -27,8 +27,9 @@ have not seen yet, and where the fallout is.
    controls remain UI Toolkit overlays. Site markers sit on projected landmark positions. Tapping a location opens
    a contextual popover with its known information and available actions. In Unity (F-107) the popover is the map's
    bottom sheet (SITE, OPS, TRADE, FACTIONS): folded it is only its tab row; a pin or a tab opens it, the open tab
-   or a tap on open ground folds it, and a tapped site the sheet would cover pans up into view. The map opens
-   close over the Hub; drag pans, pinch or the wheel zooms; pins off the view hide; where tags still collide (zoomed out, large text) the Hub and the selected site keep theirs and the others show the pin only; a tag never runs off the plot edge; a press becomes a drag only
+   or a tap on open ground folds it, and a tapped site flies in (zoom and center above the open sheet, F-112). Sites
+   stand twice as far apart as the first map (1.2 m per map unit); the view never pans past the outermost sites or
+   shows the edge of the ground. The map opens close over the Hub; drag pans, pinch or the wheel zooms; pins off the view hide; where tags still collide (zoomed out, large text) the Hub and the selected site keep theirs and the others show the pin only; a tag never runs off the plot edge; a press becomes a drag only
    past an 8 dp slop so a tap still reaches its pin. The AI's defense estimate beside each
    unscouted site glitches with the corruption band (no glitch at reduced motion / zero effect intensity).
 5. **Look values** in `BaseLook.json` (`map` block: camera, fog scale, `zoomStart`/`zoomMin`/`zoomMax`/`zoomStep`, `panSlack`), shared by Unity and `tools/basepreview`.

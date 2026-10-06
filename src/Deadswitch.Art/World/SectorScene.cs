@@ -70,14 +70,26 @@ namespace Deadswitch.Art.World
     /// </summary>
     public static class SectorScene
     {
-        /// <summary>Meters per map unit.</summary>
-        public const float Unit = 0.6f;
+        /// <summary>Meters per map unit (F-112: doubled so the sites stand well apart).</summary>
+        public const float Unit = 1.2f;
 
-        /// <summary>Ground mesh bounds: past the frame on every side (the far edge runs into the haze).</summary>
-        public const float MinX = -112f;
-        public const float MaxX = 112f;
-        public const float MinZ = -88f;
-        public const float MaxZ = 210f;
+        /// <summary>
+        /// Map-plane meters the zoom-1 view frames on each side of the Hub. The zoom range in the look file is a fraction
+        /// of this view, so it stays put when the sites spread out.
+        /// </summary>
+        public const float ViewFit = 60f;
+
+        /// <summary>Ground mesh bounds: well past the outermost sites, so the view can center any of them and never shows the edge.</summary>
+        public const float MinX = -200f;
+        public const float MaxX = 200f;
+        public const float MinZ = -190f;
+        public const float MaxZ = 330f;
+
+        /// <summary>How far inside the ground bounds the corners of the picture must stay.</summary>
+        private const float EdgeMargin = 6f;
+
+        /// <summary>How far past the outermost site the focus may go (meters), so the view never drifts into empty waste.</summary>
+        private const float ContentMargin = 18f;
 
         /// <summary>Scale of the kit landmarks on the map (life-size kit pieces would crowd the sites).</summary>
         public const float LandmarkScale = 0.75f;
@@ -120,10 +132,14 @@ namespace Deadswitch.Art.World
         /// </summary>
         public static CameraPose Camera(float aspect, float elevationDeg = 47f, float fov = 28f, float margin = 1.04f)
         {
+            return Fit(aspect, 100f * Unit * margin, elevationDeg, fov);
+        }
+
+        private static CameraPose Fit(float aspect, float extent, float elevationDeg, float fov)
+        {
             var target = new Vector3(0, 0, 3f);
             float el = elevationDeg * (float)Math.PI / 180f;
             var dir = new Vector3(0, (float)Math.Sin(el), -(float)Math.Cos(el));
-            float extent = 100f * Unit * margin;
             var corners = new[]
             {
                 new Vector3(-extent, 0, -extent), new Vector3(extent, 0, -extent), new Vector3(-extent, 0, extent), new Vector3(extent, 0, extent),
@@ -153,16 +169,76 @@ namespace Deadswitch.Art.World
 
         /// <summary>
         /// The same recon angle moved over the map (F-107): looking at a map-plane point (world X/Z meters) from a
-        /// fraction of the whole-map distance (zoom 1 shows the whole map, smaller is closer). The focus is held
-        /// inside the map so the edge of the world stays in reach but never fills the picture.
+        /// fraction of the <see cref="ViewFit"/> distance (smaller is closer). The focus is clamped with
+        /// <see cref="ClampFocus"/>, so the picture never runs past the edge of the ground.
         /// </summary>
-        public static CameraPose View(float aspect, float focusX, float focusZ, float zoom, float slack = 0f, float elevationDeg = 47f, float fov = 28f)
+        public static CameraPose View(float aspect, float focusX, float focusZ, float zoom, float elevationDeg = 47f, float fov = 28f)
         {
-            CameraPose fit = Camera(aspect, elevationDeg, fov);
+            Vector2 f = ClampFocus(aspect, focusX, focusZ, zoom, elevationDeg, fov);
+            return Pose(aspect, f.X, f.Y, zoom, elevationDeg, fov);
+        }
+
+        /// <summary>
+        /// The nearest focus to (focusX, focusZ) whose picture stays on the ground: every corner of the frame must hit
+        /// the map plane inside the ground bounds. The camera only slides (its angle is fixed), so the footprint at the
+        /// Hub sets the range once per zoom.
+        /// </summary>
+        public static Vector2 ClampFocus(float aspect, float focusX, float focusZ, float zoom, float elevationDeg = 47f, float fov = 28f)
+        {
+            CameraPose pose = Pose(aspect, 0f, 0f, zoom, elevationDeg, fov);
+            float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 hit = Ground(pose, aspect, i % 2, i / 2);
+                minX = Math.Min(minX, hit.X);
+                maxX = Math.Max(maxX, hit.X);
+                minZ = Math.Min(minZ, hit.Z);
+                maxZ = Math.Max(maxZ, hit.Z);
+            }
+
+            // first the sites' own spread, then the ground: the picture stays where there is something to see
+            float cx = 0f, cX = 0f, cz = 0f, cZ = 0f;
+            foreach (SiteDef d in WorldSystem.Sites)
+            {
+                cx = Math.Min(cx, d.MapX * Unit);
+                cX = Math.Max(cX, d.MapX * Unit);
+                cz = Math.Min(cz, d.MapY * Unit);
+                cZ = Math.Max(cZ, d.MapY * Unit);
+            }
+
+            focusX = Math.Clamp(focusX, cx - ContentMargin, cX + ContentMargin);
+            focusZ = Math.Clamp(focusZ, cz - ContentMargin, cZ + ContentMargin);
+            return new Vector2(Range(focusX, MinX + EdgeMargin - minX, MaxX - EdgeMargin - maxX), Range(focusZ, MinZ + EdgeMargin - minZ, MaxZ - EdgeMargin - maxZ));
+        }
+
+        private static CameraPose Pose(float aspect, float focusX, float focusZ, float zoom, float elevationDeg, float fov)
+        {
+            CameraPose fit = Fit(aspect, ViewFit * 1.04f, elevationDeg, fov);
             Vector3 back = fit.Position - fit.Target;
-            float limit = 100f * Unit * Math.Min(1f, Math.Max(0f, 1f - zoom + slack));
-            var target = new Vector3(Math.Clamp(focusX, -limit, limit), 0, Math.Clamp(focusZ, -limit, limit));
+            var target = new Vector3(focusX, 0, focusZ);
             return new CameraPose(target + (back * zoom), target, fov);
+        }
+
+        /// <summary>Where a picture corner (0/1, 0/1; y down) meets the map plane. A ray above the horizon reaches the far edge.</summary>
+        private static Vector3 Ground(CameraPose pose, float aspect, float sx, float sy)
+        {
+            Vector3 f = Vector3.Normalize(pose.Target - pose.Position);
+            Vector3 r = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, f));
+            Vector3 u = Vector3.Cross(f, r);
+            float t = (float)Math.Tan(pose.Fov * Math.PI / 360.0);
+            Vector3 dir = f + (r * (((2f * sx) - 1f) * t * aspect)) + (u * ((1f - (2f * sy)) * t));
+            if (dir.Y > -0.01f)
+            {
+                return new Vector3(pose.Position.X, 0f, MaxZ * 4f);
+            }
+
+            return pose.Position + (dir * (-pose.Position.Y / dir.Y));
+        }
+
+        /// <summary>Clamps to [lo, hi]; when the frame is wider than the ground, the middle.</summary>
+        private static float Range(float v, float lo, float hi)
+        {
+            return lo > hi ? (lo + hi) * 0.5f : Math.Clamp(v, lo, hi);
         }
 
         /// <summary>Ground height: rolling waste, a dry riverbed in the west, flat pads at the Hub and the sites, bowls at the craters.</summary>
