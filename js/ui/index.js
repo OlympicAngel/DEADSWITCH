@@ -208,7 +208,7 @@ export function createUI(root, game) {
         ui.refs = null;
       }
       window.scrollTo(0, scroll);
-      ui.logSeq = -1;
+      ui.logDirty = true;
     }
     update();
   }
@@ -380,10 +380,12 @@ export function createUI(root, game) {
   }
 
   function updateLog(s) {
-    if (ui.logSeq === s.lineSeq) {
+    if (ui.logSeq === s.lineSeq && !ui.logDirty) {
       return;
     }
-    const fresh = ui.logSeq < 0 ? [] : s.log.slice(-Math.max(0, s.lineSeq - ui.logSeq));
+    ui.logDirty = false;
+    const n = s.lineSeq - ui.logSeq;
+    const fresh = ui.logSeq < 0 || n <= 0 ? [] : s.log.slice(-n);
     ui.logSeq = s.lineSeq;
     const html = s.log.slice().reverse().map((l) => `<li class="tone-${l.tone}"><time>${time(l.t)}</time><span>${esc(l.text)}</span></li>`).join('');
     root.querySelectorAll('.log').forEach((el) => { el.innerHTML = html; });
@@ -437,6 +439,6 @@ export function createUI(root, game) {
   return {
     render,
     showOffline: (report) => modals.showOffline(report),
-    reset: () => { ui.key = ''; ui.sector = null; ui.slotKeys = {}; ui.logSeq = -1; },
+    reset: () => { ui.key = ''; ui.sector = null; ui.slotKeys = {}; ui.logSeq = -1; ui.raidKey = null; },
   };
 }

@@ -278,6 +278,7 @@ export function createModals(dialog, game, onChange) {
     dialog.querySelectorAll('[data-choice]').forEach((b) => b.addEventListener('click', () => {
       const res = game.act.choose(Number(b.dataset.choice));
       if (!res) {
+        showEvent();
         return;
       }
       sfx.click();
@@ -366,8 +367,14 @@ export function createModals(dialog, game, onChange) {
     if (dialog.open || !s.inbox.length) {
       return;
     }
-    const item = s.inbox.shift();
-    const next = () => setTimeout(pump, 250);
+    // Peek, and only drop the item once it has been seen, so a reload mid-modal shows it again.
+    const item = s.inbox[0];
+    const next = () => {
+      if (game.state.inbox[0] === item) {
+        game.state.inbox.shift();
+      }
+      setTimeout(pump, 250);
+    };
     if (item.kind === 'boot') {
       showBoot(next);
     } else if (item.kind === 'chapter') {

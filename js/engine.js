@@ -1,8 +1,8 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
-import { BALANCE, MAP, EVENTS_CFG } from './data.js';
+import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, LOG_LIMIT } from './sim/economy.js';
-import { advanceOp, advanceRaids } from './sim/war.js';
-import { advanceEvents, advanceBuffs, checkDirectives, checkChapters } from './sim/story.js';
+import { advanceOp, advanceRaids, sectorById } from './sim/war.js';
+import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById } from './sim/story.js';
 
 export * from './sim/economy.js';
 export * from './sim/war.js';
@@ -70,6 +70,24 @@ export function migrate(raw) {
   s.seen = Array.isArray(raw.seen) ? raw.seen : unlockedKeys(s);
   s.inbox = Array.isArray(raw.inbox) ? raw.inbox : [];
   s.fx = [];
+  // Drop references to content that no longer exists, and repair corrupt numbers.
+  for (const k of Object.keys(s.res)) {
+    s.res[k] = Number.isFinite(Number(s.res[k])) ? Math.max(0, Number(s.res[k])) : base.res[k];
+  }
+  if (s.build && !BY_ID[s.build.id]) {
+    s.build = null;
+  }
+  if (s.op && !sectorById(s.op.sector)) {
+    s.op = null;
+  }
+  if (s.raid && !FACTIONS[s.raid.faction]) {
+    s.raid = null;
+  }
+  if (s.event && !eventById(s.event)) {
+    s.event = null;
+  }
+  s.sectors = s.sectors.filter((id) => sectorById(id));
+  s.inbox = s.inbox.filter((m) => m && m.kind && (m.kind !== 'op' || sectorById(m.sector)) && (m.kind !== 'raid' || FACTIONS[m.faction]));
   if (!raw.v || raw.v < 2) {
     // v1 saves predate chapters: announce whatever is already open, skip the boot intro.
     s.chapter = 0;

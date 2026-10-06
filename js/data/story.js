@@ -277,4 +277,5 @@ export const LINES = {
   directive: ['Directive complete: {text}.'],
   event: ['{title}: {result}'],
   buffEnd: ['{label} has worn off.'],
+  lore: ['“{text}”'],
 };

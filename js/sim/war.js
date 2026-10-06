@@ -90,7 +90,7 @@ export function advanceOp(s, dt) {
     report.loot = loot;
     s.stats.opsWon++;
     say(s, 'opWon', { sector: sec.name }, 'good');
-    s.log.push({ t: Math.floor(s.playTime), text: '“' + sec.lore + '”', tone: 'story' });
+    say(s, 'lore', { text: sec.lore }, 'story');
     if (sec.boss) {
       say(s, 'bossDown', { faction: FACTIONS[sec.faction].name }, 'rank');
       if (s.raid && s.raid.faction === sec.faction) {
@@ -98,6 +98,7 @@ export function advanceOp(s, dt) {
         s.raidTimer = 60;
       }
     }
+    s.inbox.push(report);
     if (sec.id === 'prime' && !s.ending) {
       s.ending = s.align >= ALIGNMENT.guardianAt ? 'guardian' : s.align <= ALIGNMENT.overlordAt ? 'overlord' : 'fork';
       s.inbox.push({ kind: 'ending', key: s.ending });
@@ -106,8 +107,8 @@ export function advanceOp(s, dt) {
     report.staffLost = loseStaff(s, OPS.staffLossOnDefeat);
     s.stats.opsLost++;
     say(s, 'opLost', { sector: sec.name }, 'bad');
+    s.inbox.push(report);
   }
-  s.inbox.push(report);
 }
 
 // ---------- raids ----------
