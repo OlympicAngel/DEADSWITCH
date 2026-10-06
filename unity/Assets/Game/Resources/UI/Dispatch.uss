@@ -51,6 +51,7 @@
 .dsp-choice--safe > .dsp-choice__text > .dsp-choice__label { color: var(--c-text); }
 .dsp-choice__fx { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-dim); margin-top: var(--s-1); white-space: normal; }
 
-.dsp-empty { margin-top: var(--s-4); white-space: normal; }
+.dsp-empty { margin-top: var(--s-4); }
+.dsp-empty__desc { margin-top: var(--s-3); white-space: normal; }
 .dsp-empty.is-hidden { display: none; }
 .dsp-reason { margin-top: var(--s-2); min-height: 40px; white-space: normal; }

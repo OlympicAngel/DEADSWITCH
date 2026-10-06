@@ -91,7 +91,14 @@
         <ui:Label text="UNANSWERED, I REFUSE FOR YOU." class="ds-label t-dim dsp-card__note" />
       </ui:VisualElement>
 
-      <ui:Label name="dsp-empty" text="The wastes are quiet. Nothing is waiting on you." class="ds-body t-dim dsp-empty is-hidden" />
+      <!-- empty state (SPEC-039 idea 9): what lands here and what to do meanwhile -->
+      <ui:VisualElement name="dsp-empty" class="ds-card dsp-empty is-hidden">
+        <ui:VisualElement class="ds-card__head">
+          <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--mail ds-card__icon" /></ui:VisualElement>
+          <ui:VisualElement class="ds-card__titles"><ui:Label text="NOTHING WAITING" class="ds-label" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label text="Ultimatums from the factions and dilemmas from your people land here, and each waits for your answer. The menu badge tells you when one arrives. Until then, keep building." class="ds-prose dsp-empty__desc" />
+      </ui:VisualElement>
     </ui:ScrollView>
 
     <ui:Label name="dsp-reason" text="" class="ds-body t-amber dsp-reason" />

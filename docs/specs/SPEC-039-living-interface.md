@@ -1,6 +1,6 @@
 # SPEC-039: Living interface (UI, camera, motion, VFX rework)
 
-- Status: In progress (F-100)
+- Status: Done 2026-10-06 (F-100); every idea built and checked in the Editor
 - Owner direction (2026-10-05): "most of the UI is cramped, plain text, no icons, no depth, no grouping, overwhelming"; resources must read like Travian / Clash of Clans; the camera should fly to and frame a building; attacks get a movie-like sequence; the AI interface becomes JARVIS-like; base and UI get a **restrained cyberpunk** accent (bold color, not too much).
 - Canon change: doc 11 said "avoid generic neon cyberpunk". The owner now wants a slight cyberpunk accent on the **interface and AI technology only** (the world keeps heroic realism; bright color stays reserved for AI tech, alarms and interactables, which the master brief already allows). Recorded in the doc 10 corrections log and doc 11.
 
@@ -29,8 +29,8 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 6. Shared icon set in one data file (`Resources/UI/Icons.json`) read by Unity and the preview; 40+ glyphs. *Done*
 7. Progress bars with a glowing head and a time label (build, research, repair). *Done*
 8. Stat delta pill (`+12/h` green, `-30/h` red) with arrow glyph. *Done*
-9. Empty states: every list says what to do when it is empty. *Planned*
-10. Number formatting with k/M and a fixed-width digit font everywhere. *Planned*
+9. Empty states: every list says what to do when it is empty. *Done* (checked 2026-10-06; DISPATCH got a card that says what lands there and what to do meanwhile)
+10. Number formatting with k/M and a fixed-width digit font everywhere. *Done* (`Fmt.Compact` from 10k, IBM Plex Mono on values)
 
 ### B. Resources (Travian / Clash of Clans readability)
 11. Resource pods: icon badge, value, capacity bar, rate pill. *Done*

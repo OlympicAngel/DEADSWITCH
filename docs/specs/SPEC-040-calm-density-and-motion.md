@@ -1,6 +1,6 @@
 # SPEC-040: Calm density and motion (living interface II)
 
-- Status: In progress (F-101)
+- Status: Done 2026-10-06 (F-101); checked in the Editor (pagers, folds, status rail, comms compact, construction rise, hit flash)
 - Owner direction (2026-10-05, after SPEC-039): "more animation, the UI still feels dense, break it down even more; free hand."
 
 ## Player value
