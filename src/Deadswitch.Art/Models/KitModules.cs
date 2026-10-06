@@ -111,6 +111,12 @@ namespace Deadswitch.Art.Models
             }
         }
 
+        /// <summary>
+        /// Mirrors a corrugated sheet's normal before it is laid flat, so a roof's outer face points up (the sheet is
+        /// one-sided; without this the drone camera looks at its culled back and sees through the roof).
+        /// </summary>
+        private static readonly Matrix4x4 RoofUp = Matrix4x4.CreateScale(1f, 1f, -1f);
+
         /// <summary>Open steel shed: posts, eave beams, mono-pitch corrugated roof with an overhang.</summary>
         public static void Shed(MeshBuilder b, Vector3 baseCenter, float w, float d, float hFront, float hBack, Mat roof, bool trusses = true)
         {
@@ -132,7 +138,7 @@ namespace Deadswitch.Art.Models
             b.Strut(baseCenter + new Vector3(-hw, hBack, hd), baseCenter + new Vector3(hw, hBack, hd), 0.12f, Mat.DarkSteel);
             float pitch = (float)Math.Atan2(hBack - hFront, d);
             float len = (float)Math.Sqrt((d * d) + ((hBack - hFront) * (hBack - hFront))) + 0.9f;
-            b.Push(Matrix4x4.CreateRotationX(-pitch) * Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)) * Matrix4x4.CreateTranslation(baseCenter + new Vector3(0, ((hFront + hBack) * 0.5f) + 0.12f, -0.15f)));
+            b.Push(RoofUp * Matrix4x4.CreateRotationX(-pitch) * Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)) * Matrix4x4.CreateTranslation(baseCenter + new Vector3(0, ((hFront + hBack) * 0.5f) + 0.12f, -0.15f)));
             b.Corrugated(-hw - 0.4f, hw + 0.4f, -len * 0.5f, len * 0.5f, 0f, roof, 0.32f, 0.04f);
             b.Pop();
         }
@@ -145,7 +151,7 @@ namespace Deadswitch.Art.Models
             b.Strut(wallBase + new Vector3(-w * 0.5f, hOuter, -depth), wallBase + new Vector3(w * 0.5f, hOuter, -depth), 0.08f, Mat.DarkSteel);
             float pitch = (float)Math.Atan2(hWall - hOuter, depth);
             float len = (float)Math.Sqrt((depth * depth) + ((hWall - hOuter) * (hWall - hOuter))) + 0.4f;
-            b.Push(Matrix4x4.CreateRotationX(-pitch) * Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)) * Matrix4x4.CreateTranslation(wallBase + new Vector3(0, ((hWall + hOuter) * 0.5f) + 0.05f, -depth * 0.5f)));
+            b.Push(RoofUp * Matrix4x4.CreateRotationX(-pitch) * Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)) * Matrix4x4.CreateTranslation(wallBase + new Vector3(0, ((hWall + hOuter) * 0.5f) + 0.05f, -depth * 0.5f)));
             b.Corrugated(-w * 0.5f - 0.2f, w * 0.5f + 0.2f, -len * 0.5f, len * 0.5f, 0f, roof, 0.32f, 0.035f);
             b.Pop();
             b.Box(wallBase + new Vector3(w * 0.5f + 0.02f, hOuter * 0.55f, -depth * 0.5f), new Vector3(0.03f, hOuter * 0.8f, depth * 0.9f), Mat.TarpBlue, 0.005f);
@@ -254,7 +260,7 @@ namespace Deadswitch.Art.Models
             }
 
             b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-8f)) * Matrix4x4.CreateTranslation(baseCenter + new Vector3(0, height + 2.1f, 0)));
-            b.Push(Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)));
+            b.Push(RoofUp * Matrix4x4.CreateRotationX(MeshBuilder.Deg(-90f)));
             b.Corrugated(-w * 1.5f, w * 1.5f, -w * 1.5f, w * 1.5f, 0f, Mat.Rust, 0.3f, 0.03f);
             b.Pop();
             b.Pop();
