@@ -34,7 +34,8 @@
 .pod__fill { height: 100%; width: 50%; border-radius: 3px; background-color: var(--c-cyan); }
 .pod__foot { justify-content: space-between; overflow: hidden; }
 .pod__rate { flex-shrink: 0; -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-nano); color: var(--c-phosphor); }
-.pod__eta { flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; margin-left: var(--s-2); -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-dim); }
+/* SPEC-046 r3: a pod shows value and rate; when it fills or runs dry lives in its sheet */
+.pod__eta { display: none; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; margin-left: var(--s-2); -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-dim); }
 .pod__rate.is-down { color: var(--c-red); }
 .pod__rate.is-flat { color: var(--c-text-dim); }
 .pod__value.is-up { color: var(--c-phosphor); }
@@ -178,6 +179,8 @@
     background-color: rgba(20, 16, 8, 0.88);
 }
 .hud-guide.is-hidden { display: none; }
+.hud-guide.is-compact { padding-top: 0; padding-bottom: 0; }
+.hud-guide.is-compact .hud-guide__reason { display: none; }
 .hud-guide__pip { width: 14px; height: 14px; margin-right: var(--s-3); background-color: var(--c-amber); rotate: 45deg; }
 .hud-guide__body { flex-grow: 1; flex-shrink: 1; }
 .hud-guide__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-amber); }
