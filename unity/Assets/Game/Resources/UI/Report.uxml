@@ -11,7 +11,7 @@
       <ui:VisualElement name="rep-close" class="ds-iconbtn rep-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="rep-scroll" class="grow rep-scroll">
+    <ui:ScrollView name="rep-scroll" class="grow rep-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
 
       <ui:VisualElement class="rep-outcome-row">
         <ui:Label text="OUTCOME" class="rep-outcome-key" />

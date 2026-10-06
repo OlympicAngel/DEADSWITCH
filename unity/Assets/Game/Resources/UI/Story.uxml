@@ -13,7 +13,7 @@
       <ui:VisualElement name="sty-close" class="ds-iconbtn sty-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="sty-scroll" class="grow sty-scroll">
+    <ui:ScrollView name="sty-scroll" class="grow sty-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
       <ui:VisualElement class="sty-body">
         <ui:VisualElement class="ds-section sty-first">
           <ui:VisualElement class="ds-icon ds-icon--flag ds-section__icon" />

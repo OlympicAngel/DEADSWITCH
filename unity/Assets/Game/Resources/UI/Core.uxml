@@ -10,13 +10,13 @@
       </ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="core-scroll" class="grow core-scroll">
+    <ui:ScrollView name="core-scroll" class="grow core-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
     <ui:VisualElement name="status-view">
       <!-- Final window (SPEC-011): always visible, no Audit needed -->
       <ui:VisualElement name="climax" class="ds-panel ds-panel--red core-climax is-hidden">
         <ui:VisualElement class="row">
           <ui:VisualElement class="ds-pip ds-pip--red ds-pip--diamond core-climax__pip" />
-          <ui:Label text="UNKNOWN PROCESS // FINAL STAGE" class="ds-label t-red grow" />
+          <ui:Label text="UNKNOWN PROCESS // FINAL STAGE" class="ds-label t-red grow core-climax__title" />
           <ui:Label name="climax-time" text="23:59:12" class="ds-value t-red core-climax__time" />
         </ui:VisualElement>
         <ui:Label text="The core is about to act on its own. Choose what to do before the timer runs out." class="ds-prose core-climax__desc" />

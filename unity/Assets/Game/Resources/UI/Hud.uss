@@ -30,6 +30,8 @@
 .pod__icon { flex-shrink: 0; width: 30px; height: 30px; margin-right: var(--s-2); margin-bottom: 6px; --icon-color: var(--c-cyan); }
 .pod__value { -unity-font-definition: resource("Fonts/IBMPlexMono-SemiBold"); font-size: var(--fs-md); color: var(--c-white); }
 .pod--long .pod__icon { display: none; }
+/* at the larger text sizes the value and its cap need the icon's room */
+.ds-root.ds-scale-115 .pod__icon, .ds-root.ds-scale-130 .pod__icon { display: none; }
 .pod--longer .pod__cap { display: none; }
 .pod__cap { flex-shrink: 1; -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-nano); color: var(--c-text-faint); padding-bottom: 6px; margin-left: 2px; }
 .pod__bar { height: 6px; margin: var(--s-1) 0; border-radius: 3px; background-color: var(--c-panel-sunken); overflow: hidden; }

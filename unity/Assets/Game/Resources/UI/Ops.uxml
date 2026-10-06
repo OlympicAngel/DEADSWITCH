@@ -11,7 +11,7 @@
       </ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="ops-scroll" class="grow ops-scroll">
+    <ui:ScrollView name="ops-scroll" class="grow ops-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
 
       <ui:VisualElement name="ops-pager" class="ds-pager">
       <ui:VisualElement name="page-threat" class="ds-page ops-page">

@@ -16,11 +16,12 @@
 /* ---------- Final window ---------- */
 .core-climax { margin-bottom: var(--s-3); }
 .core-climax__pip { width: 16px; height: 16px; margin-right: var(--s-3); }
-.core-climax__time { font-size: var(--fs-lg); }
+.core-climax__title { flex-shrink: 1; white-space: normal; }
+.core-climax__time { font-size: var(--fs-lg); flex-shrink: 0; margin-left: var(--s-3); }
 .core-climax__desc { margin-top: var(--s-1); font-size: var(--fs-xs); }
 .core-climax__btn { margin-top: var(--s-2); min-height: var(--touch); }
 .core-climax__btn > .ds-btn__label { font-size: var(--fs-micro); }
-.core-silenced { margin-bottom: var(--s-3); }
+.core-silenced { margin-bottom: var(--s-3); white-space: normal; }
 .core-climax > .ds-corner { display: none; }
 
 /* ---------- Hero: orb + reported corruption ---------- */

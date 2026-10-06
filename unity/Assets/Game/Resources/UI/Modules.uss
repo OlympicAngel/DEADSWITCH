@@ -6,7 +6,7 @@
 /* tier gate */
 .mod-tier { padding-bottom: var(--s-4); }
 .mod-tier__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-md); letter-spacing: var(--ls-label); color: var(--c-text); }
-.mod-tier__next { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); flex-shrink: 1; white-space: normal; -unity-text-align: middle-right; max-width: 260px; }
+.mod-tier__next { -unity-font-definition: resource("Fonts/ChakraPetch-SemiBold"); font-size: var(--fs-micro); letter-spacing: var(--ls-label); color: var(--c-cyan); flex-shrink: 1; white-space: normal; -unity-text-align: middle-right; max-width: 55%; }
 .mod-gate { flex-direction: row; align-items: center; margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background-color: var(--c-panel-sunken); }
 .mod-gate__pip { width: 40px; height: 40px; flex-shrink: 0; margin-right: var(--s-3); align-items: center; justify-content: center; border-width: 0; border-radius: var(--r-lg); background-color: var(--c-amber-wash); }
 .mod-gate__ic { width: 24px; height: 24px; }

@@ -71,7 +71,7 @@
       <ui:VisualElement name="page-site" class="ds-page map-page">
         <ui:Label text="SITE" class="ds-page__title" />
         <ui:Label text="target" class="ds-page__glyph" />
-        <ui:ScrollView name="site-scroll" class="map-scroll">
+        <ui:ScrollView name="site-scroll" class="map-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
           <ui:VisualElement name="site-sheet" class="ds-card ds-card--holo map-sheet">
             <ui:VisualElement class="ds-card__head">
               <ui:VisualElement class="ds-card__well"><ui:VisualElement class="ds-icon ds-icon--target ds-card__icon" /></ui:VisualElement>
@@ -132,7 +132,7 @@
       <ui:VisualElement name="page-ops" class="ds-page map-page">
         <ui:Label text="OPS" class="ds-page__title" />
         <ui:Label text="clock" class="ds-page__glyph" />
-        <ui:ScrollView name="ops-scroll" class="map-scroll">
+        <ui:ScrollView name="ops-scroll" class="map-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
           <!-- operations in the field (rows are built in code) -->
           <ui:VisualElement name="map-ops" class="map-ops">
             <ui:VisualElement class="row map-op">
@@ -146,7 +146,7 @@
       <ui:VisualElement name="page-trade" class="ds-page map-page">
         <ui:Label text="TRADE" class="ds-page__title" />
         <ui:Label text="box" class="ds-page__glyph" />
-        <ui:ScrollView name="trade-scroll" class="map-scroll">
+        <ui:ScrollView name="trade-scroll" class="map-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
           <!-- trade with the site's owner (F-034, doc 10 s5): price by their heat; Marked factions refuse -->
             <ui:VisualElement name="map-trade" class="map-trade">
               <ui:Label name="trade-with" text="RUSTBORN // RUST MARKET" class="ds-label map-trade__with" />
@@ -163,7 +163,7 @@
       <ui:VisualElement name="page-factions" class="ds-page map-page">
         <ui:Label text="FACTIONS" class="ds-page__title" />
         <ui:Label text="flag" class="ds-page__glyph" />
-        <ui:ScrollView name="factions-scroll" class="map-scroll">
+        <ui:ScrollView name="factions-scroll" class="map-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
           <!-- heat per faction: name + level word + meter (never color alone) -->
           <!-- heat per faction: name + level word + meter (never color alone) -->
           <ui:VisualElement class="row map-heat">

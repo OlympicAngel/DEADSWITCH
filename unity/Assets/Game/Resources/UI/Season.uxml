@@ -12,7 +12,7 @@
       <ui:VisualElement name="ssn-close" class="ds-iconbtn ssn-close"><ui:VisualElement class="ds-icon ds-icon--close ds-iconbtn__icon" /></ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:ScrollView name="ssn-scroll" class="grow ssn-scroll">
+    <ui:ScrollView name="ssn-scroll" class="grow ssn-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden">
       <ui:VisualElement class="ssn-body">
         <ui:VisualElement class="ds-card ds-card--holo ssn-card">
           <ui:VisualElement class="ds-card__head">
