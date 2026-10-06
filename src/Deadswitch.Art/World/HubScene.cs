@@ -861,15 +861,26 @@ namespace Deadswitch.Art.World
             return Math.Min(1f, main + loop);
         }
 
+        /// <summary>
+        /// A rain puddle: a smooth blob (a few low harmonics, not per-corner jitter, so it never reads as a polygon;
+        /// small enough amplitudes that it stays convex for the fan fill).
+        /// Draws the same 11 random numbers as before so the props placed after it keep their layout.
+        /// </summary>
         private static void Puddle(MeshBuilder b, Vector3 c, float rx, float rz, ArtRandom rng)
         {
-            const int n = 10;
-            var pts = new Vector3[n];
+            const int n = 28;
             float rot = rng.Range(0f, 6.28f);
+            var draws = new float[10];
+            for (int i = 0; i < draws.Length; i++)
+            {
+                draws[i] = rng.Range(0f, 6.2832f);
+            }
+
+            var pts = new Vector3[n];
             for (int i = 0; i < n; i++)
             {
                 float a = rot + (i * 6.2832f / n);
-                float k = rng.Range(0.75f, 1.15f);
+                float k = 1f + (0.1f * (float)Math.Sin((2f * a) + draws[0])) + (0.035f * (float)Math.Sin((3f * a) + draws[1])) + (0.01f * (float)Math.Sin((5f * a) + draws[2]));
                 pts[i] = c + new Vector3((float)Math.Cos(a) * rx * k, 0, (float)Math.Sin(a) * rz * k);
             }
 
