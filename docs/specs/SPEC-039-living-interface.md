@@ -67,8 +67,8 @@ Status: **Planned** (this branch), **Planned** (planned), **Editor** (needs live
 38. Shot 3: high pull-back to the drone view, HUD returns. *Done*
 39. Camera shake on shell impacts (scaled by effect intensity; off with reduced motion). *Done*
 40. Impact flashes and debris bursts on shells. *Done*
-41. Hit-stop: a 60 ms time dip on big impacts. *Planned*
-42. Battle HUD: attacker/defender strength bars that move with the fight. *Planned*
+41. Hit-stop: a 60 ms time dip on big impacts. *Done* (mortar barrage in `LiveBattle`; `cinematic.hitStopSeconds/hitStopScale` in Interface.json; visuals only, the sim runs on unscaled time)
+42. Battle HUD: attacker/defender strength bars that move with the fight. *Done* (BATTLE screen strength panel and tug bar)
 43. Siren light sweep (red rotating light) on the bunker during attacks. *Done*
 44. Aftermath shot: smoke drift, damaged buildings framed, "DEFENSE HELD" / "BREACH" stamp. *Done*
 45. Raid warning: red edge vignette pulse on the HUD frame, countdown in the frame. *Done*

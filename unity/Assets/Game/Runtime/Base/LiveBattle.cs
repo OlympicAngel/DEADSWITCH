@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Deadswitch.Art.Models;
 using Deadswitch.Art.World;
 using Deadswitch.Game.Core;
+using Deadswitch.Game.UI;
 using Deadswitch.Sim;
 using Deadswitch.Sim.Events;
 using Deadswitch.Sim.State;
@@ -21,6 +22,7 @@ namespace Deadswitch.Game.Base
         private const uint Seed = BaseView.Seed;
 
         private readonly List<Raider> _raiders = new List<Raider>();
+        private bool _hitStopping;
         private readonly List<Tracer> _tracers = new List<Tracer>();
         private readonly List<Vector3> _guns = new List<Vector3>();
         private GameHost _host;
@@ -90,6 +92,7 @@ namespace Deadswitch.Game.Base
                         Shell(Target() + (Random.insideUnitSphere * 2f), 1.4f);
                     }
 
+                    HitStop();
                     break;
                 case BattleAbility.Seize:
                     // their machines go dark and stop
@@ -238,6 +241,40 @@ namespace Deadswitch.Game.Base
         {
             Raider r = _raiders[Random.Range(0, _raiders.Count)];
             return r.T.position;
+        }
+
+        /// <summary>
+        /// A barrage lands: the world all but freezes for a beat (visuals only; the sim runs on unscaled time). Off with
+        /// reduced motion or zero effects.
+        /// </summary>
+        private void HitStop()
+        {
+            InterfaceConfig.CinematicRules r = InterfaceConfig.Current.cinematic;
+            if (r.hitStopSeconds <= 0f || _host.Settings.ReducedMotion || _host.Settings.Effects <= 0f || Time.timeScale < 1f)
+            {
+                return;
+            }
+
+            StartCoroutine(HitStopRoutine(r.hitStopSeconds, r.hitStopScale));
+        }
+
+        private System.Collections.IEnumerator HitStopRoutine(float seconds, float scale)
+        {
+            _hitStopping = true;
+            Time.timeScale = scale;
+            yield return new WaitForSecondsRealtime(seconds);
+            Time.timeScale = 1f;
+            _hitStopping = false;
+        }
+
+        private void OnDisable()
+        {
+            // a battle torn down mid hit-stop must not leave the world frozen
+            if (_hitStopping)
+            {
+                Time.timeScale = 1f;
+                _hitStopping = false;
+            }
         }
 
         private void Shell(Vector3 at, float scale)

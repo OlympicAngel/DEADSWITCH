@@ -90,6 +90,12 @@ namespace Deadswitch.Game.UI
             public float aftermathSeconds = 3.2f;
             public float shake = 0.35f;
             public float fov = 32f;
+
+            /// <summary>Real seconds the world all but freezes on a big impact (SPEC-039 idea 41); 0 turns it off.</summary>
+            public float hitStopSeconds = 0.06f;
+
+            /// <summary>Time scale during the hit-stop.</summary>
+            public float hitStopScale = 0.05f;
         }
 
         /// <summary>The opening film (SPEC-044): shots per beat, the staged Hub and how it falls, lights and waves.</summary>
