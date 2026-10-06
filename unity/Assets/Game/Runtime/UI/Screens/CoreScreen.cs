@@ -28,6 +28,7 @@ namespace Deadswitch.Game.UI.Screens
         private bool _visible;
         private bool _showModules;
         private bool _crisisSeen;
+        private System.Action _next;
 
         public CoreScreen(System.Func<IReadOnlyList<string>> history)
         {
@@ -53,6 +54,7 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("climax-purge").RegisterCallback<ClickEvent>(_ => Answer(Command.PurgeCore()));
             _ui.Q("climax-silence").RegisterCallback<ClickEvent>(_ => Answer(Command.UseOverride(OverrideKind.Silence)));
             _ui.Q("climax-cancel").RegisterCallback<ClickEvent>(_ => Answer(Command.CancelProject()));
+            _ui.Q("core-next-go").RegisterCallback<ClickEvent>(_ => _next?.Invoke());
             _orbEl = _ui.Q("core-orb");
             _orb = new AiOrb(_orbEl);
             _modules = new ModulesView(_ui.Q("modules-view"));
@@ -160,6 +162,8 @@ namespace Deadswitch.Game.UI.Screens
             _ui.Q("climax-cancel").EnableInClassList("is-disabled", !s.ClimaxAudited);
             TickClimax();
 
+            RefreshNext(s, c, crisis);
+
             int reported = ProjectSystem.ReportedCorruptionMilli(s, c);
             CorruptionBand band = CorruptionSystem.Band(c, reported);
             _ui.Q<Label>("core-reported").text = CorruptionSystem.Percent(reported).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -222,6 +226,73 @@ namespace Deadswitch.Game.UI.Screens
             }
 
             Kit.MarkEnds(transcript);
+            transcript.style.display = transcript.childCount > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>
+        /// The one decision the core wants from you now (SPEC-046 r9), most pressing first: the next tier, a module
+        /// that can be restored, an audit that is ready. Hidden during a takeover or flush (ACTIONS leads then).
+        /// </summary>
+        private void RefreshNext(GameState s, SimConfig c, bool crisis)
+        {
+            string title = null;
+            string body = null;
+            string button = null;
+            _next = null;
+            TierGates g = Modules.Gates(s, c);
+            bool busy = s.ResearchNode != 0 || s.MemoryNode != 0;
+            int ready = 0;
+            foreach (ModuleDef d in Modules.Catalog)
+            {
+                if (!Modules.IsRestored(s, d.Node) && !Modules.Restoring(s, d.Node) && Modules.Availability(s, d.Node) == RejectReason.None)
+                {
+                    ready++;
+                }
+            }
+
+            bool auditReady = s.Tick >= s.AuditReadyTick && s.Compute >= c.Project.AuditComputeCost;
+            if (crisis)
+            {
+                // the ACTIONS page carries the crisis
+            }
+            else if (s.Tier < c.Tier.MaxTier && g.All)
+            {
+                title = "NEXT FROM YOU // TIER " + (s.Tier + 1);
+                body = "Every gate is met. Say the word and the Hub grows.";
+                button = "OPEN MODULES";
+                _next = OpenModules;
+            }
+            else if (!busy && ready > 0)
+            {
+                title = "NEXT FROM YOU // " + ready + (ready == 1 ? " MODULE READY" : " MODULES READY");
+                body = "Nothing is restoring. Give me something to remember.";
+                button = "OPEN MODULES";
+                _next = OpenModules;
+            }
+            else if (auditReady)
+            {
+                title = "NEXT FROM YOU // AUDIT READY";
+                body = "Check what I report against what is true. I will not stop you.";
+                button = "RUN AUDIT // " + c.Project.AuditComputeCost + " COMPUTE";
+                _next = Audit;
+            }
+            else if (busy)
+            {
+                var node = (ModuleNode)(s.ResearchNode != 0 ? s.ResearchNode : s.MemoryNode);
+                title = "RESTORING // " + ModuleTexts.Name(node);
+                body = "Nothing needs you here. I will say when it is done.";
+                button = "OPEN MODULES";
+                _next = OpenModules;
+            }
+
+            VisualElement card = _ui.Q("core-next");
+            card.EnableInClassList("is-hidden", title == null);
+            if (title != null)
+            {
+                _ui.Q<Label>("core-next-title").text = title;
+                _ui.Q<Label>("core-next-body").text = body;
+                Kit.SetButtonText(_ui.Q("core-next-go"), button);
+            }
         }
 
         private void TickClimax()

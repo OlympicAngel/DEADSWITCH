@@ -25,7 +25,7 @@
 
 /* ---------- Hero: orb + reported corruption ---------- */
 .core-hero { align-items: stretch; margin-bottom: var(--s-4); padding: var(--s-4); border-width: 0; border-top-width: 1px; border-radius: var(--r-lg); border-top-color: var(--c-cyan-dim); background-color: var(--c-glass); }
-.core-orb { --ring-color: var(--c-cyan); --core-color: var(--c-cyan-glow); width: 360px; height: 360px; align-self: center; margin: var(--s-2) 0 var(--s-3) 0; }
+.core-orb { --ring-color: var(--c-cyan); --core-color: var(--c-cyan-glow); width: 220px; height: 220px; align-self: center; margin: var(--s-2) 0 var(--s-3) 0; }
 .core-orb--amber { --ring-color: var(--c-amber); --core-color: var(--c-amber-glow); }
 .core-orb--red { --ring-color: var(--c-red); --core-color: var(--c-red-glow); }
 .core-hero__readout { align-items: center; }
@@ -74,3 +74,10 @@
 .core-scroll > .unity-scroll-view__content-container { flex-shrink: 0; }
 #status-view { flex-shrink: 0; }
 .core-hero, .ds-card, .ds-section, .core-links, .core-transcript, .core-climax, .core-silenced, .core-line, .core-dials, .core-pills, .core-transcript__line { flex-shrink: 0; }
+
+/* SPEC-046 r9: the one decision the core wants from you, above its status */
+.core-next { flex-shrink: 0; margin-bottom: var(--s-4); padding: var(--s-4); border-top-color: var(--c-cyan); }
+.core-next.is-hidden { display: none; }
+.core-next__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-sm); letter-spacing: var(--ls-label); color: var(--c-cyan); }
+.core-next__body { margin: var(--s-2) 0 var(--s-3) 0; white-space: normal; }
+.core-next__btn { min-height: var(--touch); }

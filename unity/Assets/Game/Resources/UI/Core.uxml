@@ -30,6 +30,12 @@
         <ui:VisualElement name="page-presence" class="ds-page">
           <ui:Label text="PRESENCE" class="ds-page__title" />
           <ui:Label text="core" class="ds-page__glyph" />
+        <!-- SPEC-046 r9: CORE opens on what the core needs from you now -->
+        <ui:VisualElement name="core-next" class="ds-card core-next is-hidden">
+          <ui:Label name="core-next-title" text="NEXT FROM YOU // MODULE READY" class="core-next__title" />
+          <ui:Label name="core-next-body" text="A memory sector can be restored now." class="ds-body core-next__body" />
+          <ui:VisualElement name="core-next-go" class="ds-btn ds-btn--primary core-next__btn"><ui:Label name="core-next-label" text="OPEN MODULES" class="ds-btn__label" /></ui:VisualElement>
+        </ui:VisualElement>
         <ui:VisualElement class="core-hero">
           <ui:VisualElement name="core-orb" class="ai-orb core-orb" />
           <ui:VisualElement class="core-hero__readout">
