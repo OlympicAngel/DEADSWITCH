@@ -19,7 +19,7 @@
 .ssn-r__body { flex-shrink: 1; flex-basis: 0; }
 .ssn-r__name { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-xs); letter-spacing: var(--ls-label); color: var(--c-text-dim); white-space: normal; }
 .ssn-r__state { -unity-font-definition: resource("Fonts/IBMPlexMono-Medium"); font-size: var(--fs-micro); color: var(--c-text-faint); margin-top: var(--s-1); white-space: normal; }
-.ssn-r__codex { color: var(--c-text); margin-top: var(--s-2); }
+.ssn-r__codex { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); color: var(--c-text); margin-top: var(--s-2); white-space: normal; }
 .ssn-r__btn { width: 160px; margin-left: var(--s-3); padding: 0 var(--s-2); }
 .ssn-r.is-unlocked > .ssn-r__rank { color: var(--c-phosphor); background-color: var(--c-phosphor-wash); }
 .ssn-r.is-unlocked .ssn-r__well { background-color: var(--c-phosphor-wash); }

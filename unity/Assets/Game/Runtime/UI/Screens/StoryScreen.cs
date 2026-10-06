@@ -121,7 +121,7 @@ namespace Deadswitch.Game.UI.Screens
             string villain = Names.Faction(ChapterSystem.Villain(tier));
             _ui.Q<Label>("sty-payoff-text").text = closed ? chapter.Payoff
                 : "Repel or slip their attacks after the twist. " + villain + " attacks count " + (c.VillainPoints == 2 ? "double" : "x" + c.VillainPoints)
-                  + ". Reward: " + Fmt.Num(c.PayoffEnergy[index]) + " E, " + Fmt.Num(c.PayoffCompute[index]) + " compute and a memory fragment.";
+                  + ". Reward: " + Fmt.Num(c.PayoffEnergy[index]) + " energy, " + Fmt.Num(c.PayoffCompute[index]) + " compute and a memory fragment.";
 
             // archive: recovered fragments read clear, the rest stay corrupted
             _ui.Q<Label>("sty-count").text = ChapterSystem.FragmentsKnown(s) + " / " + ChapterSystem.FragmentCount;
