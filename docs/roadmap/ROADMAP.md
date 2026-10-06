@@ -7,8 +7,8 @@ Each milestone has an exit criterion. Do not start the next milestone until it i
 - [x] Repo structure, agent instructions, ADRs, CI, tooling
 - [x] Sim skeleton: Pcg32, GameState, tick loop, event log, hasher, tests, CLI
 - [x] `pwsh tools/check.ps1` green on your machine (Linux `tools/check.sh` verified)
-- [ ] `tools/setup-env.ps1` run; all toolchains on `D:`
-- [ ] Repo folder renamed to remove the space (optional but recommended)
+- [x] `tools/setup-env.ps1` run; all toolchains on `D:` (D:dev: dotnet, git, nuget, unity, playwright)
+- [x] Repo folder renamed to remove the space (D:dingDEADSWITCH)
 - **Exit:** clean clone builds and tests pass on a fresh machine.
 
 ## M1 - Paper prototype: the pressure loop (Phase 0)

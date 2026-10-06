@@ -37,7 +37,7 @@ Sub heartbeat; orbital pad (detuned, slow filter); screen wake blips; klaxon; la
 - [x] The Hub's destruction is visible building by building; the ruin shot has no lamps, only fire.
 - [x] Restore steps work by tap, frame each building from the central walkway, and end in the real run with the HUD revealed.
 - [x] Resume after quit lands on step 8; START OVER replays the film.
-- [ ] Reduced motion path checked in the Editor (code path: cards over black, then the HUD).
+- [x] Reduced motion path checked in the Editor 2026-10-06: cards over black wait for a tap, REACH THE CORE goes straight to the HUD; the REC dot holds steady.
 
 ## Tests
 None in the sim (presentation only). Verified by Editor captures (`docs/agents/HANDOFF.md` agent driving notes).

@@ -253,7 +253,7 @@ namespace Deadswitch.Game.UI.Hud
             float black = hub ? 1f - Mathf.Clamp01((_beat - fadeFrom) / (mood == PrologueMood.Signal ? 2f : FadeInSeconds)) : 1f;
             _black.style.opacity = Motion.Reduced && hub ? 0f : black;
 
-            _rec.style.opacity = Mathf.Repeat(_clock, 1.2f) < 0.7f ? 1f : 0.2f;
+            _rec.style.opacity = Motion.Reduced || Mathf.Repeat(_clock, 1.2f) < 0.7f ? 1f : 0.2f;
 
             if (_flash > 0f)
             {
