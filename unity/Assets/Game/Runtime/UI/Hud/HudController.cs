@@ -465,14 +465,16 @@ namespace Deadswitch.Game.UI.Hud
                 RefreshPlan(s, c);
             }
 
-            // dispatch chip (F-034): an ultimatum outranks a dilemma
+            // dispatch chip (F-034): an ultimatum outranks a dilemma; with nothing to answer it names the world event
             bool ultimatum = s.Ultimatum == UltimatumStage.Issued;
             bool dilemma = s.Dilemma != DilemmaKind.None;
-            _dispatchChip.EnableInClassList("is-hidden", !ultimatum && !dilemma);
+            bool world = s.WorldEvent != WorldEventKind.None && s.Tick < s.WorldEventUntilTick;
+            _dispatchChip.EnableInClassList("is-hidden", !ultimatum && !dilemma && !world);
             _dispatchChip.EnableInClassList("hud-dispatch--red", ultimatum);
             Q<VisualElement>("dispatch-pip").EnableInClassList("ds-pip--red", ultimatum);
             Q<VisualElement>("dispatch-pip").EnableInClassList("ds-pip--amber", !ultimatum);
-            Q<Label>("dispatch-title").text = ultimatum ? "WARLORD ULTIMATUM" : "DILEMMA // " + LivingTexts.DilemmaName(s.Dilemma);
+            Q<Label>("dispatch-title").text = ultimatum ? "WARLORD ULTIMATUM" : dilemma ? "DILEMMA // " + LivingTexts.DilemmaName(s.Dilemma) : LivingTexts.EventName(s.WorldEvent);
+            Icons.SetGlyph(Q<VisualElement>("dispatch-icon"), ultimatum || dilemma ? "mail" : "signal");
 
             UpdateTimers();
         }
@@ -536,6 +538,10 @@ namespace Deadswitch.Game.UI.Hud
             if (s.Ultimatum == UltimatumStage.Issued || s.Dilemma != DilemmaKind.None)
             {
                 Q<Label>("dispatch-time").text = Fmt.Countdown(SecondsUntil(s.Ultimatum == UltimatumStage.Issued ? s.UltimatumDeadlineTick : s.DilemmaUntilTick));
+            }
+            else if (s.WorldEvent != WorldEventKind.None && s.Tick < s.WorldEventUntilTick)
+            {
+                Q<Label>("dispatch-time").text = Fmt.Countdown(SecondsUntil(s.WorldEventUntilTick));
             }
 
             BuildJob next = null;

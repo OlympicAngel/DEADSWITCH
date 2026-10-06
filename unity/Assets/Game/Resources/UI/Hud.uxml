@@ -118,7 +118,7 @@
           <ui:VisualElement name="next-bar" class="ds-progress ds-progress--amber hud-job__bar"><ui:VisualElement class="ds-progress__fill" /></ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="dispatch-chip" class="hud-dispatch rail-pill is-hidden">
-          <ui:VisualElement class="ds-icon ds-icon--mail hud-dispatch__icon" />
+          <ui:VisualElement name="dispatch-icon" class="ds-icon ds-icon--mail hud-dispatch__icon" />
           <ui:VisualElement name="dispatch-pip" class="ds-pip ds-pip--amber hud-dispatch__pip" />
           <ui:VisualElement>
             <ui:Label name="dispatch-title" text="DILEMMA // REFUGEES" class="hud-dispatch__title" />
