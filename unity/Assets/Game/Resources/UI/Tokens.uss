@@ -147,20 +147,25 @@
     --fs-hero: 120px;
 }
 
-/* HUD themes (F-036): cosmetic only, earned from optional ads. Signal meanings (amber, red, magenta) never change. */
+/* HUD themes (F-036): cosmetic only, earned from optional ads. They retint the interface accent (cyan, since F-100) and
+   the lines; signal meanings (phosphor, amber, red, magenta) never change. */
 .ds-root.theme-cold {
-    --c-phosphor: #8CC8D8;
-    --c-phosphor-dim: rgba(140, 200, 216, 0.55);
-    --c-phosphor-glow: rgba(140, 200, 216, 0.35);
+    --c-cyan: #8CC8D8;
+    --c-cyan-dim: rgba(140, 200, 216, 0.5);
+    --c-cyan-glow: rgba(140, 200, 216, 0.35);
+    --c-cyan-line: rgba(140, 200, 216, 0.22);
+    --c-cyan-wash: rgba(140, 200, 216, 0.08);
     --c-line: rgba(140, 200, 216, 0.16);
     --c-line-mid: rgba(140, 200, 216, 0.32);
     --c-line-strong: rgba(140, 200, 216, 0.62);
 }
 
 .ds-root.theme-bone {
-    --c-phosphor: #D9D2BE;
-    --c-phosphor-dim: rgba(217, 210, 190, 0.55);
-    --c-phosphor-glow: rgba(217, 210, 190, 0.35);
+    --c-cyan: #D9D2BE;
+    --c-cyan-dim: rgba(217, 210, 190, 0.5);
+    --c-cyan-glow: rgba(217, 210, 190, 0.35);
+    --c-cyan-line: rgba(217, 210, 190, 0.22);
+    --c-cyan-wash: rgba(217, 210, 190, 0.08);
     --c-line: rgba(217, 210, 190, 0.16);
     --c-line-mid: rgba(217, 210, 190, 0.32);
     --c-line-strong: rgba(217, 210, 190, 0.62);
@@ -168,18 +173,22 @@
 
 /* Season track themes (F-048): cosmetic, earned by play (verdigris) or on the premium track (ash). */
 .ds-root.theme-verdigris {
-    --c-phosphor: #7CC2AE;
-    --c-phosphor-dim: rgba(124, 194, 174, 0.55);
-    --c-phosphor-glow: rgba(124, 194, 174, 0.35);
+    --c-cyan: #7CC2AE;
+    --c-cyan-dim: rgba(124, 194, 174, 0.5);
+    --c-cyan-glow: rgba(124, 194, 174, 0.35);
+    --c-cyan-line: rgba(124, 194, 174, 0.22);
+    --c-cyan-wash: rgba(124, 194, 174, 0.08);
     --c-line: rgba(124, 194, 174, 0.16);
     --c-line-mid: rgba(124, 194, 174, 0.32);
     --c-line-strong: rgba(124, 194, 174, 0.62);
 }
 
 .ds-root.theme-ash {
-    --c-phosphor: #B9BEC6;
-    --c-phosphor-dim: rgba(185, 190, 198, 0.55);
-    --c-phosphor-glow: rgba(185, 190, 198, 0.35);
+    --c-cyan: #B9BEC6;
+    --c-cyan-dim: rgba(185, 190, 198, 0.5);
+    --c-cyan-glow: rgba(185, 190, 198, 0.35);
+    --c-cyan-line: rgba(185, 190, 198, 0.22);
+    --c-cyan-wash: rgba(185, 190, 198, 0.08);
     --c-line: rgba(185, 190, 198, 0.16);
     --c-line-mid: rgba(185, 190, 198, 0.32);
     --c-line-strong: rgba(185, 190, 198, 0.62);
