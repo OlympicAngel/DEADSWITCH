@@ -588,6 +588,8 @@
 .ds-seg__item.is-selected .unity-label, .ds-seg__item.is-on .unity-label, .ds-seg__item.is-active .unity-label { color: var(--c-cyan); }
 
 /* Icon button: round, borderless (close, back, info) */
+/* icons keep their size next to long text */
+.ds-icon { flex-shrink: 0; }
 .ds-iconbtn { width: 88px; height: 88px; align-items: center; justify-content: center; border-width: 0; border-radius: 44px; background-color: var(--c-panel-sunken); }
 .ds-iconbtn:active { background-color: var(--c-cyan-wash); scale: 0.94 0.94; }
 .ds-iconbtn__icon { width: 36px; height: 36px; --icon-color: var(--c-text-dim); }

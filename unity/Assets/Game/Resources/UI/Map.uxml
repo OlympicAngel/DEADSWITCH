@@ -153,7 +153,7 @@
               <ui:Label name="trade-left" text="3/3 TODAY // COLD x0.8" class="map-trade__left" />
               <ui:VisualElement class="row map-trade__row">
                 <ui:VisualElement name="trade-0" class="map-trade__item"><ui:Label name="trade-0-get" text="+20 FUEL" class="map-trade__get" /><ui:Label name="trade-0-pay" text="80 ENERGY" class="map-trade__pay" /></ui:VisualElement>
-                <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 CELLS" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 FUEL" class="map-trade__pay" /></ui:VisualElement>
+                <ui:VisualElement name="trade-1" class="map-trade__item"><ui:Label name="trade-1-get" text="+200 ENERGY" class="map-trade__get" /><ui:Label name="trade-1-pay" text="32 FUEL" class="map-trade__pay" /></ui:VisualElement>
                 <ui:VisualElement name="trade-2" class="map-trade__item"><ui:Label name="trade-2-get" text="+20 COMPUTE" class="map-trade__get" /><ui:Label name="trade-2-pay" text="120 ENERGY" class="map-trade__pay" /></ui:VisualElement>
                 <ui:VisualElement name="trade-3" class="map-trade__item"><ui:Label name="trade-3-get" text="+1 BLUEPRINT" class="map-trade__get" /><ui:Label name="trade-3-pay" text="400 ENERGY" class="map-trade__pay" /></ui:VisualElement>
               </ui:VisualElement>

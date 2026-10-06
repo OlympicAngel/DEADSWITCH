@@ -94,7 +94,7 @@ namespace Deadswitch.Game.Presentation
             switch (good)
             {
                 case TradeGood.Fuel: return "FUEL";
-                case TradeGood.EnergyCells: return "CELLS";
+                case TradeGood.EnergyCells: return "ENERGY";
                 case TradeGood.Blueprints: return "BLUEPRINT";
                 default: return "COMPUTE";
             }
