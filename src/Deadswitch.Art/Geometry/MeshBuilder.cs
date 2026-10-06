@@ -384,7 +384,6 @@ namespace Deadswitch.Art.Geometry
         {
             int ribs = Math.Max(1, (int)Math.Round((x1 - x0) / pitch));
             float w = (x1 - x0) / ribs;
-            var inside = new Vector3((x0 + x1) * 0.5f, (y0 + y1) * 0.5f, z + 1f);
             for (int i = 0; i < ribs; i++)
             {
                 float a = x0 + (i * w);
@@ -392,6 +391,9 @@ namespace Deadswitch.Art.Geometry
                 float[] zs = { z, z, z - depth, z - depth, z };
                 for (int k = 0; k < 4; k++)
                 {
+                    // each strip faces away from a point straight behind it, so the rib slopes on both halves of the
+                    // sheet face out (one shared point turned half of them inward, and they were culled)
+                    var inside = new Vector3((xs[k] + xs[k + 1]) * 0.5f, (y0 + y1) * 0.5f, z + 1f);
                     Face(inside, mat, k == 1 || k == 3 ? 1.1f : 1f,
                         new Vector3(xs[k], y0, zs[k]), new Vector3(xs[k + 1], y0, zs[k + 1]), new Vector3(xs[k + 1], y1, zs[k + 1]), new Vector3(xs[k], y1, zs[k]));
                 }
