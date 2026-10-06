@@ -54,6 +54,9 @@ namespace Deadswitch.Art.Models
                 case FacilityKind.Turret:
                     Turret(b, m, level, seed);
                     break;
+                case FacilityKind.Reactor when stage > 0:
+                    ReactorStage(b, m, stage, seed);
+                    break;
                 case FacilityKind.Reactor:
                     Reactor(b, m, level, seed);
                     break;
@@ -469,6 +472,28 @@ namespace Deadswitch.Art.Models
         // ---------- Reactor (SPEC-029): containment drum and dome, cooling tower, coolant loop, control room ----------
         private static void Reactor(MeshBuilder b, Model m, int level, uint seed)
         {
+            ReactorCore(b, m, seed, level >= 2, level >= 3, 0);
+        }
+
+        /// <summary>
+        /// Reactor by visual stage 1-10 (SPEC-045 stage plan). Preview only, like <see cref="GeneratorStage"/>. Stages 1-3
+        /// are salvaged RTG casks and a first small drum; 4-6 are the level models, then pumps, bunker, berm and rings.
+        /// </summary>
+        private static void ReactorStage(MeshBuilder b, Model m, int stage, uint seed)
+        {
+            stage = Math.Min(10, Math.Max(1, stage));
+            if (stage <= 3)
+            {
+                ReactorCasks(b, m, stage, seed);
+                return;
+            }
+
+            ReactorCore(b, m, seed, stage >= 5, stage >= 6, stage);
+        }
+
+        /// <param name="stage">SPEC-045 stage for the stage-only extras (7 pumps, 8 bunker, 9 berm, 10 rings); 0 for the level models.</param>
+        private static void ReactorCore(MeshBuilder b, Model m, uint seed, bool secondTower, bool gantry, int stage)
+        {
             var rng = new ArtRandom(seed + 9);
             b.BoxOn(0f, 0, 0.2f, 6.0f, 0.22f, 5.8f, Mat.Concrete, 0.05f);
 
@@ -524,7 +549,7 @@ namespace Deadswitch.Art.Models
             KitModules.Barrels(b, new Vector3(2.4f, 0.22f, -2.3f), 3, rng);
             KitParts.Transformer(b, new Vector3(-2.55f, 0.22f, 2.6f), 0.8f);
 
-            if (level >= 2)
+            if (secondTower)
             {
                 // a second, smaller tower and a steam relief stack
                 Vector3 t2 = new Vector3(2.35f, 0.22f, -0.2f);
@@ -534,7 +559,7 @@ namespace Deadswitch.Art.Models
                 Stack(b, m, new Vector3(-2.6f, 0.22f, -0.4f), 0.16f, 5.2f, true);
             }
 
-            if (level >= 3)
+            if (gantry)
             {
                 // a gantry crane straddling the dome for refuelling
                 foreach (int s in new[] { -1, 1 })
@@ -549,7 +574,102 @@ namespace Deadswitch.Art.Models
                 b.Strut(new Vector3(core.X + 0.4f, 4.65f, core.Z - 0.1f), new Vector3(core.X + 0.4f, 4.3f, core.Z - 0.1f), 0.02f, Mat.DarkSteel);
             }
 
+            if (stage >= 7)
+            {
+                // coolant pump skid between the drum and the exchanger
+                Chiller(b, m, new Vector3(0.2f, 0.22f, 2.75f), 1, seed + 21);
+                KitParts.Pipe(b, new[] { new Vector3(0.2f, 0.8f, 2.2f), new Vector3(0.2f, 0.8f, 1.6f), new Vector3(core.X + 1.3f, 0.8f, 1.6f) }, 0.08f, Mat.Rust);
+            }
+
+            if (stage >= 8)
+            {
+                // radiation placards and a sandbagged entrance to the control room
+                foreach (float x in new[] { -2.6f, -0.3f })
+                {
+                    b.Box(new Vector3(x, 1.9f, -3.33f), new Vector3(0.45f, 0.45f, 0.03f), Mat.PaintYellow, 0.01f);
+                    b.Frustum(new Vector3(x, 1.9f, -3.36f), 0.07f, 0.07f, 0.01f, 10, Mat.Rubber, 0f, false);
+                }
+
+                Shapes.SandbagWall(b, new Vector3(-2.95f, 0.22f, -3.0f), new Vector3(-2.95f, 0.22f, -1.0f), 2);
+            }
+
+            if (stage >= 9)
+            {
+                // blast berm: retaining walls behind the drum and along the open side
+                KitModules.RetainingWall(b, new Vector3(-1.2f, 0, 3.15f), 3.6f, 1.4f, new ArtRandom(seed + 23));
+                b.Push(new Vector3(-3.15f, 0, 1.0f), 90f);
+                KitModules.RetainingWall(b, Vector3.Zero, 2.8f, 1.4f, new ArtRandom(seed + 24));
+                b.Pop();
+            }
+
+            if (stage >= 10)
+            {
+                // integrated: cyan containment rings on the drum and a shielded conduit to the plot edge
+                foreach (float y in new[] { 1.4f, 2.4f })
+                {
+                    b.Frustum(core + new Vector3(0, y, 0), 1.545f, 1.545f, 0.05f, 20, Mat.NeonCyan, 0f, false);
+                }
+
+                b.BoxOn(-2.9f, 0, -1.3f, 0.45f, 0.3f, 3.6f, Mat.DarkSteel, 0.02f);
+                b.Box(new Vector3(-2.9f, 0.31f, -1.3f), new Vector3(0.1f, 0.02f, 3.4f), Mat.NeonCyan, 0f);
+            }
+
             Beacon(b, m, new Vector3(-0.2f, 2.9f, -2.0f));
+        }
+
+        /// <summary>Reactor stages 1-3: RTG casks on a pallet, then a shielded cask rack, then a small drum on a plinth.</summary>
+        private static void ReactorCasks(MeshBuilder b, Model m, int stage, uint seed)
+        {
+            var rng = new ArtRandom(seed + 9);
+            int casks = stage == 1 ? 2 : 4;
+            if (stage >= 3)
+            {
+                // a first containment drum on a plinth, its control hut and a short exhaust
+                b.BoxOn(0f, 0, 0.6f, 5.2f, 0.22f, 4.4f, Mat.Concrete, 0.05f);
+                Vector3 drum = new Vector3(-0.9f, 0.22f, 1.2f);
+                b.Frustum(drum, 1.15f, 1.1f, 0.3f, 18, Mat.ConcreteDark, 0.05f);
+                b.Frustum(drum + new Vector3(0, 0.3f, 0), 0.95f, 0.9f, 1.9f, 18, Mat.Concrete, 0.04f);
+                b.Frustum(drum + new Vector3(0, 0.6f, 0), 0.96f, 0.95f, 0.18f, 18, Mat.PaintRed, 0.01f, false);
+                b.Sphere(drum + new Vector3(0, 2.2f, 0), new Vector3(0.9f, 0.5f, 0.9f), 6, 18, Mat.ConcreteDark, 0f, 0.5f);
+                Shapes.Lamp(b, m, drum + new Vector3(0, 2.8f, 0), Mat.LampAmber, Model.Amber, 0.8f, 3.5f, LightRole.Status, 0.08f);
+                Props.Container(b, m, new Vector3(1.4f, 0.22f, -1.1f), 2.4f, 2.4f, 1.8f, Mat.SandSteel, true, rng.NextUInt(), "RX");
+                Stack(b, m, new Vector3(1.6f, 0.22f, 1.9f), 0.14f, 3.6f, false);
+                KitParts.Pipe(b, new[] { new Vector3(drum.X + 0.9f, 1.2f, drum.Z), new Vector3(1.6f, 1.2f, drum.Z), new Vector3(1.6f, 1.2f, 1.7f) }, 0.08f, Mat.Rust);
+                casks = 0;
+            }
+
+            // RTG casks: finned drums on a pallet, behind a lead-sheet shield from stage 2
+            for (int i = 0; i < casks; i++)
+            {
+                Vector3 c = new Vector3(-1.4f + ((i % 2) * 0.9f), 0.14f, -0.2f + ((i / 2) * 0.9f));
+                b.Frustum(c, 0.32f, 0.32f, 0.9f, 12, Mat.OliveSteel, 0.03f);
+                for (int k = 0; k < 4; k++)
+                {
+                    b.Push(c, k * 45f);
+                    b.Box(new Vector3(0, 0.45f, 0), new Vector3(0.84f, 0.7f, 0.03f), Mat.DarkSteel, 0f);
+                    b.Pop();
+                }
+
+                b.Box(c + new Vector3(0, 0.93f, 0), new Vector3(0.24f, 0.06f, 0.24f), Mat.PaintYellow, 0.01f);
+            }
+
+            if (casks > 0)
+            {
+                KitModules.Pallet(b, new Vector3(-0.95f, 0, 0.25f), 0f, 1);
+                Props.Lamp(b, m, new Vector3(0.3f, 1.4f, -1.0f), false, 0.7f, LightRole.Status);
+            }
+
+            if (stage == 2)
+            {
+                b.BoxOn(-0.95f, 0, -1.1f, 2.4f, 1.5f, 0.12f, Mat.DarkSteel, 0.01f);
+                b.BoxOn(-0.95f, 0, -1.25f, 2.6f, 0.15f, 0.25f, Mat.Concrete, 0.02f);
+            }
+
+            // hazard fence and placard around the yard
+            KitModules.Fence(b, new Vector3(-2.9f, 0, -2.6f), new Vector3(2.9f, 0, -2.6f), 1.6f);
+            b.Box(new Vector3(0.2f, 1.1f, -2.64f), new Vector3(0.45f, 0.45f, 0.03f), Mat.PaintYellow, 0.01f);
+            KitModules.Barrels(b, new Vector3(2.3f, 0, 2.3f), 2, rng);
+            Beacon(b, m, new Vector3(1.2f, 1.8f, -1.8f));
         }
 
         // ---------- Compute: server container, antenna mast, dishes, chillers, outdoor racks ----------

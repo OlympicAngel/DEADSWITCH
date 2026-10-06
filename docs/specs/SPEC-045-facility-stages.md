@@ -34,8 +34,8 @@ Signature = the shape that identifies the kind at every stage.
 **Turret** (signature: gun on a ring) — reference build in `Facilities.TurretStage` (shares `TurretCore` with the level models)
 1 machine gun on a tripod behind a short sandbag wall; 2 full sandbag ring, ammo crates, a tank trap; 3 octagonal concrete emplacement with the shielded pintle gun; 4 twin guns, spotlight pole; 5 steel gun tower with armour skirts and a seat box; 6 rotating search radar on a mast; 7 four guns, a third sandbag layer, a deck spotlight; 8 concrete ammo bunker with a blast door; 9 second ring of armour plates around the gun deck, extra tank traps; 10 AI fire control: a rangefinder housing with a cyan aiming line along the guns.
 
-**Reactor** (signature: dome + cooling stack)
-1 sealed RTG casks on a pallet behind a fence; 2 cask rack with lead sheet shield; 3 small containment drum on a plinth; 4 dome (today's L1); 5 cooling tower; 6 second cooling tower; 7 coolant loop pipes and pumps; 8 control bunker with radiation signs; 9 gantry crane over the dome; 10 double dome with blast berm and cyan containment rings.
+**Reactor** (signature: containment drum + cooling tower) — reference build in `Facilities.ReactorStage` (shares `ReactorCore` with the level models)
+1 two finned RTG casks on a pallet behind a hazard fence; 2 four casks behind a lead-sheet shield; 3 a first small containment drum on a plinth, control hut, short exhaust; 4 full drum and dome, cooling tower, coolant loop, control room; 5 second smaller tower and a relief stack; 6 gantry crane over the dome; 7 coolant pump skid; 8 radiation placards and a sandbagged control entrance; 9 blast berm walls behind and beside the drum; 10 cyan containment rings on the drum, shielded conduit.
 
 **Drone Bay** (signature: launch pad + hangar door)
 1 crate workbench and a quadcopter; 2 painted pad, charging cable; 3 tent hangar; 4 container hangar; 5 launch rail; 6 second pad, parts racks; 7 antenna mast; 8 armoured hangar door; 9 roof launch deck; 10 automated launcher with cyan pad lights.
