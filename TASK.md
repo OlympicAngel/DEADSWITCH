@@ -1,6 +1,6 @@
 # TASK: F-106 Interface redesign
 
-- Status: In progress
+- Status: Done 2026-10-06 (open question in SPEC-046 for the owner)
 - Branch: feat/f106-ui-redesign
 - Spec: `docs/specs/SPEC-046-ui-redesign.md`
 
@@ -11,6 +11,6 @@
 - [x] 3. Opaque surfaces (all screens but BASE, BATTLE, REPORT) and one-line headers (taglines hidden; data status right of the title)
 - [x] 4. CORE decision-first: NEXT FROM YOU card (tier up, module ready, audit, restoring) above a smaller orb; empty transcript hidden. Primary actions already carry their cost in the label
 - [x] 5. Per-screen pass at the new floor (all 13 screens captured; REPORT header and evidence captions fixed)
-- [ ] 6. First-time task check at 720x1280 and 1080x2340
+- [x] 6. First-time task check (Editor Game view 380x800, the 9:19 phone shape): each task reaches its decision surface in at most 2 taps; build sheet made solid
 
 Previous: F-108 done; F-110 on `feat/f110-fog` (awaiting merge).

@@ -262,7 +262,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--c-elev-1);
+    /* SPEC-046 r6: a decision sheet is solid; text under it must not read through */
+    background-color: var(--c-panel-solid);
     border-top-width: 1px;
     border-color: var(--c-cyan-line);
     border-top-left-radius: var(--r-xl);

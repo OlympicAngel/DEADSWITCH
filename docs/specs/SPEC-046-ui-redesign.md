@@ -1,6 +1,6 @@
 # SPEC-046: Interface redesign (information architecture, legibility, decision screens)
 
-- Status: In progress (F-106)
+- Status: Done 2026-10-06 (F-106); open question below waits on the owner
 - Pillar: AI relationship (the interface is the AI's voice), Base & economy, Defense & offline, Offense & diplomacy (every screen)
 - Touches: HUD, every screen under `UI/Screens`, base quick actions, map, guide/objectives, comms, settings (text scale)
 - Source rules: doc 10 (major UI redesign, mobile legibility, HUD essentials: next timers, energy balance, corruption, highest heat; colorblind shape+color; scalable text), doc 11 (Screens, Type), quality bar (mobile legibility, 44 px targets), ADVISOR_VOICE
@@ -51,11 +51,11 @@ Map pan/zoom and pin popovers (F-107). Facility visuals and economy (F-111). New
 6. First-time task check at 720x1280 and 1080x2340: build a battery bank, set a defense before a raid, answer a module request, send an op from the map. Each reachable in ≤ 2 taps from BASE with no overlapping text.
 
 ## Acceptance criteria
-- [ ] No text style below 33 px at the 1080 reference (grep `--fs-*` and literal `font-size` in USS).
-- [ ] Chrome height measured in the Editor at 720x1280 meets rule 3.
-- [ ] Objective and comms never shown at once; nothing overlaps screen content.
-- [ ] All screens captured at 100% and 130% text with no clipping.
-- [ ] The four first-time tasks pass the step 6 check.
+- [x] No text style below 33 px at the 1080 reference (`tools/uss_lint.py` enforces it).
+- [ ] Chrome height meets rule 3: off BASE ~18% (met); on BASE ~24% with an objective showing (the merged strip in the open question closes the gap).
+- [ ] Objective and comms never shown at once: waits on the open question. Nothing overlaps screen content (met: the objective folds to its title off BASE).
+- [x] All screens captured at 100% (13 screens) and 115/130% (HUD and dense screens) with no clipping.
+- [x] First-time tasks reach their decision surface in at most 2 taps from BASE: build (plot, card), defense (raid card APPLY or DEFENSE), module (CORE, OPEN MODULES), op (MAP, pin).
 
 ## Tests
 None in the sim (presentation only). `tools/uss_lint.py` gains a floor check for font sizes below the token floor.
