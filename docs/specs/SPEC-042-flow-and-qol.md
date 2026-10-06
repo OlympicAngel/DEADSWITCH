@@ -1,6 +1,6 @@
 # SPEC-042: Flow and QOL (information architecture pass)
 
-- Status: Done (code) 2026-10-05 (F-103); Editor check pending
+- Status: Done (code) 2026-10-05 (F-103); checked in the Editor 2026-10-06 (Command menu, back to BASE, raid card AI PLAN with APPLY, build grid with "IN 15M", queue sheet with the next build)
 - Owner direction (2026-10-05): "the UI is still off, break it down even more, think of QOL; is this UI good, intuitive, cramped, dense, related to the rest of the page, should it move somewhere else? This is a big one."
 
 ## Audit (what a new player hits)

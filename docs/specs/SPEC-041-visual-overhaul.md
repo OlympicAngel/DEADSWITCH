@@ -1,6 +1,6 @@
 # SPEC-041: Visual overhaul III (critical remake)
 
-- Status: Done (code) 2026-10-05 (F-102); Editor check pending
+- Status: Done (code) 2026-10-05 (F-102); checked in the Editor 2026-10-06 (switch pills, segmented tabs, round close, accent bars, sheen cards, mixed-case prose)
 - Owner direction (2026-10-05): "continue with overall visual improvement, don't be afraid of completely remaking stuff, be critical."
 
 ## Critique that drove it (composed HUD over the 3D base)

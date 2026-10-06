@@ -768,6 +768,8 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("menu-btn").RegisterCallback<ClickEvent>(_ =>
             {
                 GameState s = _host.Sim.State;
+                // the open threat card sits above the sheet layer and would read through the drawer
+                SetRaidOpen(false);
                 _menu.Open("HUB S-17 // TIER " + s.Tier + " // " + Fmt.Clock(s.Tick).Split(' ')[0] + " " + Fmt.Clock(s.Tick).Split(' ')[1]);
             });
         }

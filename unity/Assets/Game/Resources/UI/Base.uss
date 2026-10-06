@@ -192,7 +192,7 @@
 .cmenu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
 .cmenu.is-hidden { display: none; }
 .cmenu__backdrop { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--c-scrim); }
-.cmenu__drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 84%; padding: var(--s-8) var(--s-5) var(--s-6) var(--s-5); border-right-width: 1px; border-color: var(--c-cyan-line); border-top-right-radius: var(--r-xl); border-bottom-right-radius: var(--r-xl); background-color: var(--c-elev-1); --sheen-color: var(--c-cyan-wash); --sheen-reach: 0.3; }
+.cmenu__drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 84%; padding: var(--s-8) var(--s-5) var(--s-6) var(--s-5); border-right-width: 1px; border-color: var(--c-cyan-line); border-top-right-radius: var(--r-xl); border-bottom-right-radius: var(--r-xl); background-color: var(--c-panel-solid); --sheen-color: var(--c-cyan-wash); --sheen-reach: 0.3; }
 .cmenu__head { flex-direction: row; align-items: center; margin-bottom: var(--s-4); }
 .cmenu__titles { flex-grow: 1; }
 .cmenu__title { -unity-font-definition: resource("Fonts/ChakraPetch-Bold"); font-size: var(--fs-lg); letter-spacing: var(--ls-wide); color: var(--c-white); }

@@ -1,6 +1,6 @@
 # SPEC-043: Clarity and hook (plain language, no monetization, new opening, engagement)
 
-- Status: Done (code) 2026-10-05 (F-104); Editor check pending
+- Status: Done (code) 2026-10-05 (F-104); checked in the Editor 2026-10-06 (Field Guide, renamed terms on BASE and DEFENSE, goal card, tier banner)
 - Owner direction (2026-10-05): "rework the naming, each thing should be clear, simple language (what is crew / garrison / ironman?); no leftover or unconnected features, no placeholders; drop the pay guard and any ads; rework the startup story (story, theme, animation, effects); think of anything missing from a top-notch addictive game."
 
 ## 1. One name per concept (player-facing text only; code identifiers stay)
