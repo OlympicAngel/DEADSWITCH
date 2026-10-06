@@ -10,8 +10,9 @@ namespace Deadswitch.Art.World
     /// <summary>What the scene needs to know about one slot (mapped from the sim by the host).</summary>
     public readonly struct SlotView
     {
-        public SlotView(FacilityKind kind, int level, bool powered, bool unmanned, FacilityKind buildingKind, int buildingLevel, int damage = 0)
+        public SlotView(FacilityKind kind, int level, bool powered, bool unmanned, FacilityKind buildingKind, int buildingLevel, int damage = 0, int stage = 0)
         {
+            Stage = stage;
             Damage = damage;
             Kind = kind;
             Level = level;
@@ -24,6 +25,9 @@ namespace Deadswitch.Art.World
         public FacilityKind Kind { get; }
 
         public int Level { get; }
+
+        /// <summary>Preview only: SPEC-045 visual stage override (0 = from the level).</summary>
+        public int Stage { get; }
 
         public bool Powered { get; }
 

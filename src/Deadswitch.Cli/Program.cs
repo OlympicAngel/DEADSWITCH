@@ -86,7 +86,7 @@ namespace Deadswitch.Cli
             w.WriteLine("  verify --save PATH [--config PATH]   replay a save from its seed; exit 0 when it reproduces");
             w.WriteLine("  config check [PATH]");
             w.WriteLine("  config diff [PATH]");
-            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...] [--tier N] [--report RAID|last] [--faction N] [--map [--aspect W/H]]");
+            w.WriteLine("  art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level|Kind:sStage,...] [--tier N] [--report RAID|last] [--faction N] [--map [--aspect W/H]]");
             w.WriteLine("  [seed] [hours]            (shorthand for run)");
             return code;
         }
@@ -183,7 +183,7 @@ namespace Deadswitch.Cli
         }
 
         /// <summary>
-        /// art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level,...]: a scripted base after N days, for
+        /// art export [--days N] [--seed N] [--out PATH] [--layout Kind:Level|Kind:sStage,...]: a scripted base after N days, for
         /// tools/basepreview. --layout overrides the slots (e.g. Generator:5,ServerRack:3,None:0) to review assets;
         /// --tier overrides the Hub tier the surroundings are drawn for (SPEC-013).
         /// </summary>
@@ -210,12 +210,14 @@ namespace Deadswitch.Cli
                 {
                     string[] kv = e.Split(':');
                     int damage = 0;
-                    if (kv.Length < 2 || kv.Length > 3 || !Enum.TryParse(kv[0], out FacilityKind kind) || !int.TryParse(kv[1], out int level) || (kv.Length == 3 && !int.TryParse(kv[2], out damage)))
+                    bool staged = kv.Length >= 2 && kv[1].StartsWith("s", StringComparison.Ordinal);
+                    string levelText = staged ? kv[1].Substring(1) : (kv.Length >= 2 ? kv[1] : string.Empty);
+                    if (kv.Length < 2 || kv.Length > 3 || !Enum.TryParse(kv[0], out FacilityKind kind) || !int.TryParse(levelText, out int level) || (kv.Length == 3 && !int.TryParse(kv[2], out damage)))
                     {
-                        throw new UsageException("--layout entries look like Generator:3 or Generator:3:2 (level, battle damage).");
+                        throw new UsageException("--layout entries look like Generator:3, Generator:3:2 (level, battle damage) or Generator:s7 (SPEC-045 stage).");
                     }
 
-                    return new SlotView(kind, level, true, false, FacilityKind.None, 0, damage);
+                    return new SlotView(kind, staged ? 1 : level, true, false, FacilityKind.None, 0, damage, staged ? level : 0);
                 }).ToArray();
             }
 

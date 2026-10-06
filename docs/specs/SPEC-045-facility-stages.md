@@ -19,8 +19,8 @@ Rules carried from SPEC-045: each stage must change silhouette or medium/large e
 ## Per-kind stages
 Signature = the shape that identifies the kind at every stage.
 
-**Generator** (signature: engine block + exhaust stacks)
-1 diesel genset on a skid under a tarp, one stack; 2 second genset, fuel drums, hand cable reel; 3 plinth + lean-to roof, cable tray; 4 container engine hall (today's L1 look); 5 radiator roof with fan, fuel tank over the roof; 6 transformer yard behind fence; 7 wind turbine mast; 8 control cab on the hall, ladder and railing; 9 third heavy stack, armoured hall cladding, sandbag revetment; 10 twin halls bridged by a gantry, shielded conduits glowing cyan to the core.
+**Generator** (signature: engine block + exhaust stacks) — reference build in `Facilities.GeneratorStage`, preview with `art export --layout Generator:s1,...,Generator:s10`
+1 diesel genset under a blue tarp on timber poles, one thin stack, bare bulb, trodden ground (no slab); 2 second mismatched genset in the open, cable drum, crates; 3 concrete plinth, block back wall, lean-to roof over both sets, cable tray; 4 container engine hall with the genset bay and two stacks; 5 roof radiator with fan, fuel tank fed over the roof; 6 transformer yard behind a fence, day tank; 7 wind turbine mast; 8 control cab on the hall, ladder and railing; 9 heavy third stack with a warning lamp, sandbag revetment, armour plates over the genset bay, power pole with spotlight; 10 shielded conduit trench to the plot edge with a cyan line, cyan status lines on the control cab and transformer only.
 
 **Server Rack** (signature: rack cabinets + roof heat exchangers)
 1 two cabinets under a tarp on pallets, fan box; 2 third cabinet, a car battery bank, cable mess; 3 container shell with door; 4 roof fans (today's L1); 5 second container, cable bridge; 6 split heat exchangers; 7 raised floor + cable trays + fire bottles; 8 security cage and camera mast; 9 armoured shell, louvered heat stacks; 10 sealed vault module with cyan status rails and a dish for uplink.

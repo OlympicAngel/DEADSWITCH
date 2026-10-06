@@ -37,10 +37,10 @@ namespace Deadswitch.Cli
                 Vector3 pos = HubScene.SlotPosition(i, slots);
                 SlotView v = layout != null ? layout[i] : SlotView.From(sim.State, i);
                 float yaw = HubScene.SlotYaw(i, slots, v.Kind);
-                AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i, v.Kind == FacilityKind.None && !v.UnderConstruction) }, pos, yaw, true, false);
+                AddModel("pad" + i, new Model { Static = Facilities.Pad(seed + (uint)i, v.Kind == FacilityKind.None && !v.UnderConstruction, v.Stage is <= 0 or >= 3) }, pos, yaw, true, false);
                 if (v.Kind != FacilityKind.None)
                 {
-                    Model facility = Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31));
+                    Model facility = Facilities.Build(v.Kind, v.Level, seed + (uint)(i * 31), v.Stage);
                     AddModel("slot" + i, facility, pos, yaw, v.Powered, v.Unmanned, null, v.Damage);
                     if (v.Damage > 0)
                     {
