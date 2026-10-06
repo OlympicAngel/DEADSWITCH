@@ -1,5 +1,6 @@
 using Deadswitch.Game.Base;
 using Deadswitch.Game.Core;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Deadswitch.Game.UI.Base
@@ -14,6 +15,7 @@ namespace Deadswitch.Game.UI.Base
         private readonly SlotSheet _sheet;
         private readonly QuickActions _quick;
         private readonly ScreenRouter _router;
+        private VisualElement _frame;
         private bool _visible;
 
         public BaseScreen(ScreenRouter router)
@@ -61,7 +63,12 @@ namespace Deadswitch.Game.UI.Base
             {
                 if (_visible)
                 {
-                    _labels.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height);
+                    _frame ??= ui.Root.Q("frame");
+                    VisualElement frame = _frame;
+                    VisualElement rail = frame?.Q(className: "hud-rail");
+                    float topClear = frame != null ? frame.worldBound.yMin - ui.Root.worldBound.yMin : 0f;
+                    Rect keepOut = rail != null && rail.resolvedStyle.display == DisplayStyle.Flex ? new Rect(rail.worldBound.position - ui.Root.worldBound.position, rail.worldBound.size) : Rect.zero;
+                    _labels.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height, topClear, keepOut);
                     _quick.Track(cam.Camera, BaseView.Instance, ui.Root.layout.width, ui.Root.layout.height);
                     _sheet.Tick();
                 }

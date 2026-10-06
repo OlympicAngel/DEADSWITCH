@@ -136,8 +136,12 @@ namespace Deadswitch.Game.UI.Base
             _core.Pip.style.display = DisplayStyle.None;
         }
 
-        /// <summary>Positions every tag over its world anchor (call each frame after the camera moved).</summary>
-        public void Track(Camera cam, BaseView view, float panelWidth, float panelHeight)
+        /// <summary>
+        /// Positions every tag over its world anchor (call each frame after the camera moved). Tags stay below
+        /// <paramref name="topClear"/> (panel px; the HUD status rows) and step out of <paramref name="keepOut"/> (the
+        /// alert rail) so a world tag never sits under the HUD.
+        /// </summary>
+        public void Track(Camera cam, BaseView view, float panelWidth, float panelHeight, float topClear, Rect keepOut)
         {
             if (cam == null || view == null || panelWidth <= 0f)
             {
@@ -146,14 +150,14 @@ namespace Deadswitch.Game.UI.Base
 
             for (int i = 0; i < _tags.Count && i < view.SlotCount; i++)
             {
-                Place(_tags[i], cam, view.LabelAnchor(i), panelWidth, panelHeight);
+                Place(_tags[i], cam, view.LabelAnchor(i), panelWidth, panelHeight, topClear, keepOut);
             }
 
             _core.Hidden = _selected >= 0;
-            Place(_core, cam, view.CoreAnchor, panelWidth, panelHeight);
+            Place(_core, cam, view.CoreAnchor, panelWidth, panelHeight, topClear, keepOut);
         }
 
-        private static void Place(Tag t, Camera cam, Vector3 world, float pw, float ph)
+        private static void Place(Tag t, Camera cam, Vector3 world, float pw, float ph, float topClear, Rect keepOut)
         {
             Vector3 sp = cam.WorldToScreenPoint(world);
             // while a facility is framed every tag steps out: the close shot pushes them under the HUD and the sheet names it
@@ -168,8 +172,27 @@ namespace Deadswitch.Game.UI.Base
                 x = Mathf.Clamp(x, half + EdgeMargin, pw - half - EdgeMargin);
             }
 
+            // the tag hangs above its anchor (translate -50% -100%)
+            float y = (Screen.height - sp.y) / Screen.height * ph;
+            float h = float.IsNaN(t.Root.resolvedStyle.height) ? 0f : t.Root.resolvedStyle.height;
+            y = Mathf.Max(y, topClear + h + EdgeMargin);
+            if (half > 0f && keepOut.width > 0f && x + half > keepOut.xMin && x - half < keepOut.xMax && y > keepOut.yMin && y - h < keepOut.yMax)
+            {
+                // step aside the shorter way: left of the rail, or down below it
+                float left = x + half - keepOut.xMin + EdgeMargin;
+                float down = keepOut.yMax + h + EdgeMargin - y;
+                if (left <= down && x - left - half >= EdgeMargin)
+                {
+                    x -= left;
+                }
+                else
+                {
+                    y += down;
+                }
+            }
+
             t.Root.style.left = x;
-            t.Root.style.top = (Screen.height - sp.y) / Screen.height * ph;
+            t.Root.style.top = y;
         }
 
         private Tag NewTag()
