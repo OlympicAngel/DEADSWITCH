@@ -76,36 +76,33 @@ namespace Deadswitch.Art.Models
         /// <summary>Half size of a plot (plots are 6.4 m square).</summary>
         public const float PlotHalf = 3.2f;
 
-        /// <summary>Worn concrete footing. Empty plots get hazard corner marks and survey stakes.</summary>
+        /// <summary>
+        /// Worn concrete footing under a facility. An empty plot has no slab or outline (SPEC-045 E): only a small stack
+        /// of building material and a survey flag on the levelled ground, so the yard does not read as a grid of
+        /// rectangles; the next free plot is marked by the AI's ring and the build prompt instead.
+        /// </summary>
         public static MeshData Pad(uint seed, bool empty)
         {
             var b = new MeshBuilder(seed) { AoFloor = 0.55f, AoHeight = 0.4f, FaceJitter = 0.12f };
+            if (empty)
+            {
+                b.BoxOn(-1.6f, 0, 1.4f, 1.2f, 0.12f, 1.0f, Mat.Wood, 0.01f);
+                b.BoxOn(-1.6f, 0.12f, 1.4f, 1.1f, 0.5f, 0.9f, Mat.Concrete, 0.04f);
+                for (int i = 0; i < 4; i++)
+                {
+                    b.CylinderX(new Vector3(1.2f, 0.08f + (i % 2 * 0.15f), -1.6f + (i * 0.17f)), 0.07f, 2.4f, 8, Mat.Rust, 0.01f);
+                }
+
+                var flag = new Vector3(PlotHalf - 0.6f, 0, PlotHalf - 0.6f);
+                b.Strut(flag, flag + new Vector3(0, 1.5f, 0), 0.03f, Mat.DarkSteel);
+                b.Box(flag + new Vector3(0.16f, 1.38f, 0), new Vector3(0.3f, 0.2f, 0.01f), Mat.PaintRed, 0f);
+                return b.Mesh;
+            }
+
             b.BoxOn(0, -0.25f, 0, PlotHalf * 2f, 0.37f, PlotHalf * 2f, Mat.ConcreteDark, 0.06f);
             for (int i = 1; i < 3; i++)
             {
                 b.Box(new Vector3(-PlotHalf + (i * PlotHalf * 2f / 3f), PadTop, 0), new Vector3(0.03f, 0.01f, PlotHalf * 2f), Mat.Rubber, 0f);
-            }
-
-            if (empty)
-            {
-                float c = PlotHalf - 0.35f;
-                foreach (int sx in new[] { -1, 1 })
-                {
-                    foreach (int sz in new[] { -1, 1 })
-                    {
-                        b.Box(new Vector3(sx * c, PadTop, sz * (c - 0.4f)), new Vector3(0.14f, 0.015f, 0.8f), Mat.Paint, 0f);
-                        b.Box(new Vector3(sx * (c - 0.4f), PadTop, sz * c), new Vector3(0.8f, 0.015f, 0.14f), Mat.Paint, 0f);
-                        b.Strut(new Vector3(sx * (PlotHalf + 0.1f), 0, sz * (PlotHalf + 0.1f)), new Vector3(sx * (PlotHalf + 0.1f), 0.8f, sz * (PlotHalf + 0.1f)), 0.05f, Mat.Wood);
-                        b.Box(new Vector3(sx * (PlotHalf + 0.1f), 0.72f, sz * (PlotHalf + 0.1f)), new Vector3(0.08f, 0.1f, 0.08f), Mat.PaintRed, 0.01f);
-                    }
-                }
-
-                b.BoxOn(-1.6f, PadTop, 1.4f, 1.2f, 0.12f, 1.0f, Mat.Wood, 0.01f);
-                b.BoxOn(-1.6f, PadTop + 0.12f, 1.4f, 1.1f, 0.5f, 0.9f, Mat.Concrete, 0.04f);
-                for (int i = 0; i < 4; i++)
-                {
-                    b.CylinderX(new Vector3(1.2f, PadTop + 0.08f + (i % 2 * 0.15f), -1.6f + (i * 0.17f)), 0.07f, 2.4f, 8, Mat.Rust, 0.01f);
-                }
             }
 
             return b.Mesh;
