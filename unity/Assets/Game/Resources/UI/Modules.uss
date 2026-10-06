@@ -46,7 +46,7 @@
 .mod-leg--done { border-color: var(--c-phosphor-dim); }
 .mod-leg--done > .mod-leg__icon { --icon-color: var(--c-phosphor); }
 .mod-leg--done > .mod-leg__label { color: var(--c-phosphor); }
-.mod-hint { font-size: var(--fs-micro); color: var(--c-text-dim); white-space: normal; margin-bottom: var(--s-1); }
+.mod-hint { -unity-font-definition: resource("Fonts/ChakraPetch-Regular"); font-size: var(--fs-xs); color: var(--c-text-dim); white-space: normal; margin-bottom: var(--s-1); }
 
 /* tree */
 .mod-tree { align-items: flex-start; margin-top: var(--s-3); }
