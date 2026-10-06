@@ -242,12 +242,12 @@ namespace Deadswitch.Game.UI.Screens
                 _sockets[i].EnableInClassList("is-filled", i < s.Garrison);
             }
 
-            Q<Label>("garrison-note").text = "+" + c.Defense.DefensePerDefender + " DEF EACH // " + (s.People - s.Garrison) + " ON CREW DUTY";
+            Q<Label>("garrison-note").text = "+" + c.Defense.DefensePerDefender + " DEFENSE EACH // " + (s.People - s.Garrison) + " WORKERS";
 
             // the AI's read and recommendation
             int defense = Defense.Rating(s, c);
-            Q<Label>("read-def").text = "DEF " + Fmt.Num(defense);
-            Q<Label>("read-est").text = raid ? "EST " + Fmt.Num(s.RaidEstimate) : "EST --";
+            Q<Label>("read-def").text = "DEFENSE " + Fmt.Num(defense);
+            Q<Label>("read-est").text = raid ? "~" + Fmt.Num(s.RaidEstimate) + " ATTACKERS" : "ATTACKERS --";
             var band = Q<Label>("confidence-band");
             if (raid && s.RaidEstimate > 0)
             {

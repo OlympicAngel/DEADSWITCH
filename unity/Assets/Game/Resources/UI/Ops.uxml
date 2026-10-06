@@ -120,7 +120,7 @@
       <!-- Garrison sockets -->
       <ui:VisualElement class="ds-section"><ui:VisualElement class="ds-icon ds-icon--people ds-section__icon" /><ui:Label text="DEFENDERS" class="ds-section__title" /><ui:VisualElement class="ds-section__rule" /></ui:VisualElement>
       <ui:VisualElement class="ds-card ops-card">
-        <ui:Label name="garrison-note" text="+4 DEF EACH // 15 ON CREW DUTY" class="ds-label t-dim ops-card__lead" />
+        <ui:Label name="garrison-note" text="+4 DEFENSE EACH // 15 WORKERS" class="ds-label t-dim ops-card__lead" />
         <ui:VisualElement name="sockets" class="ops-sockets">
           <ui:VisualElement class="ops-socket is-filled"><ui:VisualElement class="ds-icon ds-icon--people ops-socket__icon" /></ui:VisualElement>
           <ui:VisualElement class="ops-socket is-filled"><ui:VisualElement class="ds-icon ds-icon--people ops-socket__icon" /></ui:VisualElement>
@@ -143,8 +143,8 @@
           </ui:VisualElement>
           <ui:VisualElement class="spacer" />
           <ui:VisualElement class="ops-read__vs">
-            <ui:Label name="read-def" text="DEF 36" class="ops-read__line" />
-            <ui:Label name="read-est" text="EST 34" class="ops-read__line t-dim" />
+            <ui:Label name="read-def" text="DEFENSE 36" class="ops-read__line" />
+            <ui:Label name="read-est" text="~34 ATTACKERS" class="ops-read__line t-dim" />
           </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="confidence-meter" class="ds-meter ds-meter--amber" />
@@ -159,7 +159,7 @@
             <ui:Label name="recommend" text="FORTIFY // 5 DEFENDERS" class="ops-go__rec" />
           </ui:VisualElement>
           <ui:VisualElement name="set-go" class="ds-btn ds-btn--ai ops-go__btn">
-            <ui:Label text="SET &amp; GO" class="ds-btn__label" />
+            <ui:Label text="USE AI PLAN" class="ds-btn__label" />
           </ui:VisualElement>
         </ui:VisualElement>
       </ui:VisualElement>

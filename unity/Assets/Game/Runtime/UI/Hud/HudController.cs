@@ -685,7 +685,7 @@ namespace Deadswitch.Game.UI.Hud
             Q<VisualElement>("raid-apply").EnableInClassList("is-hidden", set);
         }
 
-        /// <summary>One tap answers the threat with the AI's recommendation (the same commands as OPS SET &amp; GO).</summary>
+        /// <summary>One tap answers the threat with the AI's recommendation (the same commands as DEFENSE USE AI PLAN).</summary>
         private void ApplyAiPlan()
         {
             GameState s = _host.Sim.State;
