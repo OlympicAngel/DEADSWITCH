@@ -21,6 +21,13 @@ namespace Deadswitch.Game.UI.Screens
     /// </summary>
     public sealed class MapScreen : IGameScreen
     {
+        /// <summary>Panel px a press may wander before it counts as a drag (8 dp at the 1080 reference).</summary>
+        private const float DragSlop = 24f;
+
+        /// <summary>Plot heights (0 top, 1 bottom): a tapped site below the first sits under the open sheet and moves to the second.</summary>
+        private const float RevealBelow = 0.36f;
+        private const float RevealAt = 0.24f;
+
         private static readonly string[] FactionClass = { "map-site--rust", "map-site--vanguard", "map-site--church", "map-site--holdout" };
 
         private readonly GameHost _host;
@@ -49,6 +56,16 @@ namespace Deadswitch.Game.UI.Screens
         private long _allyArmedAt = -1;
         private readonly List<Label> _opTimes = new List<Label>();
         private string _opsSignature;
+        private readonly Dictionary<int, Vector2> _touches = new Dictionary<int, Vector2>();
+        private VisualElement _pager;
+        private Vector2 _dragFrom;
+        private bool _dragged;
+        private float _pinchFrom;
+        private float _pinchZoom;
+        private bool _viewMoved;
+        private bool _sheetOpen;
+        private bool _openingSheet;
+        private int _sheetPage = -1;
 
         public MapScreen()
         {
@@ -69,6 +86,9 @@ namespace Deadswitch.Game.UI.Screens
                     RenderMap(true);
                 }
             });
+            _pager = _ui.Q("map-pager");
+            BindPanZoom();
+            BindSheet();
             _ops = _ui.Q("map-ops");
             _reason = _ui.Q<Label>("map-reason");
             for (int f = 0; f < WorldSystem.FactionCount; f++)
@@ -112,6 +132,12 @@ namespace Deadswitch.Game.UI.Screens
                 if (_visible)
                 {
                     RefreshOps();
+                    if (_viewMoved)
+                    {
+                        _viewMoved = false;
+                        RenderMap(false);
+                    }
+
                     TickMap(dt);
                 }
             };
@@ -135,6 +161,186 @@ namespace Deadswitch.Game.UI.Screens
             _visible = false;
         }
 
+        /// <summary>
+        /// Drag pans the sector, a pinch or the wheel zooms it (F-107). A press only becomes a drag past the slop, so a
+        /// short tap still reaches the pin under it; a tap on open ground folds the sheet.
+        /// </summary>
+        private void BindPanZoom()
+        {
+            _plot.RegisterCallback<PointerDownEvent>(e =>
+            {
+                _touches[e.pointerId] = e.position;
+                if (_touches.Count == 1)
+                {
+                    _dragged = false;
+                    _dragFrom = e.position;
+                }
+                else if (_touches.Count == 2 && MapView.Instance != null)
+                {
+                    _dragged = true;
+                    _pinchFrom = Spread();
+                    _pinchZoom = MapView.Instance.Zoom;
+                }
+            }, TrickleDown.TrickleDown);
+            _plot.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (!_touches.TryGetValue(e.pointerId, out Vector2 last))
+                {
+                    return;
+                }
+
+                Vector2 now = e.position;
+                _touches[e.pointerId] = now;
+                if (_touches.Count >= 2)
+                {
+                    float spread = Spread();
+                    if (_pinchFrom > 1f && spread > 1f)
+                    {
+                        SetView(MapView.Instance.Focus, _pinchZoom * _pinchFrom / spread);
+                    }
+
+                    return;
+                }
+
+                if (!_dragged && (now - _dragFrom).magnitude > DragSlop)
+                {
+                    _dragged = true;
+                    _plot.CapturePointer(e.pointerId);
+                }
+
+                if (_dragged)
+                {
+                    Pan(now - last);
+                }
+            }, TrickleDown.TrickleDown);
+            _plot.RegisterCallback<PointerUpEvent>(e =>
+            {
+                if (_touches.Remove(e.pointerId) && e.target == _plot && !_dragged)
+                {
+                    SetSheet(false);
+                }
+
+                _plot.ReleasePointer(e.pointerId);
+            });
+            _plot.RegisterCallback<PointerCancelEvent>(e => _touches.Remove(e.pointerId));
+            _plot.RegisterCallback<PointerCaptureOutEvent>(e => _touches.Remove(e.pointerId));
+            _plot.RegisterCallback<WheelEvent>(e =>
+            {
+                if (MapView.Instance != null && Mathf.Abs(e.delta.y) > 0.01f)
+                {
+                    float step = MapView.Instance.Look.zoomStep;
+                    SetView(MapView.Instance.Focus, MapView.Instance.Zoom * (e.delta.y > 0f ? 1f + step : 1f - step));
+                    e.StopPropagation();
+                }
+            });
+        }
+
+        private float Spread()
+        {
+            Vector2 a = Vector2.zero;
+            Vector2 b = Vector2.zero;
+            int i = 0;
+            foreach (Vector2 p in _touches.Values)
+            {
+                if (i == 0)
+                {
+                    a = p;
+                }
+                else if (i == 1)
+                {
+                    b = p;
+                }
+
+                i++;
+            }
+
+            return (a - b).magnitude;
+        }
+
+        /// <summary>Moves the view so the ground under the finger follows it (scale measured from the current pose).</summary>
+        private void Pan(Vector2 delta)
+        {
+            MapView v = MapView.Instance;
+            Rect r = _plot.contentRect;
+            if (v == null || r.width < 32f || r.height < 32f)
+            {
+                return;
+            }
+
+            System.Numerics.Vector3 t = v.Pose.Target;
+            System.Numerics.Vector2 o = v.Pose.Project(t, v.Aspect);
+            System.Numerics.Vector2 px = v.Pose.Project(t + System.Numerics.Vector3.UnitX, v.Aspect);
+            System.Numerics.Vector2 pz = v.Pose.Project(t + System.Numerics.Vector3.UnitZ, v.Aspect);
+            float perX = (px.X - o.X) * r.width;
+            float perZ = (o.Y - pz.Y) * r.height;
+            if (perX <= 0.01f || perZ <= 0.01f)
+            {
+                return;
+            }
+
+            SetView(new Vector2(v.Focus.x - (delta.x / perX), v.Focus.y + (delta.y / perZ)), v.Zoom);
+        }
+
+        /// <summary>Pans a tapped site that the open sheet would cover up into the strip of map above it.</summary>
+        private void Reveal(int site)
+        {
+            if (_layer == null || site < 0 || site >= _layer.SiteAnchors.Length)
+            {
+                return;
+            }
+
+            float y = _layer.SiteAnchors[site].Y;
+            if (y > RevealBelow)
+            {
+                Pan(new Vector2(0f, (RevealAt - y) * _plot.contentRect.height));
+            }
+        }
+
+        private void SetView(Vector2 focus, float zoom)
+        {
+            if (MapView.Instance == null)
+            {
+                return;
+            }
+
+            MapView.Instance.SetView(focus, zoom);
+            _viewMoved = true;
+        }
+
+        /// <summary>
+        /// The pager is a bottom sheet over the full-screen map (F-107): its tab row stays docked, a tab or a pin opens
+        /// it, the open tab or a tap on open ground folds it.
+        /// </summary>
+        private void BindSheet()
+        {
+            Pager.PageShown += (pager, index) =>
+            {
+                if (pager != _pager)
+                {
+                    return;
+                }
+
+                bool fold = _sheetOpen && index == _sheetPage && !_openingSheet;
+                _sheetPage = index;
+                SetSheet(!fold);
+            };
+            SetSheet(false);
+        }
+
+        private void OpenSheet(string page)
+        {
+            _openingSheet = true;
+            Pager.Show(_pager, page);
+            _openingSheet = false;
+            SetSheet(true);
+        }
+
+        private void SetSheet(bool open)
+        {
+            _sheetOpen = open;
+            _pager.EnableInClassList("is-collapsed", !open);
+        }
+
         private void BuildMarkers()
         {
             _sites.Clear();
@@ -147,6 +353,11 @@ namespace Deadswitch.Game.UI.Screens
                 VisualElement marker = Marker(d.Name, HazardSystem.Wild(d.Kind) ? "map-site--wild" : FactionClass[(int)d.Owner], out Label estimate);
                 marker.RegisterCallback<ClickEvent>(_ =>
                 {
+                    if (_dragged)
+                    {
+                        return;
+                    }
+
                     if (_longPressed)
                     {
                         _longPressed = false;
@@ -155,7 +366,8 @@ namespace Deadswitch.Game.UI.Screens
 
                     _selected = index;
                     _reason.text = string.Empty;
-                    Pager.Show(_ui.Q("map-pager"), "page-site");
+                    OpenSheet("page-site");
+                    Reveal(index);
                     Refresh();
                 });
 
@@ -167,7 +379,7 @@ namespace Deadswitch.Game.UI.Screens
                 });
                 marker.RegisterCallback<PointerUpEvent>(_ =>
                 {
-                    bool held = _pressSite == index && _pressAt >= 0f && Time.realtimeSinceStartup - _pressAt >= 0.55f;
+                    bool held = !_dragged && _pressSite == index && _pressAt >= 0f && Time.realtimeSinceStartup - _pressAt >= 0.55f;
                     _pressAt = -1f;
                     if (held)
                     {
@@ -304,6 +516,8 @@ namespace Deadswitch.Game.UI.Screens
                 m.style.top = Length.Percent(pins[i].Y * 100f);
                 m.EnableInClassList("map-site--left", sides[i] % 2 == 1);
                 m.EnableInClassList("map-site--low", sides[i] >= 2);
+                bool inView = pins[i].X >= 0f && pins[i].X <= 1f && pins[i].Y >= 0f && pins[i].Y <= 1f;
+                m.style.display = inView ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
 

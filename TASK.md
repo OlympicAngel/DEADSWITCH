@@ -1,16 +1,14 @@
-# TASK: F-106 Interface redesign
+# TASK: F-107 Interactive sector map
 
-- Status: Done 2026-10-06 (open question in SPEC-046 for the owner)
-- Branch: feat/f106-ui-redesign
-- Spec: `docs/specs/SPEC-046-ui-redesign.md`
+- Status: Done 2026-10-06
+- Branch: feat/f107-map
+- Spec: `docs/specs/SPEC-033-sector-map.md` (rule 4)
 
 ## Steps
-- [x] 0. Audit current screens in the Editor; research and spec (SPEC-046)
-- [x] 1. Type and touch-target floor in tokens (11 dp floor, 44 dp touch); HUD chrome caps at the 115 step; pods, rail, legacy chip, world tags fixed at 100/115/130
-- [x] 2. HUD v4 (part): pod ETA moves to the pod sheet; the objective keeps only its title off BASE. Merged objective+comms strip waits on the SPEC-046 open question (owner)
-- [x] 3. Opaque surfaces (all screens but BASE, BATTLE, REPORT) and one-line headers (taglines hidden; data status right of the title)
-- [x] 4. CORE decision-first: NEXT FROM YOU card (tier up, module ready, audit, restoring) above a smaller orb; empty transcript hidden. Primary actions already carry their cost in the label
-- [x] 5. Per-screen pass at the new floor (all 13 screens captured; REPORT header and evidence captions fixed)
-- [x] 6. First-time task check (Editor Game view 380x800, the 9:19 phone shape): each task reaches its decision surface in at most 2 taps; build sheet made solid
+- [x] 1. Camera view over the map: focus + zoom (`SectorScene.View`, `MapView.SetView`), tunables in `BaseLook.json` `map`
+- [x] 2. Full-screen plot; pager becomes a bottom sheet, folded to its tab row by default
+- [x] 3. Drag pan, pinch and wheel zoom; drag slop keeps pin taps; off-view pins hide
+- [x] 4. Pin tap opens the SITE sheet and pans a covered site into view (`panSlack` lets edge sites clear the sheet)
+- [x] 5. Editor check at 380x800: opening view, pan, sheet open/fold, edge site reveal, zoom limits (zoomMax 0.62 keeps the ground clear of haze and tags apart)
 
-Previous: F-108 done; F-110 on `feat/f110-fog` (awaiting merge).
+Previous: F-106 on `feat/f106-ui-redesign`, F-110 on `feat/f110-fog` (both awaiting merge).

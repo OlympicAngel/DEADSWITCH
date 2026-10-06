@@ -101,6 +101,21 @@ namespace Deadswitch.Game.Base
 
         /// <summary>URP shadow distance while the map renders (meters from the map camera).</summary>
         public float shadowDistance = 360f;
+
+        /// <summary>F-107 camera: the map opens this close over the Hub (1 = whole map in view).</summary>
+        public float zoomStart = 0.42f;
+
+        /// <summary>Closest zoom (fraction of the whole-map distance).</summary>
+        public float zoomMin = 0.22f;
+
+        /// <summary>Farthest zoom: beyond this the far haze swallows the ground and the site tags crowd (portrait).</summary>
+        public float zoomMax = 0.62f;
+
+        /// <summary>Zoom change per mouse-wheel notch (a pinch follows the fingers directly).</summary>
+        public float zoomStep = 0.08f;
+
+        /// <summary>How far past the map edge the view may pan (fraction of half the map), so an edge site can clear the open sheet.</summary>
+        public float panSlack = 0.3f;
     }
 
     [System.Serializable]

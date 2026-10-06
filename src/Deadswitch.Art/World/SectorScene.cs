@@ -151,6 +151,20 @@ namespace Deadswitch.Art.World
             return new CameraPose(target + (dir * dist), target, fov);
         }
 
+        /// <summary>
+        /// The same recon angle moved over the map (F-107): looking at a map-plane point (world X/Z meters) from a
+        /// fraction of the whole-map distance (zoom 1 shows the whole map, smaller is closer). The focus is held
+        /// inside the map so the edge of the world stays in reach but never fills the picture.
+        /// </summary>
+        public static CameraPose View(float aspect, float focusX, float focusZ, float zoom, float slack = 0f, float elevationDeg = 47f, float fov = 28f)
+        {
+            CameraPose fit = Camera(aspect, elevationDeg, fov);
+            Vector3 back = fit.Position - fit.Target;
+            float limit = 100f * Unit * Math.Min(1f, Math.Max(0f, 1f - zoom + slack));
+            var target = new Vector3(Math.Clamp(focusX, -limit, limit), 0, Math.Clamp(focusZ, -limit, limit));
+            return new CameraPose(target + (back * zoom), target, fov);
+        }
+
         /// <summary>Ground height: rolling waste, a dry riverbed in the west, flat pads at the Hub and the sites, bowls at the craters.</summary>
         public static float Height(float x, float z, uint seed)
         {

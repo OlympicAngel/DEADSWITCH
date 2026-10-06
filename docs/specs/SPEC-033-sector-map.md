@@ -1,6 +1,6 @@
 # SPEC-033: 2.5D sector map
 
-- Status: Presentation refresh queued (F-107); original map render implemented, interaction redesign pending
+- Status: Implemented; full-screen pan/zoom map and site sheet done 2026-10-06 (F-107)
 - Pillar: Offense & world (presentation)
 - Touches: map screen (F-019), hazard zones and fallout (SPEC-032), intel (scouting, AI estimate), corruption glitches
 - Source rules: owner brief 2026-10-04 (blend of the 3D kit and an illustrated map); doc 05 s6 (layered views, fog of war, node regions); doc 11 (heroic realism, never toy-like); ADR-0007 (procedural 3D)
@@ -25,9 +25,13 @@ have not seen yet, and where the fallout is.
    on it), fog of war over unscouted sites (hatched), the fallout front as a drifting haze over its site.
 4. **UI**: the map fills the primary view; compact status/navigation and the terminal sheet, heat panels and op
    controls remain UI Toolkit overlays. Site markers sit on projected landmark positions. Tapping a location opens
-   a contextual popover with its known information and available actions. The AI's defense estimate beside each
+   a contextual popover with its known information and available actions. In Unity (F-107) the popover is the map's
+   bottom sheet (SITE, OPS, TRADE, FACTIONS): folded it is only its tab row; a pin or a tab opens it, the open tab
+   or a tap on open ground folds it, and a tapped site the sheet would cover pans up into view. The map opens
+   close over the Hub; drag pans, pinch or the wheel zooms; pins off the view hide; a press becomes a drag only
+   past an 8 dp slop so a tap still reaches its pin. The AI's defense estimate beside each
    unscouted site glitches with the corruption band (no glitch at reduced motion / zero effect intensity).
-5. **Look values** in `BaseLook.json` (`map` block: camera, fog scale), shared by Unity and `tools/basepreview`.
+5. **Look values** in `BaseLook.json` (`map` block: camera, fog scale, `zoomStart`/`zoomMin`/`zoomMax`/`zoomStep`, `panSlack`), shared by Unity and `tools/basepreview`.
    Same time-of-day lighting as the base.
 6. **Cost**: the map renders to a texture only while the map screen is open, and refreshes when the hour, displayed
    state, or camera view changes; the haze animates in the UI layer.

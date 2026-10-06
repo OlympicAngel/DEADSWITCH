@@ -1,6 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Map.uss" />
-  <!-- SECTOR MAP (F-019, SPEC-039): header, the render plot, then a pager: SITE, OPS, TRADE, FACTIONS (one topic per page).
+  <!-- SECTOR MAP (F-019, SPEC-039, F-107): header, the full-screen render plot (drag pans, pinch/wheel zooms), and a bottom
+       sheet pager docked over it: SITE, OPS, TRADE, FACTIONS (one topic per page; a tab or a pin opens it).
        Sample markers are for the preview; MapScreen rebuilds them. -->
   <ui:VisualElement name="map" class="map">
     <ui:VisualElement class="ds-head">

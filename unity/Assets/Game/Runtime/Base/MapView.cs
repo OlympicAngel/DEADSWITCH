@@ -8,8 +8,8 @@ namespace Deadswitch.Game.Base
 {
     /// <summary>
     /// The 3D ground of the sector map (SPEC-033): built once from <see cref="SectorScene"/> on its own layer, far
-    /// below the compound, and rendered by a fixed recon camera into a texture only when the map screen asks (on
-    /// open, on resize, and as the hour's light changes). Same sun, sky and post as the base; thinner fog and a wider
+    /// below the compound, and rendered by the recon camera into a texture only when the map screen asks (on open,
+    /// on resize, when the player pans or zooms, and as the hour's light changes). Same sun, sky and post as the base; thinner fog and a wider
     /// shadow reach for the far camera. The URP call is injected by the Rendering assembly (<see cref="RenderCamera"/>).
     /// </summary>
     public sealed class MapView : MonoBehaviour
@@ -25,6 +25,7 @@ namespace Deadswitch.Game.Base
         private Transform _world;
         private BaseLook _look;
         private float _renderedHour = -1f;
+        private bool _viewDirty;
 
         public static MapView Instance { get; private set; }
 
@@ -47,6 +48,28 @@ namespace Deadswitch.Game.Base
 
         public float Aspect { get; private set; } = 1f;
 
+        /// <summary>Map-plane point the camera looks at (world X/Z meters; the Hub is 0,0).</summary>
+        public Vector2 Focus { get; private set; }
+
+        /// <summary>Camera distance as a fraction of the whole-map view (1 = everything in frame).</summary>
+        public float Zoom { get; private set; } = 1f;
+
+        public MapLook Look => _look.map;
+
+        /// <summary>Moves the camera (clamped to the map and the zoom range); the next <see cref="Render"/> redraws.</summary>
+        public void SetView(Vector2 focus, float zoom)
+        {
+            zoom = Mathf.Clamp(zoom, _look.map.zoomMin, Mathf.Min(1f, _look.map.zoomMax));
+            float limit = 100f * SectorScene.Unit * Mathf.Clamp01(1f - zoom + _look.map.panSlack);
+            focus = new Vector2(Mathf.Clamp(focus.x, -limit, limit), Mathf.Clamp(focus.y, -limit, limit));
+            if ((focus - Focus).sqrMagnitude > 0.0001f || Mathf.Abs(zoom - Zoom) > 0.0001f)
+            {
+                Focus = focus;
+                Zoom = zoom;
+                _viewDirty = true;
+            }
+        }
+
         /// <summary>Creates the map view on first use (the map world is built only when the map is first opened).</summary>
         public static MapView Ensure()
         {
@@ -68,7 +91,7 @@ namespace Deadswitch.Game.Base
             height = Mathf.Clamp(height, 64, 2048);
             float hour = BaseView.Instance != null ? BaseView.Instance.Lighting.hour : 12f;
             bool resized = Texture == null || Texture.width != width || Texture.height != height;
-            if (!force && !resized && Mathf.Abs(Mathf.DeltaAngle(hour * 15f, _renderedHour * 15f)) < 1.5f)
+            if (!force && !resized && !_viewDirty && Mathf.Abs(Mathf.DeltaAngle(hour * 15f, _renderedHour * 15f)) < 1.5f)
             {
                 return false;
             }
@@ -85,7 +108,8 @@ namespace Deadswitch.Game.Base
             }
 
             Aspect = width / (float)height;
-            Pose = SectorScene.Camera(Aspect);
+            Pose = SectorScene.View(Aspect, Focus.x, Focus.y, Zoom, _look.map.panSlack);
+            _viewDirty = false;
             _cam.fieldOfView = Pose.Fov;
             _cam.aspect = Aspect;
             _cam.transform.position = Origin + ArtBridge.V(Pose.Position);
@@ -118,6 +142,7 @@ namespace Deadswitch.Game.Base
         {
             Instance = this;
             _look = BaseLook.Load();
+            Zoom = _look.map.zoomStart;
             _world = new GameObject("Map World").transform;
             _world.SetParent(transform, false);
             _world.position = Origin;
