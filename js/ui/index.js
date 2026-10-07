@@ -44,8 +44,8 @@ export function createUI(root, game) {
               <div class="pill-body"><b data-v></b><div class="pill-bar"><i data-fill></i></div><small data-rate></small></div>
             </div>`).join('')}
         </div>
-        <div class="alert-strip" data-alert></div>
       </header>
+      <div class="floats" data-floats></div>
       <main class="view" id="view"></main>
       <nav class="bottom-nav">
         ${NAV.map((n) => `<button class="nav-btn ${n.main ? 'main' : ''}" data-nav="${n.id}">
@@ -212,6 +212,12 @@ export function createUI(root, game) {
           vibrate(15);
           flash(t, 'pop');
         }
+        break;
+      case 'fl-open':
+        if (ui.floats[t.dataset.key]) ui.floats[t.dataset.key] = { since: performance.now(), collapsed: false };
+        break;
+      case 'fl-close':
+        if (ui.floats[t.dataset.key]) ui.floats[t.dataset.key].collapsed = true;
         break;
       case 'pause':
         game.act.toggle(id);
@@ -411,29 +417,67 @@ export function createUI(root, game) {
     root.querySelector('[data-name]').textContent = s.name || 'Commander';
   }
 
+  // Floating alerts: open full width when new, fold into a blinking badge after FLOAT_OPEN_MS or
+  // when dismissed; tapping the badge opens it again. Attacks we are likely to hold are not shown.
+  const FLOAT_OPEN_MS = 30000;
+  const SAFE_HOLD = 0.8;
+  ui.floats = {};
+
+  function floatState(key) {
+    if (!ui.floats[key]) {
+      ui.floats[key] = { since: performance.now(), collapsed: false };
+    }
+    const f = ui.floats[key];
+    if (!f.collapsed && performance.now() - f.since > FLOAT_OPEN_MS) {
+      f.collapsed = true;
+    }
+    return f;
+  }
+
   function updateAlerts(s) {
-    const strip = root.querySelector('[data-alert]');
-    const parts = [];
-    let level = '';
-    const atk = E.nextAttack(s);
+    const box = root.querySelector('[data-floats]');
+    const items = [];
+    const threats = E.attacks(s).filter((a) => E.raidChance(s, a) < SAFE_HOLD);
+    const atk = threats[0] || null;
     if (atk) {
       const p = E.raidChance(s, atk);
-      level = p < 0.5 ? 'red' : 'amber';
-      const more = E.attacks(s).length - 1;
-      parts.push(`<button class="al al-raid" data-go="command">${icon('alert')}<span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b>${clock(atk.remaining)}</b><em class="chance-${chanceClass(p)}">hold ${pct(p)}</em></button>`);
+      const more = threats.length - 1;
+      items.push({
+        key: 'atk:' + threats.map((a) => a.faction + a.strength).join(','), level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
+        body: `<button class="fl-body" data-go="command"><span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b data-t></b><em data-h></em></button>`,
+        time: clock(atk.remaining), hold: `hold ${pct(p)}`, holdCls: 'chance-' + chanceClass(p),
+      });
     }
     if (s.events.length) {
       const first = s.events.reduce((a, x) => (x.left < a.left ? x : a));
       const crisis = s.events.some((x) => E.eventById(x.id).aftermath);
-      level = level || (crisis ? 'red' : 'amber');
-      parts.push(`<button class="al al-ev ${crisis ? 'crisis' : ''}" data-act="event" data-uid="${first.uid}">${icon(crisis ? 'fire' : 'message')}<span>${s.events.length} order${s.events.length > 1 ? 's' : ''}</span><b>${clock(first.left)}</b></button>`);
+      items.push({
+        key: 'ev:' + s.events.map((x) => x.uid).join(','), level: crisis ? 'red' : 'amber', ico: crisis ? 'fire' : 'message',
+        body: `<button class="fl-body" data-act="event" data-uid="${first.uid}"><span>${s.events.length} order${s.events.length > 1 ? 's' : ''}</span><b data-t></b></button>`,
+        time: clock(first.left),
+      });
     }
-    const html = parts.join('');
-    if (strip.innerHTML !== html) {
-      strip.innerHTML = html;
+    for (const k of Object.keys(ui.floats)) {
+      if (!items.some((x) => x.key === k)) delete ui.floats[k];
     }
-    strip.dataset.level = level;
-    app.classList.toggle('has-alert', !!parts.length);
+    // Rebuild only when the set of alerts changes; everything else is patched in place so taps land.
+    const structure = items.map((x) => x.key + x.level).join('|');
+    if (box.dataset.k !== structure) {
+      box.dataset.k = structure;
+      box.innerHTML = items.map((x) => `<div class="fl fl-${x.level}" data-fl="${x.key}">
+        <button class="fl-ico" data-act="fl-open" data-key="${x.key}" aria-label="Show alert">${icon(x.ico)}</button>
+        ${x.body}<button class="fl-x" data-act="fl-close" data-key="${x.key}" aria-label="Minimise">${icon('close')}</button></div>`).join('');
+    }
+    for (const x of items) {
+      const el = box.querySelector(`[data-fl="${x.key}"]`);
+      el.classList.toggle('collapsed', floatState(x.key).collapsed);
+      el.querySelector('[data-t]').textContent = x.time;
+      const h = el.querySelector('[data-h]');
+      if (h) {
+        h.textContent = x.hold;
+        h.className = x.holdCls;
+      }
+    }
     const imminent = !!atk && atk.remaining < 60;
     app.classList.toggle('imminent', imminent);
     if (imminent && !ui.imminent && atk.remaining < 30) {

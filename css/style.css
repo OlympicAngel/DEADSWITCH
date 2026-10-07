@@ -973,3 +973,26 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .power-switch.off .ps-label { color: var(--bad); }
 .card.switched-off .tile, .card.switched-off .nn { filter: grayscale(.8) brightness(.65); }
 .card.switched-off .desc { opacity: .5; }
+
+/* Floating alerts (incoming attacks we may not hold, pending orders) */
+.floats { position: absolute; z-index: 20; top: calc(var(--topbar, 110px) + 8px); left: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
+.fl {
+  pointer-events: auto; width: 100%; display: flex; align-items: center; gap: 4px; padding: 4px;
+  border-radius: 10px; border: 1px solid; backdrop-filter: blur(6px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.55); animation: flIn .35s var(--spring);
+  transition: width .3s var(--ease), border-radius .3s;
+}
+@keyframes flIn { from { opacity: 0; transform: translateY(-10px) scale(.96); } }
+.fl-amber { border-color: rgba(255,176,61,.6); background: rgba(40,28,12,.94); color: var(--warn); }
+.fl-red { border-color: rgba(255,93,93,.75); background: rgba(48,14,16,.95); color: var(--bad); }
+.fl-ico { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.06); color: inherit; font-size: 18px; cursor: pointer; }
+.fl-body { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 4px 6px; border: 0; background: none; color: var(--text); cursor: pointer; text-align: left; font-size: 13px; }
+.fl-body span { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-body b { font: 700 15px var(--font-num); color: inherit; }
+.fl-amber .fl-body b { color: var(--warn); }
+.fl-red .fl-body b { color: var(--bad); }
+.fl-body em { font: 600 11px var(--font-num); font-style: normal; }
+.fl-x { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); cursor: pointer; }
+.fl.collapsed { width: 46px; padding: 4px; border-radius: 50%; animation: flBlink 1.2s ease-in-out infinite; }
+.fl.collapsed .fl-body, .fl.collapsed .fl-x { display: none; }
+@keyframes flBlink { 50% { box-shadow: 0 0 0 4px currentColor, 0 0 22px currentColor; opacity: .75; } }
