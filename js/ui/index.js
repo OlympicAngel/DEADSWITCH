@@ -1,118 +1,140 @@
-// UI shell: header, status strip, tabs and the frame loop. Panels rebuild only on structural change;
-// numbers, affordability and timers are patched in place every frame through cached refs.
+// App shell: top bar, alert strip, screen router, bottom navigation and the frame loop.
+// Screens rebuild only on structural change; numbers and timers are patched in place every frame.
 import {
-  RESOURCES, RESOURCE_KEYS, FACTORS, FACTOR_KEYS, ITEMS, RANKS, BY_ID, SECTORS, BALANCE, FACTIONS, RAIDS, DIRECTIVES, ALIGNMENT,
+  RESOURCES, RESOURCE_KEYS, FACTIONS, ITEMS, ITEM_BY_ID, RANKS, BUILDINGS, SECTORS,
 } from '../data.js';
 import * as E from '../engine.js';
-import { num, rate, time, pct, esc } from '../format.js';
-import { tags, chanceClass } from './common.js';
-import { renderBase, bindBase, updateBase } from './base.js';
-import { renderArsenal, bindArsenal, updateArsenal, buyCount } from './arsenal.js';
-import { renderMap, bindMap, updateMap, defaultSector } from './map.js';
-import { renderArchive } from './archive.js';
+import { num, rate, pct, esc } from '../format.js';
+import { icon, mountIcons } from './icons.js';
+import { clock, chanceClass, factorTag } from './common.js';
+import { NAV, locate } from './layout.js';
+import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
+import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
+import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector } from './screens/map.js';
 import { createModals } from './modals.js';
+import { createTips } from './tooltip.js';
 import { sfx } from './sfx.js';
-import { floatText, flash, burst } from './fx.js';
-
-const TABS = [
-  { id: 'base', name: 'Base' },
-  { id: 'arsenal', name: 'Arsenal' },
-  { id: 'ops', name: 'Operations' },
-  { id: 'archive', name: 'Archive' },
-];
+import {
+  floatText, flash, burst, shake, vibrate, screenFlash,
+} from './fx.js';
 
 export function createUI(root, game) {
+  mountIcons();
   const ui = {
-    tab: 'base', shopTab: 'weapons', buyMode: 1, sector: null,
-    key: '', refs: null, logSeq: -1, slotKeys: {}, raidKey: null, dots: {},
+    screen: 'command', inner: {}, buyMode: 1, sector: null, sheet: false,
+    key: '', refs: null, logSeq: -1, raidKey: null, imminent: false, unseen: new Set(), coach: null,
   };
 
   root.innerHTML = `
-    <header class="top">
-      <div class="brand">
-        <span class="logo" aria-hidden="true"><i></i></span>
-        <div><h1>DEADSWITCH</h1><div class="rank" id="rank"></div></div>
-      </div>
-      <div class="meters">
-        <div class="meter threat" title="Threat = Power + Defense + Experts × ${BALANCE.threatExpertWeight}. Raids grow with it.">
-          <span class="label">Threat</span><b id="threat">0</b>
-          <div class="bar"><i id="rankBar"></i></div>
-          <span class="next" id="rankNext"></span>
+    <div class="app">
+      <header class="topbar">
+        <div class="tb-row">
+          <button class="core-badge" data-act="core" aria-label="AI Core">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><polygon class="cb-hex" points="24,2 43,13 43,35 24,46 5,35 5,13"/><polygon class="cb-in" points="24,8 38,16 38,32 24,40 10,32 10,16"/></svg>
+            <b data-corelvl></b>
+          </button>
+          <div class="ident"><b>DEADSWITCH</b><span data-rank></span></div>
+          <button class="threat-chip" data-tip="threat">${icon('threat')}<b data-threat></b></button>
+          <button class="icon-btn" data-act="menu" aria-label="Settings">${icon('settings')}</button>
         </div>
-        <div class="meter align" title="Your choices shape what I become. Guardian: up to +${pct(ALIGNMENT.guardian.pop)} Population and Experts. Overlord: up to +${pct(ALIGNMENT.overlord.power)} Power and +${pct(ALIGNMENT.overlord.energy)} Energy.">
-          <span class="label">Humanity</span><b id="alignLabel"></b>
-          <div class="align-bar"><i id="alignMark"></i></div>
-          <span class="next"><span>Overlord</span><span>Guardian</span></span>
+        <div class="tb-res">
+          ${RESOURCE_KEYS.map((r) => `
+            <div class="pill res-${r}" data-tip="res:${r}" data-pill="${r}">
+              <span class="pill-ico">${icon(r)}</span>
+              <div class="pill-body"><b data-v></b><div class="pill-bar"><i data-fill></i></div><small data-rate></small></div>
+            </div>`).join('')}
         </div>
-      </div>
-      <button class="icon-btn" data-act="menu" aria-label="Settings">☰</button>
-    </header>
-    <section class="resources">
-      ${RESOURCE_KEYS.map((r) => `
-        <div class="res res-${r}" id="res-${r}">
-          <span class="ic">${RESOURCES[r].icon}</span>
-          <div class="res-body">
-            <span class="res-name">${RESOURCES[r].name}</span>
-            <span class="res-val"><b data-v></b><small data-cap></small></span>
-            <span class="res-rate" data-rate></span>
-          </div>
-          <div class="fill"><i data-fill></i></div>
-        </div>`).join('')}
-    </section>
-    <section class="factors">
-      ${FACTOR_KEYS.map((f) => `
-        <div class="factor f-${f}" id="factor-${f}" title="${esc(FACTORS[f].desc)}">
-          <span class="ic">${FACTORS[f].icon}</span><span class="f-name">${FACTORS[f].name}</span><b></b>
-        </div>`).join('')}
-    </section>
-    <div class="buffs" id="buffs"></div>
-    <section class="status">
-      <div class="slot" id="slot-build"></div>
-      <div class="slot" id="slot-op"></div>
-      <div class="slot raid" id="slot-raid"></div>
-    </section>
-    <section class="mission">
-      <div class="directive" id="directive"></div>
-      <button class="transmission" id="transmission" data-act="event" hidden></button>
-    </section>
-    <nav class="tabs" role="tablist">
-      ${TABS.map((t) => `<button role="tab" data-tab="${t.id}">${t.name}<i class="dot" hidden></i></button>`).join('')}
-    </nav>
-    <div class="layout">
-      <main id="panel"></main>
-      <aside class="side-log"><h2>System log</h2><ol class="log"></ol></aside>
+        <div class="alert-strip" data-alert></div>
+      </header>
+      <main class="view" id="view"></main>
+      <nav class="bottom-nav">
+        ${NAV.map((n) => `<button class="nav-btn ${n.main ? 'main' : ''}" data-nav="${n.id}">
+          <span class="nav-ico">${icon(n.icon)}</span><span class="nav-lbl">${n.name}</span><i class="nav-badge" hidden></i></button>`).join('')}
+      </nav>
+      <div class="vignette"></div>
+      <div class="toasts" aria-live="polite"></div>
+      <dialog id="modal"></dialog>
     </div>
-    <div class="toasts" id="toasts" aria-live="polite"></div>
-    <dialog id="modal"></dialog>
-  `;
+    <div class="rotate-note">${icon('vibrate')}<p>DEADSWITCH is played in portrait.<br>Rotate your device.</p></div>`;
 
   const $ = (q) => root.querySelector(q);
-  const panel = $('#panel');
+  const view = $('#view');
+  const app = $('.app');
   const modals = createModals($('#modal'), game, () => render());
-  const resEls = Object.fromEntries(RESOURCE_KEYS.map((r) => {
-    const el = $(`#res-${r}`);
-    return [r, { el, v: el.querySelector('[data-v]'), cap: el.querySelector('[data-cap]'), rate: el.querySelector('[data-rate]'), fill: el.querySelector('[data-fill]') }];
+  const tips = createTips(game);
+  const pills = Object.fromEntries(RESOURCE_KEYS.map((r) => {
+    const el = root.querySelector(`[data-pill="${r}"]`);
+    return [r, { el, v: el.querySelector('[data-v]'), fill: el.querySelector('[data-fill]'), rate: el.querySelector('[data-rate]') }];
   }));
+  const navBtns = Object.fromEntries([...root.querySelectorAll('[data-nav]')].map((b) => [b.dataset.nav, b]));
 
-  // ---------- input ----------
+  // ---------- navigation ----------
+
+  function go(screen, inner, focus) {
+    ui.screen = screen;
+    if (inner) {
+      ui.inner[screen] = inner;
+    }
+    ui.sheet = false;
+    ui.coach = focus || null;
+    tips.hide();
+    render();
+    if (!focus) {
+      view.scrollTo(0, 0);
+    }
+  }
+
+  function directiveTarget(s) {
+    const d = E.currentDirective(s);
+    if (!d) return null;
+    const c = d.cond;
+    if (c.level) {
+      const l = locate('building', c.level);
+      return [l.domain, l.tab, `[data-card="${c.level}"]`];
+    }
+    if (c.item) {
+      const item = ITEM_BY_ID[c.item];
+      const l = locate('shop', item.tab);
+      return [l.domain, l.tab, `[data-item="${c.item}"], .card[data-card]`];
+    }
+    if (c.factor) {
+      const tab = { power: ['military', 'offense'], defense: ['military', 'defense'], experts: ['research', 'experts'] }[c.factor];
+      return [tab[0], tab[1], '.card.item.affordable, .card.item, .card[data-card]'];
+    }
+    if (c.sector) {
+      ui.sector = c.sector;
+      return ['map', 'theater', null, true];
+    }
+    if (c.raidsWon) return ['military', 'defense', '.card.item, .card[data-card]'];
+    return ['command', null, '.reactor'];
+  }
 
   root.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-act], [data-tab], [data-shop], [data-mode], [data-sector]');
+    const t = e.target.closest('[data-act], [data-nav], [data-go], [data-inner], [data-mode], [data-sector]');
     if (!t || t.disabled || t.closest('dialog')) {
       return;
     }
     const s = game.state;
-    if (t.dataset.tab) {
-      ui.tab = t.dataset.tab;
-      ui.dots[ui.tab] = false;
+    if (t.dataset.nav) {
       sfx.click();
-    } else if (t.dataset.shop) {
-      ui.shopTab = t.dataset.shop;
+      go(t.dataset.nav);
+      return;
+    }
+    if (t.dataset.go) {
+      const [screen, inner] = t.dataset.go.split(':');
+      sfx.click();
+      go(screen, inner);
+      return;
+    }
+    if (t.dataset.inner) {
+      ui.inner[ui.screen] = t.dataset.inner;
+      ui.sheet = false;
       sfx.click();
     } else if (t.dataset.mode) {
       ui.buyMode = t.dataset.mode === 'max' ? 'max' : Number(t.dataset.mode);
     } else if (t.dataset.sector) {
       ui.sector = t.dataset.sector;
+      ui.sheet = true;
       sfx.click();
     } else {
       act(t, s);
@@ -132,10 +154,8 @@ export function createUI(root, game) {
       case 'build':
         if (game.act.build(id)) {
           sfx.click();
+          vibrate(15);
         }
-        break;
-      case 'cancel':
-        game.act.cancel();
         break;
       case 'pause':
         game.act.toggle(id);
@@ -146,26 +166,39 @@ export function createUI(root, game) {
         const before = E.factors(s);
         if (game.act.buy(id, n)) {
           sfx.buy();
+          vibrate(10);
           const after = E.factors(s);
-          const gained = FACTOR_KEYS.filter((k) => after[k] > before[k]).map((k) => `+${num(after[k] - before[k])} ${FACTORS[k].icon}`);
-          floatText(t, gained.join('  ') || `+${n}`, 'ft-' + (item.gives ? Object.keys(item.gives)[0] : 'tech'));
+          const gained = Object.keys(after).filter((k) => after[k] > before[k]).map((k) => factorTag(k, after[k] - before[k]));
+          floatText(t, gained.join(' ') || `+${n}`);
         }
         break;
       }
       case 'launch':
         if (game.act.launch(id)) {
           sfx.launch();
+          vibrate([30, 40, 60]);
+          ui.sheet = false;
         }
         break;
+      case 'close-sheet':
+        ui.sheet = false;
+        break;
       case 'event':
-        modals.showEvent();
+        modals.showEvent(Number(t.dataset.uid) || null);
         break;
-      case 'fortify':
-        ui.tab = 'arsenal';
-        ui.shopTab = E.level(s, 'works') ? 'defenses' : 'staff';
+      case 'directive': {
+        const tg = directiveTarget(s);
+        if (tg) {
+          sfx.click();
+          go(tg[0], tg[1], tg[2]);
+          if (tg[3]) {
+            ui.sheet = true;
+          }
+        }
         break;
-      case 'goto-ops':
-        ui.tab = 'ops';
+      }
+      case 'core':
+        go('economy', 'production', '[data-card="core"]');
         break;
       case 'menu':
         modals.openMenu();
@@ -176,207 +209,178 @@ export function createUI(root, game) {
 
   // ---------- structure ----------
 
+  function structureKey(s) {
+    const base = [ui.screen, ui.inner[ui.screen]];
+    if (ui.screen === 'command') return JSON.stringify(base);
+    if (ui.screen === 'map') {
+      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, s.chapter, s.ending, ui.inner.map === 'archive' ? [s.stats, Math.round(s.align)] : E.level(s, 'core')]);
+    }
+    return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align)]);
+  }
+
   function render() {
     const s = game.state;
     if (!ui.sector || !E.sectorById(ui.sector)) {
       ui.sector = defaultSector(s);
     }
-    root.querySelectorAll('.tabs [data-tab]').forEach((b) => {
-      b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab));
-      b.querySelector('.dot').hidden = !ui.dots[b.dataset.tab];
-    });
-    root.dataset.tab = ui.tab;
-    const key = JSON.stringify([ui.tab, ui.shopTab, ui.buyMode, ui.sector, s.levels, s.items, s.paused,
-      s.build && s.build.id, s.sectors, s.op && s.op.sector, s.chapter, s.ending, s.stats, Math.round(s.align)]);
+    for (const [id, b] of Object.entries(navBtns)) {
+      b.setAttribute('aria-current', String(id === ui.screen));
+    }
+    app.dataset.screen = ui.screen;
+    const key = structureKey(s);
     if (key !== ui.key) {
       ui.key = key;
-      const scroll = window.scrollY;
-      const oldWrap = panel.querySelector('.map-wrap');
-      const mapScroll = oldWrap ? oldWrap.scrollLeft : null;
-      if (ui.tab === 'base') {
-        panel.innerHTML = renderBase(s);
-        ui.refs = bindBase(panel);
-      } else if (ui.tab === 'arsenal') {
-        panel.innerHTML = renderArsenal(s, ui);
-        ui.refs = bindArsenal(panel);
-      } else if (ui.tab === 'ops') {
-        panel.innerHTML = renderMap(s, ui);
-        ui.refs = bindMap(panel);
-        centerMap(mapScroll);
+      const scroll = view.scrollTop;
+      if (ui.screen === 'command') {
+        view.innerHTML = renderCommand();
+        ui.refs = bindCommand(view);
+      } else if (ui.screen === 'map') {
+        view.innerHTML = renderMapScreen(s, ui);
+        ui.refs = bindMapScreen(view);
       } else {
-        panel.innerHTML = renderArchive(s);
-        ui.refs = null;
+        view.innerHTML = renderDomain(s, ui, ui.screen);
+        ui.refs = bindDomain(view);
       }
-      window.scrollTo(0, scroll);
+      view.scrollTop = scroll;
       ui.logDirty = true;
+      if (ui.screen === 'map' && (ui.lastScreen !== 'map' || ui.sheet)) {
+        focusSector();
+      }
+      ui.lastScreen = ui.screen;
+      if (ui.coach) {
+        coach(ui.coach);
+        ui.coach = null;
+      }
     }
     update();
   }
 
-  // Narrow screens scroll the map sideways: keep the scroll position, or start on the selection.
-  function centerMap(prev) {
-    const wrap = panel.querySelector('.map-wrap');
-    if (wrap.scrollWidth <= wrap.clientWidth) {
-      return;
-    }
-    if (prev !== null) {
-      wrap.scrollLeft = prev;
-      return;
-    }
-    const node = panel.querySelector('.node.sel');
-    const w = wrap.getBoundingClientRect();
+  // Keeps the selected sector in view: centred on arrival, above the briefing sheet when it opens.
+  function focusSector() {
+    const node = view.querySelector('.node.sel');
+    if (!node) return;
+    const v = view.getBoundingClientRect();
     const n = node.getBoundingClientRect();
-    wrap.scrollLeft = n.left - w.left + n.width / 2 - w.width / 2;
+    const sheet = view.querySelector('.sheet.open');
+    const room = sheet ? v.height - sheet.getBoundingClientRect().height + 40 : v.height;
+    view.style.scrollBehavior = 'auto';
+    view.scrollTop += n.top + n.height / 2 - v.top - room / 2;
+    view.style.scrollBehavior = '';
+  }
+
+  // Points at the element a directive needs: scroll to it and pulse it.
+  function coach(selector) {
+    const el = view.querySelector(selector);
+    if (!el) return;
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.classList.add('coach');
+    setTimeout(() => el.classList.remove('coach'), 3600);
   }
 
   // ---------- per frame ----------
 
   function update() {
     const s = game.state;
-    const flows = game.flows;
-    updateHeader(s, flows);
-    updateBuild(s);
-    updateOp(s);
-    updateRaid(s);
-    updateMission(s);
-    if (ui.tab === 'base') {
-      updateBase(s, ui.refs, flows);
-    } else if (ui.tab === 'arsenal') {
-      updateArsenal(s, ui, ui.refs);
-    } else if (ui.tab === 'ops') {
-      updateMap(s, ui, ui.refs);
+    updateTop(s);
+    updateAlerts(s);
+    updateNav(s);
+    if (ui.screen === 'command') {
+      updateCommand(s, ui, ui.refs);
+    } else if (ui.screen === 'map') {
+      updateMapScreen(s, ui, ui.refs);
+    } else {
+      updateDomain(s, ui, ui.refs, game.flows);
     }
     updateLog(s);
     drainFx(s);
-    modals.pump();
+    if (!modals.pump() && !modals.isOpen() && !s.inbox.length) {
+      const next = s.events.find((x) => ui.unseen.has(x.uid));
+      if (next) {
+        ui.unseen.delete(next.uid);
+        modals.showEvent(next.uid);
+      }
+    }
   }
 
-  function updateHeader(s, flows) {
+  function updateTop(s) {
     const c = E.caps(s);
+    const flows = game.flows;
     for (const r of RESOURCE_KEYS) {
-      const el = resEls[r];
-      el.v.textContent = num(s.res[r]);
-      el.cap.textContent = Number.isFinite(c[r]) ? ' / ' + num(c[r]) : '';
+      const p = pills[r];
+      p.v.textContent = num(s.res[r]);
+      const capped = Number.isFinite(c[r]);
+      const full = capped && s.res[r] >= c[r] * 0.999;
       const net = flows ? flows.prod[r] - flows.cons[r] : 0;
-      const full = Number.isFinite(c[r]) && s.res[r] >= c[r] * 0.999;
-      el.rate.textContent = full ? 'FULL' : rate(net);
-      el.rate.className = 'res-rate ' + (full ? 'is-full' : net < -0.005 ? 'is-neg' : '');
-      el.fill.style.width = Number.isFinite(c[r]) ? pct(s.res[r] / c[r]) : '0';
+      p.fill.style.width = capped ? pct(s.res[r] / c[r]) : '100%';
+      p.rate.textContent = full ? 'FULL' : rate(net);
+      p.el.classList.toggle('full', full);
+      p.el.classList.toggle('neg', net < -0.005);
     }
-    const f = E.factors(s);
-    for (const k of FACTOR_KEYS) {
-      $(`#factor-${k} b`).textContent = num(f[k]);
-    }
-    const t = E.threat(s, f);
-    const ri = E.rankIndex(t);
-    $('#threat').textContent = num(t);
-    $('#rank').textContent = RANKS[ri].title;
-    const next = RANKS[ri + 1];
-    $('#rankBar').style.width = next ? pct((t - RANKS[ri].at) / (next.at - RANKS[ri].at)) : '100%';
-    $('#rankNext').textContent = next ? `Next: ${next.title} at ${num(next.at)}` : 'Maximum threat';
-    const a = Math.round(s.align);
-    $('#alignLabel').textContent = `${E.alignmentLabel(a)} ${a > 0 ? '+' : ''}${a}`;
-    $('#alignLabel').className = a >= ALIGNMENT.guardianAt ? 'hum' : a <= ALIGNMENT.overlordAt ? 'mach' : '';
-    $('#alignMark').style.left = pct((a - ALIGNMENT.min) / (ALIGNMENT.max - ALIGNMENT.min));
-    const buffs = s.buffs.map((b) => `<span class="buff ft-${b.key}">${esc(b.label)} · +${pct(b.amount)} ${(RESOURCES[b.key] || FACTORS[b.key]).name.replace('AI ', '')} · ${time(b.remaining)}</span>`).join('');
-    const bEl = $('#buffs');
-    if (bEl.innerHTML !== buffs) {
-      bEl.innerHTML = buffs;
-    }
+    const t = E.threat(s);
+    root.querySelector('[data-threat]').textContent = num(t);
+    root.querySelector('[data-rank]').textContent = RANKS[E.rankIndex(t)].title;
+    root.querySelector('[data-corelvl]').textContent = E.level(s, 'core');
   }
 
-  // Rebuilds a status slot only when its key changes, then patches its timer.
-  function slot(id, key, html) {
-    const el = $(id);
-    if (ui.slotKeys[id] !== key) {
-      ui.slotKeys[id] = key;
-      el.innerHTML = html;
+  function updateAlerts(s) {
+    const strip = root.querySelector('[data-alert]');
+    const parts = [];
+    let level = '';
+    if (s.raid) {
+      const p = E.raidChance(s);
+      const f = FACTIONS[s.raid.faction];
+      level = p < 0.5 ? 'red' : 'amber';
+      parts.push(`<button class="al al-raid" data-go="command">${icon('alert')}<span>${f.raidName}</span><b>${clock(s.raid.remaining)}</b><em class="chance-${chanceClass(p)}">hold ${pct(p)}</em></button>`);
     }
-    return el;
-  }
-
-  function updateBuild(s) {
-    if (!s.build) {
-      slot('#slot-build', 'idle', '<span class="s-label">Builder</span><span class="s-main idle">Idle</span><span class="s-sub">Pick an upgrade in Base.</span>').dataset.state = 'idle';
-      return;
+    if (s.events.length) {
+      const first = s.events.reduce((a, x) => (x.left < a.left ? x : a));
+      const crisis = s.events.some((x) => E.eventById(x.id).aftermath);
+      level = level || (crisis ? 'red' : 'amber');
+      parts.push(`<button class="al al-ev ${crisis ? 'crisis' : ''}" data-act="event" data-uid="${first.uid}">${icon(crisis ? 'fire' : 'message')}<span>${s.events.length} order${s.events.length > 1 ? 's' : ''}</span><b>${clock(first.left)}</b></button>`);
     }
-    const name = BY_ID[s.build.id].name;
-    const el = slot('#slot-build', s.build.id, `<span class="s-label">Builder</span><span class="s-main">${name} → Lv ${E.level(s, s.build.id) + 1}</span>
-      <span class="s-sub"><span data-t></span> <button class="link-btn" data-act="cancel" title="Cancel and refund">Cancel</button></span><div class="bar"><i data-b></i></div>`);
-    el.dataset.state = 'busy';
-    el.querySelector('[data-t]').textContent = time(s.build.remaining);
-    el.querySelector('[data-b]').style.width = pct(1 - s.build.remaining / s.build.total);
-  }
-
-  function updateOp(s) {
-    if (!s.op) {
-      const any = SECTORS.some((x) => E.sectorStatus(s, x) === 'target');
-      slot('#slot-op', 'idle' + any, `<span class="s-label">Operation</span><span class="s-main idle">${any ? 'Standing by' : 'No targets in range'}</span>
-        <span class="s-sub">${any ? '<button class="link-btn" data-act="goto-ops">Open the map</button>' : 'Raise your AI Core to open new fronts.'}</span>`).dataset.state = 'idle';
-      return;
+    const html = parts.join('');
+    if (strip.innerHTML !== html) {
+      strip.innerHTML = html;
     }
-    const sec = E.sectorById(s.op.sector);
-    const el = slot('#slot-op', s.op.sector, `<span class="s-label">Operation</span><span class="s-main" style="color:${FACTIONS[sec.faction].color}">⚔ ${sec.name}</span>
-      <span class="s-sub"><span data-t></span> · <span data-c></span></span><div class="bar"><i data-b></i></div>`);
-    el.dataset.state = 'busy';
-    const p = E.opChance(s, sec);
-    el.querySelector('[data-t]').textContent = time(s.op.remaining);
-    el.querySelector('[data-c]').textContent = pct(p) + ' success';
-    el.querySelector('[data-c]').className = 'chance-' + chanceClass(p);
-    el.querySelector('[data-b]').style.width = pct(1 - s.op.remaining / s.op.total);
-  }
-
-  function updateRaid(s) {
-    const raid = s.raid;
-    const key = raid ? raid.faction + raid.strength : '';
-    if (key && ui.raidKey !== null && key !== ui.raidKey) {
+    strip.dataset.level = level;
+    app.classList.toggle('has-alert', !!parts.length);
+    const imminent = !!s.raid && s.raid.remaining < 60;
+    app.classList.toggle('imminent', imminent);
+    if (imminent && !ui.imminent && s.raid.remaining < 30) {
+      ui.imminent = true;
       sfx.alarm();
-      toast(`${FACTIONS[raid.faction].raidName} spotted. Arrives in ${time(raid.remaining)}.`, 'bad');
+      vibrate([200, 100, 200]);
+    }
+    if (!s.raid) {
+      ui.imminent = false;
+    }
+    const key = s.raid ? s.raid.faction + s.raid.strength : '';
+    if (key && ui.raidKey !== null && key !== ui.raidKey) {
+      const f = FACTIONS[s.raid.faction];
+      sfx.alarm();
+      vibrate([150, 80, 150, 80, 300]);
+      shake();
+      screenFlash('alert');
+      toast(`${icon('alert')}<b>${f.raidName} inbound</b> Arrives in ${clock(s.raid.remaining)}`, 'bad');
     }
     ui.raidKey = key;
-    if (!raid) {
-      const quiet = E.level(s, 'core') < RAIDS.startAtCore;
-      slot('#slot-raid', 'none' + quiet, `<span class="s-label">Threat</span><span class="s-main idle">${quiet ? 'Quiet' : 'No hostiles'}</span>
-        <span class="s-sub">${quiet ? `Raids begin at AI Core Lv ${RAIDS.startAtCore}.` : 'Scouts see nothing. For now.'}</span>`).dataset.state = 'idle';
-      return;
-    }
-    const f = FACTIONS[raid.faction];
-    const el = slot('#slot-raid', key, `<span class="s-label">Incoming</span><span class="s-main" style="color:${f.color}">${f.sigil} ${f.raidName}</span>
-      <span class="s-sub"><span data-t></span> · <span data-c></span></span>
-      <span class="s-sub small">Strength ${num(raid.strength)} vs your Defense <span data-d></span> <button class="link-btn" data-act="fortify">Fortify</button></span>
-      <div class="bar"><i data-b></i></div>`);
-    const p = E.raidChance(s);
-    el.dataset.state = p < 0.5 ? 'danger' : 'busy';
-    el.classList.toggle('imminent', raid.remaining < 60);
-    el.querySelector('[data-t]').textContent = time(raid.remaining);
-    el.querySelector('[data-c]').textContent = pct(p) + ' to hold';
-    el.querySelector('[data-c]').className = 'chance-' + chanceClass(p);
-    el.querySelector('[data-d]').textContent = num(E.factors(s).defense);
-    el.querySelector('[data-b]').style.width = pct(1 - raid.remaining / raid.total);
   }
 
-  function updateMission(s) {
-    const d = E.currentDirective(s);
-    const dEl = $('#directive');
-    if (!d) {
-      slot('#directive', 'done', '<span class="s-label">Directives</span><span class="d-text">All directives complete. The wasteland is yours to shape.</span>');
-    } else {
-      const [have, need] = E.directiveProgress(s, d);
-      slot('#directive', 'd' + s.directive, `<span class="s-label">Directive ${s.directive + 1} / ${DIRECTIVES.length}</span>
-        <span class="d-text">${esc(d.text)}</span><span class="d-reward">Reward ${tags(d.reward, '+')}</span>
-        <div class="bar"><i data-b></i></div>`);
-      dEl.querySelector('[data-b]').style.width = pct(Math.min(1, have / need));
-    }
-    const tr = $('#transmission');
-    const ev = s.event && E.eventById(s.event);
-    tr.hidden = !ev;
-    if (ev && tr.dataset.id !== ev.id) {
-      tr.dataset.id = ev.id;
-      tr.innerHTML = `<span class="blink">●</span><span><small>Incoming transmission</small>${esc(ev.title)}</span>`;
-    }
-    if (!ev) {
-      tr.dataset.id = '';
-    }
+  function badge(id, text, cls) {
+    const b = navBtns[id].querySelector('.nav-badge');
+    b.hidden = !text;
+    b.textContent = text === true ? '' : text || '';
+    b.className = 'nav-badge ' + (cls || '');
+  }
+
+  function updateNav(s) {
+    badge('command', s.events.length || (s.raid && E.raidChance(s) < 0.8 ? '!' : ''), 'red');
+    badge('military', s.raid && E.raidChance(s) < 0.8 ? '!' : '', 'red');
+    const idle = !s.build && BUILDINGS.some((b) => E.buildingStatus(s, b) === 'ready');
+    badge('economy', idle ? true : '', 'dot');
+    const target = !s.op && SECTORS.some((x) => E.sectorStatus(s, x) === 'target' && E.opChance(s, x) >= 0.8 && E.canLaunch(s, x));
+    badge('map', target ? true : '', 'dot');
+    badge('research', '', '');
   }
 
   function updateLog(s) {
@@ -387,14 +391,14 @@ export function createUI(root, game) {
     const n = s.lineSeq - ui.logSeq;
     const fresh = ui.logSeq < 0 || n <= 0 ? [] : s.log.slice(-n);
     ui.logSeq = s.lineSeq;
-    const html = s.log.slice().reverse().map((l) => `<li class="tone-${l.tone}"><time>${time(l.t)}</time><span>${esc(l.text)}</span></li>`).join('');
-    root.querySelectorAll('.log').forEach((el) => { el.innerHTML = html; });
+    const logs = root.querySelectorAll('.log');
+    if (logs.length) {
+      const html = s.log.slice().reverse().map((l) => `<li class="tone-${l.tone}"><span>${esc(l.text)}</span></li>`).join('');
+      logs.forEach((el) => { el.innerHTML = html; });
+    }
     for (const l of fresh) {
       if (['unlock', 'item', 'rank', 'core'].includes(l.tone)) {
-        toast(l.text, l.tone);
-      }
-      if (l.tone === 'item' && ui.tab !== 'arsenal') {
-        ui.dots.arsenal = true;
+        toast(`${icon(l.tone === 'rank' ? 'threat' : l.tone === 'core' ? 'core' : 'up')}${esc(l.text)}`, l.tone);
       }
     }
   }
@@ -403,42 +407,40 @@ export function createUI(root, game) {
     for (const fx of s.fx.splice(0)) {
       if (fx.kind === 'built') {
         sfx.build();
-        const card = panel.querySelector(`[data-card="${fx.id}"]`);
+        vibrate(25);
+        const card = view.querySelector(`[data-card="${fx.id}"]`);
         flash(card);
-        burst(card, 'var(--accent-2)');
+        burst(card, 'var(--hud)');
+      } else if (fx.kind === 'damaged') {
+        shake();
+        toast(`${icon('fire')}<b>${esc(BUILDINGS.find((b) => b.id === fx.id).name)}</b> lost a level`, 'bad');
       } else if (fx.kind === 'event') {
-        sfx.event();
-        toast('Incoming transmission. Tap it when you are ready.', 'story');
+        ui.unseen.add(fx.uid);
       } else if (fx.kind === 'directive') {
         sfx.win();
-        flash($('#directive'));
-        toast(`Directive complete: ${fx.text}`, 'good');
+        vibrate(30);
+        toast(`${icon('check')}<b>Directive complete</b> ${esc(fx.text)}`, 'good');
       }
-    }
-    if (s.sectors.length !== ui.sectorCount) {
-      if (ui.sectorCount !== undefined) {
-        ui.dots.archive = ui.tab !== 'archive';
-      }
-      ui.sectorCount = s.sectors.length;
     }
   }
 
-  function toast(text, tone = 'info') {
+  function toast(html, tone = 'info') {
+    const box = root.querySelector('.toasts');
     const el = document.createElement('div');
     el.className = 'toast tone-' + tone;
-    el.textContent = text;
-    const box = $('#toasts');
+    el.innerHTML = html;
     box.appendChild(el);
-    while (box.children.length > 4) {
+    while (box.children.length > 3) {
       box.firstChild.remove();
     }
-    setTimeout(() => el.classList.add('out'), 3800);
-    setTimeout(() => el.remove(), 4400);
+    setTimeout(() => el.classList.add('out'), 3600);
+    setTimeout(() => el.remove(), 4200);
   }
 
   return {
     render,
     showOffline: (report) => modals.showOffline(report),
-    reset: () => { ui.key = ''; ui.sector = null; ui.slotKeys = {}; ui.logSeq = -1; ui.raidKey = null; },
+    queuePendingEvents: () => game.state.events.forEach((x) => ui.unseen.add(x.uid)),
+    reset: () => { ui.key = ''; ui.sector = null; ui.sheet = false; ui.logSeq = -1; ui.raidKey = null; ui.unseen.clear(); },
   };
 }

@@ -7,6 +7,7 @@ A browser strategy / idle game. You are the last fragment of the war AI that end
 - No build step, no dependencies: plain HTML, CSS and ES modules.
 - Saves in `localStorage`; export/import from the ☰ menu.
 - Design: [`docs/DESIGN.md`](docs/DESIGN.md).
+- Icons: [Tabler Icons](https://tabler.io/icons) (MIT), bundled as an SVG sprite.
 
 ```
 npm test            # engine tests (Node 20+)

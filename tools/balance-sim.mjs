@@ -40,10 +40,10 @@ for (let t = 0; t < hours * 3600; t++) {
       E.launchOp(s, target.id);
     }
   }
-  if (s.event) {
-    const ev = E.eventById(s.event);
-    const idx = ev.choices.findIndex((c) => E.canChoose(s, c));
-    E.resolveEvent(s, idx < 0 ? ev.choices.length - 1 : idx);
+  for (const inst of s.events.slice()) {
+    const ev = E.eventById(inst.id);
+    const idx = ev.choices.findIndex((c) => E.canChoose(s, inst, c));
+    E.resolveEvent(s, inst.uid, idx < 0 ? ev.def : idx);
   }
   for (const m of s.inbox.splice(0)) {
     if (m.kind === 'op' && m.win) mark(t, 'op' + m.sector, `captured ${m.sector}`);

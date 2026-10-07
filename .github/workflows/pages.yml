@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Stage site
-        run: mkdir _site && cp -r index.html .nojekyll css js _site/
+        run: mkdir _site && cp -r index.html .nojekyll manifest.webmanifest icon.svg css js _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
       - id: deployment

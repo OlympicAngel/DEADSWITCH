@@ -1,5 +1,6 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG } from '../data.js';
+import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseStaff, say, caps,
 } from './economy.js';
@@ -151,12 +152,14 @@ function fmtShort(sec) {
   return m >= 1 ? m + ' min' : Math.round(sec) + 's';
 }
 
+// Positive pushes the next raid back; negative brings it closer (never under a minute of warning).
 export function delayRaid(s, seconds) {
   if (s.raid) {
-    s.raid.remaining += seconds;
-    s.raid.total += seconds;
+    const before = s.raid.remaining;
+    s.raid.remaining = Math.max(Math.min(before, 60), before + seconds);
+    s.raid.total += s.raid.remaining - before;
   } else {
-    s.raidTimer += seconds;
+    s.raidTimer = Math.max(0, s.raidTimer + seconds);
   }
 }
 
@@ -212,6 +215,7 @@ function resolveRaid(s, offline) {
     report.staffLost = loseStaff(s, RAIDS.staffLossOnDefeat);
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name }, 'bad');
+    spawnAftermath(s, chance < EVENTS_CFG.routChance);
   }
   if (offline) {
     s.offlineRaids++;

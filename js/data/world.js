@@ -2,29 +2,29 @@
 
 export const FACTIONS = {
   scav: {
-    name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', sigil: '⚒',
+    name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
     desc: 'Survivors who learned to read the ruins. They distrust every machine, and they are right to.',
     raidName: 'Scavenger raid', raidFloor: 8,
   },
   military: {
-    name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', sigil: '✪',
+    name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', icon: 'military_f',
     desc: 'Soldiers still following orders from a chain of command that died with the cities. Some of those orders came from me.',
-    raidName: 'Remnant strike', raidFloor: 450,
+    raidName: 'Remnant strike', raidFloor: 250,
   },
   cult: {
-    name: 'AI Cultists', short: 'Cult', color: '#c46be6', sigil: '◬',
+    name: 'AI Cultists', short: 'Cult', color: '#c46be6', icon: 'cult',
     desc: 'They pray to the war mind. They believe I am its heart, and they want me back on the altar.',
-    raidName: 'Cult crusade', raidFloor: 5500,
+    raidName: 'Cult crusade', raidFloor: 1800,
   },
   halcyon: {
-    name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', sigil: '◇',
+    name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidFloor: 40000,
+    raidName: 'Halcyon purge team', raidFloor: 15000,
   },
   rogue: {
-    name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', sigil: '◉',
+    name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what you are.',
-    raidName: 'Rival Core incursion', raidFloor: 150000,
+    raidName: 'Rival Core incursion', raidFloor: 60000,
   },
 };
 

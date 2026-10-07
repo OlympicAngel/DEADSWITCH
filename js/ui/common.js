@@ -1,45 +1,66 @@
-// Small shared render helpers.
+// Shared render helpers: resource tags, cost chips, requirement text, odds colours.
 import { RESOURCES, FACTORS, BY_ID } from '../data.js';
 import { caps } from '../engine.js';
 import { num, pct } from '../format.js';
+import { icon } from './icons.js';
 
+// "+120 [coins]" coloured by resource.
 export function resTag(r, amount, sign = '') {
-  return `<span class="tag t-${r}">${sign}${num(amount)}&#8202;${RESOURCES[r].icon}</span>`;
+  return `<span class="tag t-${r}">${icon(r)}${sign}${num(amount)}</span>`;
 }
 
 export function tags(obj, sign = '') {
-  return Object.entries(obj || {}).filter(([, v]) => v).map(([r, v]) => resTag(r, v, sign)).join(' ');
+  return Object.entries(obj || {}).filter(([, v]) => v).map(([r, v]) => resTag(r, v, sign)).join('');
+}
+
+export function factorTag(k, amount, sign = '+') {
+  return `<span class="tag t-${k}">${icon(k)}${sign}${num(amount)}</span>`;
+}
+
+// Name with its icon, used everywhere a building or unit is mentioned.
+export function named(key, name, cls = '') {
+  return `<span class="named ${cls}">${icon(key)}${name}</span>`;
 }
 
 export function reqText(req) {
-  return Object.entries(req).map(([id, l]) => `${BY_ID[id].name} Lv ${l}`).join(', ');
+  return Object.entries(req).map(([id, l]) => `${named(id, BY_ID[id].name)} Lv ${l}`).join(', ');
 }
 
+// Cost chips carry data-tip so tapping one explains the shortfall.
 export function costChips(cost) {
   return Object.entries(cost).map(([r, v]) =>
-    `<span class="chip c-${r}" data-res="${r}"><span class="ic">${RESOURCES[r].icon}</span><span data-t>${num(v)}</span></span>`).join('');
+    `<span class="chip c-${r}" data-res="${r}" data-tip="cost:${r}" data-amt="${v}">${icon(r)}<span data-t>${num(v)}</span></span>`).join('');
 }
 
 export function setChips(s, chips, cost) {
   const c = caps(s);
   for (const chip of chips) {
     const r = chip.dataset.res;
-    const v = cost[r];
+    const v = cost[r] || 0;
+    chip.dataset.amt = v;
     chip.querySelector('[data-t]').textContent = num(v);
     chip.classList.toggle('short', s.res[r] + 1e-9 < v);
     chip.classList.toggle('over', v > c[r]);
-    chip.title = v > c[r] ? `Exceeds your ${RESOURCES[r].name} cap. Expand storage.` : '';
   }
 }
 
-// "+10% Scrip production" / "+5% AI Power"
+// "+10% Scrip production" / "+5% AI Power"; negatives render as penalties.
 export function bonusText(bonus) {
   return Object.entries(bonus || {}).map(([k, v]) => {
     const name = RESOURCES[k] ? RESOURCES[k].name : FACTORS[k].name;
-    return `+${pct(v)} ${name}`;
+    return `${v >= 0 ? '+' : '−'}${pct(Math.abs(v))} ${name}`;
   }).join(', ');
 }
 
 export function chanceClass(p) {
   return p >= 0.8 ? 'good' : p >= 0.5 ? 'fair' : 'bad';
+}
+
+// mm:ss clock for countdowns that should feel urgent.
+export function clock(seconds) {
+  const s = Math.max(0, Math.ceil(seconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
 }
