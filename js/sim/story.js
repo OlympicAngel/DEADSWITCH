@@ -5,7 +5,7 @@ import {
 import {
   level, factors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, projectDefense,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege } from './war.js';
+import { delayRaid, activeRaiders, startSiege, addGrudge } from './war.js';
 import { range, pick, rand } from './rng.js';
 
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
@@ -60,7 +60,8 @@ export function choiceOutcome(s, inst, choice) {
   for (const r of Object.keys(cost)) {
     cost[r] = Math.min(cost[r], Math.floor(c[r]));
   }
-  return { cost, gain, lose, levels, units, siege };
+  const align = choice.align ? Math.round(choice.align * EVENTS_CFG.alignScale) : 0;
+  return { cost, gain, lose, levels, units, siege, align, grudge: choice.grudge || null };
 }
 
 export function canChoose(s, inst, choice) {
@@ -196,8 +197,12 @@ export function resolveEvent(s, uid, index, expired = false) {
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
     loseUnits(s, tab, share);
   }
-  if (choice.align) {
-    s.align = Math.max(ALIGNMENT.min, Math.min(ALIGNMENT.max, s.align + choice.align));
+  if (out.align) {
+    s.align = Math.max(ALIGNMENT.min, Math.min(ALIGNMENT.max, s.align + out.align));
+  }
+  if (out.grudge) {
+    out.grudgeRoll = addGrudge(s, out.grudge);
+    say(s, 'grudge', { faction: FACTIONS[out.grudge.faction].name }, 'bad');
   }
   if (choice.buff) {
     s.buffs.push({ ...choice.buff, remaining: choice.buff.duration });

@@ -5,7 +5,7 @@ import {
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
-import { tags, bonusText, chanceClass, clock } from './common.js';
+import { tags, bonusText, bonusChips, chanceClass, clock } from './common.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 
@@ -190,8 +190,8 @@ export function createModals(dialog, game, onChange) {
   function battle(r, then) {
     const max = Math.max(r.you, r.them, 1);
     open(`
-      <div class="battle ${r.win ? 'win' : 'loss'}">
-        <span class="kicker">${r.kicker}</span>
+      <div class="battle ${r.mode} ${r.win ? 'win' : 'loss'}">
+        <div class="battle-banner">${icon(r.mode === 'op' ? 'power' : 'defense')}<span>${r.kicker}</span></div>
         <h2>${esc(r.title)}</h2>
         <div class="versus">
           <div class="side you"><span>${icon(r.youIcon)}${r.youLabel}</span><b>${num(r.you)}</b><div class="vbar"><i style="--w:${pct(r.you / max)}"></i></div></div>
@@ -200,7 +200,7 @@ export function createModals(dialog, game, onChange) {
         </div>
         <div class="roll"><div class="zone bg-${chanceClass(r.chance)}" style="width:${pct(r.chance)}"></div><i class="needle" style="--to:${(r.roll * 100).toFixed(1)}%"></i></div>
         <p class="roll-cap"><span>Success ${pct(r.chance)}</span><span>Roll ${Math.round(r.roll * 100)}</span></p>
-        <div class="stamp">${r.win ? 'Victory' : 'Defeat'}</div>
+        <div class="stamp">${r.stamp}</div>
         <div class="spoils">${r.spoils}</div>
         ${r.note ? `<p class="note">${r.note}</p>` : ''}
         <button class="btn primary wide" data-close>Continue</button>
@@ -233,13 +233,14 @@ export function createModals(dialog, game, onChange) {
   function showOp(r, then) {
     const sec = E.sectorById(r.sector);
     battle({
-      kicker: 'Operation report', title: sec.name,
+      mode: 'op', stamp: r.win ? 'Captured' : 'Repelled',
+      kicker: 'Our offensive', title: sec.name,
       youLabel: 'Your power', youIcon: 'power', you: r.power,
       themLabel: 'Their defense', themIcon: 'defense', them: r.defense,
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: r.win
         ? `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>
-           <div class="r"><span>${icon('trend')}Permanent</span><b class="good-t">${bonusText(sec.bonus)}</b></div>
+           <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
            <blockquote class="lore">${esc(sec.lore)}</blockquote>`
         : `<div class="r"><span>${icon('skull')}Losses</span><b>${losses(r)}</b></div>`,
     }, then);
@@ -248,9 +249,10 @@ export function createModals(dialog, game, onChange) {
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
     battle({
-      kicker: r.offline ? 'Raid report · while you were away' : 'Raid report', title: r.name || f.raidName,
+      mode: 'def', stamp: r.win ? 'Held' : 'Breached',
+      kicker: r.offline ? 'Under attack · while you were away' : 'Under attack', title: r.name || f.raidName,
       youLabel: 'Your defense', youIcon: 'defense', you: r.defense,
-      themLabel: 'Raid strength', themIcon: 'power', them: r.strength,
+      themLabel: 'Their strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: r.win
         ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>`
@@ -282,8 +284,13 @@ export function createModals(dialog, game, onChange) {
     if (ch.raidDelay) {
       p.push(`<span class="tag ${ch.raidDelay > 0 ? 't-good' : 't-bad'}">${icon('threat')}Next raid ${ch.raidDelay > 0 ? 'later' : 'sooner'} (${time(Math.abs(ch.raidDelay))})</span>`);
     }
-    if (ch.align) {
-      p.push(`<span class="tag ${ch.align > 0 ? 't-hum' : 't-mach'}">${icon('heart')}Humanity ${ch.align > 0 ? '+' : ''}${ch.align}</span>`);
+    if (out.grudge) {
+      const f = FACTIONS[out.grudge.faction];
+      p.push(`<span class="tag t-bad">${icon(f.icon)}${f.short} vengeance: raids ×${out.grudge.mult}</span>`);
+    }
+    const al = out.align ?? ch.align;
+    if (al) {
+      p.push(`<span class="tag ${al > 0 ? 't-hum' : 't-mach'}">${icon('heart')}Humanity ${al > 0 ? '+' : ''}${al}</span>`);
     }
     const html = p.filter(Boolean).join('');
     return html || '<span class="tag t-dim">No immediate effect</span>';

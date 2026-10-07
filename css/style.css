@@ -923,3 +923,29 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 .threat-box .vs-row { grid-template-columns: 110px 1fr 56px; }
 .threat-hold { display: flex; justify-content: space-between; font: 600 11px var(--font-hud); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
 .threat-hold b { font: 700 16px var(--font-num); }
+
+/* Permanent bonus chips */
+.perm { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 6px; background: rgba(95,211,141,.06); border: 1px solid rgba(95,211,141,.3); text-align: left; }
+.perm > span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+.bonus-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.bchip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.35); border: 1px solid currentColor; font: 700 13px var(--font-num); }
+
+/* Our offensive vs enemy attack: different banner, colour and stamps */
+.battle-banner { display: flex; align-items: center; justify-content: center; gap: 8px; margin: -22px -20px 14px; padding: 10px; font: 700 12px var(--font-hud); text-transform: uppercase; letter-spacing: .24em; }
+.battle.op .battle-banner { color: #1a0b05; background: linear-gradient(90deg, #ff6b3d, #ffb03d); }
+.battle.def .battle-banner { color: #e8f1ff; background: linear-gradient(90deg, #1d4f9a, #6aa8ff); }
+.battle.def.loss .battle-banner { background: linear-gradient(90deg, #8a1a1a, #ff5d5d); }
+.battle.op .side.you b { color: var(--power); }
+.battle.op .side.them b { color: var(--defense); }
+.battle.op .side.you .vbar i { background: var(--power); }
+.battle.op .side.them .vbar i { background: var(--defense); }
+.battle.def .side.you b { color: var(--defense); }
+.battle.def .side.you .vbar i { background: var(--defense); }
+dialog.report:has(.battle.op) { border-color: rgba(255,107,61,.6); }
+dialog.report:has(.battle.def) { border-color: rgba(106,168,255,.55); background: var(--brackets), linear-gradient(180deg, #142233, #0b1119); }
+dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); background: var(--brackets), linear-gradient(180deg, #2a1214, #0f0d0e); }
+/* Outgoing operation panel reads as ours (orange offensive), not as an alarm */
+.panel[data-panel='op'] { border-left: 3px solid var(--power); background: var(--brackets), linear-gradient(90deg, rgba(255,100,100,.08), transparent 60%), var(--panel); }
+.panel[data-panel='op'] > header { color: var(--power); }
+.panel[data-panel='op'] .timebar i { background: var(--power); box-shadow: 0 0 8px var(--power); }
+.panel.incoming { border-left: 3px solid var(--defense); }

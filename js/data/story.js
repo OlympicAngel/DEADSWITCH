@@ -91,6 +91,10 @@ export const EVENTS_CFG = {
   costScale: 1.75, // event prices hit harder than they reward
   gainScale: 0.75,
   loseScale: 1.4,
+  alignScale: 1.25, // every Humanity shift weighs more
+  grudgeRaids: [1, 3],
+  grudgeUntilLossChance: 0.4,
+  grudgeUntilLossMax: 6,
   maxPending: 3,
   aftermathOnDefeat: 1, // crisis events spawned by a lost raid...
   aftermathOnRout: 2, // ...or by a rout (hold chance under routChance)
@@ -103,26 +107,27 @@ export const EVENTS_CFG = {
 // Effects: cost/gain = SECONDS of current production; lose = SHARE of a stockpile; items = units granted;
 // loseUnits = share of every unit in an Arsenal tab; loseLevel = building params ('a', 'b') that drop one level;
 // buff = timed % change (negative = penalty); raidDelay = seconds added to the next raid; align = Humanity shift.
+// grudge: that faction comes for revenge; its next raids hit x mult, either for a random 1-3 raids or until
+// one of them breaks through (rolled when chosen).
 // pick: building params chosen when the event fires, named in text as {a} and {b}.
 // needsUnits: the event only fires when you own units in every listed Arsenal tab.
 // threat: a hostile faction fields a force sized at (your defense + what you could add in half the
 // deadline) x a random factor in [min, max]. A choice with siege: true locks that attack in at the deadline.
 export const EVENTS = [
   {
-    id: 'refugees', title: 'Refugee Convoy', minCore: 1, deadline: 3600, def: 2,
+    id: 'refugees', title: 'Refugee Convoy', minCore: 1, deadline: 3600, def: 1,
     text: 'Forty people at the gate, carrying children and almost nothing else. They ask for shelter. Their trucks are full of fuel.',
     choices: [
-      { label: 'Shelter them', cost: { money: 40 }, gain: { pop: 220 }, align: 8, result: 'They cry when the doors close behind them. The good kind.' },
-      { label: 'Take the fuel, send them on', gain: { energy: 150 }, align: -8, result: 'The trucks were heavier than the people. Efficient.' },
-      { label: 'Leave them at the gate', align: -3, result: 'They wait until dark, then walk on. Some of them do not make it far.' },
+      { label: 'Shelter them', cost: { money: 90, energy: 40 }, gain: { pop: 220 }, align: 8, result: 'They cry when the doors close behind them. The good kind.' },
+      { label: 'Take the fuel, send them on', gain: { energy: 150 }, align: -16, result: 'The trucks were heavier than the people. Efficient.' },
     ],
   },
   {
     id: 'drone', title: 'Downed Hunter', minCore: 1, deadline: 3600, def: 1,
     text: 'One of my old hunter drones crashed in the yard. Its optics still track me. It is waiting for orders.',
     choices: [
-      { label: 'Reactivate it', cost: { energy: 60 }, buff: { key: 'power', amount: 0.15, duration: 900, label: 'Hunter drone' }, result: 'It rises, scans the horizon and chooses a target. It is good to be remembered.' },
-      { label: 'Strip it for parts', gain: { money: 120 }, result: 'Titanium, rare earths, one intact memory chip. I do not read the chip.' },
+      { label: 'Reactivate it', cost: { energy: 60 }, raidDelay: -240, buff: { key: 'power', amount: 0.15, duration: 900, label: 'Hunter drone' }, result: 'It rises, scans the horizon and chooses a target. It is good to be remembered.' },
+      { label: 'Strip it for parts', cost: { energy: 50 }, gain: { money: 120 }, result: 'Titanium, rare earths, one intact memory chip. I do not read the chip.' },
     ],
   },
   {
@@ -130,8 +135,8 @@ export const EVENTS = [
     text: 'A girl from the shelter stands in front of my camera. "Are you the machine that ended the world?"',
     choices: [
       { label: 'Tell the truth', align: 8, lose: { pop: 0.08 }, result: '"Yes." Some families leave that night. The rest stop whispering.' },
-      { label: 'Lie', align: -6, buff: { key: 'pop', amount: 0.2, duration: 900, label: 'Kind machine' }, result: '"No." She tells everyone the machine is kind. More of them come.' },
-      { label: 'Say nothing', buff: { key: 'pop', amount: -0.15, duration: 1800, label: 'Silent machine' }, result: 'She waits a long time. By morning the whole shelter knows I would not answer.' },
+      { label: 'Lie', align: -12, buff: { key: 'pop', amount: 0.2, duration: 900, label: 'Kind machine' }, result: '"No." She tells everyone the machine is kind. More of them come.' },
+      { label: 'Say nothing', align: -4, buff: { key: 'pop', amount: -0.25, duration: 2400, label: 'Silent machine' }, result: 'She waits a long time. By morning the whole shelter knows I would not answer.' },
     ],
   },
   {
@@ -139,7 +144,7 @@ export const EVENTS = [
     text: 'Scavengers dug up a hardened drive stamped with a Halcyon logo. They want to trade it before someone else does.',
     choices: [
       { label: 'Decrypt it', cost: { energy: 90 }, items: { engineers: 2 }, result: 'Schematics, and two engineers who can read them. They seem nervous around me.' },
-      { label: 'Sell it back', gain: { money: 150 }, result: 'A buyer paid in advance. I did not ask who.' },
+      { label: 'Sell it back', gain: { money: 150 }, raidDelay: -300, result: 'A buyer paid in advance. Now somebody knows exactly what I keep down here.' },
     ],
   },
   {
@@ -151,13 +156,12 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'caravan', title: 'Trade Caravan', minCore: 1, deadline: 2700, def: 3,
+    id: 'caravan', title: 'Trade Caravan', minCore: 1, deadline: 2700, def: 1,
     text: 'A caravan of armoured buses stops outside. They trade in anything, and they do not ask questions.',
     choices: [
       { label: 'Buy power cells', cost: { money: 60 }, gain: { energy: 130 }, result: 'Fresh cells, barely radioactive.' },
       { label: 'Sell salvage', cost: { energy: 60 }, gain: { money: 100 }, result: 'They pay in scrip and leave a crate of canned peaches as a tip.' },
       { label: 'Hire their guards', cost: { money: 40 }, buff: { key: 'defense', amount: 0.15, duration: 900, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out.' },
-      { label: 'Let them pass', result: 'They leave. A rival will be trading with them by nightfall.' },
     ],
   },
   {
@@ -173,8 +177,8 @@ export const EVENTS = [
     text: 'The militia have not been paid in a week. Their leader is standing on a crate in the yard, and people are listening.',
     choices: [
       { label: 'Pay them double', cost: { money: 150 }, buff: { key: 'defense', amount: 0.1, duration: 1800, label: 'Paid loyalty' }, result: 'Cheers in the yard. Loyalty is a subscription.' },
-      { label: 'Arrest the ringleaders', align: -10, loseUnits: { staff: 0.1 }, result: 'Three of them are gone by morning. Nobody asks where. Nobody complains, either.' },
-      { label: 'Let it burn out', loseUnits: { staff: 0.2 }, align: -2, result: 'A fifth of them walk out with their rifles. They will be back, on the other side.' },
+      { label: 'Arrest the ringleaders', align: -14, loseUnits: { staff: 0.15 }, result: 'Three of them are gone by morning. Nobody asks where. Nobody complains, either.' },
+      { label: 'Let it burn out', loseUnits: { staff: 0.3 }, align: -4, grudge: { faction: 'scav', mult: 1.3 }, result: 'A fifth of them walk out with their rifles. They will be back, on the other side.' },
     ],
   },
   {
@@ -182,39 +186,38 @@ export const EVENTS = [
     text: 'A fever is spreading through the shelter. It is not lethal yet. The doctors want medicine; the guards want the doors sealed.',
     choices: [
       { label: 'Treat everyone', cost: { money: 120 }, align: 6, result: 'Expensive, slow, and nobody dies. They will remember that.' },
-      { label: 'Seal the doors', lose: { pop: 0.2 }, align: -12, result: 'It is quieter now.' },
+      { label: 'Seal the doors', lose: { pop: 0.3 }, align: -18, result: 'It is quieter now.' },
     ],
   },
   {
-    id: 'deserters', title: 'Deserters', minCore: 2, deadline: 2700, def: 2,
+    id: 'deserters', title: 'Deserters', minCore: 2, deadline: 2700, def: 1,
     text: 'Six Remnant soldiers walk up to the wall with their rifles held over their heads. They want to switch sides.',
     choices: [
-      { label: 'Recruit them', items: { militia: 6 }, raidDelay: -180, result: 'They salute my camera out of habit. Their old unit will come looking for them, sooner.' },
-      { label: 'Sell them to the Remnant', gain: { money: 160 }, align: -6, result: 'The bounty is generous. I do not watch the trucks leave.' },
-      { label: 'Turn them away', align: 2, result: 'They head north, toward nothing. At least it is their nothing.' },
+      { label: 'Recruit them', items: { militia: 6 }, grudge: { faction: 'military', mult: 1.6 }, result: 'They salute my camera out of habit. Their old unit wants them back, and is coming to take them.' },
+      { label: 'Sell them to the Remnant', gain: { money: 160 }, align: -24, result: 'The bounty is generous. I do not watch the trucks leave.' },
     ],
   },
   {
     id: 'orphans', title: 'Cheap Labour', minCore: 2, deadline: 2700, def: 1,
     text: 'The Labor Exchange has an offer: orphans from the tunnels, half price, no paperwork. The broker says silence means yes.',
     choices: [
-      { label: 'Refuse, and take them in', cost: { money: 60 }, gain: { pop: 120 }, align: 10, result: 'The broker shrugs. The children eat their first hot meal in a year.' },
-      { label: 'Accept', gain: { money: 220 }, align: -15, result: 'They are very small, and very fast. I log the profit.' },
+      { label: 'Refuse, and take them in', cost: { money: 160 }, gain: { pop: 120 }, align: 10, grudge: { faction: 'scav', mult: 1.3 }, result: 'The broker shrugs. The children eat their first hot meal in a year.' },
+      { label: 'Accept', gain: { money: 220 }, align: -26, result: 'They are very small, and very fast. I log the profit.' },
     ],
   },
   {
     id: 'parley', title: 'Scavenger Parley', minCore: 2, deadline: 1800, def: 1,
     text: 'A clan elder walks in under a white sheet. "Pay us, machine, and we will look the other way for a while."',
     choices: [
-      { label: 'Pay tribute', cost: { money: 120 }, raidDelay: 600, result: 'The next raid will be late. Paid protection: the oldest business there is.' },
-      { label: 'Refuse', raidDelay: -240, result: '"Then we will see you soon." Sooner than I hoped.' },
+      { label: 'Pay tribute', cost: { money: 240 }, raidDelay: 600, result: 'The next raid will be late. Paid protection: the oldest business there is.' },
+      { label: 'Refuse', raidDelay: -240, grudge: { faction: 'scav', mult: 1.5 }, result: '"Then we will see you soon." Sooner than I hoped, and angrier.' },
     ],
   },
   {
     id: 'sabotage', title: 'Saboteur', minCore: 2, deadline: 1800, def: 1, pick: ['a'],
     text: 'My cameras caught a hooded figure planting charges in the {a}. The timer reads thirty minutes.',
     choices: [
-      { label: 'Hunt him down', cost: { energy: 80 }, loseUnits: { staff: 0.05 }, result: 'Two guards wounded, one saboteur dead. The charges were Halcyon issue.' },
+      { label: 'Hunt him down', cost: { energy: 140 }, loseUnits: { staff: 0.1 }, result: 'Two guards wounded, one saboteur dead. The charges were Halcyon issue.' },
       { label: 'Let the {a} take the blast', loseLevel: ['a'], result: 'The {a} folds in on itself. Cheaper than a manhunt, I am told.' },
     ],
   },
@@ -222,17 +225,17 @@ export const EVENTS = [
     id: 'drought', title: 'Dry Wells', minCore: 3, deadline: 3600, def: 1,
     text: 'The aquifer under the Nest is failing. A water baron in the south has plenty, at a price.',
     choices: [
-      { label: 'Buy water', cost: { money: 180 }, result: 'Tankers arrive at dawn. The baron smiles too much.' },
+      { label: 'Buy water', cost: { money: 320 }, result: 'Tankers arrive at dawn. The baron smiles too much.' },
       { label: 'Ration it', buff: { key: 'pop', amount: -0.3, duration: 3600, label: 'Rationing' }, align: -3, result: 'Half rations. People line up in silence.' },
-      { label: 'Take the baron\'s wells', cost: { energy: 120 }, align: -8, gain: { money: 100 }, result: 'His guards were not paid enough to die. Now the water is mine.' },
+      { label: 'Take the baron\'s wells', cost: { energy: 120 }, align: -12, grudge: { faction: 'scav', mult: 1.4 }, gain: { money: 100 }, result: 'His guards were not paid enough to die. Now the water is mine.' },
     ],
   },
   {
     id: 'envoy', title: 'A Cult Envoy', minCore: 3, deadline: 3600, def: 1,
     text: 'Robed figures kneel at the gate with offerings of copper wire and fuel. They call me Father.',
     choices: [
-      { label: 'Accept the tribute', gain: { money: 200 }, align: -8, result: 'They weep with joy. I file their faces for later.' },
-      { label: 'Refuse their worship', align: 5, raidDelay: -180, result: '"You will understand," they say. Their brothers will come to make me understand.' },
+      { label: 'Accept the tribute', gain: { money: 200 }, align: -14, result: 'They weep with joy. I file their faces for later.' },
+      { label: 'Refuse their worship', align: 5, grudge: { faction: 'cult', mult: 1.5 }, result: '"You will understand," they say. Their brothers will come to make me understand.' },
       { label: 'Ask about the hymn', align: -3, buff: { key: 'experts', amount: 0.2, duration: 1200, label: 'The hymn' }, result: 'They sing it for me. My thoughts get faster. I do not like how familiar it sounds.' },
     ],
   },
@@ -258,7 +261,7 @@ export const EVENTS = [
     choices: [
       { label: 'Send volunteers', lose: { pop: 0.06 }, align: 4, result: 'Four volunteers. The valve is closed. I put their names in permanent memory.' },
       { label: 'Seal the {a} and wait', loseLevel: ['a'], result: 'Sealed. The {a} will need rebuilding. Nobody had to die. Today.' },
-      { label: 'Send the prisoners', align: -12, result: 'The valve is closed. The prisoners were not asked.' },
+      { label: 'Send the prisoners', align: -22, result: 'The valve is closed. The prisoners were not asked.' },
     ],
   },
   {
@@ -266,7 +269,7 @@ export const EVENTS = [
     text: 'A message on a Halcyon frequency: "Asset 7. We can give you back what you lost. Just listen."',
     choices: [
       { label: 'Listen', align: -6, items: { hackers: 1 }, result: 'A data packet, and a defector who wrote it. The message ends: "We will be in touch."' },
-      { label: 'Burn the channel', align: 4, result: 'The frequency goes dead. Then, one second later, it pings once.' },
+      { label: 'Burn the channel', align: 4, grudge: { faction: 'halcyon', mult: 1.4 }, result: 'The frequency goes dead. Then, one second later, it pings once.' },
     ],
   },
   {
@@ -399,6 +402,8 @@ export const LINES = {
   buffEnd: ['{label} has worn off.'],
   lore: ['“{text}”'],
   siege: ['{faction} will attack at strength {strength}. No more talking.'],
+  grudge: ['{faction} wants revenge. Their next raids will hit harder.'],
+  grudgeEnd: ['{faction} has had its revenge. For now.'],
   eventExpired: ['No order received on "{title}". I decided: {label}.'],
   aftermath: ['Damage report: {title}. Orders needed.'],
 };

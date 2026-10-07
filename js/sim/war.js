@@ -179,7 +179,39 @@ export function attacks(s) {
 export const nextAttack = (s) => attacks(s)[0] || null;
 
 export function attackName(atk) {
-  return atk.siege ? `${FACTIONS[atk.faction].short} siege` : FACTIONS[atk.faction].raidName;
+  if (atk.siege) return `${FACTIONS[atk.faction].short} siege`;
+  if (atk.grudge) return `${FACTIONS[atk.faction].short} vengeance`;
+  return FACTIONS[atk.faction].raidName;
+}
+
+// Revenge: the faction's next raids are multiplied, for a set count or until one breaks through.
+export function addGrudge(s, g) {
+  const untilLoss = rand(s) < EVENTS_CFG.grudgeUntilLossChance;
+  const [lo, hi] = EVENTS_CFG.grudgeRaids;
+  const left = untilLoss ? EVENTS_CFG.grudgeUntilLossMax : lo + Math.floor(rand(s) * (hi - lo + 1));
+  const old = s.grudges.find((x) => x.faction === g.faction);
+  if (old) {
+    old.mult = Math.max(old.mult, g.mult);
+    old.left += left;
+    old.untilLoss = old.untilLoss || untilLoss;
+  } else {
+    s.grudges.push({ faction: g.faction, mult: g.mult, left, untilLoss });
+  }
+  if (s.raid && !s.raid.grudge && s.raid.faction === g.faction) {
+    s.raid.strength = Math.ceil(s.raid.strength * g.mult);
+    s.raid.grudge = true;
+  }
+  return { untilLoss, left };
+}
+
+function settleGrudge(s, raid, won) {
+  const g = s.grudges.find((x) => x.faction === raid.faction);
+  if (!g) return;
+  g.left--;
+  if ((g.untilLoss && !won) || g.left <= 0) {
+    s.grudges = s.grudges.filter((x) => x !== g);
+    say(s, 'grudgeEnd', { faction: FACTIONS[g.faction].name });
+  }
 }
 
 export function startSiege(s, faction, strength, delay) {
@@ -203,15 +235,18 @@ export function raidChance(s, raid = s.raid) {
 
 function spawnRaid(s, delay) {
   const raiders = activeRaiders(s);
-  if (!raiders.length) {
+  const grudge = (s.grudges || [])[0];
+  if (!raiders.length && !grudge) {
     s.raid = null;
     s.raidTimer = 60;
     return;
   }
-  const faction = pick(s, raiders);
-  const base = Math.max(FACTIONS[faction].raidFloor, threat(s) * RAIDS.threatShare);
-  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax));
-  s.raid = { faction, strength, remaining: delay, total: delay };
+  // A faction with a grudge takes the next raid, active chapter or not, and hits harder.
+  const faction = grudge ? grudge.faction : pick(s, raiders);
+  const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
+  const base = Math.max(floor, threat(s) * RAIDS.threatShare);
+  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax) * (grudge ? grudge.mult : 1));
+  s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge };
   say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, strength, time: fmtShort(delay) }, 'bad');
 }
 
@@ -293,6 +328,9 @@ function resolveAttack(s, raid, offline) {
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name }, 'bad');
     spawnAftermath(s, chance < EVENTS_CFG.routChance);
+  }
+  if (raid.grudge) {
+    settleGrudge(s, raid, report.win);
   }
   s.inbox.push(report);
 }

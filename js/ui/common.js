@@ -52,6 +52,12 @@ export function bonusText(bonus) {
   }).join(', ');
 }
 
+// Bonus as a wrap-friendly row of icon chips: [coins +10%] [bolt +10%] ...
+export function bonusChips(bonus) {
+  return `<span class="bonus-chips">${Object.entries(bonus || {}).map(([k, v]) =>
+    `<span class="bchip t-${k}">${labeled(k)}${v >= 0 ? '+' : '−'}${pct(Math.abs(v))}</span>`).join('')}</span>`;
+}
+
 export function chanceClass(p) {
   return p >= 0.8 ? 'good' : p >= 0.5 ? 'fair' : 'bad';
 }

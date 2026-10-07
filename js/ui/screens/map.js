@@ -5,7 +5,7 @@ import {
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
-import { costChips, setChips, tags, bonusText, chanceClass, clock } from '../common.js';
+import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } from '../common.js';
 import { sortedTabs } from '../layout.js';
 
 const W = MAP.height; // the landscape map is turned 90 degrees for portrait: home at the top
@@ -163,7 +163,7 @@ function briefing(s, sec) {
       <button class="icon-btn small" data-act="close-sheet" aria-label="Close">${icon('close')}</button>
     </header>`;
   if (st === 'owned') {
-    return `${head}${sec.bonus ? `<div class="rows"><div class="r"><span>${icon('trend')}Bonus</span><b class="good-t">${bonusText(sec.bonus)}</b></div></div>` : ''}
+    return `${head}${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
@@ -182,7 +182,7 @@ function briefing(s, sec) {
       ${fortRow(s, sec)}
       <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
       <div class="r"><span>${icon('spark')}Spoils</span><b>${tags(E.opLoot(sec), '+')}</b></div>
-      <div class="r"><span>${icon('trend')}Permanent</span><b class="good-t">${bonusText(sec.bonus)}</b></div>
+      <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t">−${pct(OPS.staffLossOnDefeat)} troops</b></div>
     </div>

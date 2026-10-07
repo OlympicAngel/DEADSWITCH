@@ -261,10 +261,12 @@ function directivePanel(s, refs) {
 }
 
 function effectsPanel(s, refs) {
-  const key = s.buffs.map((b) => b.label).join(',');
-  const el = slot(refs, 'effects', key, !s.buffs.length ? '' : `<header>${icon('spark')}Active effects</header>
-    <div class="buffs">${s.buffs.map((b, i) => `<span class="buff ${b.amount < 0 ? 'neg' : ''}" data-tip="text" data-tip-text="${esc(b.label)}: ${bonusText({ [b.key]: b.amount })}">${icon(b.key)}${esc(b.label)}<b>${b.amount < 0 ? '−' : '+'}${pct(Math.abs(b.amount))}</b><em data-buff="${i}"></em></span>`).join('')}</div>`);
-  el.hidden = !s.buffs.length;
+  const g = s.grudges || [];
+  const key = s.buffs.map((b) => b.label).join(',') + '|' + g.map((x) => x.faction + x.left + x.mult).join(',');
+  const any = s.buffs.length || g.length;
+  const el = slot(refs, 'effects', key, !any ? '' : `<header>${icon('spark')}Active effects</header>
+    <div class="buffs">${g.map((x) => `<span class="buff neg" data-tip="text" data-tip-text="${esc(FACTIONS[x.faction].name)} raids hit ×${x.mult}${x.untilLoss ? ' until one breaks through' : ` for ${x.left} more raid${x.left > 1 ? 's' : ''}`}.">${icon(FACTIONS[x.faction].icon)}${FACTIONS[x.faction].short} vengeance<b>×${x.mult}</b><em>${x.untilLoss ? 'until breach' : `${x.left} raid${x.left > 1 ? 's' : ''}`}</em></span>`).join('')}${s.buffs.map((b, i) => `<span class="buff ${b.amount < 0 ? 'neg' : ''}" data-tip="text" data-tip-text="${esc(b.label)}: ${bonusText({ [b.key]: b.amount })}">${icon(b.key)}${esc(b.label)}<b>${b.amount < 0 ? '−' : '+'}${pct(Math.abs(b.amount))}</b><em data-buff="${i}"></em></span>`).join('')}</div>`);
+  el.hidden = !any;
   s.buffs.forEach((b, i) => {
     const t = el.querySelector(`[data-buff="${i}"]`);
     if (t) t.textContent = time(b.remaining);

@@ -27,6 +27,7 @@ export function newState(seed = 1) {
     op: null,
     raid: null,
     sieges: [],
+    grudges: [],
     raidTimer: 0,
     raidsStarted: false,
     offlineRaids: 0,
@@ -88,6 +89,7 @@ export function migrate(raw) {
   if (s.raid && !FACTIONS[s.raid.faction]) {
     s.raid = null;
   }
+  s.grudges = (Array.isArray(raw.grudges) ? raw.grudges : []).filter((x) => x && FACTIONS[x.faction]);
   s.sieges = (Array.isArray(raw.sieges) ? raw.sieges : []).filter((x) => x && FACTIONS[x.faction] && Number.isFinite(x.remaining));
   // v2 kept one pending event id; v3 keeps a queue of instances with deadlines.
   if (typeof raw.event === 'string' && eventById(raw.event) && !Array.isArray(raw.events)) {
