@@ -5,7 +5,7 @@ import {
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
-import { icon } from '../icons.js';
+import { icon, labeled } from '../icons.js';
 import {
   resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
@@ -164,13 +164,15 @@ function shopList(s, ui, tab) {
     ${next ? lockedCard(next.id, next.name, next.req) : ''}`;
 }
 
-function givesHtml(s, item) {
+// Gain for the selected purchase size: "+4.1 each" at ×1, "+41 for ×10" otherwise.
+function givesHtml(s, item, n = 1) {
+  const per = n > 1 ? `<span class="per">for ×${n}</span>` : '<span class="per">each</span>';
   if (item.bonus) {
-    return Object.entries(item.bonus).map(([k, v]) => `<span class="tag t-${k}">${icon(k)}+${pct(v)}</span>`).join('') + '<span class="per">each</span>';
+    return Object.entries(item.bonus).map(([k, v]) => `<span class="tag t-${k}">${labeled(k)}+${pct(v * n)}</span>`).join('') + per;
   }
   const f = E.factors(s);
   const raw = E.rawFactors(s);
-  return Object.entries(item.gives).map(([k, v]) => factorTag(k, v * (raw[k] ? f[k] / raw[k] : 1))).join('') + '<span class="per">each</span>';
+  return Object.entries(item.gives).map(([k, v]) => factorTag(k, v * n * (raw[k] ? f[k] / raw[k] : 1))).join('') + per;
 }
 
 function itemRow(s, item) {
@@ -178,7 +180,7 @@ function itemRow(s, item) {
     <article class="card item" data-item="${item.id}">
       <div class="card-top">
         <div class="tile">${icon(item.id)}<span class="badge">×${num(E.owned(s, item.id))}</span></div>
-        <div class="body"><h3>${item.name}</h3><div class="effect">${givesHtml(s, item)}</div>${item.tab === 'staff' ? '<p class="desc">Lost in defeats.</p>' : ''}</div>
+        <div class="body"><h3>${item.name}</h3><div class="effect" data-gives>${givesHtml(s, item)}</div>${item.tab === 'staff' ? '<p class="desc">Lost in defeats.</p>' : ''}</div>
       </div>
       <div class="card-bot"><div class="costs">${costChips(E.itemCost(s, item, 1))}</div>
         <button class="btn primary" data-act="buy" data-id="${item.id}"><span data-l>Buy</span></button></div>
@@ -199,7 +201,7 @@ export function bindDomain(panel) {
     })),
     rows: [...panel.querySelectorAll('[data-item]')].map((el) => ({
       item: ITEMS.find((i) => i.id === el.dataset.item), el,
-      btn: el.querySelector('[data-act="buy"]'), label: el.querySelector('[data-l]'),
+      btn: el.querySelector('[data-act="buy"]'), label: el.querySelector('[data-l]'), gives: el.querySelector('[data-gives]'), n: 1,
       chips: [...el.querySelectorAll('.chip')],
     })),
     factors: [...panel.querySelectorAll('[data-factor]')],
@@ -251,6 +253,10 @@ export function updateDomain(s, ui, refs, flows) {
   }
   for (const r of refs.rows) {
     const n = buyCount(s, ui, r.item);
+    if (n !== r.n) {
+      r.n = n;
+      r.gives.innerHTML = givesHtml(s, r.item, n);
+    }
     const cost = E.itemCost(s, r.item, n);
     setChips(s, r.chips, cost);
     const ok = E.canAfford(s, cost);
