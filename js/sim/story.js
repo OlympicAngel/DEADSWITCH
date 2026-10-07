@@ -1,12 +1,12 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS,
+  EVENTS, EVENTS_CFG, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS,
 } from '../data.js';
 import {
-  level, factors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits,
+  level, factors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, projectDefense,
 } from './economy.js';
-import { delayRaid } from './war.js';
-import { range, pick } from './rng.js';
+import { delayRaid, activeRaiders, startSiege } from './war.js';
+import { range, pick, rand } from './rng.js';
 
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
 export const eventById = (id) => EVENT_BY_ID[id];
@@ -21,26 +21,30 @@ export function eventValue(s, r, seconds) {
   return Math.ceil(seconds * Math.max(grossRate(s, r), floor));
 }
 
-function scaled(s, obj) {
+function scaled(s, obj, mult = 1) {
   const out = {};
   for (const [r, sec] of Object.entries(obj || {})) {
-    out[r] = eventValue(s, r, sec);
+    out[r] = eventValue(s, r, sec * mult);
   }
   return out;
 }
 
 // Fills {a}/{b} with the building names picked for this event instance.
 export function fillText(inst, str) {
-  return String(str).replace(/\{(a|b)\}/g, (_, k) => (inst.params && BY_ID[inst.params[k]] ? BY_ID[inst.params[k]].name : 'facility'));
+  const p = inst.params || {};
+  return String(str)
+    .replace(/\{(a|b)\}/g, (_, k) => (BY_ID[p[k]] ? BY_ID[p[k]].name : 'facility'))
+    .replace(/\{faction\}/g, () => (FACTIONS[p.faction] ? FACTIONS[p.faction].name : 'raiders'))
+    .replace(/\{strength\}/g, () => String(Math.round(p.strength || 0)));
 }
 
 // Concrete consequences of one choice, for both the UI preview and resolution.
 export function choiceOutcome(s, inst, choice) {
   const lose = {};
   for (const [r, share] of Object.entries(choice.lose || {})) {
-    lose[r] = Math.floor(s.res[r] * share);
+    lose[r] = Math.floor(s.res[r] * Math.min(0.9, share * EVENTS_CFG.loseScale));
   }
-  const gain = scaled(s, choice.gain);
+  const gain = scaled(s, choice.gain, EVENTS_CFG.gainScale);
   const c = caps(s);
   for (const r of Object.keys(gain)) {
     gain[r] = Math.min(gain[r], Math.floor(c[r]));
@@ -50,7 +54,13 @@ export function choiceOutcome(s, inst, choice) {
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
     units[tab] = ITEMS.filter((i) => i.tab === tab).reduce((n, i) => n + Math.floor(owned(s, i.id) * share), 0);
   }
-  return { cost: scaled(s, choice.cost), gain, lose, levels, units };
+  const siege = choice.siege && inst.params ? { faction: inst.params.faction, strength: inst.params.strength, at: inst.left } : null;
+  // A price can never exceed storage, or the choice could not exist.
+  const cost = scaled(s, choice.cost, EVENTS_CFG.costScale);
+  for (const r of Object.keys(cost)) {
+    cost[r] = Math.min(cost[r], Math.floor(c[r]));
+  }
+  return { cost, gain, lose, levels, units, siege };
 }
 
 export function canChoose(s, inst, choice) {
@@ -82,6 +92,17 @@ function spawn(s, ev, front) {
   const params = ev.pick ? pickBuildings(s, ev.pick) : {};
   if (!params) {
     return false;
+  }
+  if (ev.threat) {
+    // A force sized to beat what the player could build up in half the decision window.
+    const raiders = activeRaiders(s);
+    if (!raiders.length) {
+      return false;
+    }
+    params.faction = pick(s, raiders);
+    const grown = factors(s).defense + projectDefense(s, ev.deadline / 2);
+    const floor = FACTIONS[params.faction].raidFloor;
+    params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max));
   }
   const inst = { uid: ++s.eventSeq, id: ev.id, left: ev.deadline, total: ev.deadline, params };
   if (front) {
@@ -132,12 +153,23 @@ export function advanceEvents(s, dt, offline) {
   const core = level(s, 'core');
   const pool = EVENTS.filter((e) => !e.aftermath && e.minCore <= core && !s.recentEvents.includes(e.id));
   while (pool.length) {
-    const ev = pick(s, pool);
+    const ev = weighted(s, pool);
     if (spawn(s, ev, false)) {
       return;
     }
     pool.splice(pool.indexOf(ev), 1);
   }
+}
+
+// Threats come up more often than ordinary dilemmas.
+function weighted(s, pool) {
+  const w = (e) => (e.threat ? EVENTS_CFG.threatWeight : 1);
+  let r = rand(s) * pool.reduce((a, e) => a + w(e), 0);
+  for (const e of pool) {
+    r -= w(e);
+    if (r <= 0) return e;
+  }
+  return pool[pool.length - 1];
 }
 
 export function resolveEvent(s, uid, index, expired = false) {
@@ -172,6 +204,11 @@ export function resolveEvent(s, uid, index, expired = false) {
   }
   if (choice.raidDelay) {
     delayRaid(s, choice.raidDelay);
+  }
+  if (out.siege) {
+    // Refusing locks the attack to the original deadline; silence brings it immediately.
+    startSiege(s, out.siege.faction, out.siege.strength, expired ? 0 : out.siege.at);
+    say(s, 'siege', { faction: FACTIONS[out.siege.faction].name, strength: out.siege.strength }, 'bad');
   }
   s.events = s.events.filter((x) => x !== inst);
   s.stats.events++;

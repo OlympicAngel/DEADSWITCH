@@ -918,3 +918,8 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 @keyframes bumpR { 40% { transform: translateX(14px); } }
 .view { touch-action: pan-y; }
 .node .def.fort { fill: var(--bad); }
+
+.threat-box { display: flex; flex-direction: column; gap: 6px; margin: -4px 0 14px; padding: 10px 12px; border-radius: 6px; border: 1px solid rgba(255,93,93,.45); background: rgba(255,93,93,.07); }
+.threat-box .vs-row { grid-template-columns: 110px 1fr 56px; }
+.threat-hold { display: flex; justify-content: space-between; font: 600 11px var(--font-hud); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.threat-hold b { font: 700 16px var(--font-num); }

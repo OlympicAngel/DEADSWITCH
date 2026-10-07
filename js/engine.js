@@ -1,7 +1,7 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, LOG_LIMIT } from './sim/economy.js';
-import { advanceOp, advanceRaids, sectorById } from './sim/war.js';
+import { advanceOp, advanceRaids, advanceSieges, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById } from './sim/story.js';
 
 export * from './sim/economy.js';
@@ -26,6 +26,7 @@ export function newState(seed = 1) {
     sectors: [MAP.home],
     op: null,
     raid: null,
+    sieges: [],
     raidTimer: 0,
     raidsStarted: false,
     offlineRaids: 0,
@@ -87,6 +88,7 @@ export function migrate(raw) {
   if (s.raid && !FACTIONS[s.raid.faction]) {
     s.raid = null;
   }
+  s.sieges = (Array.isArray(raw.sieges) ? raw.sieges : []).filter((x) => x && FACTIONS[x.faction] && Number.isFinite(x.remaining));
   // v2 kept one pending event id; v3 keeps a queue of instances with deadlines.
   if (typeof raw.event === 'string' && eventById(raw.event) && !Array.isArray(raw.events)) {
     const ev = eventById(raw.event);
@@ -114,6 +116,7 @@ export function step(s, dt, offline = false) {
   advanceOp(s, dt);
   advanceRaids(s, dt, offline);
   advanceEvents(s, dt, offline);
+  advanceSieges(s, dt, offline);
   advanceBuffs(s, dt);
   checkChapters(s);
   checkDirectives(s);
@@ -135,7 +138,7 @@ export function catchUp(s, seconds) {
   while (left > EPS) {
     let dt = Math.min(stepSize, left);
     // Land exactly on timer completions so new levels and captures count for the rest of the stretch.
-    for (const t of [s.build, s.op]) {
+    for (const t of [s.build, s.op, ...s.sieges]) {
       if (t && t.remaining > EPS && t.remaining < dt) {
         dt = t.remaining;
       }

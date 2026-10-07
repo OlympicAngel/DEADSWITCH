@@ -133,6 +133,35 @@ export function grossRate(s, r) {
   return total;
 }
 
+// Estimate of the defense a player could add in `seconds`: current stock plus income, spent greedily
+// on the best defense-per-scrip units already unlocked. Used to size threats that must be outgrown.
+export function projectDefense(s, seconds) {
+  const c = caps(s);
+  const budget = {};
+  for (const r of Object.keys(s.res)) {
+    budget[r] = Math.min(c[r], s.res[r]) + grossRate(s, r) * seconds;
+  }
+  const tmp = { ...s, items: { ...s.items }, res: budget };
+  const pool = ITEMS.filter((i) => i.gives && i.gives.defense && itemUnlocked(s, i));
+  for (let n = 0; n < 3000 && pool.length; n++) {
+    let best = null;
+    let bestRatio = 0;
+    for (const i of pool) {
+      const cost = itemCost(tmp, i);
+      if (!canAfford(tmp, cost) || exceedsCap(s, cost).length) continue;
+      const ratio = i.gives.defense / (cost.money || 1);
+      if (ratio > bestRatio) {
+        bestRatio = ratio;
+        best = { i, cost };
+      }
+    }
+    if (!best) break;
+    pay(tmp, best.cost);
+    tmp.items[best.i.id] = owned(tmp, best.i.id) + 1;
+  }
+  return Math.max(0, factors(tmp).defense - factors(s).defense);
+}
+
 export function buildingCost(s, b) {
   const lvl = level(s, b.id);
   const out = {};

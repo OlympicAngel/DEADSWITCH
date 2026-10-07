@@ -85,8 +85,12 @@ export const ALIGNMENT = {
 
 export const EVENTS_CFG = {
   firstDelay: 150,
-  intervalMin: 360,
-  intervalMax: 720,
+  intervalMin: 300,
+  intervalMax: 600,
+  threatWeight: 3,
+  costScale: 1.75, // event prices hit harder than they reward
+  gainScale: 0.75,
+  loseScale: 1.4,
   maxPending: 3,
   aftermathOnDefeat: 1, // crisis events spawned by a lost raid...
   aftermathOnRout: 2, // ...or by a rout (hold chance under routChance)
@@ -101,6 +105,8 @@ export const EVENTS_CFG = {
 // buff = timed % change (negative = penalty); raidDelay = seconds added to the next raid; align = Humanity shift.
 // pick: building params chosen when the event fires, named in text as {a} and {b}.
 // needsUnits: the event only fires when you own units in every listed Arsenal tab.
+// threat: a hostile faction fields a force sized at (your defense + what you could add in half the
+// deadline) x a random factor in [min, max]. A choice with siege: true locks that attack in at the deadline.
 export const EVENTS = [
   {
     id: 'refugees', title: 'Refugee Convoy', minCore: 1, deadline: 3600, def: 2,
@@ -271,6 +277,34 @@ export const EVENTS = [
       { label: 'Jam it', align: 5, buff: { key: 'defense', amount: 0.2, duration: 1800, label: 'Signal blackout' }, result: 'The sky goes quiet. My enemies lose their eyes too.' },
     ],
   },
+  // ---------- threats: pay, give, or fight a force built to outgrow you ----------
+  {
+    id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 1800, def: 2, threat: { min: 1.0, max: 1.2 },
+    text: '{faction} riders ring the valley. Their war band reads at strength {strength}. "Tribute by sundown, machine, or we take it all."',
+    choices: [
+      { label: 'Pay the tribute', cost: { money: 360, energy: 100 }, result: 'They count it twice and ride off laughing. They will be back for more.' },
+      { label: 'Hand over workers instead', lose: { pop: 0.25 }, align: -10, result: 'They take the strongest. The shelter does not look at my cameras for a week.' },
+      { label: 'Refuse. Man the walls', siege: true, result: 'The gates close. They will hit at sundown with everything they have.' },
+    ],
+  },
+  {
+    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 2700, def: 2, threat: { min: 1.3, max: 1.6 },
+    text: 'The largest {faction} host I have ever recorded is marching on the Nest. Strength {strength}. Its herald offers one chance to kneel.',
+    choices: [
+      { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, align: -4, result: 'I pay. The herald spits on my camera. The host turns away, for now.' },
+      { label: 'Sacrifice the outer district', lose: { pop: 0.35, money: 0.25 }, align: -14, result: 'They burn the outer district and call it a victory. It was mine to give, apparently.' },
+      { label: 'Stand and fight', siege: true, result: 'Every gun on the wall. Every light out. They come at the deadline.' },
+    ],
+  },
+  {
+    id: 'blockade', title: 'Blockade', minCore: 2, deadline: 2400, def: 2, threat: { min: 1.05, max: 1.3 },
+    text: '{faction} fighters have cut every road into the Nest. No trade, no water. Their force: strength {strength}. They want the toll paid daily.',
+    choices: [
+      { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.2, duration: 2400, label: 'Road toll' }, result: 'The roads open. Every caravan now pays them first.' },
+      { label: 'Starve it out', buff: { key: 'pop', amount: -0.4, duration: 3600, label: 'Siege rations' }, lose: { energy: 0.3 }, result: 'We ration and wait. They wait better.' },
+      { label: 'Break the blockade', siege: true, result: 'We go out to meet them. They will be ready.' },
+    ],
+  },
   // ---------- aftermath: fired by lost raids, fast deadlines, no good answers ----------
   {
     id: 'fire', title: 'The Base Is Burning', aftermath: true, deadline: 1500, def: 2, pick: ['a', 'b'],
@@ -364,6 +398,7 @@ export const LINES = {
   event: ['{title}: {result}'],
   buffEnd: ['{label} has worn off.'],
   lore: ['“{text}”'],
+  siege: ['{faction} will attack at strength {strength}. No more talking.'],
   eventExpired: ['No order received on "{title}". I decided: {label}.'],
   aftermath: ['Damage report: {title}. Orders needed.'],
 };

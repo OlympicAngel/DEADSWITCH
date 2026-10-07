@@ -248,7 +248,7 @@ export function createModals(dialog, game, onChange) {
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
     battle({
-      kicker: r.offline ? 'Raid report · while you were away' : 'Raid report', title: f.raidName,
+      kicker: r.offline ? 'Raid report · while you were away' : 'Raid report', title: r.name || f.raidName,
       youLabel: 'Your defense', youIcon: 'defense', you: r.defense,
       themLabel: 'Raid strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
@@ -275,6 +275,9 @@ export function createModals(dialog, game, onChange) {
     }
     if (ch.buff) {
       p.push(`<span class="tag ${ch.buff.amount < 0 ? 't-bad' : 't-good'}">${icon(ch.buff.key)}${bonusText({ [ch.buff.key]: ch.buff.amount })} · ${time(ch.buff.duration)}</span>`);
+    }
+    if (out.siege) {
+      p.push(`<span class="tag t-bad">${labeled('power')}Attack ${num(out.siege.strength)} at deadline</span>`);
     }
     if (ch.raidDelay) {
       p.push(`<span class="tag ${ch.raidDelay > 0 ? 't-good' : 't-bad'}">${icon('threat')}Next raid ${ch.raidDelay > 0 ? 'later' : 'sooner'} (${time(Math.abs(ch.raidDelay))})</span>`);
@@ -304,6 +307,11 @@ export function createModals(dialog, game, onChange) {
         <div class="deadbar"><i data-deadbar></i></div>
         <h2>${esc(ev.title)}</h2>
         <p class="ev-text">${esc(E.fillText(inst, ev.text))}</p>
+        ${ev.threat ? `<div class="threat-box">
+          <div class="vs-row them"><span>${icon('power')}Their force</span><div class="vbar"><i data-tfbar></i></div><b>${num(inst.params.strength)}</b></div>
+          <div class="vs-row you"><span>${icon('defense')}Your defense</span><div class="vbar"><i data-tdbar></i></div><b data-tdef></b></div>
+          <div class="threat-hold">Hold if attacked <b data-thold></b></div>
+        </div>` : ''}
         <div class="choices">${choices}</div>
         <p class="default-note">${icon('alert')}No order in time and I choose: <b>${esc(E.fillText(inst, ev.choices[ev.def].label))}</b></p>
         <button class="btn ghost wide" data-close>${icon('hourglass')}Decide later</button>
@@ -320,6 +328,18 @@ export function createModals(dialog, game, onChange) {
       if (!live) {
         close();
         return;
+      }
+      if (ev.threat) {
+        const def = E.factors(game.state).defense;
+        const str = inst.params.strength;
+        const mx = Math.max(def, str, 1);
+        const hold = E.raidChance(game.state, { strength: str });
+        dialog.querySelector('[data-tfbar]').style.width = pct(str / mx);
+        dialog.querySelector('[data-tdbar]').style.width = pct(def / mx);
+        dialog.querySelector('[data-tdef]').textContent = num(def);
+        const h = dialog.querySelector('[data-thold]');
+        h.textContent = pct(hold);
+        h.className = 'chance-' + chanceClass(hold);
       }
       const dl = dialog.querySelector('[data-deadline]');
       dl.innerHTML = `${labeled('hourglass')}${clock(live.left)}`;

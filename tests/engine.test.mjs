@@ -106,3 +106,18 @@ test('multi-route sectors are fortified until every approach is held', () => {
   assert.equal(E.flank(s, wrecks).bonus, 0);
   assert.equal(E.flank(s, E.sectorById('rust')).bonus, 0);
 });
+
+test('refusing a threat locks a siege to the deadline; silence brings it at once', () => {
+  const s = E.newState(6);
+  Object.assign(s.levels, { core: 2, works: 1 });
+  s.items.barricades = 5;
+  const ev = E.eventById('ultimatum');
+  s.events = [{ uid: 1, id: 'ultimatum', left: 1000, total: 1800, params: { faction: 'scav', strength: 999 } }];
+  E.resolveEvent(s, 1, ev.choices.findIndex((c) => c.siege));
+  assert.equal(s.sieges.length, 1);
+  assert.equal(Math.round(s.sieges[0].remaining), 1000);
+  s.events = [{ uid: 2, id: 'ultimatum', left: 0.5, total: 1800, params: { faction: 'scav', strength: 999 } }];
+  const lost = s.stats.raidsLost;
+  E.step(s, 1);
+  assert.ok(s.stats.raidsLost >= lost + 1, 'the expired threat attacked immediately');
+});

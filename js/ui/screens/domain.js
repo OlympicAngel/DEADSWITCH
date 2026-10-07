@@ -249,11 +249,12 @@ export function updateDomain(s, ui, refs, flows) {
     el.textContent = num(f[el.dataset.factor]);
   }
   if (refs.raid) {
-    refs.raid.hidden = !s.raid;
-    if (s.raid) {
-      const p = E.raidChance(s);
+    const atk = E.nextAttack(s);
+    refs.raid.hidden = !atk;
+    if (atk) {
+      const p = E.raidChance(s, atk);
       refs.raid.className = 'raid-mini odds-' + chanceClass(p);
-      refs.raid.innerHTML = `${icon('alert')}<span>Raid in <b>${clock(s.raid.remaining)}</b></span><span>Strength <b>${num(s.raid.strength)}</b></span><span>Hold <b>${pct(p)}</b></span>`;
+      refs.raid.innerHTML = `${icon('alert')}<span>${atk.siege ? 'Siege' : 'Raid'} in <b>${clock(atk.remaining)}</b></span><span>Strength <b>${num(atk.strength)}</b></span><span>Hold <b>${pct(p)}</b></span>`;
     }
   }
   for (const c of refs.cards) {

@@ -98,9 +98,10 @@ function slot(refs, id, key, html) {
 
 export function condition(s) {
   const after = s.events.some((x) => E.eventById(x.id).aftermath);
-  if (s.raid && E.raidChance(s) < 0.5) return ['red', 'Condition red', 'Raid inbound'];
+  const atk = E.nextAttack(s);
+  if (atk && E.raidChance(s, atk) < 0.5) return ['red', 'Condition red', 'Attack inbound'];
   if (after) return ['red', 'Damage control', 'Damage reports pending'];
-  if (s.raid) return ['amber', 'Condition amber', 'Raid inbound'];
+  if (atk) return ['amber', 'Condition amber', 'Attack inbound'];
   if (s.events.length) return ['amber', 'Orders pending', 'Transmissions waiting'];
   if (E.level(s, 'core') < RAIDS.startAtCore) return ['green', 'Condition green', 'No hostiles'];
   return ['green', 'Condition green', 'Perimeter secure'];
@@ -144,7 +145,7 @@ export function updateCommand(s, ui, refs) {
 }
 
 function raidPanel(s, refs) {
-  const raid = s.raid;
+  const raid = E.nextAttack(s);
   if (!raid) {
     const quiet = E.level(s, 'core') < RAIDS.startAtCore;
     slot(refs, 'raid', 'none' + quiet, `
@@ -155,11 +156,11 @@ function raidPanel(s, refs) {
     return;
   }
   const fac = FACTIONS[raid.faction];
-  const el = slot(refs, 'raid', raid.faction + raid.strength, `
+  const el = slot(refs, 'raid', raid.faction + raid.strength + ':' + E.attacks(s).length, `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     <div class="inc-main">
       <span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>
-      <div><b>${fac.raidName}</b><small>${fac.name}</small></div>
+      <div><b>${E.attackName(raid)}</b><small>${fac.name}${E.attacks(s).length > 1 ? ` · +${E.attacks(s).length - 1} more` : ''}</small></div>
       <div class="count" data-count></div>
     </div>
     <div class="bars">
@@ -168,7 +169,7 @@ function raidPanel(s, refs) {
     </div>
     <div class="inc-foot"><span class="hold" data-hold></span><button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
     <div class="timebar"><i data-tbar></i></div>`);
-  const p = E.raidChance(s);
+  const p = E.raidChance(s, raid);
   const def = E.factors(s).defense;
   const max = Math.max(def, raid.strength, 1);
   el.dataset.level = p < 0.5 ? 'danger' : 'warn';

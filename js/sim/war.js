@@ -171,6 +171,32 @@ export function activeRaiders(s) {
   return list;
 }
 
+// Sieges are threats the player chose (or failed) to answer with force; they land at a fixed time.
+export function attacks(s) {
+  return [s.raid, ...(s.sieges || [])].filter(Boolean).sort((a, b) => a.remaining - b.remaining);
+}
+
+export const nextAttack = (s) => attacks(s)[0] || null;
+
+export function attackName(atk) {
+  return atk.siege ? `${FACTIONS[atk.faction].short} siege` : FACTIONS[atk.faction].raidName;
+}
+
+export function startSiege(s, faction, strength, delay) {
+  const t = Math.max(0, delay);
+  s.sieges.push({ faction, strength, remaining: t, total: Math.max(t, 1), siege: true });
+}
+
+export function advanceSieges(s, dt, offline) {
+  for (const sg of s.sieges.slice()) {
+    sg.remaining -= dt;
+    if (sg.remaining <= 1e-9) {
+      s.sieges = s.sieges.filter((x) => x !== sg);
+      resolveAttack(s, sg, offline);
+    }
+  }
+}
+
 export function raidChance(s, raid = s.raid) {
   return odds(factors(s).defense, raid.strength, RAIDS.winSharpness);
 }
@@ -235,11 +261,20 @@ export function advanceRaids(s, dt, offline) {
 function resolveRaid(s, offline) {
   const raid = s.raid;
   s.raid = null;
+  resolveAttack(s, raid, offline);
+  if (offline) {
+    s.offlineRaids++;
+  }
+  s.raidTimer = 0;
+  spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax));
+}
+
+function resolveAttack(s, raid, offline) {
   const defense = factors(s).defense;
   const chance = odds(defense, raid.strength, RAIDS.winSharpness);
   const roll = rand(s);
-  const name = FACTIONS[raid.faction].raidName;
-  const report = { kind: 'raid', faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };
+  const name = attackName(raid);
+  const report = { kind: 'raid', name, faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };
   if (report.win) {
     const loot = { money: Math.ceil(raid.strength * RAIDS.lootMoneyPerStrength) };
     grant(s, loot);
@@ -259,10 +294,5 @@ function resolveRaid(s, offline) {
     say(s, 'raidLost', { raid: name }, 'bad');
     spawnAftermath(s, chance < EVENTS_CFG.routChance);
   }
-  if (offline) {
-    s.offlineRaids++;
-  }
   s.inbox.push(report);
-  s.raidTimer = 0;
-  spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax));
 }

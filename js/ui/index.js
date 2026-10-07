@@ -413,11 +413,12 @@ export function createUI(root, game) {
     const strip = root.querySelector('[data-alert]');
     const parts = [];
     let level = '';
-    if (s.raid) {
-      const p = E.raidChance(s);
-      const f = FACTIONS[s.raid.faction];
+    const atk = E.nextAttack(s);
+    if (atk) {
+      const p = E.raidChance(s, atk);
       level = p < 0.5 ? 'red' : 'amber';
-      parts.push(`<button class="al al-raid" data-go="command">${icon('alert')}<span>${f.raidName}</span><b>${clock(s.raid.remaining)}</b><em class="chance-${chanceClass(p)}">hold ${pct(p)}</em></button>`);
+      const more = E.attacks(s).length - 1;
+      parts.push(`<button class="al al-raid" data-go="command">${icon('alert')}<span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b>${clock(atk.remaining)}</b><em class="chance-${chanceClass(p)}">hold ${pct(p)}</em></button>`);
     }
     if (s.events.length) {
       const first = s.events.reduce((a, x) => (x.left < a.left ? x : a));
@@ -431,24 +432,24 @@ export function createUI(root, game) {
     }
     strip.dataset.level = level;
     app.classList.toggle('has-alert', !!parts.length);
-    const imminent = !!s.raid && s.raid.remaining < 60;
+    const imminent = !!atk && atk.remaining < 60;
     app.classList.toggle('imminent', imminent);
-    if (imminent && !ui.imminent && s.raid.remaining < 30) {
+    if (imminent && !ui.imminent && atk.remaining < 30) {
       ui.imminent = true;
       sfx.alarm();
       vibrate([200, 100, 200]);
     }
-    if (!s.raid) {
+    if (!atk) {
       ui.imminent = false;
     }
-    const key = s.raid ? s.raid.faction + s.raid.strength : '';
-    if (key && ui.raidKey !== null && key !== ui.raidKey) {
-      const f = FACTIONS[s.raid.faction];
+    const key = E.attacks(s).map((a) => a.faction + a.strength).join(',');
+    const newest = E.attacks(s).find((a) => !(ui.raidKey || '').split(',').includes(a.faction + a.strength));
+    if (newest && ui.raidKey !== null) {
       sfx.alarm();
       vibrate([150, 80, 150, 80, 300]);
       shake();
       screenFlash('alert');
-      toast(`${icon('alert')}<b>${f.raidName} inbound</b> Arrives in ${clock(s.raid.remaining)}`, 'bad');
+      toast(`${icon('alert')}<b>${E.attackName(newest)} inbound</b> Arrives in ${clock(newest.remaining)}`, 'bad');
     }
     ui.raidKey = key;
   }
@@ -471,11 +472,13 @@ export function createUI(root, game) {
         delete b.dataset.req;
       }
     }
-    badge('command', s.events.length || (s.raid && E.raidChance(s) < 0.8 ? '!' : ''), 'red');
-    badge('military', s.raid && E.raidChance(s) < 0.8 ? '!' : '', 'red');
+    const atk = E.nextAttack(s);
+    const danger = atk && E.raidChance(s, atk) < 0.8;
+    badge('command', s.events.length || (danger ? '!' : ''), 'red');
+    badge('military', danger ? '!' : '', 'red');
     // Dot = something here can be built or upgraded now; the same dot marks the inner tab and the card.
     badge('economy', domainReady(s, 'economy') ? true : '', 'dot');
-    if (!(s.raid && E.raidChance(s) < 0.8)) {
+    if (!danger) {
       badge('military', domainReady(s, 'military') ? true : '', 'dot');
     }
     const target = !s.op && SECTORS.some((x) => E.sectorStatus(s, x) === 'target' && E.opChance(s, x) >= 0.8 && E.canLaunch(s, x));
