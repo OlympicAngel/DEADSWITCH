@@ -147,18 +147,22 @@ export function advanceOp(s, dt) {
       s.inbox.push({ kind: 'ending', key: s.ending });
     }
   } else {
-    report.units = casualties(s, OPS.unitLoss, chance);
+    report.units = casualties(s, OPS.unitLoss, power, defense);
     s.stats.opsLost++;
     say(s, 'opLost', { sector: sec.name }, 'bad');
     s.inbox.push(report);
   }
 }
 
-// Unit losses after a defeat: each tab's share runs from min to max as the odds fall.
-function casualties(s, ranges, chance) {
+// Share of a unit tab lost in a defeat: base x (their strength / ours), capped. Even fights cost the base.
+export function lossShare(rule, ours, theirs) {
+  return Math.min(rule.cap, rule.base * (ours > 0 ? theirs / ours : Infinity));
+}
+
+function casualties(s, rules, ours, theirs) {
   const out = {};
-  for (const [tab, [min, max]] of Object.entries(ranges)) {
-    Object.assign(out, loseUnits(s, tab, min + (max - min) * (1 - chance)));
+  for (const [tab, rule] of Object.entries(rules)) {
+    Object.assign(out, loseUnits(s, tab, lossShare(rule, ours, theirs)));
   }
   return out;
 }
@@ -333,7 +337,7 @@ function resolveAttack(s, raid, offline) {
       s.res[k] -= lost[k];
     }
     report.lost = lost;
-    report.units = casualties(s, RAIDS.unitLoss, chance);
+    report.units = casualties(s, RAIDS.unitLoss, defense, raid.strength);
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name }, 'bad');
     spawnAftermath(s, chance < EVENTS_CFG.routChance);

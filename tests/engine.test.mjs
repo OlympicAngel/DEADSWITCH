@@ -154,3 +154,11 @@ test('durable units lose less, never more than 70% protected, and a loss still t
   s.items = { legion: 1 };
   assert.deepEqual(E.lossPlan(s, 'staff', 0.1), { legion: 1 });
 });
+
+test('defeat losses grow with the strength gap, up to the cap', () => {
+  const rule = { base: 0.2, cap: 0.45 };
+  assert.equal(E.lossShare(rule, 100, 100), 0.2);
+  assert.ok(Math.abs(E.lossShare(rule, 100, 200) - 0.4) < 1e-9);
+  assert.equal(E.lossShare(rule, 100, 1000), 0.45);
+  assert.equal(E.lossShare(rule, 0, 10), 0.45);
+});
