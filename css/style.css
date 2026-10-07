@@ -843,3 +843,7 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .card[data-status='ready']::after { animation: readyPulse 1.6s ease-in-out infinite; }
 @keyframes readyPulse { 50% { opacity: .55; transform: scale(.8); } }
 .float-text .tag { font: inherit; gap: 4px; }
+
+.outcome { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; padding: 10px 12px; border-radius: 6px; background: rgba(0,0,0,.3); border: 1px solid var(--line-2); }
+.outcome .kicker { color: var(--muted); }
+.outcome .fx-line .tag { font-size: 14px; }

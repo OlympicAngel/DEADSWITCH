@@ -180,7 +180,7 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (expired) {
     s.stats.expired = (s.stats.expired || 0) + 1;
     say(s, 'eventExpired', { title: ev.title, label }, 'bad');
-    s.inbox.push({ kind: 'expired', title: ev.title, label, result });
+    s.inbox.push({ kind: 'expired', id: ev.id, choice: index, title: ev.title, label, result, out });
   }
   say(s, 'event', { title: ev.title, result }, 'story');
   return { ev, inst, choice, out, label, result };

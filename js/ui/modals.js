@@ -347,10 +347,20 @@ export function createModals(dialog, game, onChange) {
           <span class="kicker">${icon('check')}${esc(ev.title)}</span>
           <h2>${esc(res.label)}</h2>
           <p class="ev-text result">${esc(res.result)}</p>
-          <div class="fx-line">${preview(res.out, res.choice, inst)}</div>
+          <div class="outcome"><span class="kicker">Outcome</span><div class="fx-line">${preview(res.out, res.choice, inst)}</div></div>
           <button class="btn primary wide" data-close>Continue</button>
         </div>`, { cls: 'event-modal' + (ev.aftermath ? ' crisis' : '') });
     }));
+  }
+
+  // What the decision actually changed; older saved reports carry no outcome data.
+  function outcome(m) {
+    const ev = m.id && E.eventById(m.id);
+    const ch = ev && ev.choices[m.choice];
+    if (!ch || !m.out) {
+      return '';
+    }
+    return `<div class="outcome"><span class="kicker">Outcome</span><div class="fx-line">${preview(m.out, ch)}</div></div>`;
   }
 
   function showExpired(m, then) {
@@ -360,6 +370,7 @@ export function createModals(dialog, game, onChange) {
         <h2>${esc(m.title)}</h2>
         <p class="ev-text">You were silent, so I decided: <b>${esc(m.label)}</b>.</p>
         <p class="ev-text result">${esc(m.result)}</p>
+        ${outcome(m)}
         <button class="btn primary wide" data-close>Understood</button>
       </div>`, { cls: 'event-modal crisis locked', then });
     sfx.lose();
