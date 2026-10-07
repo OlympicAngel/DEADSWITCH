@@ -12,6 +12,7 @@ import {
 import { DOMAINS, sortedTabs, tabReq } from '../layout.js';
 
 export const BUY_MODES = [1, 10, 'max'];
+const SHOP_ICONS = { weapons: 'power', defenses: 'defense', staff: 'militia', experts: 'experts', tech: 'lab' };
 
 export function renderDomain(s, ui, domain) {
   const d = DOMAINS[domain];
@@ -69,20 +70,22 @@ function buildingCard(s, b) {
   const max = E.maxLevel(s, b);
   const conv = b.kind === 'converter' && lvl > 0;
   const core = b.kind === 'core';
+  const unbuilt = lvl === 0;
   return `
-    <article class="card k-${b.kind}" data-card="${b.id}">
+    <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''}" data-card="${b.id}">
+      ${unbuilt ? `<span class="unbuilt-tag">${icon('unlock')}Not built</span>` : ''}
       ${core ? '<div class="core-glow"></div>' : ''}
       <div class="card-top">
-        <div class="tile">${core ? '<i class="tile-ring"></i>' : ''}${icon(b.id)}<span class="badge">${lvl}</span></div>
+        <div class="tile">${core ? '<i class="tile-ring"></i>' : ''}${icon(b.id)}${unbuilt ? `<span class="badge lockb">${icon('unlock')}</span>` : `<span class="badge">${lvl}</span>`}</div>
         <div class="body">
-          <h3>${b.name} <small>Lv ${lvl}<span>/${max}</span></small></h3>
+          <h3>${b.name} ${unbuilt ? '' : `<small>Lv ${lvl}<span>/${max}</span></small>`}</h3>
           <p class="desc">${esc(b.desc)}</p>
         </div>
         ${conv ? `<button class="icon-btn small ${s.paused[b.id] ? 'paused' : ''}" data-act="pause" data-id="${b.id}" aria-label="${s.paused[b.id] ? 'Resume' : 'Pause'}" aria-pressed="${!!s.paused[b.id]}">${icon(s.paused[b.id] ? 'play' : 'stop')}</button>` : ''}
       </div>
       ${effectHtml(s, b, lvl, max)}
       ${lvl < max ? `<div class="card-bot"><div class="costs">${costChips(E.buildingCost(s, b))}</div>
-        <button class="btn primary" data-act="build" data-id="${b.id}"><span data-l></span><small data-s></small></button></div>`
+        <button class="btn primary ${unbuilt ? 'unlock' : ''}" data-act="build" data-id="${b.id}">${unbuilt ? icon('unlock') : ''}<span data-l></span><small data-s></small></button></div>`
         : `<div class="card-bot"><p class="req">${core ? 'Maximum level' : `${icon('core')}Level capped by the AI Core`}</p></div>`}
       <div class="progress"><i></i></div>
     </article>`;
@@ -90,6 +93,9 @@ function buildingCard(s, b) {
 
 // Current level vs next level, side by side.
 function nowNext(label, now, next, lvl, max, extra = '') {
+  if (!lvl) {
+    return `<div class="nn"><span class="nn-lbl">${label}</span><div class="nn-col nxt"><small>On unlock</small><b>${next}</b></div></div>${extra}`;
+  }
   const showNext = lvl < max;
   return `
     <div class="nn">
@@ -99,7 +105,7 @@ function nowNext(label, now, next, lvl, max, extra = '') {
     </div>${extra}`;
 }
 
-const unlockLine = (list) => (list.length ? `<div class="unl">${icon('up')}Lv up unlocks ${list.map((x) => named(x.id, x.name)).join(' ')}</div>` : '');
+const unlockLine = (list, lvl) => (list.length ? `<div class="unl">${icon('up')}${lvl ? 'Lv up unlocks' : 'Includes'} ${list.map((x) => named(x.id, x.name)).join(' ')}</div>` : '');
 
 function effectHtml(s, b, lvl, max) {
   const f = E.factors(s);
@@ -115,8 +121,8 @@ function effectHtml(s, b, lvl, max) {
       + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('') + '<em>/s</em>';
     return `<div class="nn conv">
         <span class="nn-lbl">Per second</span>
-        <div class="nn-row"><small>Now</small><b>${lvl ? flow(lvl) : '—'}</b>${lvl ? '<span class="eff" data-eff></span>' : ''}</div>
-        ${lvl < max ? `<div class="nn-row nxt"><small>Next</small><b>${flow(next)}</b></div>` : ''}
+        ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff></span></div>` : ''}
+        ${lvl < max ? `<div class="nn-row nxt"><small>${lvl ? 'Next' : 'Unlock'}</small><b>${flow(next)}</b></div>` : ''}
       </div>`;
   }
   if (b.kind === 'storage') {
@@ -126,11 +132,14 @@ function effectHtml(s, b, lvl, max) {
   }
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
-    return nowNext('Building cap', `Lv ${lvl * cap}`, `Lv ${next * cap}`, lvl, max, unlockLine(BUILDINGS.filter((x) => x.req.core === next)));
+    return nowNext('Building cap', `Lv ${lvl * cap}`, `Lv ${next * cap}`, lvl, max, unlockLine(BUILDINGS.filter((x) => x.req.core === next), lvl));
   }
   const shop = SHOP_TABS.find((t) => t.id === b.shop);
   const disc = (l) => 1 - Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, l - 1));
-  const unl = unlockLine(ITEMS.filter((i) => i.req[b.id] === next));
+  const unl = unlockLine(ITEMS.filter((i) => i.req[b.id] === next), lvl);
+  if (!lvl) {
+    return nowNext('Opens', '', `${icon(SHOP_ICONS[b.shop] || 'hex')}${shop.name}`, lvl, max, unl);
+  }
   return nowNext(`${shop.name} prices`, lvl ? `<span class="good-t">−${pct(disc(lvl))}</span>` : 'Closed', `<span class="good-t">−${pct(disc(next))}</span>`, lvl, max, unl);
 }
 
@@ -224,7 +233,7 @@ export function updateDomain(s, ui, refs, flows) {
       setChips(s, c.chips, E.buildingCost(s, c.b));
       const lvl = E.level(s, c.b.id);
       c.btn.disabled = st !== 'ready';
-      c.label.textContent = LABELS[st] || (lvl ? 'Upgrade' : 'Build');
+      c.label.textContent = LABELS[st] || (lvl ? 'Upgrade' : 'Unlock');
       c.sub.textContent = st === 'building' ? clock(s.build.remaining) : st === 'ready' || st === 'poor' ? time(E.buildTime(s, c.b)) : '';
     }
     if (c.eff && flows) {

@@ -28,7 +28,7 @@ export const ICONS = {
   // ui
   settings: 'settings', clock: 'clock', alert: 'alert-triangle', lock: 'lock', check: 'check', close: 'x', next: 'chevron-right',
   up: 'arrow-up', down: 'arrow-down', fire: 'flame', heart: 'heart', trend: 'trending-up', hourglass: 'hourglass', message: 'message',
-  book: 'book', sound: 'volume', mute: 'volume-off', vibrate: 'device-mobile-vibration', export: 'download', import: 'upload',
+  unlock: 'lock-open', book: 'book', sound: 'volume', mute: 'volume-off', vibrate: 'device-mobile-vibration', export: 'download', import: 'upload',
   trash: 'trash', city: 'building-skyscraper', bell: 'bell-ringing', hex: 'hexagon', spark: 'sparkles', stop: 'hand-stop',
   play: 'player-play', info: 'info-circle',
 };
