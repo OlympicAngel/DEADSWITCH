@@ -9,7 +9,7 @@ import { icon } from '../icons.js';
 import {
   resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
-import { DOMAINS, sortedTabs, tabReq } from '../layout.js';
+import { DOMAINS, sortedTabs, tabReq, readyCount } from '../layout.js';
 
 export const BUY_MODES = [1, 10, 'max'];
 const SHOP_ICONS = { weapons: 'power', defenses: 'defense', staff: 'militia', experts: 'experts', tech: 'lab' };
@@ -204,6 +204,7 @@ export function bindDomain(panel) {
     })),
     factors: [...panel.querySelectorAll('[data-factor]')],
     raid: panel.querySelector('[data-raidmini]'),
+    segs: [...panel.querySelectorAll('.seg[data-inner]')],
   };
 }
 
@@ -214,6 +215,11 @@ export function buyCount(s, ui, item) {
 const LABELS = { storage: 'Need storage', busy: 'Builder busy', building: 'Building', maxed: 'Max' };
 
 export function updateDomain(s, ui, refs, flows) {
+  const tabs = DOMAINS[ui.screen].tabs;
+  for (const seg of refs.segs) {
+    const t = tabs.find((x) => x.id === seg.dataset.inner);
+    seg.classList.toggle('has-ready', readyCount(s, t) > 0);
+  }
   const f = E.factors(s);
   for (const el of refs.factors) {
     el.textContent = num(f[el.dataset.factor]);

@@ -78,6 +78,17 @@ export function domainReq(s, domain) {
   return tabReq(s, t);
 }
 
+// Buildings in a tab that can be built or upgraded right now.
+export function readyCount(s, tab) {
+  const list = tab.unlocker ? [BY_ID[tab.unlocker]] : tab.kinds ? BUILDINGS.filter((b) => tab.kinds.includes(b.kind)) : [];
+  return list.filter((b) => E.buildingStatus(s, b) === 'ready').length;
+}
+
+export function domainReady(s, domain) {
+  const d = DOMAINS[domain];
+  return !!d && d.tabs.some((t) => readyCount(s, t) > 0);
+}
+
 const ORDER = { open: 0, available: 1, locked: 2 };
 
 // Unlocked first, locked last; declared order breaks ties.

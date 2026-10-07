@@ -7,7 +7,7 @@ import * as E from '../engine.js';
 import { num, rate, pct, esc } from '../format.js';
 import { icon, mountIcons } from './icons.js';
 import { clock, chanceClass, factorTag } from './common.js';
-import { NAV, locate, domainReq } from './layout.js';
+import { NAV, locate, domainReq, domainReady } from './layout.js';
 import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
 import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
 import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector } from './screens/map.js';
@@ -420,11 +420,14 @@ export function createUI(root, game) {
     }
     badge('command', s.events.length || (s.raid && E.raidChance(s) < 0.8 ? '!' : ''), 'red');
     badge('military', s.raid && E.raidChance(s) < 0.8 ? '!' : '', 'red');
-    const idle = !s.build && BUILDINGS.some((b) => E.buildingStatus(s, b) === 'ready');
-    badge('economy', idle ? true : '', 'dot');
+    // Dot = something here can be built or upgraded now; the same dot marks the inner tab and the card.
+    badge('economy', domainReady(s, 'economy') ? true : '', 'dot');
+    if (!(s.raid && E.raidChance(s) < 0.8)) {
+      badge('military', domainReady(s, 'military') ? true : '', 'dot');
+    }
     const target = !s.op && SECTORS.some((x) => E.sectorStatus(s, x) === 'target' && E.opChance(s, x) >= 0.8 && E.canLaunch(s, x));
     badge('map', target ? true : '', 'dot');
-    badge('research', '', '');
+    badge('research', domainReady(s, 'research') ? true : '', 'dot');
   }
 
   function updateLog(s) {
