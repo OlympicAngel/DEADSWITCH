@@ -3,7 +3,6 @@ import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG, MAP, BA
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseStaff, say, caps,
-  resMult,
 } from './economy.js';
 import { rand, range, pick, odds } from './rng.js';
 
@@ -20,7 +19,7 @@ export function chapterOpen(s, chapterId) {
 
 export function opCost(sec) {
   return {
-    money: Math.ceil(sec.defense * OPS.costMoneyPerDefense * BALANCE.priceMult * resMult('money')),
+    money: Math.ceil(sec.defense * OPS.costMoneyPerDefense * BALANCE.priceMult),
     energy: Math.ceil(sec.defense * OPS.costEnergyPerDefense * BALANCE.priceMult),
   };
 }
