@@ -132,3 +132,14 @@ test('conversion never creates value: any converter round trip loses resources',
   for (let i = 0; i < 600; i++) E.step(s, 1);
   assert.ok(s.res.money + s.res.energy < before);
 });
+
+test('every loss option costs something: small armies still lose at least one unit', () => {
+  const s = E.newState(10);
+  s.items = { rifles: 3, militia: 2 };
+  const inst = { uid: 1, id: 'looting', left: 100, total: 100, params: {} };
+  const ev = E.eventById('looting');
+  for (const ch of ev.choices) {
+    const out = E.choiceOutcome(s, inst, ch);
+    assert.ok(Object.values(out.units).some((n) => n >= 1), ch.label);
+  }
+});

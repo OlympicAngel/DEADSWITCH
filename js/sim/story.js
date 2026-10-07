@@ -3,7 +3,7 @@ import {
   EVENTS, EVENTS_CFG, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS,
 } from '../data.js';
 import {
-  level, factors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, projectDefense,
+  level, factors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
 } from './economy.js';
 import { delayRaid, activeRaiders, startSiege, addGrudge } from './war.js';
 import { range, pick, rand } from './rng.js';
@@ -72,7 +72,7 @@ export function choiceOutcome(s, inst, choice) {
   const levels = (choice.loseLevel || []).map((k) => inst.params && inst.params[k]).filter((id) => id && level(s, id) > 0);
   const units = {};
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
-    units[tab] = ITEMS.filter((i) => i.tab === tab).reduce((n, i) => n + Math.floor(owned(s, i.id) * share), 0);
+    units[tab] = unitsLost(s, tab, share);
   }
   const siege = choice.siege && inst.params ? { faction: inst.params.faction, strength: inst.params.strength, at: inst.left } : null;
   // A price can never exceed storage, or the choice could not exist.

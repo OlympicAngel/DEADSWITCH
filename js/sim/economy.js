@@ -352,14 +352,22 @@ export function giveItems(s, items) {
 }
 
 // Removes a share of every unit in one Arsenal tab (battle casualties, looting). Returns units lost.
+// How many units a share of a tab amounts to: rounded, but never zero while any are owned,
+// so a loss is always a real loss.
+export function unitsLost(s, tab, share) {
+  const total = ITEMS.filter((i) => i.tab === tab).reduce((n, i) => n + owned(s, i.id), 0);
+  return total ? Math.min(total, Math.max(1, Math.round(total * share))) : 0;
+}
+
+// Removes that many units from a tab, cheapest unit types first (front-line losses).
 export function loseUnits(s, tab, share) {
-  let lost = 0;
+  let left = unitsLost(s, tab, share);
+  const lost = left;
   for (const item of ITEMS) {
-    if (item.tab === tab && owned(s, item.id)) {
-      const n = Math.floor(owned(s, item.id) * share);
-      s.items[item.id] -= n;
-      lost += n;
-    }
+    if (item.tab !== tab || !left) continue;
+    const n = Math.min(owned(s, item.id), left);
+    s.items[item.id] -= n;
+    left -= n;
   }
   return lost;
 }
