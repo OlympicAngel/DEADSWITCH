@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { ITEM_BY_ID } from '../js/data.js';
+import { ITEM_BY_ID, BY_ID } from '../js/data.js';
 
 test('offline catch-up lands builds mid-stretch and matches live play closely', () => {
   const live = E.newState();
@@ -84,4 +84,15 @@ test('a lost raid demands orders, and silence applies the default choice', () =>
   E.catchUp(s, inst.left + 1);
   assert.ok(!s.events.some((x) => x.uid === inst.uid));
   assert.equal(s.stats.expired, 1);
+});
+
+test('the AI Core only upgrades once the base is developed', () => {
+  const s = E.newState(9);
+  s.res = { money: 1e6, energy: 1e5, pop: 1e4 };
+  Object.assign(s.levels, { battery: 10, habitat: 10 });
+  assert.equal(E.buildingStatus(s, BY_ID.core), 'gated');
+  for (const b of ['scrapyard', 'solar', 'shelter', 'barracks']) {
+    s.levels[b] = 4;
+  }
+  assert.equal(E.buildingStatus(s, BY_ID.core), 'ready');
 });

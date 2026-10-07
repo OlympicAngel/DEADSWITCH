@@ -133,7 +133,12 @@ function effectHtml(s, b, lvl, max) {
   }
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
-    return nowNext('Building cap', `Lv ${lvl * cap}`, `Lv ${next * cap}`, lvl, max, unlockLine(BUILDINGS.filter((x) => x.req.core === next), lvl));
+    const gate = lvl < max ? `
+      <div class="gate" data-tip="text" data-tip-text="Average level of all unlocked buildings, counting unbuilt ones as 0.">
+        <div class="gate-row"><span class="nn-lbl">Base development</span><b data-gate-v></b></div>
+        <div class="gate-bar"><i data-gate-bar></i></div>
+      </div>` : '';
+    return nowNext('Building cap', `Lv ${lvl * cap}`, `Lv ${next * cap}`, lvl, max, gate + unlockLine(BUILDINGS.filter((x) => x.req.core === next), lvl));
   }
   const shop = SHOP_TABS.find((t) => t.id === b.shop);
   const disc = (l) => 1 - Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, l - 1));
@@ -230,7 +235,7 @@ export function buyCount(s, ui, item) {
   return ui.buyMode === 'max' ? Math.max(1, E.maxAffordable(s, item)) : ui.buyMode;
 }
 
-const LABELS = { storage: 'Need storage', busy: 'Builder busy', building: 'Building', maxed: 'Max' };
+const LABELS = { storage: 'Need storage', busy: 'Builder busy', building: 'Building', maxed: 'Max', gated: 'Locked' };
 
 export function updateDomain(s, ui, refs, flows) {
   const tabs = DOMAINS[ui.screen].tabs;
@@ -267,6 +272,14 @@ export function updateDomain(s, ui, refs, flows) {
       c.eff.className = 'eff ' + (s.paused[c.b.id] ? 'is-paused' : eff < 0.999 ? 'is-low' : 'is-ok');
     }
     c.bar.style.width = st === 'building' ? pct(1 - s.build.remaining / s.build.total) : '0';
+    const gv = c.el.querySelector('[data-gate-v]');
+    if (gv) {
+      const g = E.coreGate(s);
+      gv.textContent = `Avg Lv ${g.avg.toFixed(1)} / ${g.need.toFixed(1)}`;
+      gv.className = g.open ? 'good-t' : 'warn-t';
+      c.el.querySelector('[data-gate-bar]').style.width = pct(Math.min(1, g.avg / g.need));
+      c.el.querySelector('[data-gate-bar]').className = g.open ? 'bg-good' : '';
+    }
   }
   for (const r of refs.rows) {
     const n = buyCount(s, ui, r.item);

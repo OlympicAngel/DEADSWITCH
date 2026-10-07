@@ -5,7 +5,7 @@ You are what is left of the war AI that ended the world. Rebuild a base in the r
 ## Core loop
 1. **Economy**: Scrip (money), Energy, Population. Energy and Population have storage caps (Battery Bank, Habitat Block). Buildings level up one at a time through a timed build queue.
    - *Producers* make a resource for free. *Converters* turn one resource into another, throttle themselves on empty input or full output, and can be paused.
-   - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters.
+   - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters. It can only be upgraded once the average level of all unlocked buildings (unbuilt count as 0) reaches 80% of the current cap.
    - *Unlockers* (Barracks, Armory, Fortification Works, Think Tank, Research Lab) open Arsenal tabs; each level unlocks more and cuts that tab's prices 3%.
 2. **Arsenal**: unlimited units at escalating prices (`base × growth^owned`) raise the three factors:
    - **AI Power** wins operations. **AI Defense** holds off raids. **AI Experts** add +0.5% to all production each. **Tech** adds % bonuses.
@@ -31,7 +31,7 @@ Portrait, phone first (desktop shows the same column).
 ## Where things live
 - All content and numbers: `js/data/` (economy, world, story).
 - Rules: `js/sim/` (economy, war, story) behind `js/engine.js`. Pure and seeded (`state.rng`), so offline catch-up and tests are reproducible.
-- `npm run balance` has a bot play 24h and prints milestone times. Last run: chapter 1 done in ~45 min, Halcyon Prime around 24h of nonstop play.
+- `npm run balance` has a bot play 24h and prints milestone times. Last run (with the Core gate): chapter 1 done in ~40 min, Core 6 at ~9h of nonstop play.
 
 ## Next ideas
 Rival AI players (online), unit upgrades and generals, sector garrisons that can be retaken, seasonal events, prestige reset ("reboot the core").

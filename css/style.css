@@ -856,3 +856,9 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .card[data-res='money']:not(.unbuilt) .btn.primary:not(:disabled):not(.to-storage) { background: linear-gradient(180deg, #ffd36b, #d9a43a); box-shadow: 0 0 18px rgba(242,193,78,.35); }
 .card[data-res='energy']:not(.unbuilt) .btn.primary:not(:disabled):not(.to-storage) { background: linear-gradient(180deg, #7fe0ff, #2aa7d6); box-shadow: 0 0 18px rgba(76,201,240,.35); }
 .card[data-res='pop']:not(.unbuilt) .btn.primary:not(:disabled):not(.to-storage) { background: linear-gradient(180deg, #a2f0b3, #4fb866); box-shadow: 0 0 18px rgba(123,216,143,.35); }
+
+.gate { margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: rgba(0,0,0,.25); cursor: help; }
+.gate-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.gate-row b { font: 700 13px var(--font-num); }
+.gate-bar { height: 5px; margin-top: 6px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+.gate-bar i { display: block; height: 100%; width: 0; background: var(--warn); transition: width .3s var(--ease); }

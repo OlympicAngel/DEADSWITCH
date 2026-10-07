@@ -192,12 +192,23 @@ export function exceedsCap(s, cost) {
   return Object.keys(cost).filter((k) => cost[k] > c[k]);
 }
 
+// AI Core gate: average level of every unlocked building (built or not) vs the share of the cap it needs.
+export function coreGate(s) {
+  const list = BUILDINGS.filter((b) => b.kind !== 'core' && meetsReq(s, b.req));
+  const avg = list.length ? list.reduce((sum, b) => sum + level(s, b.id), 0) / list.length : 0;
+  const need = level(s, 'core') * BALANCE.levelCapPerCoreLevel * BALANCE.coreGateShare;
+  return { avg, need, open: avg + 1e-9 >= need };
+}
+
 export function buildingStatus(s, b) {
   if (!meetsReq(s, b.req)) {
     return 'locked';
   }
   if (level(s, b.id) >= maxLevel(s, b)) {
     return 'maxed';
+  }
+  if (b.id === 'core' && !s.build && !coreGate(s).open) {
+    return 'gated';
   }
   if (s.build) {
     return s.build.id === b.id ? 'building' : 'busy';
