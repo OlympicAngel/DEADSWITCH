@@ -7,7 +7,7 @@ import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
 import {
-  resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass,
+  resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
 import { DOMAINS, sortedTabs } from '../layout.js';
 
@@ -132,10 +132,9 @@ function shopList(s, ui, tab) {
   return `
     ${head}
     <div class="shop-head">
-      <h3>${shopName}${tab.shop === 'staff' ? '<small>Staff die in lost battles</small>' : '<small>Each unit costs more than the last</small>'}</h3>
+      <h3>${shopName}</h3>
       ${open.length ? `<div class="modes">${modes}</div>` : ''}
     </div>
-    ${!lvl ? `<p class="hint">${icon('info')}Build the ${named(unlocker.id, unlocker.name)} to unlock ${shopName}.</p>` : ''}
     ${open.map((i) => itemRow(s, i)).join('')}
     ${next ? lockedCard(next.id, next.name, reqText(next.req)) : ''}`;
 }
@@ -150,7 +149,7 @@ function givesHtml(s, item) {
 }
 
 function itemRow(s, item) {
-  const bonusDesc = item.bonus ? 'Permanent bonus, stacks with every unit.' : `Adds ${Object.entries(item.gives).map(([k, v]) => `${v} ${FACTORS[k].name}`).join(' and ')} per unit.`;
+  const bonusDesc = item.bonus ? bonusText(item.bonus) + ' per unit' : Object.entries(item.gives).map(([k, v]) => `+${v} ${FACTORS[k].name}`).join(', ') + ' per unit' + (item.tab === 'staff' ? '. Lost in defeats.' : '');
   return `
     <article class="card item" data-item="${item.id}">
       <div class="card-top">

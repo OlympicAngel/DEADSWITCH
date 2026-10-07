@@ -65,7 +65,7 @@ export function createTips(game) {
     const raw = E.rawFactors(s)[k];
     const val = E.factors(s)[k];
     const extra = k === 'experts' ? row('Production bonus', '+' + pct(val * BALANCE.expertProductionBonus)) : '';
-    const what = { power: 'Decides operations on the map.', defense: 'Decides whether raids break through.', experts: 'Boost every resource you produce.' }[k];
+    const what = { power: 'Attack strength in operations.', defense: 'Strength against raids.', experts: `+${pct(BALANCE.expertProductionBonus)} production each.` }[k];
     return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw)) + extra
       + (val !== raw ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, k)}` : '');
   }
@@ -94,7 +94,7 @@ export function createTips(game) {
     const ri = E.rankIndex(t);
     const next = RANKS[ri + 1];
     return head('threat', 'Threat index', RANKS[ri].title)
-      + `<p>Power + Defense + Experts × ${BALANCE.threatExpertWeight}. The stronger you look, the harder they raid: raid strength tracks ${pct(RAIDS.threatShare)} of it.</p>`
+      + `<p>Power + Defense + Experts × ${BALANCE.threatExpertWeight}. Raid strength scales with it.</p>`
       + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) : '');
   }
 
@@ -103,7 +103,7 @@ export function createTips(game) {
     const g = ['pop', 'experts'].map((k) => E.alignBonus(s, k)).filter(Boolean);
     const o = ['power', 'energy'].map((k) => E.alignBonus(s, k)).filter(Boolean);
     return head('heart', 'Humanity', `${E.alignmentLabel(a)} (${a > 0 ? '+' : ''}${a})`)
-      + `<p>Your choices decide what I become. Guardian: up to +${pct(ALIGNMENT.guardian.pop)} Population and Experts. Overlord: up to +${pct(ALIGNMENT.overlord.power)} Power and +${pct(ALIGNMENT.overlord.energy)} Energy. It also decides the ending.</p>`
+      + `<p>Shifted by your orders. Guardian: up to +${pct(ALIGNMENT.guardian.pop)} Population and Experts. Overlord: up to +${pct(ALIGNMENT.overlord.power)} Power and +${pct(ALIGNMENT.overlord.energy)} Energy.</p>`
       + (g.length ? row('Guardian bonus', '+' + pct(g[0]) + ' Pop & Experts', 'ok') : '')
       + (o.length ? row('Overlord bonus', '+' + pct(o[0]) + ' Power, +' + pct(o[1] || 0) + ' Energy', 'neg') : '');
   }

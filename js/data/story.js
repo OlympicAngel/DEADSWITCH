@@ -318,31 +318,30 @@ export const EVENTS = [
   },
 ];
 
-// Ordered goals that teach the game. cond types: level, item, factor, sector, raidsWon, threat.
+// Ordered milestones that introduce each system once. They state a goal, never a strategy.
+// cond types: level, item, factor, sector, raidsWon, threat.
 export const DIRECTIVES = [
-  { text: 'Upgrade the Scrap Yard to Lv 3', cond: { level: 'scrapyard', n: 3 }, reward: { money: 60 } },
+  { text: 'Upgrade the Scrap Yard', cond: { level: 'scrapyard', n: 2 }, reward: { money: 60 } },
   { text: 'Build a Battery Bank', cond: { level: 'battery', n: 1 }, reward: { energy: 50 } },
   { text: 'Build the Barracks', cond: { level: 'barracks', n: 1 }, reward: { money: 80 } },
-  { text: 'Recruit 5 Militia in the Arsenal', cond: { item: 'militia', n: 5 }, reward: { pop: 10 } },
-  { text: 'Capture Rust Market (Operations)', cond: { sector: 'rust' }, reward: { money: 150 } },
+  { text: 'Recruit Militia', cond: { item: 'militia', n: 1 }, reward: { pop: 10 } },
+  { text: 'Capture Rust Market', cond: { sector: 'rust' }, reward: { money: 150 } },
   { text: 'Upgrade the AI Core to Lv 2', cond: { level: 'core', n: 2 }, reward: { money: 200, energy: 80 } },
   { text: 'Build Fortification Works', cond: { level: 'works', n: 1 }, reward: { money: 200 } },
-  { text: 'Reach 40 AI Defense before the raid', cond: { factor: 'defense', n: 40 }, reward: { energy: 150 } },
   { text: 'Repel a raid', cond: { raidsWon: 1 }, reward: { money: 400 } },
   { text: 'Build a Fabricator', cond: { level: 'fabricator', n: 1 }, reward: { energy: 200 } },
   { text: 'Upgrade the AI Core to Lv 3', cond: { level: 'core', n: 3 }, reward: { money: 800, pop: 20 } },
-  { text: 'Hire 3 AI Experts', cond: { factor: 'experts', n: 3 }, reward: { money: 1000 } },
+  { text: 'Hire a Field Engineer', cond: { item: 'engineers', n: 1 }, reward: { money: 1000 } },
   { text: 'Capture the Wreck Yards', cond: { sector: 'wrecks' }, reward: { energy: 800 } },
   { text: 'Take the Scrap Throne', cond: { sector: 'throne' }, reward: { money: 3000, energy: 1000 } },
   { text: 'Upgrade the AI Core to Lv 4', cond: { level: 'core', n: 4 }, reward: { money: 4000 } },
-  { text: 'Reach 2,000 AI Power', cond: { factor: 'power', n: 2000 }, reward: { energy: 4000 } },
   { text: 'Storm Fort Ashgrove', cond: { sector: 'ashgrove' }, reward: { money: 40000, energy: 15000 } },
   { text: 'Upgrade the AI Core to Lv 6', cond: { level: 'core', n: 6 }, reward: { money: 60000 } },
   { text: 'Take the Cathedral of the Core', cond: { sector: 'cathedral' }, reward: { money: 300000, energy: 100000 } },
   { text: 'Upgrade the AI Core to Lv 8', cond: { level: 'core', n: 8 }, reward: { money: 500000 } },
   { text: 'Breach Halcyon Prime', cond: { sector: 'prime' }, reward: { money: 3000000, energy: 1000000 } },
   { text: 'Reach the rank DEADSWITCH', cond: { threat: 2000000 }, reward: { money: 10000000 } },
-];
+]
 
 // AI voice. Lines rotate so the log does not repeat back-to-back.
 export const LINES = {

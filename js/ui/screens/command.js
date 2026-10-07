@@ -98,11 +98,11 @@ function slot(refs, id, key, html) {
 
 export function condition(s) {
   const after = s.events.some((x) => E.eventById(x.id).aftermath);
-  if (s.raid && E.raidChance(s) < 0.5) return ['red', 'Condition red', 'Raid inbound. Defenses will not hold'];
-  if (after) return ['red', 'Damage control', 'The base is hurt. Orders needed'];
-  if (s.raid) return ['amber', 'Condition amber', 'Hostiles inbound'];
-  if (s.events.length) return ['amber', 'Orders pending', 'Transmissions awaiting your decision'];
-  if (E.level(s, 'core') < RAIDS.startAtCore) return ['green', 'Condition green', `Quiet. Raids begin at AI Core Lv ${RAIDS.startAtCore}`];
+  if (s.raid && E.raidChance(s) < 0.5) return ['red', 'Condition red', 'Raid inbound'];
+  if (after) return ['red', 'Damage control', 'Damage reports pending'];
+  if (s.raid) return ['amber', 'Condition amber', 'Raid inbound'];
+  if (s.events.length) return ['amber', 'Orders pending', 'Transmissions waiting'];
+  if (E.level(s, 'core') < RAIDS.startAtCore) return ['green', 'Condition green', 'No hostiles'];
   return ['green', 'Condition green', 'Perimeter secure'];
 }
 
@@ -150,7 +150,7 @@ function raidPanel(s, refs) {
     slot(refs, 'raid', 'none' + quiet, `
       <header>${icon('threat')}Incoming</header>
       <div class="radar-idle"><div class="mini-radar"><i></i></div>
-        <p><b>No hostiles on radar</b><span>${quiet ? `Raids begin at ${icon('core')}AI Core Lv ${RAIDS.startAtCore}. Build defenses before then.` : 'Scouts see nothing. For now.'}</span></p></div>`);
+        <p><b>No hostiles on radar</b><span>${quiet ? `Raids begin at ${icon('core')}AI Core Lv ${RAIDS.startAtCore}.` : 'Scouts see nothing. For now.'}</span></p></div>`);
     refs.panels.raid.dataset.level = 'calm';
     return;
   }

@@ -8,6 +8,7 @@ Browser idle/strategy game, static site on GitHub Pages. Read `README.md` and `d
 - Every number and every piece of content goes in `js/data/` (re-exported by `js/data.js`). Do not hardcode balance in the engine or UI.
 - Randomness only through `js/sim/rng.js` (seeded, stored in the save). Never `Math.random` in the engine.
 - Player-facing text is the AI's voice: cold, precise, darkly funny. Keep the canon in `docs/DESIGN.md`.
+- UI copy states facts only: what a thing is or does, in as few words as possible, or nothing. Never advise, hint at a best move, or explain design intent (no "build defenses first", "each unit costs more", "worth it"). Players work out the strategy themselves.
 - New save fields: add a default in `newState()` and make sure `migrate()` fills it for old saves. Bump `SAVE_VERSION` only for a breaking change, with a migration.
 - UI is portrait and phone first: check at 390×844 (and that desktop still shows the centred column). Screens rebuild only on structural change and patch numbers per frame through cached refs (`js/ui/index.js`, `js/ui/screens/`). Navigation structure lives in `js/ui/layout.js`.
 - Name things with their icon (`icon(key)` from `js/ui/icons.js`); add new icon keys there and rebuild the sprite with `tools/build-icons.mjs`. Line icons only, no emoji.

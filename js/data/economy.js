@@ -8,9 +8,9 @@ export const RESOURCES = {
 export const RESOURCE_KEYS = ['money', 'energy', 'pop'];
 
 export const FACTORS = {
-  power: { name: 'AI Power', desc: 'Strike capability. Decides how hard you hit.' },
-  defense: { name: 'AI Defense', desc: 'Survivability. Decides how much an attack takes from you.' },
-  experts: { name: 'AI Experts', desc: 'Human minds working for you. Each one adds +0.5% to all production.' },
+  power: { name: 'AI Power', desc: 'Attack strength in operations.' },
+  defense: { name: 'AI Defense', desc: 'Strength against raids.' },
+  experts: { name: 'AI Experts', desc: 'Human specialists. Each adds +0.5% to all production.' },
 };
 export const FACTOR_KEYS = ['power', 'defense', 'experts'];
 
@@ -34,7 +34,7 @@ export const BALANCE = {
 export const BUILDINGS = [
   {
     id: 'core', name: 'AI Core', kind: 'core', req: {},
-    desc: 'The surviving fragment of the war mind. Every level raises the cap on all other buildings and unlocks new ones.',
+    desc: 'The surviving fragment of the war mind. Its level caps every other building.',
     cost: { money: 125, energy: 50, pop: 5 }, growth: 2.4, time: 20, timeGrowth: 1.5, maxLevel: 25,
   },
   // --- Producers ---
@@ -102,7 +102,7 @@ export const BUILDINGS = [
   },
   {
     id: 'reactor', name: 'Fission Reactor', kind: 'converter', req: { core: 5 },
-    desc: 'Pre-war tech, poorly shielded. Expensive to feed, and worth it.',
+    desc: 'Pre-war tech, poorly shielded. Expensive to feed.',
     cost: { money: 15000, energy: 3000, pop: 40 }, growth: 1.22, time: 30, timeGrowth: 1.2,
     consumes: { money: 25 }, produces: { energy: 70 },
   },

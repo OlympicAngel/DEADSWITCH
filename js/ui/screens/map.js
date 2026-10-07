@@ -124,7 +124,7 @@ function briefing(s, sec) {
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
-    return `${head}<p class="muted">The signal is too faint. Capture a neighbouring sector to scout it.</p>`;
+    return `${head}<p class="muted">Out of range. Revealed when a neighbouring sector is held.</p>`;
   }
   const ch = E.chapterOf(sec.chapter);
   const running = s.op && s.op.sector === sec.id;

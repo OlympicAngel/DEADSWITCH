@@ -222,7 +222,7 @@ export function createModals(dialog, game, onChange) {
       spoils: r.win
         ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>`
         : `<div class="r"><span>${icon('skull')}Losses</span><b>${losses(r)}</b></div>`,
-      note: r.win ? '' : `${icon('fire')}They broke through. Damage reports are coming in, and they need orders.`,
+      note: r.win ? '' : `${icon('fire')}Damage reports incoming.`,
     }, then);
   }
 
