@@ -75,6 +75,7 @@ function buildingCard(s, b) {
   return `
     <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''}" data-card="${b.id}" ${res ? `data-res="${res}"` : ''}>
       ${unbuilt ? `<span class="unbuilt-tag">${icon('unlock')}Not built</span>` : ''}
+      ${b.kind === 'unlocker' ? `<span class="facility-tag">${icon('economy')}Facility</span>` : ''}
       ${core ? '<div class="core-glow"></div>' : ''}
       <div class="card-top">
         <div class="tile">${core ? '<i class="tile-ring"></i>' : ''}${icon(b.id)}${unbuilt ? `<span class="badge lockb">${icon('unlock')}</span>` : `<span class="badge">${lvl}</span>`}</div>

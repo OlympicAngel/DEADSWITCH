@@ -868,3 +868,23 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 .tip { max-height: calc(100dvh - 16px); max-width: min(290px, calc(100vw - 16px)); overflow-y: auto; }
 .icon-label { max-width: calc(100vw - 12px); }
 .toasts .toast { max-width: 100%; overflow-wrap: anywhere; }
+
+/* Military/Research facilities (unlockers): an industrial header block, distinct from the unit cards below */
+.card.k-unlocker:not(.unbuilt) {
+  padding-top: 30px;
+  border-color: rgba(255,176,61,.45);
+  background:
+    var(--brackets),
+    repeating-linear-gradient(135deg, rgba(255,176,61,.55) 0 10px, rgba(10,13,16,.9) 10px 20px) top / 100% 6px no-repeat,
+    linear-gradient(90deg, rgba(255,176,61,.07) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(rgba(255,176,61,.07) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(160deg, #23201b, #15130f);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+.card.k-unlocker .tile { clip-path: none; border-radius: 10px; width: 58px; height: 58px; background: linear-gradient(160deg, #ffb03d, #8a5a17); }
+.card.k-unlocker .tile::before { border-radius: 9px; background: radial-gradient(circle at 50% 35%, #3a2a14, #14100a); }
+.card.k-unlocker h3 { text-transform: uppercase; letter-spacing: .1em; font-size: 15px; }
+.facility-tag { position: absolute; top: 11px; left: 12px; display: inline-flex; align-items: center; gap: 5px; font: 700 9.5px var(--font-hud); text-transform: uppercase; letter-spacing: .2em; color: var(--warn); }
+.card.unbuilt .facility-tag { top: 10px; }
+.card.k-unlocker.unbuilt { padding-top: 30px; }
+.card.k-unlocker[data-status='ready']::after { top: 13px; left: auto; right: 12px; }
