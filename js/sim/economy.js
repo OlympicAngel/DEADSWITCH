@@ -162,11 +162,14 @@ export function projectDefense(s, seconds) {
   return Math.max(0, factors(tmp).defense - factors(s).defense);
 }
 
+// Global price tuning: base prices and their growth rates both scale from BALANCE.
+export const priceGrowth = (g) => 1 + (g - 1) * BALANCE.growthMult;
+
 export function buildingCost(s, b) {
   const lvl = level(s, b.id);
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
-    out[k] = Math.ceil(v * Math.pow(b.growth, lvl));
+    out[k] = Math.ceil(v * BALANCE.priceMult * Math.pow(priceGrowth(b.growth), lvl));
   }
   return out;
 }
@@ -185,11 +188,11 @@ export function shopDiscount(s, item) {
 export function itemCost(s, item, count = 1) {
   const n = owned(s, item.id);
   const d = shopDiscount(s, item);
-  const g = item.growth;
+  const g = priceGrowth(item.growth);
   const series = (Math.pow(g, count) - 1) / (g - 1);
   const out = {};
   for (const [k, v] of Object.entries(item.cost)) {
-    out[k] = Math.ceil(v * d * Math.pow(g, n) * series);
+    out[k] = Math.ceil(v * BALANCE.priceMult * d * Math.pow(g, n) * series);
   }
   return out;
 }
@@ -197,10 +200,10 @@ export function itemCost(s, item, count = 1) {
 export function maxAffordable(s, item) {
   const n = owned(s, item.id);
   const d = shopDiscount(s, item);
-  const g = item.growth;
+  const g = priceGrowth(item.growth);
   let best = Infinity;
   for (const [k, v] of Object.entries(item.cost)) {
-    const first = v * d * Math.pow(g, n);
+    const first = v * BALANCE.priceMult * d * Math.pow(g, n);
     const k1 = Math.floor(Math.log((s.res[k] * (g - 1)) / first + 1) / Math.log(g) + EPS);
     best = Math.min(best, k1);
   }

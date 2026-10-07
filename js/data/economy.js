@@ -20,6 +20,8 @@ export const BALANCE = {
   baseEnergyCap: 150,
   basePopCap: 20,
   levelCapPerCoreLevel: 5, // non-core buildings max level = core level * this
+  priceMult: 1.6, // every building, unit and operation price
+  growthMult: 1.3, // stretches each per-level / per-unit growth: g -> 1 + (g - 1) * growthMult
   coreGateShare: 0.8, // AI Core upgrades need the average unlocked building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
   unlockerDiscountPerLevel: 0.03, // each level of an unlocker building above 1 cuts its shop prices 3% (compounding)

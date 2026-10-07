@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG, MAP } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseStaff, say, caps,
@@ -19,8 +19,8 @@ export function chapterOpen(s, chapterId) {
 
 export function opCost(sec) {
   return {
-    money: Math.ceil(sec.defense * OPS.costMoneyPerDefense),
-    energy: Math.ceil(sec.defense * OPS.costEnergyPerDefense),
+    money: Math.ceil(sec.defense * OPS.costMoneyPerDefense * BALANCE.priceMult),
+    energy: Math.ceil(sec.defense * OPS.costEnergyPerDefense * BALANCE.priceMult),
   };
 }
 
