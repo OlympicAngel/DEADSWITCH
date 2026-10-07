@@ -38,9 +38,11 @@ export function floatText(anchor, html, cls = '') {
   const el = document.createElement('div');
   el.className = 'float-text ' + cls;
   el.innerHTML = html;
-  el.style.left = r.left + r.width / 2 + 'px';
-  el.style.top = r.top + 'px';
   document.body.appendChild(el);
+  // Keep the badge (at its peak scale) and its rise inside the screen.
+  const half = (el.offsetWidth * 1.5) / 2 + 6;
+  el.style.left = Math.max(half, Math.min(window.innerWidth - half, r.left + r.width / 2)) + 'px';
+  el.style.top = Math.max(110, Math.min(window.innerHeight - 40, r.top)) + 'px';
   el.addEventListener('animationend', () => el.remove());
 }
 
@@ -85,8 +87,9 @@ export function burst(anchor, color = 'var(--hud)', count = 26) {
     p.style.top = cy + 'px';
     p.style.background = color;
     p.style.color = color;
-    p.style.setProperty('--dx', Math.cos(a) * d + 'px');
-    p.style.setProperty('--dy', Math.sin(a) * d + 'px');
+    const m = 8;
+    p.style.setProperty('--dx', Math.max(m - cx, Math.min(window.innerWidth - m - cx, Math.cos(a) * d)) + 'px');
+    p.style.setProperty('--dy', Math.max(m - cy, Math.min(window.innerHeight - m - cy, Math.sin(a) * d)) + 'px');
     document.body.appendChild(p);
     p.addEventListener('animationend', () => p.remove());
   }

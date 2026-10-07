@@ -862,3 +862,9 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .gate-row b { font: 700 13px var(--font-num); }
 .gate-bar { height: 5px; margin-top: 6px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
 .gate-bar i { display: block; height: 100%; width: 0; background: var(--warn); transition: width .3s var(--ease); }
+
+/* Overlays never exceed the viewport: long content scrolls inside them */
+dialog { overflow-y: auto; overscroll-behavior: contain; }
+.tip { max-height: calc(100dvh - 16px); max-width: min(290px, calc(100vw - 16px)); overflow-y: auto; }
+.icon-label { max-width: calc(100vw - 12px); }
+.toasts .toast { max-width: 100%; overflow-wrap: anywhere; }

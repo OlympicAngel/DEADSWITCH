@@ -132,9 +132,11 @@ export function createTips(game) {
     let left = r.left + r.width / 2 - t.width / 2;
     left = Math.max(pad, Math.min(window.innerWidth - t.width - pad, left));
     let top = r.bottom + 8;
-    if (top + t.height > window.innerHeight - 80) {
-      top = Math.max(pad, r.top - t.height - 8);
+    if (top + t.height > window.innerHeight - pad) {
+      top = r.top - t.height - 8;
     }
+    // Never past any screen edge, even when neither side of the target has room.
+    top = Math.max(pad, Math.min(window.innerHeight - t.height - pad, top));
     tip.style.left = left + 'px';
     tip.style.top = top + 'px';
   }
@@ -171,7 +173,8 @@ export function createTips(game) {
     const r = el.getBoundingClientRect();
     const w = label.offsetWidth;
     label.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + 'px';
-    label.style.top = Math.max(6, r.top - label.offsetHeight - 6) + 'px';
+    const above = r.top - label.offsetHeight - 6;
+    label.style.top = (above >= 6 ? above : r.bottom + 6) + 'px';
     clearTimeout(labelTimer);
     labelTimer = setTimeout(() => label.classList.remove('on'), 1600);
   }
