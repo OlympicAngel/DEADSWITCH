@@ -40,7 +40,7 @@ export const BUILDINGS = [
   {
     id: 'core', name: 'AI Core', kind: 'core', req: {},
     desc: 'The surviving fragment of the war mind. Its level caps every other building.',
-    cost: { money: 125, energy: 50, pop: 5 }, growth: 2.4, time: 20, timeGrowth: 1.5, maxLevel: 25,
+    cost: { money: 250, energy: 50, pop: 5 }, growth: 2.4, time: 20, timeGrowth: 1.5, maxLevel: 25,
   },
   // --- Producers ---
   {
