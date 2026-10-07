@@ -89,7 +89,7 @@ test('a lost raid demands orders, and silence applies the default choice', () =>
 test('the AI Core only upgrades once the base is developed', () => {
   const s = E.newState(9);
   s.res = { money: 1e6, energy: 1e5, pop: 1e4 };
-  Object.assign(s.levels, { battery: 10, habitat: 10 });
+  Object.assign(s.levels, { battery: 5, habitat: 5 });
   assert.equal(E.buildingStatus(s, BY_ID.core), 'gated');
   for (const b of ['scrapyard', 'solar', 'shelter', 'barracks']) {
     s.levels[b] = 4;

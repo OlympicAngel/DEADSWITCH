@@ -5,7 +5,7 @@ You are what is left of the war AI that ended the world. Rebuild a base in the r
 ## Core loop
 1. **Economy**: Scrip (money), Energy, Population. Energy and Population have storage caps (Battery Bank, Habitat Block). Buildings level up one at a time through a timed build queue.
    - *Producers* make a resource for free. *Converters* turn one resource into another at a loss (output worth = input worth x 0.6, with worth Scrip 1, Energy 1, Population 12; `CONVERSION` in data), so no chain creates value. Production bonuses speed converters up on both sides without improving the ratio. They throttle themselves on empty input or full output, and can be switched off.
-   - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters. It can only be upgraded once the average level of all unlocked buildings except converters (unbuilt count as 0) reaches 80% of the current cap.
+   - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters. It can only be upgraded once the average level of all unlocked buildings except converters (unbuilt count as 0) reaches 50% of the current cap.
    - *Unlockers* (Barracks, Armory, Fortification Works, Think Tank, Research Lab) open Arsenal tabs; each level unlocks more and cuts that tab's prices 3%.
 2. **Arsenal**: unlimited units at escalating prices. Every building level and unit costs `base × priceMult × g^n × (n+1)^pricePower` with `g = 1 + (growth-1) × growthMult` (1.8, 1.35, 0.35) raise the three factors:
    - Advanced troops and defenses have **durability** (up to 70%): each type loses `share × (1 − durability)` of its units in a defeat, rounded; a defeat always costs at least one unit (the least durable type).
@@ -36,7 +36,7 @@ Portrait, phone first (desktop shows the same column).
 ## Where things live
 - All content and numbers: `js/data/` (economy, world, story).
 - Rules: `js/sim/` (economy, war, story) behind `js/engine.js`. Pure and seeded (`state.rng`), so offline catch-up and tests are reproducible.
-- `npm run balance` runs the balance simulation: a bot plays 5 seeded 24h runs with every system live (Core gate, price formula, raids, sieges, vengeance, threats, fortified sectors) and random affordable event choices, and prints average/min/max milestone times and end-state averages. Last run (lossy converters, durability, gap-scaled losses): Core 2 53m, Core 3 13h37 (4/5 runs), Core 4 not reached in 24h; Scrap Throne 8h47 (4/5 runs).
+- `npm run balance` runs the balance simulation: a bot plays 5 seeded 24h runs with every system live (Core gate, price formula, raids, sieges, vengeance, threats, fortified sectors) and random affordable event choices, and prints average/min/max milestone times and end-state averages. Last run (lossy converters, durability, gap-scaled losses, 50% Core gate): Core 2 53m, Core 3 12h18 (4/5 runs), Core 4 not reached in 24h; Scrap Throne 8h47 (4/5 runs).
 
 ## Next ideas
 Rival AI players (online), unit upgrades and generals, sector garrisons that can be retaken, seasonal events, prestige reset ("reboot the core").

@@ -24,7 +24,7 @@ export const BALANCE = {
   growthMult: 1.35, // stretches each per-level / per-unit growth: g -> 1 + (g - 1) * growthMult
   economyPriceMult: { money: 1.5 }, // extra multiplier on one resource's share of Economy building prices
   pricePower: 0.35, // extra polynomial climb: price x (n + 1)^pricePower
-  coreGateShare: 0.8, // AI Core upgrades need the average unlocked building at this share of the level cap
+  coreGateShare: 0.5, // AI Core upgrades need the average unlocked building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
   unlockerDiscountPerLevel: 0.03, // each level of an unlocker building above 1 cuts its shop prices 3% (compounding)
   threatExpertWeight: 5,
