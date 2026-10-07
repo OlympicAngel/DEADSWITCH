@@ -848,3 +848,8 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .outcome .kicker { color: var(--muted); }
 .outcome .fx-line .tag { font-size: 14px; }
 .btn.primary.to-storage:not(:disabled) { background: rgba(255,176,61,.1); color: var(--warn); box-shadow: inset 0 0 0 1px rgba(255,176,61,.5); }
+
+/* Economy cards tinted by their resource: same darkness as the base card, hue of the resource */
+.card[data-res='money']:not(.unbuilt) { background: var(--brackets), linear-gradient(160deg, #2e2614, #241e0f); }
+.card[data-res='energy']:not(.unbuilt) { background: var(--brackets), linear-gradient(160deg, #14262e, #0f1e24); }
+.card[data-res='pop']:not(.unbuilt) { background: var(--brackets), linear-gradient(160deg, #142e1a, #0f2414); }

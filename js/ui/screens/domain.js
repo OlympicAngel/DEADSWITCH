@@ -71,8 +71,9 @@ function buildingCard(s, b) {
   const conv = b.kind === 'converter' && lvl > 0;
   const core = b.kind === 'core';
   const unbuilt = lvl === 0;
+  const res = Object.keys(b.produces || b.storage || {})[0]; // tints the card by the resource it makes or stores
   return `
-    <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''}" data-card="${b.id}">
+    <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''}" data-card="${b.id}" ${res ? `data-res="${res}"` : ''}>
       ${unbuilt ? `<span class="unbuilt-tag">${icon('unlock')}Not built</span>` : ''}
       ${core ? '<div class="core-glow"></div>' : ''}
       <div class="card-top">
