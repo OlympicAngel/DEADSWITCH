@@ -215,6 +215,8 @@ export function createUI(root, game) {
         break;
       case 'pause':
         game.act.toggle(id);
+        sfx.click();
+        vibrate(12);
         break;
       case 'buy': {
         const item = ITEMS.find((i) => i.id === id);

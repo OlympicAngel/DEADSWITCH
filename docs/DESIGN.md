@@ -5,7 +5,7 @@ You are what is left of the war AI that ended the world. Rebuild a base in the r
 ## Core loop
 1. **Economy**: Scrip (money), Energy, Population. Energy and Population have storage caps (Battery Bank, Habitat Block). Buildings level up one at a time through a timed build queue.
    - *Producers* make a resource for free. *Converters* turn one resource into another, throttle themselves on empty input or full output, and can be paused.
-   - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters. It can only be upgraded once the average level of all unlocked buildings (unbuilt count as 0) reaches 80% of the current cap.
+   - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters. It can only be upgraded once the average level of all unlocked buildings except converters (unbuilt count as 0) reaches 80% of the current cap.
    - *Unlockers* (Barracks, Armory, Fortification Works, Think Tank, Research Lab) open Arsenal tabs; each level unlocks more and cuts that tab's prices 3%.
 2. **Arsenal**: unlimited units at escalating prices. Every building level and unit costs `base × priceMult × g^n × (n+1)^pricePower` with `g = 1 + (growth-1) × growthMult` (1.8, 1.35, 0.35) raise the three factors:
    - **AI Power** wins operations. **AI Defense** holds off raids. **AI Experts** add +0.5% to all production each. **Tech** adds % bonuses.

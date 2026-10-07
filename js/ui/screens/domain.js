@@ -73,7 +73,7 @@ function buildingCard(s, b) {
   const unbuilt = lvl === 0;
   const res = Object.keys(b.produces || b.storage || {})[0]; // tints the card by the resource it makes or stores
   return `
-    <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''}" data-card="${b.id}" ${res ? `data-res="${res}"` : ''}>
+    <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''} ${conv && s.paused[b.id] ? 'switched-off' : ''}" data-card="${b.id}" ${res ? `data-res="${res}"` : ''}>
       ${unbuilt ? `<span class="unbuilt-tag">${icon('unlock')}Not built</span>` : ''}
       ${b.kind === 'unlocker' ? `<span class="facility-tag">${icon('economy')}Facility</span>` : ''}
       ${core ? '<div class="core-glow"></div>' : ''}
@@ -83,7 +83,8 @@ function buildingCard(s, b) {
           <h3>${b.name} ${unbuilt ? '' : `<small>Lv ${lvl}<span>/${max}</span></small>`}</h3>
           <p class="desc">${esc(b.desc)}</p>
         </div>
-        ${conv ? `<button class="icon-btn small ${s.paused[b.id] ? 'paused' : ''}" data-act="pause" data-id="${b.id}" aria-label="${s.paused[b.id] ? 'Resume' : 'Pause'}" aria-pressed="${!!s.paused[b.id]}">${icon(s.paused[b.id] ? 'play' : 'stop')}</button>` : ''}
+        ${conv ? `<button class="power-switch ${s.paused[b.id] ? 'off' : 'on'}" data-act="pause" data-id="${b.id}" role="switch" aria-checked="${!s.paused[b.id]}" aria-label="${b.name} power">
+          <span class="ps-track"><i class="ps-knob"></i></span><span class="ps-label">${s.paused[b.id] ? 'OFF' : 'ON'}</span></button>` : ''}
       </div>
       ${effectHtml(s, b, lvl, max)}
       ${lvl < max ? `<div class="card-bot"><div class="costs">${costChips(E.buildingCost(s, b))}</div>
@@ -135,7 +136,7 @@ function effectHtml(s, b, lvl, max) {
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
     const gate = lvl < max ? `
-      <div class="gate" data-tip="text" data-tip-text="Average level of all unlocked buildings, counting unbuilt ones as 0.">
+      <div class="gate" data-tip="text" data-tip-text="Average level of all unlocked buildings except conversion, counting unbuilt ones as 0.">
         <div class="gate-row"><span class="nn-lbl">Base development</span><b data-gate-v></b></div>
         <div class="gate-bar"><i data-gate-bar></i></div>
       </div>` : '';
@@ -270,7 +271,7 @@ export function updateDomain(s, ui, refs, flows) {
     }
     if (c.eff && flows) {
       const eff = flows.eff[c.b.id] ?? 0;
-      c.eff.textContent = s.paused[c.b.id] ? 'PAUSED' : pct(eff);
+      c.eff.textContent = s.paused[c.b.id] ? 'OFF' : pct(eff);
       c.eff.className = 'eff ' + (s.paused[c.b.id] ? 'is-paused' : eff < 0.999 ? 'is-low' : 'is-ok');
     }
     c.bar.style.width = st === 'building' ? pct(1 - s.build.remaining / s.build.total) : '0';
