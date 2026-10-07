@@ -1,5 +1,5 @@
 // Host: owns the clock, the save slot and the loop. The engine never sees wall time.
-import { BALANCE } from './data.js';
+import { BALANCE, EVENTS_CFG } from './data.js';
 import * as E from './engine.js';
 import { createUI } from './ui/index.js';
 import { time } from './format.js';
@@ -93,6 +93,12 @@ if (saved && saved.savedAt) {
 
 let last = performance.now();
 let sinceSave = 0;
+// The player counts as active while the page is visible and they touched it recently.
+let lastInput = -Infinity;
+for (const type of ['pointerdown', 'keydown']) {
+  addEventListener(type, () => { lastInput = performance.now(); }, { capture: true, passive: true });
+}
+const isActive = (now) => !document.hidden && now - lastInput < EVENTS_CFG.activeWindow * 1000;
 function tick() {
   const now = performance.now();
   const dt = (now - last) / 1000;
@@ -101,7 +107,7 @@ function tick() {
   if (dt > BACKGROUND_GAP_SECONDS) {
     game.flows = E.catchUp(game.state, dt).flows;
   } else {
-    game.flows = E.step(game.state, dt);
+    game.flows = E.step(game.state, dt, false, isActive(now));
   }
   sinceSave += dt;
   if (sinceSave >= BALANCE.autosaveSeconds) {

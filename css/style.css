@@ -780,6 +780,10 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .deadbar { height: 3px; margin: 8px 0 12px; background: rgba(255,255,255,.06); border-radius: 2px; overflow: hidden; }
 .deadbar i { display: block; height: 100%; background: var(--experts); transition: width .5s linear; }
 .event.crisis .deadbar i { background: var(--bad); }
+.event-modal.urgent { border-color: var(--warn); --hud: var(--warn); background: var(--brackets), linear-gradient(180deg, #2b2110, #0f0d0e); }
+.event.urgent .kicker { color: var(--warn); }
+.event.urgent .deadbar i { background: var(--warn); }
+.event.urgent .choice:hover:not(:disabled) { border-color: var(--warn); background: rgba(255,190,80,.08); }
 .event h2 { font-size: 23px; margin: 2px 0 10px; }
 .ev-text { font-size: 15px; color: #d5dee4; line-height: 1.55; margin-bottom: 14px; }
 .ev-text.result { font-style: italic; color: #eadbc2; border-left: 2px solid var(--experts); padding-left: 12px; }

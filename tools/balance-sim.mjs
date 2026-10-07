@@ -45,7 +45,7 @@ function play(seed) {
   const tally = { sieges: 0, grudges: 0, tributes: 0 };
 
   for (let t = 0; t < HOURS * 3600; t++) {
-    E.step(s, 1);
+    E.step(s, 1, false, true);
 
     if (!s.build) {
       // Converters only lose value now; a sensible player builds them only to fix a shortage.

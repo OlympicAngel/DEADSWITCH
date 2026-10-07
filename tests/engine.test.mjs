@@ -162,3 +162,24 @@ test('defeat losses grow with the strength gap, up to the cap', () => {
   assert.equal(E.lossShare(rule, 100, 1000), 0.45);
   assert.equal(E.lossShare(rule, 0, 10), 0.45);
 });
+
+test('events only fire when every effect can happen; urgent ones only for an active player', () => {
+  const s = E.newState(12);
+  const glitch = E.eventById('glitch'); // buffs Power, penalises Experts
+  s.items = { rifles: 5 };
+  assert.equal(E.applicable(s, glitch), false);
+  s.items.engineers = 1;
+  assert.equal(E.applicable(s, glitch), true);
+
+  const t = E.newState(13);
+  t.levels.core = 2;
+  t.eventTimer = 0;
+  for (let i = 0; i < 2000 && !t.events.some((x) => E.eventById(x.id).urgent); i++) {
+    t.events = [];
+    t.eventTimer = 0;
+    E.step(t, 1);
+  }
+  assert.ok(!t.events.some((x) => E.eventById(x.id).urgent));
+  const urgent = E.eventById('override');
+  assert.equal(urgent.deadline, 120);
+});

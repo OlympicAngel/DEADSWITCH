@@ -112,12 +112,13 @@ export function migrate(raw) {
 }
 
 // Advances the world by dt seconds. Returns per-second flows for the UI.
-export function step(s, dt, offline = false) {
+// active: the player is at the console right now (host-reported); urgent events need it.
+export function step(s, dt, offline = false, active = false) {
   const flows = produce(s, dt);
   advanceBuild(s, dt);
   advanceOp(s, dt);
   advanceRaids(s, dt, offline);
-  advanceEvents(s, dt, offline);
+  advanceEvents(s, dt, offline, active && !offline);
   advanceSieges(s, dt, offline);
   advanceBuffs(s, dt);
   checkChapters(s);

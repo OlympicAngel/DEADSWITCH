@@ -309,8 +309,8 @@ export function createModals(dialog, game, onChange) {
         <b>${esc(E.fillText(inst, ch.label))}</b><span class="fx">${preview(E.choiceOutcome(s, inst, ch), ch, inst)}</span>
       </button>`).join('');
     open(`
-      <div class="event ${ev.aftermath ? 'crisis' : ''}">
-        <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : 'message')}${ev.aftermath ? 'Damage report' : 'Incoming transmission'}</span>
+      <div class="event ${ev.aftermath ? 'crisis' : ''} ${ev.urgent ? 'urgent' : ''}">
+        <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : ev.urgent ? 'alert' : 'message')}${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Incoming transmission'}</span>
           <span class="deadline" data-deadline></span></div>
         <div class="deadbar"><i data-deadbar></i></div>
         <h2>${esc(ev.title)}</h2>
@@ -322,9 +322,9 @@ export function createModals(dialog, game, onChange) {
         </div>` : ''}
         <div class="choices">${choices}</div>
         <p class="default-note">${icon('alert')}No order in time and I choose: <b>${esc(E.fillText(inst, ev.choices[ev.def].label))}</b></p>
-        <button class="btn ghost wide" data-close>${icon('hourglass')}Decide later</button>
-      </div>`, { cls: 'event-modal' + (ev.aftermath ? ' crisis' : '') });
-    if (ev.aftermath) {
+        ${ev.urgent ? '' : `<button class="btn ghost wide" data-close>${icon('hourglass')}Decide later</button>`}
+      </div>`, { cls: 'event-modal' + (ev.aftermath ? ' crisis' : '') + (ev.urgent ? ' urgent locked' : '') });
+    if (ev.aftermath || ev.urgent) {
       sfx.alarm();
       vibrate([120, 60, 120]);
     } else {

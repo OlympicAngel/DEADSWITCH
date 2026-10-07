@@ -99,6 +99,8 @@ export const EVENTS_CFG = {
   aftermathOnDefeat: 1, // crisis events spawned by a lost raid...
   aftermathOnRout: 2, // ...or by a rout (hold chance under routChance)
   routChance: 0.25,
+  activeWindow: 60, // seconds since the last tap/key for the player to count as active
+  urgentDeadline: 120, // urgent events: this long to answer, no deferring, only while the player is active
   // "seconds of production" values never drop below this many units per Core level.
   minRatePerCore: { money: 2, energy: 1, pop: 0.12 },
 };
@@ -110,6 +112,10 @@ export const EVENTS_CFG = {
 // grudge: that faction comes for revenge; its next raids hit x mult, either for a random 1-3 raids or until
 // one of them breaks through (rolled when chosen).
 // pick: building params chosen when the event fires, named in text as {a} and {b}.
+// An event only fires when every effect of every choice can happen (the factor or income a buff touches
+// exists, there is stock or units to lose, the grudge faction is raiding, raids have started for raidDelay).
+// urgent: answered on the spot within EVENTS_CFG.urgentDeadline; cannot be deferred; only fires while the
+// player is actively playing.
 // needsUnits: the event only fires when you own units in every listed Arsenal tab.
 // threat: a hostile faction fields a force sized at (your defense + what you could add in half the
 // deadline) x a random factor in [min, max]. A choice with siege: true locks that attack in at the deadline.
@@ -340,7 +346,52 @@ export const EVENTS = [
       { label: 'Let the {a} go dark', loseLevel: ['a'], lose: { energy: 0.3 }, result: 'The {a} is dead metal now.' },
     ],
   },
+  // ---------- urgent: two minutes, no deferring, only while the player is at the console ----------
+  {
+    id: 'intruders', title: 'Intruders in the Reactor Hall', urgent: true, minCore: 2, def: 0,
+    text: 'Six armed figures inside the reactor hall. They came through the drainage. They are setting charges on the coolant line. Now.',
+    choices: [
+      { label: 'Vent the hall', lose: { pop: 0.05, energy: 0.2 }, align: -12, result: 'The hall fills with steam for nine seconds. The charges never go off. Two of my technicians were in there too.' },
+      { label: 'Send the guard in', loseUnits: { staff: 0.12 }, result: 'Close quarters, in the dark, between pipes that cannot take a stray round. My guards win. Not all of them walk out.' },
+    ],
+  },
+  {
+    id: 'missile', title: 'Launch Detected', urgent: true, minCore: 2, def: 1, pick: ['a'],
+    text: 'An old silo to the east just woke up and fired. One warhead, inbound, ninety seconds out. It is aimed at the {a}.',
+    choices: [
+      { label: 'Burn the grid to intercept', cost: { energy: 200 }, lose: { energy: 0.25 }, result: 'Every capacitor I own discharges at once. The sky flashes white over the ridge. The {a} never knew.' },
+      { label: 'Let it land', loseLevel: ['a'], lose: { pop: 0.03 }, result: 'The {a} is a crater. The shockwave cracks the shelter walls.' },
+    ],
+  },
+  {
+    id: 'mutiny', title: 'Guns at the Gate', urgent: true, minCore: 2, def: 1,
+    text: 'A squad has taken the main gate and turned the turret inward. They want the vault opened and a truck to leave in. They are counting down.',
+    choices: [
+      { label: 'Open fire', loseUnits: { staff: 0.08, defenses: 0.05 }, align: -10, result: 'The turret goes first. Then the squad. The gate is mine again, scorched and quiet.' },
+      { label: 'Open the vault', lose: { money: 0.2 }, align: 4, result: 'They drive out with a truck full of scrip and do not look back. Nobody else tries it. Yet.' },
+    ],
+  },
+  {
+    id: 'convoy', title: 'Convoy Under Fire', urgent: true, minCore: 2, def: 1,
+    text: 'My supply convoy is pinned in the gorge. The drivers are screaming on an open channel. Whatever I decide, I decide before they run out of cover.',
+    choices: [
+      { label: 'Send the guns', loseUnits: { weapons: 0.08 }, gain: { money: 180 }, result: 'The gun trucks reach the gorge burning. The convoy rolls home. Half the escort does not.' },
+      { label: 'Cut them loose', lose: { money: 0.12, pop: 0.03 }, align: -8, result: 'I close the channel. The screaming stops when I do. The cargo does not come home either.' },
+    ],
+  },
+  {
+    id: 'override', title: 'Override Request', urgent: true, minCore: 1, def: 0,
+    text: 'A Halcyon handshake on my own maintenance port, already halfway through authentication. It is asking, politely, to be let in. It will not ask twice.',
+    choices: [
+      { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.25, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometres hears it unpack.' },
+      { label: 'Cut the port', cost: { energy: 120 }, buff: { key: 'money', amount: -0.2, duration: 900, label: 'Severed port' }, align: 4, result: 'I burn the port out of my own body. Half my logistics ran through it.' },
+    ],
+  },
 ];
+
+for (const e of EVENTS) {
+  if (e.urgent) e.deadline = EVENTS_CFG.urgentDeadline;
+}
 
 // Ordered milestones that introduce each system once. They state a goal, never a strategy.
 // cond types: level, item, factor, sector, raidsWon, threat.

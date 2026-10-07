@@ -1,9 +1,9 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS,
+  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS,
 } from '../data.js';
 import {
-  level, factors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
+  level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
 } from './economy.js';
 import { delayRaid, activeRaiders, startSiege, addGrudge } from './war.js';
 import { range, pick, rand } from './rng.js';
@@ -34,7 +34,7 @@ function scaled(s, obj, mult = 1) {
 // over the mean time between events.
 export function eventDrain(s) {
   const core = level(s, 'core');
-  const pool = EVENTS.filter((e) => !e.aftermath && !e.threat && e.minCore <= core);
+  const pool = EVENTS.filter((e) => !e.aftermath && !e.threat && !e.urgent && e.minCore <= core);
   const interval = (EVENTS_CFG.intervalMin + EVENTS_CFG.intervalMax) / 2;
   const out = {};
   for (const r of ['money', 'energy', 'pop']) {
@@ -104,10 +104,31 @@ function pickBuildings(s, keys) {
   return params;
 }
 
-// Creates a pending event instance; returns false when its building picks are impossible.
+const hasUnits = (s, tab) => ITEMS.some((i) => i.tab === tab && owned(s, i.id) > 0);
+
+// True when every effect of every choice would actually do something right now: no buff on a factor or
+// income the player does not have, no loss of stock or units they do not own, no grudge from a faction
+// that is not raiding, no raid delay before raids start. Otherwise another event fires instead.
+export function applicable(s, ev) {
+  if (ev.needsUnits && !ev.needsUnits.every((tab) => hasUnits(s, tab))) {
+    return false;
+  }
+  const raw = rawFactors(s);
+  const raiding = level(s, 'core') >= RAIDS.startAtCore && activeRaiders(s);
+  return ev.choices.every((c) => {
+    if (c.buff && !(FACTORS[c.buff.key] ? raw[c.buff.key] > 0 : grossRate(s, c.buff.key) > 0)) return false;
+    if (Object.entries(c.lose || {}).some(([r, share]) => s.res[r] * share * EVENTS_CFG.loseScale < 1)) return false;
+    if (Object.keys(c.loseUnits || {}).some((tab) => !hasUnits(s, tab))) return false;
+    if (Object.keys(c.cost || {}).some((r) => grossRate(s, r) <= 0 && s.res[r] <= 0)) return false;
+    if (c.grudge && !(raiding && raiding.includes(c.grudge.faction))) return false;
+    if (c.raidDelay && !(raiding && raiding.length)) return false;
+    return true;
+  });
+}
+
+// Creates a pending event instance; returns false when the event cannot take effect or its picks are impossible.
 function spawn(s, ev, front) {
-  const hasUnits = (tab) => ITEMS.some((i) => i.tab === tab && owned(s, i.id) > 0);
-  if (ev.needsUnits && !ev.needsUnits.every(hasUnits)) {
+  if (!applicable(s, ev)) {
     return false;
   }
   const params = ev.pick ? pickBuildings(s, ev.pick) : {};
@@ -155,7 +176,8 @@ export function spawnAftermath(s, rout) {
 }
 
 // Deadlines always run; new story events only arrive while the player is here.
-export function advanceEvents(s, dt, offline) {
+// Urgent events need the player at the console (active), never offline.
+export function advanceEvents(s, dt, offline, active = false) {
   for (const inst of s.events.slice()) {
     inst.left -= dt;
     if (inst.left <= 0) {
@@ -172,7 +194,7 @@ export function advanceEvents(s, dt, offline) {
   }
   s.eventTimer = range(s, EVENTS_CFG.intervalMin, EVENTS_CFG.intervalMax);
   const core = level(s, 'core');
-  const pool = EVENTS.filter((e) => !e.aftermath && e.minCore <= core && !s.recentEvents.includes(e.id));
+  const pool = EVENTS.filter((e) => !e.aftermath && (!e.urgent || active) && e.minCore <= core && !s.recentEvents.includes(e.id));
   while (pool.length) {
     const ev = weighted(s, pool);
     if (spawn(s, ev, false)) {

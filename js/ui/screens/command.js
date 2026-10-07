@@ -233,8 +233,8 @@ function eventsPanel(s, refs) {
   const el = slot(refs, 'events', key, `<header>${icon('message')}Transmissions<span class="count-badge">${s.events.length}</span></header>
     ${s.events.map((x) => {
       const ev = E.eventById(x.id);
-      return `<button class="tx ${ev.aftermath ? 'crisis' : ''}" data-act="event" data-uid="${x.uid}">
-        ${icon(ev.aftermath ? 'fire' : 'message')}<span><b>${ev.title}</b><small>${ev.aftermath ? 'Damage report' : 'Decision required'}</small></span>
+      return `<button class="tx ${ev.aftermath || ev.urgent ? 'crisis' : ''}" data-act="event" data-uid="${x.uid}">
+        ${icon(ev.aftermath ? 'fire' : 'message')}<span><b>${ev.title}</b><small>${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Decision required'}</small></span>
         <span class="tx-time" data-left="${x.uid}"></span></button>`;
     }).join('')}`);
   for (const x of s.events) {
