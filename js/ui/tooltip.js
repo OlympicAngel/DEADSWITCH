@@ -56,7 +56,7 @@ export function createTips(game) {
     }
     if (net < 0 && s.res[r] > 0) eta += row('Empty in', time(s.res[r] / -net), 'neg');
     return head(r, RESOURCES[r].name, Number.isFinite(c) ? `${num(s.res[r])} / ${num(c)}` : num(s.res[r]))
-      + row('Net', rate(net), net < 0 ? 'neg' : '') + eta
+      + `<p>${RESOURCES[r].desc}</p>` + row('Net', rate(net), net < 0 ? 'neg' : '') + eta
       + (lines.length ? `<div class="tip-sec">Sources</div>${lines.join('')}` : '')
       + (mult !== 1 ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, r)}` : '');
   }
@@ -86,7 +86,7 @@ export function createTips(game) {
     } else {
       status = row('Short by', num(amt - have), 'neg') + row('Ready in', 'never at this rate', 'neg');
     }
-    return head(r, RESOURCES[r].name) + row('Cost', num(amt)) + row('You have', num(have)) + status;
+    return head(r, RESOURCES[r].name) + `<p>${RESOURCES[r].desc}</p>` + row('Cost', num(amt)) + row('You have', num(have)) + status;
   }
 
   function threatTip(s) {

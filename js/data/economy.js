@@ -1,9 +1,9 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 export const RESOURCES = {
-  money: { name: 'Scrip', short: 'Scrip', color: 'money' },
-  energy: { name: 'Energy', short: 'Energy', color: 'energy' },
-  pop: { name: 'Population', short: 'Pop', color: 'pop' },
+  money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
+  energy: { name: 'Energy', short: 'Energy', color: 'energy', desc: 'Grid power. Stored in Battery Banks.' },
+  pop: { name: 'Population', short: 'Pop', color: 'pop', desc: 'Survivors under your protection. Housed in Habitat Blocks.' },
 };
 export const RESOURCE_KEYS = ['money', 'energy', 'pop'];
 

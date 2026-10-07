@@ -50,14 +50,17 @@ function visibleBuildings(s, kinds) {
 
 function kindList(s, tab) {
   const { open, next } = visibleBuildings(s, tab.kinds);
-  return open.map((b) => buildingCard(s, b)).join('') + (next ? lockedCard(next.id, next.name, reqText(next.req)) : '');
+  return open.map((b) => buildingCard(s, b)).join('') + (next ? lockedCard(next.id, next.name, next.req) : '');
 }
 
+// Locked entries link to whatever they wait on: tapping one jumps there and highlights it.
 function lockedCard(key, name, req) {
+  const [reqId] = Object.keys(req);
   return `
-    <article class="card locked">
+    <article class="card locked" data-req="${reqId}" role="button" tabindex="0">
       <div class="tile">${icon(key)}<span class="lock">${icon('lock')}</span></div>
-      <div class="body"><h3>${name}</h3><p class="req">${icon('lock')}Requires ${req}</p></div>
+      <div class="body"><h3>${name}</h3><p class="req">${icon('lock')}Requires ${reqText(req)}</p></div>
+      <span class="req-go">${icon('next')}</span>
     </article>`;
 }
 
@@ -65,57 +68,70 @@ function buildingCard(s, b) {
   const lvl = E.level(s, b.id);
   const max = E.maxLevel(s, b);
   const conv = b.kind === 'converter' && lvl > 0;
+  const core = b.kind === 'core';
   return `
     <article class="card k-${b.kind}" data-card="${b.id}">
+      ${core ? '<div class="core-glow"></div>' : ''}
       <div class="card-top">
-        <div class="tile" data-tip="text" data-tip-text="${esc(b.desc)}">${icon(b.id)}<span class="badge">${lvl}</span></div>
+        <div class="tile">${core ? '<i class="tile-ring"></i>' : ''}${icon(b.id)}<span class="badge">${lvl}</span></div>
         <div class="body">
           <h3>${b.name} <small>Lv ${lvl}<span>/${max}</span></small></h3>
-          <div class="effect">${effectHtml(s, b, lvl)}</div>
+          <p class="desc">${esc(b.desc)}</p>
         </div>
         ${conv ? `<button class="icon-btn small ${s.paused[b.id] ? 'paused' : ''}" data-act="pause" data-id="${b.id}" aria-label="${s.paused[b.id] ? 'Resume' : 'Pause'}" aria-pressed="${!!s.paused[b.id]}">${icon(s.paused[b.id] ? 'play' : 'stop')}</button>` : ''}
       </div>
+      ${effectHtml(s, b, lvl, max)}
       ${lvl < max ? `<div class="card-bot"><div class="costs">${costChips(E.buildingCost(s, b))}</div>
         <button class="btn primary" data-act="build" data-id="${b.id}"><span data-l></span><small data-s></small></button></div>`
-        : `<div class="card-bot"><p class="req">${b.id === 'core' ? 'Maximum level' : `${icon('core')}Raise the AI Core to go higher`}</p></div>`}
+        : `<div class="card-bot"><p class="req">${core ? 'Maximum level' : `${icon('core')}Level capped by the AI Core`}</p></div>`}
       <div class="progress"><i></i></div>
     </article>`;
 }
 
-function effectHtml(s, b, lvl) {
+// Current level vs next level, side by side.
+function nowNext(label, now, next, lvl, max, extra = '') {
+  const showNext = lvl < max;
+  return `
+    <div class="nn">
+      <span class="nn-lbl">${label}</span>
+      <div class="nn-col"><small>Now</small><b>${now}</b></div>
+      ${showNext ? `<span class="nn-arrow">${icon('next')}</span><div class="nn-col nxt"><small>Next</small><b>${next}</b></div>` : ''}
+    </div>${extra}`;
+}
+
+const unlockLine = (list) => (list.length ? `<div class="unl">${icon('up')}Lv up unlocks ${list.map((x) => named(x.id, x.name)).join(' ')}</div>` : '');
+
+function effectHtml(s, b, lvl, max) {
   const f = E.factors(s);
   const mult = (r) => E.prodMultiplier(s, r, f);
   const next = lvl + 1;
   if (b.kind === 'producer') {
     const [[r, per]] = Object.entries(b.produces);
-    return `${resTag(r, per * lvl * mult(r), '+')}<span class="per">/s</span><span class="to">${icon('next')}${num(per * next * mult(r))}</span>`;
+    return nowNext('Output', lvl ? `${resTag(r, per * lvl * mult(r), '+')}<em>/s</em>` : '—', `${resTag(r, per * next * mult(r), '+')}<em>/s</em>`, lvl, max);
   }
   if (b.kind === 'converter') {
-    const n = Math.max(1, lvl);
-    const ins = Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n, '−')).join('');
-    const outs = Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('');
-    return `${ins}<span class="arrow">${icon('next')}</span>${outs}<span class="per">/s</span>${lvl ? '<span class="eff" data-eff></span>' : ''}`;
+    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n, '−')).join('')
+      + `<span class="arrow">${icon('next')}</span>`
+      + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('') + '<em>/s</em>';
+    return `<div class="nn conv">
+        <span class="nn-lbl">Per second</span>
+        <div class="nn-row"><small>Now</small><b>${lvl ? flow(lvl) : '—'}</b>${lvl ? '<span class="eff" data-eff></span>' : ''}</div>
+        ${lvl < max ? `<div class="nn-row nxt"><small>Next</small><b>${flow(next)}</b></div>` : ''}
+      </div>`;
   }
   if (b.kind === 'storage') {
     const [[r, m]] = Object.entries(b.storage);
     const base = r === 'energy' ? BALANCE.baseEnergyCap : BALANCE.basePopCap;
-    return `<span class="lbl">Cap</span>${resTag(r, base * Math.pow(m, lvl))}<span class="to">${icon('next')}${num(base * Math.pow(m, next))}</span>`;
+    return nowNext(`${RESOURCES[r].name} cap`, resTag(r, base * Math.pow(m, lvl)), resTag(r, base * Math.pow(m, next)), lvl, max);
   }
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
-    const unlocks = BUILDINGS.filter((x) => x.req.core === next);
-    return `<span class="lbl">Building cap</span><b>Lv ${lvl * cap}</b><span class="to">${icon('next')}${next * cap}</span>
-      ${unlocks.length ? `<div class="unl">${icon('up')}Unlocks ${unlocks.map((x) => named(x.id, x.name)).join(' ')}</div>` : ''}`;
+    return nowNext('Building cap', `Lv ${lvl * cap}`, `Lv ${next * cap}`, lvl, max, unlockLine(BUILDINGS.filter((x) => x.req.core === next)));
   }
   const shop = SHOP_TABS.find((t) => t.id === b.shop);
-  const unlocks = ITEMS.filter((i) => i.req[b.id] === next);
-  const disc = 1 - Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, lvl - 1));
-  if (!lvl) {
-    return `<span class="lbl">Opens</span><b>${shop.name}</b>
-      ${unlocks.length ? `<div class="unl">${icon('up')}Unlocks ${unlocks.map((x) => named(x.id, x.name)).join(' ')}</div>` : ''}`;
-  }
-  return `<span class="lbl">${shop.name} prices</span><b class="good-t">−${pct(disc)}</b>
-    ${unlocks.length ? `<div class="unl">${icon('up')}Next level unlocks ${unlocks.map((x) => named(x.id, x.name)).join(' ')}</div>` : ''}`;
+  const disc = (l) => 1 - Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, l - 1));
+  const unl = unlockLine(ITEMS.filter((i) => i.req[b.id] === next));
+  return nowNext(`${shop.name} prices`, lvl ? `<span class="good-t">−${pct(disc(lvl))}</span>` : 'Closed', `<span class="good-t">−${pct(disc(next))}</span>`, lvl, max, unl);
 }
 
 // ---------- shop ----------
@@ -123,7 +139,7 @@ function effectHtml(s, b, lvl) {
 function shopList(s, ui, tab) {
   const unlocker = BY_ID[tab.unlocker];
   const lvl = E.level(s, unlocker.id);
-  const head = E.meetsReq(s, unlocker.req) ? buildingCard(s, unlocker) : lockedCard(unlocker.id, unlocker.name, reqText(unlocker.req));
+  const head = E.meetsReq(s, unlocker.req) ? buildingCard(s, unlocker) : lockedCard(unlocker.id, unlocker.name, unlocker.req);
   const items = ITEMS.filter((i) => i.tab === tab.shop);
   const open = lvl ? items.filter((i) => E.itemUnlocked(s, i)) : [];
   const next = items.find((i) => !E.itemUnlocked(s, i));
@@ -136,7 +152,7 @@ function shopList(s, ui, tab) {
       ${open.length ? `<div class="modes">${modes}</div>` : ''}
     </div>
     ${open.map((i) => itemRow(s, i)).join('')}
-    ${next ? lockedCard(next.id, next.name, reqText(next.req)) : ''}`;
+    ${next ? lockedCard(next.id, next.name, next.req) : ''}`;
 }
 
 function givesHtml(s, item) {
@@ -149,12 +165,11 @@ function givesHtml(s, item) {
 }
 
 function itemRow(s, item) {
-  const bonusDesc = item.bonus ? bonusText(item.bonus) + ' per unit' : Object.entries(item.gives).map(([k, v]) => `+${v} ${FACTORS[k].name}`).join(', ') + ' per unit' + (item.tab === 'staff' ? '. Lost in defeats.' : '');
   return `
     <article class="card item" data-item="${item.id}">
       <div class="card-top">
-        <div class="tile" data-tip="text" data-tip-text="${esc(bonusDesc)}">${icon(item.id)}<span class="badge">×${num(E.owned(s, item.id))}</span></div>
-        <div class="body"><h3>${item.name}</h3><div class="effect">${givesHtml(s, item)}</div></div>
+        <div class="tile">${icon(item.id)}<span class="badge">×${num(E.owned(s, item.id))}</span></div>
+        <div class="body"><h3>${item.name}</h3><div class="effect">${givesHtml(s, item)}</div>${item.tab === 'staff' ? '<p class="desc">Lost in defeats.</p>' : ''}</div>
       </div>
       <div class="card-bot"><div class="costs">${costChips(E.itemCost(s, item, 1))}</div>
         <button class="btn primary" data-act="buy" data-id="${item.id}"><span data-l>Buy</span></button></div>

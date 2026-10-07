@@ -8,9 +8,26 @@ import { icon } from '../icons.js';
 import { costChips, setChips, tags, bonusText, chanceClass } from '../common.js';
 import { sortedTabs } from '../layout.js';
 
-const W = MAP.height; // the landscape map is turned 90 degrees for portrait
-const H = MAP.width;
-const P = (x) => ({ x: x.y, y: MAP.width - x.x });
+const W = MAP.height; // the landscape map is turned 90 degrees for portrait: home at the top
+const P = (x) => ({ x: x.y, y: x.x });
+const REVEAL_DEPTH = 2; // rings of sectors shown beyond held territory
+const MAP_PAD = 70;
+
+// Steps from held territory to every sector, through map links.
+function distances(s) {
+  const dist = Object.fromEntries(s.sectors.map((id) => [id, 0]));
+  const queue = [...s.sectors];
+  while (queue.length) {
+    const id = queue.shift();
+    for (const l of E.sectorById(id).links) {
+      if (dist[l] === undefined) {
+        dist[l] = dist[id] + 1;
+        queue.push(l);
+      }
+    }
+  }
+  return dist;
+}
 
 const hex = (r) => Array.from({ length: 6 }, (_, i) => {
   const a = (Math.PI / 3) * i;
@@ -39,10 +56,14 @@ export function renderMapScreen(s, ui) {
 }
 
 function renderTheater(s, ui) {
+  const dist = distances(s);
+  const shown = SECTORS.filter((x) => dist[x.id] !== undefined && dist[x.id] <= REVEAL_DEPTH);
+  const isShown = (id) => shown.some((x) => x.id === id);
+  const H = Math.max(...shown.map((x) => P(x).y)) + MAP_PAD + 30;
   const links = [];
-  for (const a of SECTORS) {
+  for (const a of shown) {
     for (const id of a.links) {
-      if (a.id < id) {
+      if (a.id < id && isShown(id)) {
         const b = E.sectorById(id);
         const own = s.sectors.includes(a.id) && s.sectors.includes(b.id);
         const front = s.sectors.includes(a.id) !== s.sectors.includes(b.id);
@@ -61,7 +82,7 @@ function renderTheater(s, ui) {
     opPath = `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>
       <circle r="7" class="op-dot"><animateMotion dur="1.4s" repeatCount="indefinite" path="M${a.x},${a.y} L${b.x},${b.y}"/></circle>`;
   }
-  const nodes = SECTORS.map((x) => {
+  const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
     const p = P(x);
     const r = x.id === MAP.home ? 38 : x.boss ? 34 : 27;
@@ -88,9 +109,9 @@ function renderTheater(s, ui) {
   const sec = E.sectorById(ui.sector);
   return `
     <div class="map-card">
-      <svg class="map" viewBox="0 0 ${W} ${H}" role="img" aria-label="Wasteland map">
+      <svg class="map" viewBox="0 ${MAP_PAD - 30} ${W} ${H - MAP_PAD + 30}" role="img" aria-label="Wasteland map">
         <defs>${Object.entries(FACTIONS).map(([k, d]) => `<radialGradient id="terr-${k}"><stop offset="0" stop-color="${d.color}" stop-opacity=".16"/><stop offset="1" stop-color="${d.color}" stop-opacity="0"/></radialGradient>`).join('')}</defs>
-        ${territory()}
+        ${territory(shown)}
         <g>${links.join('')}</g>
         ${opPath}
         <g>${nodes}</g>
@@ -100,9 +121,9 @@ function renderTheater(s, ui) {
     <div class="sheet ${ui.sheet ? 'open' : ''}" data-sheet>${ui.sheet ? briefing(s, sec) : ''}</div>`;
 }
 
-function territory() {
-  return Object.keys(FACTIONS).filter((f) => f !== 'rogue').map((f) => {
-    const list = SECTORS.filter((x) => x.faction === f).map(P);
+function territory(shown) {
+  return Object.keys(FACTIONS).filter((f) => shown.some((x) => x.faction === f)).map((f) => {
+    const list = shown.filter((x) => x.faction === f).map(P);
     const cx = list.reduce((a, x) => a + x.x, 0) / list.length;
     const cy = list.reduce((a, x) => a + x.y, 0) / list.length;
     return `<circle cx="${cx}" cy="${cy}" r="200" fill="url(#terr-${f})"/>`;

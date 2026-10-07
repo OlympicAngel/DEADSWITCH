@@ -48,6 +48,10 @@ game.act = {
     return res;
   },
   toggle: (id) => E.togglePause(game.state, id),
+  setName: (name) => {
+    game.state.name = String(name).trim().slice(0, 16);
+    save();
+  },
   save,
   exportSave: () => encode({ state: game.state, savedAt: Date.now() }),
   importSave: (code) => {

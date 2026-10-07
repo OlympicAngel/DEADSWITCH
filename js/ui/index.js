@@ -33,7 +33,7 @@ export function createUI(root, game) {
             <svg viewBox="0 0 48 48" aria-hidden="true"><polygon class="cb-hex" points="24,2 43,13 43,35 24,46 5,35 5,13"/><polygon class="cb-in" points="24,8 38,16 38,32 24,40 10,32 10,16"/></svg>
             <b data-corelvl></b>
           </button>
-          <div class="ident"><b>DEADSWITCH</b><span data-rank></span></div>
+          <div class="ident"><b data-name></b><span data-rank></span></div>
           <button class="threat-chip" data-tip="threat">${icon('threat')}<b data-threat></b></button>
           <button class="icon-btn" data-act="menu" aria-label="Settings">${icon('settings')}</button>
         </div>
@@ -66,6 +66,11 @@ export function createUI(root, game) {
     const el = root.querySelector(`[data-pill="${r}"]`);
     return [r, { el, v: el.querySelector('[data-v]'), fill: el.querySelector('[data-fill]'), rate: el.querySelector('[data-rate]') }];
   }));
+  // Event dialogs open below the top bar; keep its height in a CSS variable.
+  const topbar = root.querySelector('.topbar');
+  const syncTop = () => document.documentElement.style.setProperty('--topbar', topbar.offsetHeight + 'px');
+  new ResizeObserver(syncTop).observe(topbar);
+  syncTop();
   const navBtns = Object.fromEntries([...root.querySelectorAll('[data-nav]')].map((b) => [b.dataset.nav, b]));
 
   // ---------- navigation ----------
@@ -110,7 +115,7 @@ export function createUI(root, game) {
   }
 
   root.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-act], [data-nav], [data-go], [data-inner], [data-mode], [data-sector]');
+    const t = e.target.closest('[data-act], [data-nav], [data-go], [data-inner], [data-mode], [data-sector], [data-req]');
     if (!t || t.disabled || t.closest('dialog')) {
       return;
     }
@@ -118,6 +123,12 @@ export function createUI(root, game) {
     if (t.dataset.nav) {
       sfx.click();
       go(t.dataset.nav);
+      return;
+    }
+    if (t.dataset.req) {
+      const l = locate('building', t.dataset.req);
+      sfx.click();
+      go(l.domain, l.tab, `[data-card="${t.dataset.req}"]`);
       return;
     }
     if (t.dataset.go) {
@@ -142,7 +153,7 @@ export function createUI(root, game) {
     render();
   });
   root.addEventListener('keydown', (e) => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.sector) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && (e.target.dataset.sector || e.target.dataset.req)) {
       e.preventDefault();
       e.target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     }
@@ -241,6 +252,12 @@ export function createUI(root, game) {
         view.innerHTML = renderDomain(s, ui, ui.screen);
         ui.refs = bindDomain(view);
       }
+      const entered = ui.lastScreen !== ui.screen || ui.lastInner !== ui.inner[ui.screen];
+      const screenEl = view.firstElementChild;
+      if (entered && screenEl) {
+        screenEl.classList.add('enter');
+      }
+      ui.lastInner = ui.inner[ui.screen];
       view.scrollTop = scroll;
       ui.logDirty = true;
       if (ui.screen === 'map' && (ui.lastScreen !== 'map' || ui.sheet)) {
@@ -320,6 +337,7 @@ export function createUI(root, game) {
     root.querySelector('[data-threat]').textContent = num(t);
     root.querySelector('[data-rank]').textContent = RANKS[E.rankIndex(t)].title;
     root.querySelector('[data-corelvl]').textContent = E.level(s, 'core');
+    root.querySelector('[data-name]').textContent = s.name || 'Commander';
   }
 
   function updateAlerts(s) {

@@ -133,8 +133,41 @@ export function createModals(dialog, game, onChange) {
     typeLines(dialog.querySelector('#tl'), lines, () => dialog.querySelector('.reveal').classList.add('in'));
   }
 
+  // Callsign field + confirm; used at the end of the boot sequence and for older saves.
+  const nameForm = (btn) => `
+    <form class="callsign reveal" id="callsign">
+      <label for="cs">Callsign</label>
+      <input id="cs" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Name your commander" required>
+      <button class="btn primary wide" type="submit" disabled>${btn}</button>
+    </form>`;
+
+  function bindName(then) {
+    const form = dialog.querySelector('#callsign');
+    const input = form.querySelector('input');
+    const btn = form.querySelector('button');
+    input.addEventListener('input', () => { btn.disabled = !input.value.trim(); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!input.value.trim()) return;
+      game.act.setName(input.value);
+      sfx.click();
+      dialog.close();
+      finish();
+    });
+    return () => { form.classList.add('in'); input.focus(); };
+  }
+
   function showBoot(then) {
-    cinematic('<div class="boot-core"><i></i><i></i><i></i></div><h2 class="boot-title">DEADSWITCH</h2>', BOOT, then, `${icon('command')}Take command`);
+    open(`<div class="boot-core"><i></i><i></i><i></i></div><h2 class="boot-title">DEADSWITCH</h2>
+      <div class="typed-lines" id="tl"></div>${nameForm(`${icon('command')}Take command`)}`, { cls: 'cinematic locked', then });
+    sfx.story();
+    const reveal = bindName();
+    typeLines(dialog.querySelector('#tl'), BOOT, reveal);
+  }
+
+  function showName(then) {
+    open(`<span class="kicker">${icon('command')}Identify</span><h2>Who holds command?</h2>${nameForm('Confirm')}`, { cls: 'cinematic locked', then });
+    bindName()();
   }
 
   function showChapter(id, then) {
@@ -409,7 +442,14 @@ export function createModals(dialog, game, onChange) {
   // Shows the next queued story beat or report, one at a time. Items leave the inbox once seen.
   function pump() {
     const s = game.state;
-    if (dialog.open || !s.inbox.length) {
+    if (dialog.open) {
+      return false;
+    }
+    if (!s.name && !(s.inbox[0] && s.inbox[0].kind === 'boot')) {
+      showName(() => setTimeout(pump, 250));
+      return true;
+    }
+    if (!s.inbox.length) {
       return false;
     }
     const item = s.inbox[0];

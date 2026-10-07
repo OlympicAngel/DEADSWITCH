@@ -17,6 +17,7 @@ export function newState(seed = 1) {
   const s = {
     v: SAVE_VERSION,
     rng: seed >>> 0,
+    name: '',
     res: { ...BALANCE.start },
     levels: { ...BALANCE.startLevels },
     items: {},
