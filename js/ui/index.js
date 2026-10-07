@@ -4,7 +4,7 @@ import {
   RESOURCES, RESOURCE_KEYS, FACTIONS, ITEMS, ITEM_BY_ID, RANKS, BUILDINGS, SECTORS,
 } from '../data.js';
 import * as E from '../engine.js';
-import { num, rate, pct, esc } from '../format.js';
+import { num, whole, rate, pct, esc } from '../format.js';
 import { icon, mountIcons } from './icons.js';
 import { clock, chanceClass, factorTag } from './common.js';
 import { NAV, locate, domainReq, domainReady, sortedTabs, DOMAINS } from './layout.js';
@@ -405,7 +405,7 @@ export function createUI(root, game) {
     const flows = game.flows;
     for (const r of RESOURCE_KEYS) {
       const p = pills[r];
-      p.v.textContent = num(s.res[r]);
+      p.v.textContent = whole(s.res[r]);
       const capped = Number.isFinite(c[r]);
       const full = capped && s.res[r] >= c[r] * 0.999;
       const net = flows ? flows.prod[r] - flows.cons[r] : 0;

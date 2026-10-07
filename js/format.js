@@ -23,6 +23,12 @@ export function num(n) {
   return sign + (Math.floor(scaled * p) / p).toFixed(digits) + SUFFIXES[tier];
 }
 
+// Whole units with thousands separators (header stockpiles); compact suffixes only past 99,999.
+export function whole(n) {
+  const a = Math.floor(n);
+  return Math.abs(a) < 1e5 ? a.toLocaleString('en-US') : num(a);
+}
+
 export function rate(n) {
   if (Math.abs(n) < 0.005) {
     return '±0/s';

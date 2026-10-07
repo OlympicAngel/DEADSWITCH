@@ -181,7 +181,7 @@ function givesHtml(s, item, n = 1) {
   }
   const f = E.factors(s);
   const raw = E.rawFactors(s);
-  return Object.entries(item.gives).map(([k, v]) => factorTag(k, v * n * (raw[k] ? f[k] / raw[k] : 1))).join('') + per;
+  return Object.entries(item.gives).map(([k, v]) => factorTag(k, Math.round(v * n * (raw[k] ? f[k] / raw[k] : 1)))).join('') + per;
 }
 
 function itemRow(s, item) {
