@@ -120,6 +120,10 @@ export function createUI(root, game) {
       return;
     }
     const s = game.state;
+    // A locked bottom-nav item does nothing.
+    if (t.dataset.nav && t.classList.contains('locked')) {
+      return;
+    }
     // Locked things lead to what unlocks them.
     if (t.dataset.req) {
       const l = locate('building', t.dataset.req);
