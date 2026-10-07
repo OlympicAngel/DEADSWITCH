@@ -3,6 +3,7 @@ import { RESOURCES, FACTORS, BY_ID } from '../data.js';
 import { caps } from '../engine.js';
 import { num, pct } from '../format.js';
 import { icon, labeled } from './icons.js';
+import { put } from './dom.js';
 
 // "+120 [coins]" coloured by resource.
 export function resTag(r, amount, sign = '') {
@@ -38,7 +39,7 @@ export function setChips(s, chips, cost) {
     const r = chip.dataset.res;
     const v = cost[r] || 0;
     chip.dataset.amt = v;
-    chip.querySelector('[data-t]').textContent = num(v);
+    put(chip.querySelector('[data-t]'), num(v));
     chip.classList.toggle('short', s.res[r] + 1e-9 < v);
     chip.classList.toggle('over', v > c[r]);
   }

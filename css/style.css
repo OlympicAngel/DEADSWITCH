@@ -112,7 +112,8 @@ p { margin: 0; }
 .core-badge { position: relative; width: 34px; height: 34px; padding: 0; border: 0; background: none; cursor: pointer; flex: none; }
 .core-badge svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cb-hex { fill: rgba(255,107,61,.12); stroke: var(--hud); stroke-width: 2; filter: drop-shadow(0 0 6px var(--hud-glow)); }
-.cb-in { fill: none; stroke: rgba(255,107,61,.35); stroke-width: 1; stroke-dasharray: 3 3; transform-origin: center; animation: spin 14s linear infinite; }
+.cb-in { fill: none; stroke: rgba(255,107,61,.35); stroke-width: 1; stroke-dasharray: 3 3; }
+.core-badge .cb-spin { animation: spin 14s linear infinite; }
 .core-badge b { position: relative; font: 700 13px var(--font-num); color: var(--hud-2); text-shadow: 0 0 8px var(--hud-glow); }
 .ident { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ident b { font: 700 14px/1.15 var(--font-hud); letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -366,23 +367,27 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .condition .pip { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: blink 1.6s ease-in-out infinite; }
 .cond-green { color: var(--ok); border-color: rgba(95,211,141,.3); background: rgba(95,211,141,.05); }
 .cond-amber { color: var(--warn); border-color: rgba(255,176,61,.4); background: rgba(255,176,61,.06); }
-.cond-red { color: var(--bad); border-color: rgba(255,93,93,.6); background: rgba(255,93,93,.1); animation: alertPulse 1.2s ease-in-out infinite; }
+.cond-red { color: var(--bad); border-color: rgba(255,93,93,.6); background: rgba(255,93,93,.1); position: relative; }
+.cond-red::after { box-shadow: 0 0 16px rgba(255,93,93,.45); animation: glow 1.2s ease-in-out infinite; }
 
 .reactor { position: relative; width: 100%; max-width: 360px; aspect-ratio: 1; margin: 0 auto; cursor: pointer; }
 .reactor-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .reactor-svg .links line { stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 2 4; }
 .reactor-svg .ticks line { stroke: rgba(255,107,61,.35); stroke-width: 1; }
-.reactor-svg .ticks { transform-origin: 160px 160px; animation: spin 90s linear infinite; }
+.s-ticks { animation: spin 90s linear infinite; }
 .ring { fill: none; stroke: var(--hud); }
 .r-outer { stroke-width: 1; stroke-opacity: .5; }
-.r-dash { stroke-width: 6; stroke-opacity: .25; stroke-dasharray: 2 10; transform-origin: 160px 160px; animation: spin 24s linear infinite reverse; }
-.r-inner { stroke-width: 1; stroke-opacity: .35; stroke-dasharray: 30 8 4 8; transform-origin: 160px 160px; animation: spin 18s linear infinite; }
+.r-dash { stroke-width: 6; stroke-opacity: .25; stroke-dasharray: 2 10; }
+.s-dash { animation: spin 24s linear infinite reverse; }
+.r-inner { stroke-width: 1; stroke-opacity: .35; stroke-dasharray: 30 8 4 8; }
+.s-inner { animation: spin 18s linear infinite; }
 .rank-track { fill: none; stroke: rgba(255,107,61,.1); stroke-width: 5; }
 .rank-fill { fill: none; stroke: var(--hud); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 6px var(--hud-glow)); transition: stroke-dasharray .6s var(--ease); }
 .align-track { fill: none; stroke: rgba(255,255,255,.08); stroke-width: 4; stroke-linecap: round; }
 .align-fill { fill: none; stroke: var(--hum); stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--hum)); }
 .align-fill.mach { stroke: var(--mach); filter: drop-shadow(0 0 4px var(--mach)); }
-.sweep { transform-origin: 160px 160px; animation: spin 5s linear infinite; }
+.s-sweep { animation: spin 5s linear infinite; }
+.spin-layer { pointer-events: none; }
 .sweep path { fill: url(#rg-core); fill: rgba(255,107,61,.07); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .reactor-core { position: absolute; inset: 30%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
@@ -412,7 +417,6 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
   padding: 12px; border-radius: var(--r);
   background: var(--brackets), var(--panel);
   border: 1px solid var(--line);
-  backdrop-filter: blur(4px);
 }
 .panel.half { grid-column: auto; display: flex; flex-direction: column; gap: 6px; }
 .panel[hidden] { display: none; }
@@ -471,15 +475,15 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
   width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer;
   padding: 9px 10px; margin-top: 6px; border-radius: 6px;
   background: rgba(192,140,255,.08); border: 1px solid rgba(192,140,255,.4); color: var(--experts);
-  animation: beckon 2s ease-in-out infinite;
+  position: relative;
 }
+.tx::after { box-shadow: 0 0 14px rgba(192,140,255,.3); animation: glow 2s ease-in-out infinite; }
 .tx > span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .tx b { color: var(--text); font-family: var(--font-hud); }
 .tx small { font-size: 11px; color: var(--muted); }
 .tx.crisis { background: rgba(255,93,93,.1); border-color: rgba(255,93,93,.55); color: var(--bad); }
 .tx-time { display: inline-flex; align-items: center; gap: 3px; font: 700 13px var(--font-num); color: var(--text); }
 .tx-time.urgent { color: var(--bad); animation: blink 1s steps(2) infinite; }
-@keyframes beckon { 50% { box-shadow: 0 0 14px rgba(192,140,255,.3); } }
 .dir-main { display: flex; align-items: center; gap: 10px; }
 .dir-main p { flex: 1; font: 600 14.5px var(--font-hud); }
 .dir-main .go { flex: none; }
@@ -506,7 +510,7 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .map-card { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: radial-gradient(ellipse at 50% 80%, rgba(255,107,61,.07), transparent 60%), #0d1216; }
 .map { display: block; width: 100%; height: auto; font-family: var(--font-hud); }
 .link { stroke: rgba(255,107,61,.18); stroke-width: 2.5; stroke-dasharray: 3 8; stroke-linecap: round; }
-.link.front { stroke: rgba(255,176,61,.6); stroke-dasharray: 8 8; animation: march 1.2s linear infinite; }
+.link.front { stroke: rgba(255,176,61,.6); stroke-dasharray: 8 8; }
 .link.own { stroke: var(--hud); stroke-width: 4; stroke-dasharray: none; filter: drop-shadow(0 0 4px var(--hud-glow)); }
 @keyframes march { to { stroke-dashoffset: -32; } }
 .op-line { stroke: var(--warn); stroke-width: 4; stroke-dasharray: 12 8; animation: march .6s linear infinite; filter: drop-shadow(0 0 6px var(--warn)); }
@@ -983,7 +987,7 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .floats { position: absolute; z-index: 20; top: calc(var(--topbar, 110px) + 8px); left: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
 .fl {
   pointer-events: auto; width: 100%; display: flex; align-items: center; gap: 4px; padding: 4px;
-  border-radius: 10px; border: 1px solid; backdrop-filter: blur(6px);
+  border-radius: 10px; border: 1px solid; position: relative;
   box-shadow: 0 10px 28px rgba(0,0,0,.55); animation: flIn .35s var(--spring);
   transition: width .3s var(--ease), border-radius .3s;
 }
@@ -998,9 +1002,22 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .fl-red .fl-body b { color: var(--bad); }
 .fl-body em { font: 600 11px var(--font-num); font-style: normal; }
 .fl-x { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); cursor: pointer; }
-.fl.collapsed { width: 46px; padding: 4px; border-radius: 50%; animation: flBlink 1.2s ease-in-out infinite; }
+.fl.collapsed { width: 46px; padding: 4px; border-radius: 50%; isolation: isolate; background: transparent; border-color: transparent; }
+/* The badge's fill, icon and glow fade as sibling layers: nesting one fading layer inside another
+   makes the browser redo styles every frame instead of letting the GPU do it. */
+.fl.collapsed::before { content: ''; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; border: 1px solid; animation: flFade 1.2s ease-in-out infinite; }
+.fl-amber.collapsed::before { border-color: rgba(255,176,61,.6); background: rgba(40,28,12,.94); }
+.fl-red.collapsed::before { border-color: rgba(255,93,93,.75); background: rgba(48,14,16,.95); }
+.fl.collapsed .fl-ico { animation: flFade 1.2s ease-in-out infinite; }
+.fl.collapsed::after { z-index: -2; box-shadow: 0 0 0 4px currentColor, 0 0 22px currentColor; animation: glowGrow 1.2s ease-in-out infinite; }
 .fl.collapsed .fl-body, .fl.collapsed .fl-x { display: none; }
-@keyframes flBlink { 50% { box-shadow: 0 0 0 4px currentColor, 0 0 22px currentColor; opacity: .75; } }
+@keyframes flFade { 50% { opacity: .75; } }
+/* Pulsing glows: a pseudo-element holding the full shadow fades in and out (GPU opacity),
+   instead of animating box-shadow, which repaints every frame. */
+.cond-red::after, .tx::after, .fl.collapsed::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0; }
+@keyframes glow { 50% { opacity: 1; } }
+/* The badge's halo grows out from under the badge and peaks while the badge is dimmed to .75 */
+@keyframes glowGrow { 0%, 100% { transform: scale(.8); } 50% { opacity: .75; transform: none; } }
 
 /* Later attacks: cards stacked under the incoming panel, each narrower and dimmer than the one above */
 .incoming { z-index: 2; }
@@ -1015,3 +1032,18 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 }
 .stack-card b { flex: 1; min-width: 0; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stack-card .t { font: 700 13px var(--font-num); color: var(--warn); }
+
+/* Map effects on GPU layers: target pulses under the map drawing, the attack reticle ring over it */
+.map-stage { position: relative; }
+.map-stage .map { position: relative; z-index: 1; }
+.map-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.map-fx.over { z-index: 2; }
+.map-fx > div { position: absolute; aspect-ratio: 1; }
+.map-fx > .fx-march { transform-origin: 0 50%; overflow: hidden; }
+.fx-march svg { animation: marchSlide 1.2s linear infinite; }
+.map-fx svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.map-fx .pulse { fill: none; stroke: var(--fc); stroke-width: 2.5; }
+.fx-pulse { animation: mapPulse 2s linear infinite; }
+@keyframes mapPulse { from { transform: scale(1); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }
+.fx-ring { animation: spin 6s linear infinite; }
+@keyframes marchSlide { to { transform: translateX(var(--slide)); } }

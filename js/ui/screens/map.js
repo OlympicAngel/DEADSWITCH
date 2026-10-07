@@ -7,6 +7,7 @@ import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
 import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } from '../common.js';
 import { sortedTabs } from '../layout.js';
+import { put, setCls, setW } from '../dom.js';
 
 const W = MAP.height; // the landscape map is turned 90 degrees for portrait: home at the top
 const P = (x) => ({ x: x.y, y: x.x });
@@ -62,6 +63,7 @@ function renderTheater(s, ui) {
   const isShown = (id) => shown.some((x) => x.id === id);
   const H = Math.max(...shown.map((x) => P(x).y)) + MAP_PAD + 30;
   const links = [];
+  const fronts = [];
   for (const a of shown) {
     for (const id of a.links) {
       if (a.id < id && isShown(id)) {
@@ -70,7 +72,12 @@ function renderTheater(s, ui) {
         const front = s.sectors.includes(a.id) !== s.sectors.includes(b.id);
         const pa = P(a);
         const pb = P(b);
-        links.push(`<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" class="link ${own ? 'own' : front ? 'front' : ''}"/>`);
+        if (front) {
+          // Marching front lines are drawn in the GPU layer (see marchLine).
+          fronts.push([pa, pb]);
+        } else {
+          links.push(`<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" class="link ${own ? 'own' : ''}"/>`);
+        }
       }
     }
   }
@@ -87,6 +94,24 @@ function renderTheater(s, ui) {
         <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>${dots}`;
     }).join('');
   }
+  // Pulses and the reticle ring live in small HTML layers over/under the SVG, animated with
+  // transform/opacity on the GPU; animating them inside the SVG repaints the whole map every frame.
+  const top = MAP_PAD - 30;
+  const vh = H - MAP_PAD + 30;
+  const fxAt = (p, R, cls, inner, style = '') => `<div class="${cls}" style="left:${(p.x / W) * 100}%;top:${((p.y - top) / vh) * 100}%;width:${(2 * R / W) * 100}%;margin:-${(R / W) * 100}% 0 0 -${(R / W) * 100}%;${style}"><svg viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${inner}</svg></div>`;
+  const pulses = shown.filter((x) => E.sectorStatus(s, x) === 'target').map((x) => {
+    const r = x.id === MAP.home ? 38 : x.boss ? 34 : 27;
+    return fxAt(P(x), r + 6, 'fx-pulse', `<polygon class="pulse" points="${hex(r + 6)}"/>`, `--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}`);
+  }).join('');
+  // A dashed line whose dashes travel along it: the strip is rotated into place and its contents
+  // slide by two dash periods per cycle, which looks the same as animating the dash offset.
+  const marchLine = ([a, b]) => {
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    return `<div class="fx-march" style="left:${(a.x / W) * 100}%;top:${((a.y - top) / vh) * 100}%;width:${(len / W) * 100}%;aspect-ratio:${len}/6;margin-top:-${(3 / W) * 100}%;transform:rotate(${ang}deg)"><svg viewBox="-32 -3 ${len + 32} 6" style="width:${((len + 32) / len) * 100}%;margin-left:-${(32 / len) * 100}%;--slide:${(32 / (len + 32)) * 100}%" aria-hidden="true"><line x1="-32" y1="0" x2="${len}" y2="0" class="link front"/></svg></div>`;
+  };
+  const marches = fronts.map(marchLine).join('');
+  const ring = s.op ? fxAt(P(E.sectorById(s.op.sector)), 52, 'fx-ring', '<circle r="46" class="ret-ring"/>') : '';
   const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
     const p = P(x);
@@ -97,7 +122,6 @@ function renderTheater(s, ui) {
     const ic = st === 'owned' ? (x.id === MAP.home ? 'core' : 'check') : st === 'locked' ? 'lock' : known ? FACTIONS[x.faction].icon : 'hex';
     return `
       <g class="node st-${st} ${x.boss ? 'boss' : ''} ${ui.sector === x.id ? 'sel' : ''} ${s.op && s.op.sector === x.id ? 'attacking' : ''}" data-sector="${x.id}" transform="translate(${p.x},${p.y})" style="--fc:${color}" tabindex="0" role="button" aria-label="${esc(label)}">
-        ${st === 'target' ? `<polygon class="pulse" points="${hex(r + 6)}"><animateTransform attributeName="transform" type="scale" from="1" to="1.5" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" from=".9" to="0" dur="2s" repeatCount="indefinite"/></polygon>` : ''}
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
         <text class="name" dy="${r + 24}">${esc(label)}</text>
@@ -114,7 +138,9 @@ function renderTheater(s, ui) {
   const sec = E.sectorById(ui.sector);
   return `
     <div class="map-card">
-      <svg class="map" viewBox="0 ${MAP_PAD - 30} ${W} ${H - MAP_PAD + 30}" role="img" aria-label="Wasteland map">
+      <div class="map-stage">
+      <div class="map-fx under">${marches}${pulses}</div>
+      <svg class="map" viewBox="0 ${top} ${W} ${vh}" role="img" aria-label="Wasteland map">
         <defs>${Object.entries(FACTIONS).map(([k, d]) => `<radialGradient id="terr-${k}"><stop offset="0" stop-color="${d.color}" stop-opacity=".16"/><stop offset="1" stop-color="${d.color}" stop-opacity="0"/></radialGradient>`).join('')}</defs>
         ${territory(shown)}
         <g>${links.join('')}</g>
@@ -122,6 +148,8 @@ function renderTheater(s, ui) {
         <g>${nodes}</g>
         ${s.op ? reticle(P(E.sectorById(s.op.sector))) : ''}
       </svg>
+      <div class="map-fx over">${ring}</div>
+      </div>
       <div class="legend">${legend}</div>
     </div>
     <div class="sheet ${ui.sheet ? 'open' : ''}" data-sheet>${ui.sheet ? briefing(s, sec) : ''}</div>`;
@@ -130,7 +158,6 @@ function renderTheater(s, ui) {
 // Crosshair over the sector under attack, with the live countdown.
 function reticle(p) {
   return `<g class="reticle" transform="translate(${p.x},${p.y})">
-    <circle r="46" class="ret-ring"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="6s" repeatCount="indefinite"/></circle>
     <path d="M0,-58 V-44 M0,44 V58 M-58,0 H-44 M44,0 H58" class="ret-ticks"/>
     <text class="ret-time" dy="-66" data-optimer></text>
   </g>`;
@@ -206,39 +233,39 @@ export function bindMapScreen(panel) {
 export function updateMapScreen(s, ui, refs) {
   const f = E.factors(s);
   for (const el of refs.factors) {
-    el.textContent = num(f[el.dataset.factor]);
+    put(el, num(f[el.dataset.factor]));
   }
   if (s.op) {
     const left = clock(s.op.remaining);
-    if (refs.optimer) refs.optimer.textContent = left;
-    if (refs.opbanner) refs.opbanner.textContent = left;
-    if (refs.opbannerbar) refs.opbannerbar.style.width = pct(1 - s.op.remaining / s.op.total);
+    if (refs.optimer) put(refs.optimer, left);
+    if (refs.opbanner) put(refs.opbanner, left);
+    if (refs.opbannerbar) setW(refs.opbannerbar, pct(1 - s.op.remaining / s.op.total));
   }
   if (!refs.power || !ui.sheet) {
     return;
   }
   const sec = E.sectorById(ui.sector);
   const p = E.opChance(s, sec);
-  refs.power.textContent = num(f.power);
-  refs.chance.textContent = pct(p);
+  put(refs.power, num(f.power));
+  put(refs.chance, pct(p));
   if (refs.loss) {
     const d = E.sectorDefense(s, sec);
-    refs.loss.textContent = `−${pct(E.lossShare(OPS.unitLoss.staff, f.power, d))} troops · −${pct(E.lossShare(OPS.unitLoss.weapons, f.power, d))} weapons`;
+    put(refs.loss, `−${pct(E.lossShare(OPS.unitLoss.staff, f.power, d))} troops · −${pct(E.lossShare(OPS.unitLoss.weapons, f.power, d))} weapons`);
   }
-  refs.chance.parentElement.className = 'odds-ring odds-' + chanceClass(p);
-  refs.odds.style.width = pct(p);
-  refs.odds.className = 'bg-' + chanceClass(p);
+  setCls(refs.chance.parentElement, 'odds-ring odds-' + chanceClass(p));
+  setW(refs.odds, pct(p));
+  setCls(refs.odds, 'bg-' + chanceClass(p));
   if (refs.chips.length) {
     setChips(s, refs.chips, E.opCost(sec));
   }
   if (refs.btn) {
     const running = s.op && s.op.sector === sec.id;
     refs.btn.disabled = !E.canLaunch(s, sec);
-    refs.label.textContent = running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : p < 0.5 ? 'Launch anyway' : 'Launch';
+    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : p < 0.5 ? 'Launch anyway' : 'Launch');
     refs.btn.classList.toggle('risky', p < 0.5);
   }
   if (refs.opbar && s.op) {
-    refs.opbar.style.width = pct(1 - s.op.remaining / s.op.total);
+    setW(refs.opbar, pct(1 - s.op.remaining / s.op.total));
   }
 }
 

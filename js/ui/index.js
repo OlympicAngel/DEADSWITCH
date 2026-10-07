@@ -17,6 +17,7 @@ import { sfx } from './sfx.js';
 import {
   floatText, flash, burst, shake, vibrate, screenFlash,
 } from './fx.js';
+import { put, setAttr, setCls, setData, setW } from './dom.js';
 
 export function createUI(root, game) {
   mountIcons();
@@ -30,7 +31,8 @@ export function createUI(root, game) {
       <header class="topbar">
         <div class="tb-row">
           <button class="core-badge" data-act="core" aria-label="AI Core">
-            <svg viewBox="0 0 48 48" aria-hidden="true"><polygon class="cb-hex" points="24,2 43,13 43,35 24,46 5,35 5,13"/><polygon class="cb-in" points="24,8 38,16 38,32 24,40 10,32 10,16"/></svg>
+            <svg viewBox="0 0 48 48" aria-hidden="true"><polygon class="cb-hex" points="24,2 43,13 43,35 24,46 5,35 5,13"/></svg>
+            <svg class="cb-spin" viewBox="0 0 48 48" aria-hidden="true"><polygon class="cb-in" points="24,8 38,16 38,32 24,40 10,32 10,16"/></svg>
             <b data-corelvl></b>
           </button>
           <div class="ident"><b data-name></b><span data-rank></span></div>
@@ -297,9 +299,9 @@ export function createUI(root, game) {
       ui.sector = defaultSector(s);
     }
     for (const [id, b] of Object.entries(navBtns)) {
-      b.setAttribute('aria-current', String(id === ui.screen));
+      setAttr(b, 'aria-current', id === ui.screen);
     }
-    app.dataset.screen = ui.screen;
+    setData(app, 'screen', ui.screen);
     const key = structureKey(s);
     if (key !== ui.key) {
       ui.key = key;
@@ -405,20 +407,20 @@ export function createUI(root, game) {
     const flows = game.flows;
     for (const r of RESOURCE_KEYS) {
       const p = pills[r];
-      p.v.textContent = whole(s.res[r]);
+      put(p.v, whole(s.res[r]));
       const capped = Number.isFinite(c[r]);
       const full = capped && s.res[r] >= c[r] * 0.999;
       const net = flows ? flows.prod[r] - flows.cons[r] : 0;
-      p.fill.style.width = capped ? pct(s.res[r] / c[r]) : '100%';
-      p.rate.textContent = full ? 'FULL' : rate(net);
+      setW(p.fill, capped ? pct(s.res[r] / c[r]) : '100%');
+      put(p.rate, full ? 'FULL' : rate(net));
       p.el.classList.toggle('full', full);
       p.el.classList.toggle('neg', net < -0.005);
     }
     const t = E.threat(s);
-    root.querySelector('[data-threat]').textContent = num(t);
-    root.querySelector('[data-rank]').textContent = RANKS[E.rankIndex(t)].title;
-    root.querySelector('[data-corelvl]').textContent = E.level(s, 'core');
-    root.querySelector('[data-name]').textContent = s.name || 'Commander';
+    put(root.querySelector('[data-threat]'), num(t));
+    put(root.querySelector('[data-rank]'), RANKS[E.rankIndex(t)].title);
+    put(root.querySelector('[data-corelvl]'), E.level(s, 'core'));
+    put(root.querySelector('[data-name]'), s.name || 'Commander');
   }
 
   // Floating alerts: open full width when new, fold into a blinking badge after FLOAT_OPEN_MS or
@@ -475,11 +477,11 @@ export function createUI(root, game) {
     for (const x of items) {
       const el = box.querySelector(`[data-fl="${x.key}"]`);
       el.classList.toggle('collapsed', floatState(x.key).collapsed);
-      el.querySelector('[data-t]').textContent = x.time;
+      put(el.querySelector('[data-t]'), x.time);
       const h = el.querySelector('[data-h]');
       if (h) {
-        h.textContent = x.hold;
-        h.className = x.holdCls;
+        put(h, x.hold);
+        setCls(h, x.holdCls);
       }
     }
     const imminent = !!atk && atk.remaining < 60;
@@ -507,15 +509,15 @@ export function createUI(root, game) {
   function badge(id, text, cls) {
     const b = navBtns[id].querySelector('.nav-badge');
     b.hidden = !text;
-    b.textContent = text === true ? '' : text || '';
-    b.className = 'nav-badge ' + (cls || '');
+    put(b, text === true ? '' : text || '');
+    setCls(b, 'nav-badge ' + (cls || ''));
   }
 
   function updateNav(s) {
     for (const [id, b] of Object.entries(navBtns)) {
       const req = domainReq(s, id);
       b.classList.toggle('locked', !!req);
-      b.setAttribute('aria-disabled', String(!!req));
+      setAttr(b, 'aria-disabled', !!req);
       if (req) {
         b.dataset.req = req;
       } else {
@@ -580,7 +582,7 @@ export function createUI(root, game) {
   function toast(html, tone = 'info') {
     const box = root.querySelector('.toasts');
     const el = document.createElement('div');
-    el.className = 'toast tone-' + tone;
+    setCls(el, 'toast tone-' + tone);
     el.innerHTML = html;
     box.appendChild(el);
     while (box.children.length > 3) {

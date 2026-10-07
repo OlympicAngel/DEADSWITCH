@@ -114,7 +114,10 @@ function tick() {
     sinceSave = 0;
     save();
   }
-  ui.render();
+  // Hidden pages keep simulating exactly as before but skip all UI work.
+  if (!document.hidden) {
+    ui.render();
+  }
 }
 
 ui.queuePendingEvents();
@@ -124,5 +127,5 @@ window.deadswitch = game;
 
 ui.render();
 setInterval(tick, BALANCE.tickSeconds * 1000);
-addEventListener('visibilitychange', () => document.hidden && save());
+addEventListener('visibilitychange', () => (document.hidden ? save() : ui.render()));
 addEventListener('pagehide', save);

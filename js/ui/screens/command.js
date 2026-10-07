@@ -6,6 +6,7 @@ import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon, labeled } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
+import { put, putHtml, setCls, setData, setW } from '../dom.js';
 
 const R = 160; // reactor centre in its 320 viewBox
 
@@ -27,6 +28,9 @@ function ticks() {
 }
 
 export function renderCommand() {
+  // Each rotating part is its own <svg> rotated as a whole: the GPU turns it without repainting
+  // (rotating shapes inside an SVG repaints the whole drawing every frame).
+  const spinLayer = (cls, inner) => `<svg class="reactor-svg spin-layer ${cls}" viewBox="0 0 320 320" aria-hidden="true">${inner}</svg>`;
   const sat = (k, cls, tip) => `
     <button class="sat ${cls}" data-tip="${tip}">
       <span class="sat-ico">${icon(k === 'align' ? 'heart' : k)}</span>
@@ -42,16 +46,16 @@ export function renderCommand() {
           </defs>
           <g class="links"><line x1="${R}" y1="${R}" x2="40" y2="44"/><line x1="${R}" y1="${R}" x2="280" y2="44"/><line x1="${R}" y1="${R}" x2="40" y2="276"/><line x1="${R}" y1="${R}" x2="280" y2="276"/></g>
           <circle cx="${R}" cy="${R}" r="150" fill="url(#rg-core)"/>
-          <g class="ticks">${ticks()}</g>
           <circle class="ring r-outer" cx="${R}" cy="${R}" r="118"/>
-          <circle class="ring r-dash" cx="${R}" cy="${R}" r="108"/>
           <path class="align-track" d="${arc(146, 200, 340)}"/>
           <path class="align-fill" data-alignarc d="${arc(146, 270, 270.1)}"/>
           <circle class="rank-track" cx="${R}" cy="${R}" r="94"/>
           <circle class="rank-fill" data-rankring cx="${R}" cy="${R}" r="94" transform="rotate(-90 ${R} ${R})"/>
-          <circle class="ring r-inner" cx="${R}" cy="${R}" r="78"/>
-          <g class="sweep"><path d="M${R},${R} L${R},${R - 118} A118,118 0 0 1 ${(R + 118 * Math.sin(0.5)).toFixed(1)},${(R - 118 * Math.cos(0.5)).toFixed(1)} Z"/></g>
         </svg>
+        ${spinLayer('s-ticks', `<g class="ticks">${ticks()}</g>`)}
+        ${spinLayer('s-dash', `<circle class="ring r-dash" cx="${R}" cy="${R}" r="108"/>`)}
+        ${spinLayer('s-inner', `<circle class="ring r-inner" cx="${R}" cy="${R}" r="78"/>`)}
+        ${spinLayer('s-sweep', `<g class="sweep"><path d="M${R},${R} L${R},${R - 118} A118,118 0 0 1 ${(R + 118 * Math.sin(0.5)).toFixed(1)},${(R - 118 * Math.cos(0.5)).toFixed(1)} Z"/></g>`)}
         <div class="reactor-core">
           <small>Threat index</small>
           <b data-threat></b>
@@ -113,7 +117,7 @@ export function updateCommand(s, ui, refs) {
   const ckey = lvl + title;
   if (refs.keys.cond !== ckey) {
     refs.keys.cond = ckey;
-    refs.cond.className = 'condition cond-' + lvl;
+    setCls(refs.cond, 'condition cond-' + lvl);
     refs.cond.innerHTML = `<span class="pip"></span><b>${title}</b><span>${sub}</span>`;
   }
 
@@ -122,19 +126,19 @@ export function updateCommand(s, ui, refs) {
   const ri = E.rankIndex(t);
   const nx = RANKS[ri + 1];
   const prog = nx ? (t - RANKS[ri].at) / (nx.at - RANKS[ri].at) : 1;
-  refs.threat.textContent = num(t);
-  refs.rank.textContent = RANKS[ri].title;
-  refs.next.textContent = nx ? `${pct(prog)} to ${nx.title}` : 'Maximum rank';
+  put(refs.threat, num(t));
+  put(refs.rank, RANKS[ri].title);
+  put(refs.next, nx ? `${pct(prog)} to ${nx.title}` : 'Maximum rank');
   const circ = 2 * Math.PI * 94;
   refs.ring.style.strokeDasharray = `${(circ * Math.min(1, prog)).toFixed(1)} ${circ.toFixed(1)}`;
   const a = s.align;
   const ang = 270 + (a / ALIGNMENT.max) * 70;
   refs.alignArc.setAttribute('d', a >= 0 ? arc(146, 270, Math.max(270.1, ang)) : arc(146, Math.min(269.9, ang), 270));
   refs.alignArc.classList.toggle('mach', a < 0);
-  refs.sats.power.textContent = num(f.power);
-  refs.sats.defense.textContent = num(f.defense);
-  refs.sats.experts.textContent = num(f.experts);
-  refs.sats.align.textContent = `${a > 0 ? '+' : ''}${Math.round(a)}`;
+  put(refs.sats.power, num(f.power));
+  put(refs.sats.defense, num(f.defense));
+  put(refs.sats.experts, num(f.experts));
+  put(refs.sats.align, `${a > 0 ? '+' : ''}${Math.round(a)}`);
 
   raidPanel(s, refs);
   opPanel(s, refs);
@@ -175,16 +179,16 @@ function raidPanel(s, refs) {
   const p = E.raidChance(s, raid);
   const def = E.factors(s).defense;
   const max = Math.max(def, raid.strength, 1);
-  el.dataset.level = p < 0.5 ? 'danger' : 'warn';
+  setData(el, 'level', p < 0.5 ? 'danger' : 'warn');
   el.classList.toggle('imminent', raid.remaining < 60);
-  el.querySelector('[data-count]').textContent = clock(raid.remaining);
-  el.querySelector('[data-dbar]').style.width = pct(def / max);
-  el.querySelector('[data-sbar]').style.width = pct(raid.strength / max);
-  el.querySelector('[data-dval]').textContent = num(def);
+  put(el.querySelector('[data-count]'), clock(raid.remaining));
+  setW(el.querySelector('[data-dbar]'), pct(def / max));
+  setW(el.querySelector('[data-sbar]'), pct(raid.strength / max));
+  put(el.querySelector('[data-dval]'), num(def));
   const hold = el.querySelector('[data-hold]');
-  hold.innerHTML = `Hold chance <b>${pct(p)}</b>`;
-  hold.className = 'hold chance-' + chanceClass(p);
-  el.querySelector('[data-tbar]').style.width = pct(1 - raid.remaining / raid.total);
+  putHtml(hold, `Hold chance <b>${pct(p)}</b>`);
+  setCls(hold, 'hold chance-' + chanceClass(p));
+  setW(el.querySelector('[data-tbar]'), pct(1 - raid.remaining / raid.total));
 }
 
 // Later attacks as cards tucked under the closest one: icon, name and timer only.
@@ -197,7 +201,7 @@ function stackPanel(s, refs) {
   el.hidden = !rest.length;
   rest.forEach((a, i) => {
     const t = el.querySelector(`[data-st="${i}"]`);
-    if (t) t.textContent = clock(a.remaining);
+    if (t) put(t, clock(a.remaining));
   });
 }
 
@@ -218,9 +222,9 @@ function opPanel(s, refs) {
     <div class="mini-stats"><span data-t></span><span data-c></span></div>
     <div class="timebar"><i data-b></i></div>`);
   const p = E.opChance(s, sec);
-  el.querySelector('[data-t]').innerHTML = `${labeled('clock')}${clock(s.op.remaining)}`;
-  el.querySelector('[data-c]').innerHTML = `<b class="chance-${chanceClass(p)}">${pct(p)}</b> odds`;
-  el.querySelector('[data-b]').style.width = pct(1 - s.op.remaining / s.op.total);
+  putHtml(el.querySelector('[data-t]'), `${labeled('clock')}${clock(s.op.remaining)}`);
+  putHtml(el.querySelector('[data-c]'), `<b class="chance-${chanceClass(p)}">${pct(p)}</b> odds`);
+  setW(el.querySelector('[data-b]'), pct(1 - s.op.remaining / s.op.total));
 }
 
 function buildPanel(s, refs) {
@@ -237,8 +241,8 @@ function buildPanel(s, refs) {
     <div class="mini">${icon(b.id)}<b>${b.name}</b></div>
     <div class="mini-stats"><span>Lv ${E.level(s, b.id) + 1}</span><span data-t></span></div>
     <div class="timebar"><i data-b></i></div>`);
-  el.querySelector('[data-t]').innerHTML = `${labeled('clock')}${clock(s.build.remaining)}`;
-  el.querySelector('[data-b]').style.width = pct(1 - s.build.remaining / s.build.total);
+  putHtml(el.querySelector('[data-t]'), `${labeled('clock')}${clock(s.build.remaining)}`);
+  setW(el.querySelector('[data-b]'), pct(1 - s.build.remaining / s.build.total));
 }
 
 function eventsPanel(s, refs) {
@@ -256,7 +260,7 @@ function eventsPanel(s, refs) {
     }).join('')}`);
   for (const x of s.events) {
     const t = el.querySelector(`[data-left="${x.uid}"]`);
-    t.innerHTML = `${icon('hourglass')}${clock(x.left)}`;
+    putHtml(t, `${icon('hourglass')}${clock(x.left)}`);
     t.classList.toggle('urgent', x.left < 600);
   }
 }
@@ -273,8 +277,8 @@ function directivePanel(s, refs) {
     <div class="dir-foot"><span class="reward">Reward ${tags(d.reward, '+')}</span><span data-p></span></div>
     <div class="timebar ok"><i data-b></i></div>`);
   const [have, need] = E.directiveProgress(s, d);
-  el.querySelector('[data-p]').textContent = need > 1 ? `${num(Math.min(have, need))} / ${num(need)}` : '';
-  el.querySelector('[data-b]').style.width = pct(Math.min(1, have / need));
+  put(el.querySelector('[data-p]'), need > 1 ? `${num(Math.min(have, need))} / ${num(need)}` : '');
+  setW(el.querySelector('[data-b]'), pct(Math.min(1, have / need)));
 }
 
 function effectsPanel(s, refs) {
@@ -286,7 +290,7 @@ function effectsPanel(s, refs) {
   el.hidden = !any;
   s.buffs.forEach((b, i) => {
     const t = el.querySelector(`[data-buff="${i}"]`);
-    if (t) t.textContent = time(b.remaining);
+    if (t) put(t, time(b.remaining));
   });
 }
 

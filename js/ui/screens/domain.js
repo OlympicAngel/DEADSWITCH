@@ -10,6 +10,7 @@ import {
   resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
 import { DOMAINS, sortedTabs, tabReq, readyCount } from '../layout.js';
+import { put, putHtml, setCls, setData, setW } from '../dom.js';
 
 export const BUY_MODES = [1, 10, 'max'];
 const SHOP_ICONS = { weapons: 'power', defenses: 'defense', staff: 'militia', experts: 'experts', tech: 'lab' };
@@ -248,55 +249,55 @@ export function updateDomain(s, ui, refs, flows) {
   }
   const f = E.factors(s);
   for (const el of refs.factors) {
-    el.textContent = num(f[el.dataset.factor]);
+    put(el, num(f[el.dataset.factor]));
   }
   if (refs.raid) {
     const atk = E.nextAttack(s);
     refs.raid.hidden = !atk;
     if (atk) {
       const p = E.raidChance(s, atk);
-      refs.raid.className = 'raid-mini odds-' + chanceClass(p);
-      refs.raid.innerHTML = `${icon('alert')}<span>${atk.siege ? 'Siege' : 'Raid'} in <b>${clock(atk.remaining)}</b></span><span>Strength <b>${num(atk.strength)}</b></span><span>Hold <b>${pct(p)}</b></span>`;
+      setCls(refs.raid, 'raid-mini odds-' + chanceClass(p));
+      putHtml(refs.raid, `${icon('alert')}<span>${atk.siege ? 'Siege' : 'Raid'} in <b>${clock(atk.remaining)}</b></span><span>Strength <b>${num(atk.strength)}</b></span><span>Hold <b>${pct(p)}</b></span>`);
     }
   }
   for (const c of refs.cards) {
     const st = E.buildingStatus(s, c.b);
-    c.el.dataset.status = st;
+    setData(c.el, 'status', st);
     if (c.btn) {
       setChips(s, c.chips, E.buildingCost(s, c.b));
       const lvl = E.level(s, c.b.id);
       c.btn.disabled = st !== 'ready' && st !== 'storage';
       setStorageLink(s, c.btn, st === 'storage' ? E.buildingCost(s, c.b) : null, 'build');
-      c.label.textContent = LABELS[st] || (lvl ? 'Upgrade' : 'Unlock');
-      c.sub.textContent = st === 'building' ? clock(s.build.remaining) : st === 'ready' || st === 'poor' ? time(E.buildTime(s, c.b)) : '';
+      put(c.label, LABELS[st] || (lvl ? 'Upgrade' : 'Unlock'));
+      put(c.sub, st === 'building' ? clock(s.build.remaining) : st === 'ready' || st === 'poor' ? time(E.buildTime(s, c.b)) : '');
     }
     if (c.eff && flows) {
       const eff = flows.eff[c.b.id] ?? 0;
-      c.eff.textContent = s.paused[c.b.id] ? 'OFF' : pct(eff);
-      c.eff.className = 'eff ' + (s.paused[c.b.id] ? 'is-paused' : eff < 0.999 ? 'is-low' : 'is-ok');
+      put(c.eff, s.paused[c.b.id] ? 'OFF' : pct(eff));
+      setCls(c.eff, 'eff ' + (s.paused[c.b.id] ? 'is-paused' : eff < 0.999 ? 'is-low' : 'is-ok'));
     }
-    c.bar.style.width = st === 'building' ? pct(1 - s.build.remaining / s.build.total) : '0';
+    setW(c.bar, st === 'building' ? pct(1 - s.build.remaining / s.build.total) : '0');
     const gv = c.el.querySelector('[data-gate-v]');
     if (gv) {
       const g = E.coreGate(s);
-      gv.textContent = `Avg Lv ${g.avg.toFixed(1)} / ${g.need.toFixed(1)}`;
-      gv.className = g.open ? 'good-t' : 'warn-t';
-      c.el.querySelector('[data-gate-bar]').style.width = pct(Math.min(1, g.avg / g.need));
-      c.el.querySelector('[data-gate-bar]').className = g.open ? 'bg-good' : '';
+      put(gv, `Avg Lv ${g.avg.toFixed(1)} / ${g.need.toFixed(1)}`);
+      setCls(gv, g.open ? 'good-t' : 'warn-t');
+      setW(c.el.querySelector('[data-gate-bar]'), pct(Math.min(1, g.avg / g.need)));
+      setCls(c.el.querySelector('[data-gate-bar]'), g.open ? 'bg-good' : '');
     }
   }
   for (const r of refs.rows) {
     const n = buyCount(s, ui, r.item);
     if (n !== r.n) {
       r.n = n;
-      r.gives.innerHTML = givesHtml(s, r.item, n);
+      putHtml(r.gives, givesHtml(s, r.item, n));
     }
     const cost = E.itemCost(s, r.item, n);
     setChips(s, r.chips, cost);
     const ok = E.canAfford(s, cost);
     const over = !ok && E.exceedsCap(s, cost).length > 0;
     r.btn.disabled = !ok && !over;
-    r.label.textContent = over ? 'Need storage' : n > 1 ? `Buy ×${n}` : 'Buy';
+    put(r.label, over ? 'Need storage' : n > 1 ? `Buy ×${n}` : 'Buy');
     setStorageLink(s, r.btn, over ? cost : null, 'buy');
     r.el.classList.toggle('affordable', ok);
   }
