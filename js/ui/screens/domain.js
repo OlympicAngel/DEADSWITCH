@@ -11,6 +11,7 @@ import {
 } from '../common.js';
 import { DOMAINS, sortedTabs, tabReq, readyCount } from '../layout.js';
 import { put, putHtml, setCls, setData, setW } from '../dom.js';
+import { onScreen } from '../onscreen.js';
 
 export const BUY_MODES = [1, 10, 'max'];
 const SHOP_ICONS = { weapons: 'power', defenses: 'defense', staff: 'militia', experts: 'experts', tech: 'lab' };
@@ -261,6 +262,7 @@ export function updateDomain(s, ui, refs, flows) {
     }
   }
   for (const c of refs.cards) {
+    if (!onScreen(c.el)) continue;
     const st = E.buildingStatus(s, c.b);
     setData(c.el, 'status', st);
     if (c.btn) {
@@ -287,6 +289,7 @@ export function updateDomain(s, ui, refs, flows) {
     }
   }
   for (const r of refs.rows) {
+    if (!onScreen(r.el)) continue;
     const n = buyCount(s, ui, r.item);
     if (n !== r.n) {
       r.n = n;

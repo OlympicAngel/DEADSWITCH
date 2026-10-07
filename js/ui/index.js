@@ -18,8 +18,11 @@ import {
   floatText, flash, burst, shake, vibrate, screenFlash,
 } from './fx.js';
 import { put, setAttr, setCls, setData, setW } from './dom.js';
+import { watchVisible, measureVisible } from './onscreen.js';
+import { stepAmbientLoops } from './framerate.js';
 
 export function createUI(root, game) {
+  stepAmbientLoops();
   mountIcons();
   const ui = {
     screen: 'command', inner: {}, buyMode: 1, sector: null, sheet: false,
@@ -311,12 +314,15 @@ export function createUI(root, game) {
       if (ui.screen === 'command') {
         view.innerHTML = renderCommand();
         ui.refs = bindCommand(view);
+        watchVisible(Object.values(ui.refs.panels), view);
       } else if (ui.screen === 'map') {
         view.innerHTML = renderMapScreen(s, ui);
         ui.refs = bindMapScreen(view);
+        watchVisible([], view);
       } else {
         view.innerHTML = renderDomain(s, ui, ui.screen);
         ui.refs = bindDomain(view);
+        watchVisible([...ui.refs.cards, ...ui.refs.rows].map((x) => x.el), view);
       }
       const entered = ui.lastScreen !== ui.screen || ui.lastInner !== ui.inner[ui.screen];
       const screenEl = view.firstElementChild;
@@ -379,17 +385,36 @@ export function createUI(root, game) {
 
   // ---------- per frame ----------
 
+  // Scrolling between frames refreshes anything it brings into view right away.
+  let scrollQueued = false;
+  view.addEventListener('scroll', () => {
+    if (scrollQueued) return;
+    scrollQueued = true;
+    requestAnimationFrame(() => {
+      scrollQueued = false;
+      if (measureVisible(view)) update();
+    });
+  }, { passive: true });
+
+  addEventListener('resize', () => measureVisible(view), { passive: true });
+
   function update() {
     const s = game.state;
     updateTop(s);
     updateAlerts(s);
     updateNav(s);
-    if (ui.screen === 'command') {
-      updateCommand(s, ui, ui.refs);
-    } else if (ui.screen === 'map') {
-      updateMapScreen(s, ui, ui.refs);
-    } else {
-      updateDomain(s, ui, ui.refs, game.flows);
+    // Behind an open dialog the screen is covered, so it waits and its loops pause; the top bar stays
+    // live (and keeps animating only when an order leaves it uncovered).
+    const covered = modals.isOpen();
+    setData(app, 'covered', covered ? (modals.coversTop() ? 'all' : 'view') : '');
+    if (!covered) {
+      if (ui.screen === 'command') {
+        updateCommand(s, ui, ui.refs);
+      } else if (ui.screen === 'map') {
+        updateMapScreen(s, ui, ui.refs);
+      } else {
+        updateDomain(s, ui, ui.refs, game.flows);
+      }
     }
     updateLog(s);
     drainFx(s);

@@ -2,6 +2,7 @@
 import { BALANCE, EVENTS_CFG } from './data.js';
 import * as E from './engine.js';
 import { createUI } from './ui/index.js';
+import { nextStep } from './ui/framerate.js';
 import { time } from './format.js';
 
 const SAVE_KEY = 'deadswitch.save';
@@ -126,6 +127,14 @@ ui.queuePendingEvents();
 window.deadswitch = game;
 
 ui.render();
-setInterval(tick, BALANCE.tickSeconds * 1000);
+// Ten ticks a second, each just after a step of the ambient animation clock, so screen updates are
+// drawn in frames that are being drawn anyway instead of adding frames of their own (ui/framerate.js).
+let due = performance.now();
+function loop() {
+  tick();
+  due = Math.max(due + BALANCE.tickSeconds * 1000, performance.now());
+  setTimeout(loop, Math.max(0, nextStep(due) + 1 - performance.now()));
+}
+setTimeout(loop, 0);
 addEventListener('visibilitychange', () => (document.hidden ? save() : ui.render()));
 addEventListener('pagehide', save);

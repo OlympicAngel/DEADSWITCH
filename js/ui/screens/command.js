@@ -6,7 +6,8 @@ import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon, labeled } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
-import { put, putHtml, setCls, setData, setW } from '../dom.js';
+import { put, putHtml, setCls, setData, setW, setAttr, setStyle } from '../dom.js';
+import { onScreen } from '../onscreen.js';
 
 const R = 160; // reactor centre in its 320 viewBox
 
@@ -130,23 +131,25 @@ export function updateCommand(s, ui, refs) {
   put(refs.rank, RANKS[ri].title);
   put(refs.next, nx ? `${pct(prog)} to ${nx.title}` : 'Maximum rank');
   const circ = 2 * Math.PI * 94;
-  refs.ring.style.strokeDasharray = `${(circ * Math.min(1, prog)).toFixed(1)} ${circ.toFixed(1)}`;
+  setStyle(refs.ring, 'strokeDasharray', `${(circ * Math.min(1, prog)).toFixed(1)} ${circ.toFixed(1)}`);
   const a = s.align;
   const ang = 270 + (a / ALIGNMENT.max) * 70;
-  refs.alignArc.setAttribute('d', a >= 0 ? arc(146, 270, Math.max(270.1, ang)) : arc(146, Math.min(269.9, ang), 270));
+  setAttr(refs.alignArc, 'd', a >= 0 ? arc(146, 270, Math.max(270.1, ang)) : arc(146, Math.min(269.9, ang), 270));
   refs.alignArc.classList.toggle('mach', a < 0);
   put(refs.sats.power, num(f.power));
   put(refs.sats.defense, num(f.defense));
   put(refs.sats.experts, num(f.experts));
   put(refs.sats.align, `${a > 0 ? '+' : ''}${Math.round(a)}`);
 
-  raidPanel(s, refs);
-  opPanel(s, refs);
-  buildPanel(s, refs);
-  eventsPanel(s, refs);
-  directivePanel(s, refs);
-  effectsPanel(s, refs);
-  feedPanel(s, refs);
+  // Panels scrolled out of view wait until they come back.
+  const on = (id) => onScreen(refs.panels[id]);
+  if (on('raid') || on('stack')) raidPanel(s, refs);
+  if (on('op')) opPanel(s, refs);
+  if (on('build')) buildPanel(s, refs);
+  if (on('events')) eventsPanel(s, refs);
+  if (on('directive')) directivePanel(s, refs);
+  if (on('effects')) effectsPanel(s, refs);
+  if (on('feed')) feedPanel(s, refs);
 }
 
 function raidPanel(s, refs) {

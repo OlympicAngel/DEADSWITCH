@@ -1047,3 +1047,7 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 @keyframes mapPulse { from { transform: scale(1); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }
 .fx-ring { animation: spin 6s linear infinite; }
 @keyframes marchSlide { to { transform: translateX(var(--slide)); } }
+
+/* Loops nobody can see behind an open dialog's backdrop are paused. */
+.app[data-covered='view'] .view *, .app[data-covered='view'] .view *::before, .app[data-covered='view'] .view *::after,
+.app[data-covered='all'] *, .app[data-covered='all'] *::before, .app[data-covered='all'] *::after { animation-play-state: paused !important; }

@@ -35,3 +35,11 @@ export function setData(el, key, value) {
   const v = String(value);
   if (el.dataset[key] !== v) el.dataset[key] = v;
 }
+
+export function setStyle(el, prop, value) {
+  const k = '__s_' + prop;
+  if (el[k] !== value) {
+    el[k] = value;
+    el.style[prop] = value;
+  }
+}

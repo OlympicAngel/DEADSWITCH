@@ -508,5 +508,5 @@ export function createModals(dialog, game, onChange) {
     return true;
   }
 
-  return { open, close, pump, showEvent, showOffline, openMenu, isOpen: () => dialog.open };
+  return { open, close, pump, showEvent, showOffline, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
 }
