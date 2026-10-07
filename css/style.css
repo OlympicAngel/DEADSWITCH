@@ -1001,3 +1001,17 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .fl.collapsed { width: 46px; padding: 4px; border-radius: 50%; animation: flBlink 1.2s ease-in-out infinite; }
 .fl.collapsed .fl-body, .fl.collapsed .fl-x { display: none; }
 @keyframes flBlink { 50% { box-shadow: 0 0 0 4px currentColor, 0 0 22px currentColor; opacity: .75; } }
+
+/* Later attacks: cards stacked under the incoming panel, each narrower and dimmer than the one above */
+.incoming { z-index: 2; }
+.atk-stack { grid-column: 1 / -1; display: flex; flex-direction: column; margin-top: -10px; }
+.atk-stack[hidden] { display: none; }
+.stack-card {
+  position: relative; z-index: calc(1 - var(--i)); display: flex; align-items: center; gap: 8px;
+  margin: -4px calc(10px + var(--i) * 10px) 0; padding: 10px 12px 6px;
+  border: 1px solid rgba(255,176,61,.35); border-top: 0; border-radius: 0 0 var(--r) var(--r);
+  background: linear-gradient(180deg, #1a1712, #121212); opacity: calc(1 - var(--i) * .18);
+  font: 600 12.5px var(--font-hud); color: var(--muted);
+}
+.stack-card b { flex: 1; min-width: 0; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stack-card .t { font: 700 13px var(--font-num); color: var(--warn); }

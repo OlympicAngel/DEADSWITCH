@@ -65,6 +65,7 @@ export function renderCommand() {
       </section>
       <div class="hud-grid">
         <section class="panel incoming" data-panel="raid"></section>
+        <div class="atk-stack" data-panel="stack"></div>
         <section class="panel half" data-panel="op"></section>
         <section class="panel half" data-panel="build"></section>
         <section class="panel" data-panel="events"></section>
@@ -153,14 +154,16 @@ function raidPanel(s, refs) {
       <div class="radar-idle"><div class="mini-radar"><i></i></div>
         <p><b>No hostiles on radar</b><span>${quiet ? `Raids begin at ${icon('core')}AI Core Lv ${RAIDS.startAtCore}.` : 'Scouts see nothing. For now.'}</span></p></div>`);
     refs.panels.raid.dataset.level = 'calm';
+    stackPanel(s, refs);
     return;
   }
   const fac = FACTIONS[raid.faction];
-  const el = slot(refs, 'raid', raid.faction + raid.strength + ':' + E.attacks(s).length, `
+  stackPanel(s, refs);
+  const el = slot(refs, 'raid', raid.faction + raid.strength, `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     <div class="inc-main">
       <span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>
-      <div><b>${E.attackName(raid)}</b><small>${fac.name}${E.attacks(s).length > 1 ? ` · +${E.attacks(s).length - 1} more` : ''}</small></div>
+      <div><b>${E.attackName(raid)}</b><small>${fac.name}</small></div>
       <div class="count" data-count></div>
     </div>
     <div class="bars">
@@ -182,6 +185,20 @@ function raidPanel(s, refs) {
   hold.innerHTML = `Hold chance <b>${pct(p)}</b>`;
   hold.className = 'hold chance-' + chanceClass(p);
   el.querySelector('[data-tbar]').style.width = pct(1 - raid.remaining / raid.total);
+}
+
+// Later attacks as cards tucked under the closest one: icon, name and timer only.
+function stackPanel(s, refs) {
+  const rest = E.attacks(s).slice(1);
+  const el = slot(refs, 'stack', rest.map((a) => a.faction + a.strength + !!a.siege).join('|'), rest.map((a, i) => {
+    const f = FACTIONS[a.faction];
+    return `<div class="stack-card" style="--i:${i}"><span style="color:${f.color}">${icon(f.icon)}</span><b>${E.attackName(a)}</b><span class="t" data-st="${i}"></span></div>`;
+  }).join(''));
+  el.hidden = !rest.length;
+  rest.forEach((a, i) => {
+    const t = el.querySelector(`[data-st="${i}"]`);
+    if (t) t.textContent = clock(a.remaining);
+  });
 }
 
 function opPanel(s, refs) {
