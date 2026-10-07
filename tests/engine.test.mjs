@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { ITEM_BY_ID, BY_ID } from '../js/data.js';
+import { ITEM_BY_ID, BY_ID, EVENTS } from '../js/data.js';
 
 test('offline catch-up lands builds mid-stretch and matches live play closely', () => {
   const live = E.newState();
@@ -182,4 +182,13 @@ test('events only fire when every effect can happen; urgent ones only for an act
   assert.ok(!t.events.some((x) => E.eventById(x.id).urgent));
   const urgent = E.eventById('override');
   assert.equal(urgent.deadline, 120);
+});
+
+test('no event choice charges the same resource twice', () => {
+  for (const ev of EVENTS) {
+    for (const c of ev.choices) {
+      const keys = [c.cost, c.lose, c.gain].flatMap((o) => Object.keys(o || {}));
+      assert.equal(new Set(keys).size, keys.length, `${ev.id}: ${c.label}`);
+    }
+  }
 });

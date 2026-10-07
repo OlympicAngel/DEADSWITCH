@@ -359,7 +359,7 @@ export const EVENTS = [
     id: 'missile', title: 'Launch Detected', urgent: true, minCore: 2, def: 1, pick: ['a'],
     text: 'An old silo to the east just woke up and fired. One warhead, inbound, ninety seconds out. It is aimed at the {a}.',
     choices: [
-      { label: 'Burn the grid to intercept', cost: { energy: 200 }, lose: { energy: 0.25 }, result: 'Every capacitor I own discharges at once. The sky flashes white over the ridge. The {a} never knew.' },
+      { label: 'Burn the grid to intercept', cost: { energy: 260 }, result: 'Every capacitor I own discharges at once. The sky flashes white over the ridge. The {a} never knew.' },
       { label: 'Let it land', loseLevel: ['a'], lose: { pop: 0.03 }, result: 'The {a} is a crater. The shockwave cracks the shelter walls.' },
     ],
   },
