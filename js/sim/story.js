@@ -29,6 +29,26 @@ function scaled(s, obj, mult = 1) {
   return out;
 }
 
+// Average share of income that ordinary events consume: for every event the player can currently get,
+// the mean net cost of its choices (cost minus gain, in seconds of production, after scaling), spread
+// over the mean time between events.
+export function eventDrain(s) {
+  const core = level(s, 'core');
+  const pool = EVENTS.filter((e) => !e.aftermath && !e.threat && e.minCore <= core);
+  const interval = (EVENTS_CFG.intervalMin + EVENTS_CFG.intervalMax) / 2;
+  const out = {};
+  for (const r of ['money', 'energy', 'pop']) {
+    if (!pool.length) {
+      out[r] = 0;
+      continue;
+    }
+    const perEvent = pool.reduce((sum, e) => sum + e.choices.reduce((a, c) =>
+      a + ((c.cost && c.cost[r]) || 0) * EVENTS_CFG.costScale - ((c.gain && c.gain[r]) || 0) * EVENTS_CFG.gainScale, 0) / e.choices.length, 0) / pool.length;
+    out[r] = Math.min(0.9, Math.max(0, perEvent / interval));
+  }
+  return out;
+}
+
 // Fills {a}/{b} with the building names picked for this event instance.
 export function fillText(inst, str) {
   const p = inst.params || {};
@@ -101,7 +121,7 @@ function spawn(s, ev, front) {
       return false;
     }
     params.faction = pick(s, raiders);
-    const grown = factors(s).defense + projectDefense(s, ev.deadline / 2);
+    const grown = factors(s).defense + projectDefense(s, ev.deadline / 2, eventDrain(s));
     const floor = FACTIONS[params.faction].raidFloor;
     params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max));
   }

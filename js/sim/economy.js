@@ -133,13 +133,27 @@ export function grossRate(s, r) {
   return total;
 }
 
-// Estimate of the defense a player could add in `seconds`: current stock plus income, spent greedily
-// on the best defense-per-scrip units already unlocked. Used to size threats that must be outgrown.
-export function projectDefense(s, seconds) {
+// Real net income per second right now: producers plus converters at their actual throttle, minus
+// what converters burn. Measured by running one production second on a copy of the state.
+export function netRates(s) {
+  const copy = { ...s, res: { ...s.res } };
+  const f = produce(copy, 1);
+  const out = {};
+  for (const r of RESOURCE_KEYS) {
+    out[r] = Math.max(0, f.prod[r] - f.cons[r]);
+  }
+  return out;
+}
+
+// Estimate of the defense a player could add in `seconds` if they poured everything into it: stock
+// plus net income (less the share `drain` that events eat on average), spent greedily on the best
+// defense-per-scrip unit at real escalating prices. Used to size threats that must be outgrown.
+export function projectDefense(s, seconds, drain = {}) {
   const c = caps(s);
+  const rates = netRates(s);
   const budget = {};
   for (const r of Object.keys(s.res)) {
-    budget[r] = Math.min(c[r], s.res[r]) + grossRate(s, r) * seconds;
+    budget[r] = Math.min(c[r], s.res[r]) + rates[r] * seconds * Math.max(0, 1 - (drain[r] || 0));
   }
   const tmp = { ...s, items: { ...s.items }, res: budget };
   const pool = ITEMS.filter((i) => i.gives && i.gives.defense && itemUnlocked(s, i));
