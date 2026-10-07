@@ -121,11 +121,18 @@ export function createTips(game) {
     return `<p>${esc(el.dataset.tipText || '')}</p>`;
   }
 
+  // An open <dialog> sits in the top layer, above anything in <body>; popups for its contents live inside it.
+  function mount(el, near) {
+    const host = near.closest('dialog[open]') || document.body;
+    if (el.parentNode !== host) host.appendChild(el);
+  }
+
   function place() {
     if (!target || !document.body.contains(target)) {
       hide();
       return;
     }
+    mount(tip, target);
     tip.innerHTML = content(target);
     const r = target.getBoundingClientRect();
     const t = tip.getBoundingClientRect();
@@ -169,6 +176,7 @@ export function createTips(game) {
   let labelTimer = null;
   function showLabel(el) {
     hide();
+    mount(label, el);
     label.textContent = el.dataset.label;
     label.classList.add('on');
     const r = el.getBoundingClientRect();
