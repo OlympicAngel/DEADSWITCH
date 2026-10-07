@@ -212,6 +212,9 @@ export function createUI(root, game) {
         }
         break;
       }
+      case 'storage':
+        go('economy', 'storage', `[data-card="${t.dataset.target}"]`);
+        break;
       case 'core':
         go('economy', 'production', '[data-card="core"]');
         break;

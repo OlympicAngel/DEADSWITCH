@@ -210,6 +210,21 @@ export function bindDomain(panel) {
   };
 }
 
+const STORE = { energy: 'battery', pop: 'habitat' };
+
+// A cost above the storage cap turns the button into a link to the storage building that raises it.
+function setStorageLink(s, btn, cost, normalAct) {
+  const res = cost && E.exceedsCap(s, cost)[0];
+  if (res && STORE[res]) {
+    btn.dataset.act = 'storage';
+    btn.dataset.target = STORE[res];
+    btn.classList.add('to-storage');
+  } else {
+    btn.dataset.act = normalAct;
+    btn.classList.remove('to-storage');
+  }
+}
+
 export function buyCount(s, ui, item) {
   return ui.buyMode === 'max' ? Math.max(1, E.maxAffordable(s, item)) : ui.buyMode;
 }
@@ -240,7 +255,8 @@ export function updateDomain(s, ui, refs, flows) {
     if (c.btn) {
       setChips(s, c.chips, E.buildingCost(s, c.b));
       const lvl = E.level(s, c.b.id);
-      c.btn.disabled = st !== 'ready';
+      c.btn.disabled = st !== 'ready' && st !== 'storage';
+      setStorageLink(s, c.btn, st === 'storage' ? E.buildingCost(s, c.b) : null, 'build');
       c.label.textContent = LABELS[st] || (lvl ? 'Upgrade' : 'Unlock');
       c.sub.textContent = st === 'building' ? clock(s.build.remaining) : st === 'ready' || st === 'poor' ? time(E.buildTime(s, c.b)) : '';
     }
@@ -260,8 +276,10 @@ export function updateDomain(s, ui, refs, flows) {
     const cost = E.itemCost(s, r.item, n);
     setChips(s, r.chips, cost);
     const ok = E.canAfford(s, cost);
-    r.btn.disabled = !ok;
-    r.label.textContent = n > 1 ? `Buy ×${n}` : 'Buy';
+    const over = !ok && E.exceedsCap(s, cost).length > 0;
+    r.btn.disabled = !ok && !over;
+    r.label.textContent = over ? 'Need storage' : n > 1 ? `Buy ×${n}` : 'Buy';
+    setStorageLink(s, r.btn, over ? cost : null, 'buy');
     r.el.classList.toggle('affordable', ok);
   }
 }

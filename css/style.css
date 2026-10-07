@@ -847,3 +847,4 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .outcome { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; padding: 10px 12px; border-radius: 6px; background: rgba(0,0,0,.3); border: 1px solid var(--line-2); }
 .outcome .kicker { color: var(--muted); }
 .outcome .fx-line .tag { font-size: 14px; }
+.btn.primary.to-storage:not(:disabled) { background: rgba(255,176,61,.1); color: var(--warn); box-shadow: inset 0 0 0 1px rgba(255,176,61,.5); }
