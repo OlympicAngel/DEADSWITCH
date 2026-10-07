@@ -27,6 +27,13 @@ function dice(seed) {
   };
 }
 
+// A converter is worth building when its output is the resource holding the next Core upgrade back.
+function shortOf(s, b) {
+  const [out] = Object.keys(b.produces);
+  const need = E.buildingCost(s, BUILDINGS.find((x) => x.id === 'core'))[out] || 0;
+  return s.res[out] < need * 0.5 && Object.keys(b.consumes).every((r) => s.res[r] > need);
+}
+
 function play(seed) {
   const s = E.newState(seed);
   s.name = 'bot';
@@ -41,7 +48,8 @@ function play(seed) {
     E.step(s, 1);
 
     if (!s.build) {
-      const ready = BUILDINGS.filter((b) => E.buildingStatus(s, b) === 'ready');
+      // Converters only lose value now; a sensible player builds them only to fix a shortage.
+      const ready = BUILDINGS.filter((b) => E.buildingStatus(s, b) === 'ready' && (b.kind !== 'converter' || shortOf(s, b)));
       const pick = ready.find((b) => b.id === 'core') || ready.sort((a, b) => sum(E.buildingCost(s, a)) - sum(E.buildingCost(s, b)))[0];
       if (pick) E.startBuild(s, pick.id);
     }

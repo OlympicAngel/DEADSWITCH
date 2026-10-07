@@ -417,17 +417,19 @@ export function produce(s, dt) {
       flows.eff[b.id] = 0;
       continue;
     }
+    // Bonuses speed a converter up (input and output alike); they never improve its loss ratio.
+    const m = mult[Object.keys(b.produces)[0]];
     let eff = 1;
     for (const [r, rate] of Object.entries(b.consumes)) {
-      eff = Math.min(eff, Math.max(0, s.res[r]) / (rate * lvl * dt));
+      eff = Math.min(eff, Math.max(0, s.res[r]) / (rate * lvl * m * dt));
     }
     for (const [r, rate] of Object.entries(b.produces)) {
       eff = Math.min(eff, Math.max(0, c[r] - s.res[r]) / (rate * lvl * mult[r] * dt));
     }
     eff = Math.max(0, Math.min(1, eff));
     for (const [r, rate] of Object.entries(b.consumes)) {
-      s.res[r] -= rate * lvl * dt * eff;
-      flows.cons[r] += rate * lvl * eff;
+      s.res[r] -= rate * lvl * m * dt * eff;
+      flows.cons[r] += rate * lvl * m * eff;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
       s.res[r] += rate * lvl * mult[r] * dt * eff;

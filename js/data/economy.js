@@ -79,43 +79,43 @@ export const BUILDINGS = [
     id: 'generator', name: 'Diesel Generator', kind: 'converter', req: { core: 2 },
     desc: 'Buys black-market fuel and burns it. Scrip in, energy out.',
     cost: { money: 150 }, growth: 1.18, time: 8, timeGrowth: 1.18,
-    consumes: { money: 1.5 }, produces: { energy: 3 },
+    consumes: { money: 3 }, produces: { energy: 0 },
   },
   {
     id: 'fabricator', name: 'Fabricator', kind: 'converter', req: { core: 2 },
     desc: 'Prints parts the wasteland will pay for. Energy in, scrip out.',
     cost: { money: 200, energy: 60 }, growth: 1.18, time: 8, timeGrowth: 1.18,
-    consumes: { energy: 2 }, produces: { money: 5 },
+    consumes: { energy: 3 }, produces: { money: 0 },
   },
   {
     id: 'clinic', name: 'Med Clinic', kind: 'converter', req: { core: 3 },
     desc: 'Antibiotics and clean water. Word spreads; people come.',
     cost: { money: 600, energy: 200 }, growth: 1.2, time: 12, timeGrowth: 1.19,
-    consumes: { energy: 1.5, money: 2 }, produces: { pop: 0.4 },
+    consumes: { energy: 1.5, money: 2 }, produces: { pop: 0 },
   },
   {
     id: 'exchange', name: 'Labor Exchange', kind: 'converter', req: { core: 3 },
     desc: 'Rents your people to the warlords. They do not always come back.',
     cost: { money: 800, pop: 20 }, growth: 1.2, time: 12, timeGrowth: 1.19,
-    consumes: { pop: 0.15 }, produces: { money: 18 },
+    consumes: { pop: 0.5 }, produces: { money: 0 },
   },
   {
     id: 'beacon', name: 'Beacon Tower', kind: 'converter', req: { core: 4 },
     desc: 'A radio voice promising food and safety. Half of it is true.',
     cost: { money: 3000, energy: 1200 }, growth: 1.22, time: 20, timeGrowth: 1.2,
-    consumes: { energy: 8 }, produces: { pop: 1.5 },
+    consumes: { energy: 8 }, produces: { pop: 0 },
   },
   {
     id: 'reactor', name: 'Fission Reactor', kind: 'converter', req: { core: 5 },
     desc: 'Pre-war tech, poorly shielded. Expensive to feed.',
     cost: { money: 15000, energy: 3000, pop: 40 }, growth: 1.22, time: 30, timeGrowth: 1.2,
-    consumes: { money: 25 }, produces: { energy: 70 },
+    consumes: { money: 40 }, produces: { energy: 0 },
   },
   {
     id: 'foundry', name: 'Autofoundry', kind: 'converter', req: { core: 6 },
     desc: 'A self-running factory floor. Needs power and hands to watch it.',
     cost: { money: 80000, energy: 25000, pop: 80 }, growth: 1.24, time: 45, timeGrowth: 1.21,
-    consumes: { energy: 50, pop: 0.3 }, produces: { money: 450 },
+    consumes: { energy: 60, pop: 0.5 }, produces: { money: 0 },
   },
   // --- Unlockers (open the arsenal; every level after the first also discounts that shop tab) ---
   {
@@ -202,6 +202,17 @@ export const RANKS = [
   { at: 200000, title: 'Sovereign Intelligence' },
   { at: 2000000, title: 'DEADSWITCH' },
 ];
+
+// Conversion always loses value, so no chain of converters creates resources from nothing.
+// Each converter's output = value of its inputs x efficiency / value of the output resource.
+export const CONVERSION = { worth: { money: 1, energy: 1, pop: 12 }, efficiency: 0.6 };
+for (const b of BUILDINGS) {
+  if (b.kind === 'converter') {
+    const value = Object.entries(b.consumes).reduce((v, [r, n]) => v + n * CONVERSION.worth[r], 0);
+    const [out] = Object.keys(b.produces);
+    b.produces[out] = (value * CONVERSION.efficiency) / CONVERSION.worth[out];
+  }
+}
 
 export const BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b]));
 export const ITEM_BY_ID = Object.fromEntries(ITEMS.map((i) => [i.id, i]));

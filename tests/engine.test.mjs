@@ -121,3 +121,14 @@ test('refusing a threat locks a siege to the deadline; silence brings it at once
   E.step(s, 1);
   assert.ok(s.stats.raidsLost >= lost + 1, 'the expired threat attacked immediately');
 });
+
+test('conversion never creates value: any converter round trip loses resources', () => {
+  const s = E.newState(8);
+  Object.assign(s.levels, { core: 6, generator: 5, fabricator: 5 });
+  s.items.engineers = 300; // large production bonus must not turn the loop profitable
+  s.res = { money: 5000, energy: 0, pop: 10 };
+  for (const b of ['scrapyard', 'solar', 'shelter']) s.levels[b] = 0;
+  const before = s.res.money + s.res.energy;
+  for (let i = 0; i < 600; i++) E.step(s, 1);
+  assert.ok(s.res.money + s.res.energy < before);
+});

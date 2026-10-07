@@ -46,7 +46,8 @@ export function createTips(game) {
       }
       if (b.consumes && b.consumes[r]) {
         const eff = (f && f.eff[b.id]) ?? 0;
-        if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * lvl * eff) + '/s', 'neg'));
+        const cm = E.prodMultiplier(s, Object.keys(b.produces)[0]);
+        if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * lvl * cm * eff) + '/s', 'neg'));
       }
     }
     let eta = '';

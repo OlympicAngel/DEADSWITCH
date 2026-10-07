@@ -119,7 +119,8 @@ function effectHtml(s, b, lvl, max) {
     return nowNext('Output', lvl ? `${resTag(r, per * lvl * mult(r), '+')}<em>/s</em>` : '—', `${resTag(r, per * next * mult(r), '+')}<em>/s</em>`, lvl, max);
   }
   if (b.kind === 'converter') {
-    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n, '−')).join('')
+    const cm = mult(Object.keys(b.produces)[0]);
+    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n * cm, '−')).join('')
       + `<span class="arrow">${icon('next')}</span>`
       + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('') + '<em>/s</em>';
     return `<div class="nn conv">
