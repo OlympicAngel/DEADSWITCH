@@ -803,3 +803,15 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
+
+/* One-word icon names on tap */
+.lbl-i { cursor: help; }
+.icon-label {
+  position: fixed; z-index: 61; pointer-events: none;
+  padding: 3px 8px; border-radius: 4px;
+  background: #0f1418; border: 1px solid var(--line-2); color: var(--text);
+  font: 600 11px var(--font-hud); text-transform: uppercase; letter-spacing: .12em; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0,0,0,.6);
+  opacity: 0; transform: translateY(3px); transition: opacity .12s, transform .12s;
+}
+.icon-label.on { opacity: 1; transform: none; }

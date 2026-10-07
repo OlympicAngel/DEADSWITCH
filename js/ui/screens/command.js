@@ -4,7 +4,7 @@ import {
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
-import { icon } from '../icons.js';
+import { icon, labeled } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
 
 const R = 160; // reactor centre in its 320 viewBox
@@ -200,7 +200,7 @@ function opPanel(s, refs) {
     <div class="mini-stats"><span data-t></span><span data-c></span></div>
     <div class="timebar"><i data-b></i></div>`);
   const p = E.opChance(s, sec);
-  el.querySelector('[data-t]').innerHTML = `${icon('clock')}${clock(s.op.remaining)}`;
+  el.querySelector('[data-t]').innerHTML = `${labeled('clock')}${clock(s.op.remaining)}`;
   el.querySelector('[data-c]').innerHTML = `<b class="chance-${chanceClass(p)}">${pct(p)}</b> odds`;
   el.querySelector('[data-b]').style.width = pct(1 - s.op.remaining / s.op.total);
 }
@@ -219,7 +219,7 @@ function buildPanel(s, refs) {
     <div class="mini">${icon(b.id)}<b>${b.name}</b></div>
     <div class="mini-stats"><span>Lv ${E.level(s, b.id) + 1}</span><span data-t></span></div>
     <div class="timebar"><i data-b></i></div>`);
-  el.querySelector('[data-t]').innerHTML = `${icon('clock')}${clock(s.build.remaining)}`;
+  el.querySelector('[data-t]').innerHTML = `${labeled('clock')}${clock(s.build.remaining)}`;
   el.querySelector('[data-b]').style.width = pct(1 - s.build.remaining / s.build.total);
 }
 

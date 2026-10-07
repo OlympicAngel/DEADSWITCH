@@ -4,7 +4,7 @@ import {
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
-import { icon } from './icons.js';
+import { icon, labeled } from './icons.js';
 import { tags, bonusText, chanceClass, clock } from './common.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
@@ -322,7 +322,7 @@ export function createModals(dialog, game, onChange) {
         return;
       }
       const dl = dialog.querySelector('[data-deadline]');
-      dl.innerHTML = `${icon('hourglass')}${clock(live.left)}`;
+      dl.innerHTML = `${labeled('hourglass')}${clock(live.left)}`;
       dl.classList.toggle('urgent', live.left < 600);
       dialog.querySelector('[data-deadbar]').style.width = pct(live.left / live.total);
       dialog.querySelectorAll('[data-choice]').forEach((b) => {

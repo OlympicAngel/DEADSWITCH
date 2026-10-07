@@ -11,7 +11,7 @@ Browser idle/strategy game, static site on GitHub Pages. Read `README.md` and `d
 - UI copy states facts only: what a thing is or does, in as few words as possible, or nothing. Never advise, hint at a best move, or explain design intent (no "build defenses first", "each unit costs more", "worth it"). Players work out the strategy themselves.
 - New save fields: add a default in `newState()` and make sure `migrate()` fills it for old saves. Bump `SAVE_VERSION` only for a breaking change, with a migration.
 - UI is portrait and phone first: check at 390×844 (and that desktop still shows the centred column). Screens rebuild only on structural change and patch numbers per frame through cached refs (`js/ui/index.js`, `js/ui/screens/`). Navigation structure lives in `js/ui/layout.js`.
-- Name things with their icon (`icon(key)` from `js/ui/icons.js`); add new icon keys there and rebuild the sprite with `tools/build-icons.mjs`. Line icons only, no emoji.
+- Name things with their icon (`icon(key)` from `js/ui/icons.js`); add new icon keys there and rebuild the sprite with `tools/build-icons.mjs`. Line icons only, no emoji. An icon shown without a word next to it uses `labeled(key)` so a tap names it (not in the top bar).
 - Every number shown to the player should explain itself through `data-tip` (see `js/ui/tooltip.js`).
 - Tests: only for rules that would break silently (catch-up, caps, pricing, save migration). Run `npm test` before pushing.
 - After balance changes run `npm run balance` and sanity-check the milestone times.

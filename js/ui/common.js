@@ -2,11 +2,11 @@
 import { RESOURCES, FACTORS, BY_ID } from '../data.js';
 import { caps } from '../engine.js';
 import { num, pct } from '../format.js';
-import { icon } from './icons.js';
+import { icon, labeled } from './icons.js';
 
 // "+120 [coins]" coloured by resource.
 export function resTag(r, amount, sign = '') {
-  return `<span class="tag t-${r}">${icon(r)}${sign}${num(amount)}</span>`;
+  return `<span class="tag t-${r}">${labeled(r)}${sign}${num(amount)}</span>`;
 }
 
 export function tags(obj, sign = '') {
@@ -14,7 +14,7 @@ export function tags(obj, sign = '') {
 }
 
 export function factorTag(k, amount, sign = '+') {
-  return `<span class="tag t-${k}">${icon(k)}${sign}${num(amount)}</span>`;
+  return `<span class="tag t-${k}">${labeled(k)}${sign}${num(amount)}</span>`;
 }
 
 // Name with its icon, used everywhere a building or unit is mentioned.
@@ -29,7 +29,7 @@ export function reqText(req) {
 // Cost chips carry data-tip so tapping one explains the shortfall.
 export function costChips(cost) {
   return Object.entries(cost).map(([r, v]) =>
-    `<span class="chip c-${r}" data-res="${r}" data-tip="cost:${r}" data-amt="${v}">${icon(r)}<span data-t>${num(v)}</span></span>`).join('');
+    `<span class="chip c-${r}" data-res="${r}" data-tip="cost:${r}" data-amt="${v}">${labeled(r)}<span data-t>${num(v)}</span></span>`).join('');
 }
 
 export function setChips(s, chips, cost) {

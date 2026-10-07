@@ -159,7 +159,31 @@ export function createTips(game) {
     if (el && el !== target) show(el);
     else if (!el && target) hide();
   });
+  // Tapping a bare icon names it in one word; this wins over the surrounding tooltip.
+  const label = document.createElement('div');
+  label.className = 'icon-label';
+  document.body.appendChild(label);
+  let labelTimer = null;
+  function showLabel(el) {
+    hide();
+    label.textContent = el.dataset.label;
+    label.classList.add('on');
+    const r = el.getBoundingClientRect();
+    const w = label.offsetWidth;
+    label.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + 'px';
+    label.style.top = Math.max(6, r.top - label.offsetHeight - 6) + 'px';
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(() => label.classList.remove('on'), 1600);
+  }
+
   document.addEventListener('click', (e) => {
+    const lbl = e.target.closest && e.target.closest('[data-label]');
+    if (lbl && !e.target.closest('button, .topbar')) {
+      e.stopPropagation();
+      showLabel(lbl);
+      return;
+    }
+    label.classList.remove('on');
     const el = e.target.closest('[data-tip]');
     if (el && !e.target.closest('button') && el !== target) {
       show(el);

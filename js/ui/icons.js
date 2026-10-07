@@ -46,6 +46,17 @@ export function mountIcons() {
   document.body.prepend(holder);
 }
 
+// One-word names for icons that appear without text next to them; tapping such an icon shows the word.
+export const ICON_LABELS = {
+  money: 'Scrip', energy: 'Energy', pop: 'Population', power: 'Power', defense: 'Defense', experts: 'Experts',
+  threat: 'Threat', heart: 'Humanity', clock: 'Time', hourglass: 'Deadline',
+};
+
+// Icon that names itself on tap. Use only where no adjacent text already says what it is.
+export function labeled(key, cls = '') {
+  return `<svg class="i lbl-i ${cls}" data-label="${ICON_LABELS[key] || key}" aria-label="${ICON_LABELS[key] || key}" role="img"><use href="#i-${ICONS[key] ? key : 'hex'}"/></svg>`;
+}
+
 // Inline icon: <svg class="i"><use href="#i-key"/></svg>
 export function icon(key, cls = '') {
   return `<svg class="i ${cls}" aria-hidden="true"><use href="#i-${ICONS[key] ? key : 'hex'}"/></svg>`;
