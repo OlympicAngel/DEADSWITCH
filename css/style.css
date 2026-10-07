@@ -686,6 +686,7 @@ body.shake-hard .app { animation: shake .6s; animation-iteration-count: 2; }
 
 /* =================== Dialogs =================== */
 dialog {
+  position: fixed; inset: 0; margin: auto;
   width: min(440px, calc(100vw - 20px)); max-height: calc(100dvh - 24px); padding: 0;
   color: var(--text); border: 1px solid var(--line-2); border-radius: 10px;
   background: var(--brackets), linear-gradient(180deg, #18222a, #0f1418);
@@ -763,7 +764,8 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .note { display: flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--bad); font-size: 13px; text-align: left; }
 @keyframes fadeIn { to { opacity: 1; } }
 
-.event-modal { width: min(460px, calc(100vw - 16px)); margin-top: calc(var(--topbar, 120px) + 6px); max-height: calc(100dvh - var(--topbar, 120px) - 14px); }
+/* Centred in the space below the top bar, so resources stay visible. */
+.event-modal { width: min(460px, calc(100vw - 16px)); position: fixed; inset: var(--topbar, 120px) 0 0; margin: auto; max-height: calc(100dvh - var(--topbar, 120px) - 16px); }
 .event-modal::backdrop { background: linear-gradient(180deg, transparent var(--topbar, 120px), rgba(1,4,6,.85) var(--topbar, 120px)); backdrop-filter: none; }
 .event-modal.crisis { border-color: rgba(255,93,93,.6); --hud: var(--bad); background: var(--brackets), linear-gradient(180deg, #2a1214, #0f0d0e); }
 .event .kicker { color: var(--experts); }
