@@ -184,7 +184,7 @@ function briefing(s, sec) {
       <div class="r"><span>${icon('spark')}Spoils</span><b>${tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
-      <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t">−${pct(OPS.staffLossOnDefeat)} troops</b></div>
+      <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t">−${pct(OPS.unitLoss.staff[0])} to −${pct(OPS.unitLoss.staff[1])} troops</b></div>
     </div>
     ${st === 'locked'
       ? `<p class="hint">${icon('lock')}Opens in ${ch.title} (Chapter ${ch.id}) at ${icon('core')}AI Core Lv ${ch.core}.</p>`

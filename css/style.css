@@ -306,6 +306,7 @@ p { margin: 0; }
 .t-defense { color: var(--defense); }
 .t-experts { color: var(--experts); }
 .t-bad { color: var(--bad); }
+.tag.t-dur { color: var(--muted); margin-top: 4px; }
 .t-good { color: var(--ok); }
 .t-hum { color: var(--hum); }
 .t-mach { color: var(--mach); }

@@ -189,7 +189,7 @@ function itemRow(s, item) {
     <article class="card item" data-item="${item.id}">
       <div class="card-top">
         <div class="tile">${icon(item.id)}<span class="badge">×${num(E.owned(s, item.id))}</span></div>
-        <div class="body"><h3>${item.name}</h3><div class="effect" data-gives>${givesHtml(s, item)}</div>${item.tab === 'staff' ? '<p class="desc">Lost in defeats.</p>' : ''}</div>
+        <div class="body"><h3>${item.name}</h3><div class="effect" data-gives>${givesHtml(s, item)}</div>${item.durability ? `<span class="tag t-dur" data-tip="text" data-tip-text="Losses of this unit in defeats are ${pct(item.durability)} lower.">${icon('durability')}${pct(item.durability)} durability</span>` : ''}</div>
       </div>
       <div class="card-bot"><div class="costs">${costChips(E.itemCost(s, item, 1))}</div>
         <button class="btn primary" data-act="buy" data-id="${item.id}"><span data-l>Buy</span></button></div>

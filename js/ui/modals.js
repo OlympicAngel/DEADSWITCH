@@ -226,7 +226,8 @@ export function createModals(dialog, game, onChange) {
   function losses(r) {
     const parts = [];
     if (r.lost) parts.push(tags(r.lost, '−'));
-    if (r.staffLost) parts.push(`<span class="tag t-bad">${icon('militia')}−${num(r.staffLost)} troops</span>`);
+    for (const [id, n] of Object.entries(r.units || {})) parts.push(`<span class="tag t-bad">${labeled(id, '', ITEM_BY_ID[id].name)}−${num(n)}</span>`);
+    if (r.staffLost) parts.push(`<span class="tag t-bad">${icon('militia')}−${num(r.staffLost)} troops</span>`); // reports saved before per-unit losses
     return parts.join('') || 'None';
   }
 

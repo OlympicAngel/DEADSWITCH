@@ -351,28 +351,34 @@ export function giveItems(s, items) {
   checkRank(s);
 }
 
-// Removes a share of every unit in one Arsenal tab (battle casualties, looting). Returns units lost.
-// How many units a share of a tab amounts to: rounded, but never zero while any are owned,
-// so a loss is always a real loss.
-export function unitsLost(s, tab, share) {
-  const total = ITEMS.filter((i) => i.tab === tab).reduce((n, i) => n + owned(s, i.id), 0);
-  return total ? Math.min(total, Math.max(1, Math.round(total * share))) : 0;
-}
-
-// Removes that many units from a tab, cheapest unit types first (front-line losses).
-export function loseUnits(s, tab, share) {
-  let left = unitsLost(s, tab, share);
-  const lost = left;
-  for (const item of ITEMS) {
-    if (item.tab !== tab || !left) continue;
-    const n = Math.min(owned(s, item.id), left);
-    s.items[item.id] -= n;
-    left -= n;
+// Casualties when a share of one Arsenal tab is hit: each unit type loses round(owned x share x (1 - durability)).
+// Never zero while any are owned, so a loss is always a real loss: the least durable type takes it.
+export function lossPlan(s, tab, share) {
+  const units = ITEMS.filter((i) => i.tab === tab && owned(s, i.id) > 0);
+  const plan = {};
+  for (const i of units) {
+    const n = Math.min(owned(s, i.id), Math.round(owned(s, i.id) * share * (1 - (i.durability || 0))));
+    if (n) plan[i.id] = n;
   }
-  return lost;
+  if (units.length && !Object.keys(plan).length) {
+    const weakest = units.reduce((a, b) => ((b.durability || 0) < (a.durability || 0) ? b : a));
+    plan[weakest.id] = 1;
+  }
+  return plan;
 }
 
-export const loseStaff = (s, share) => loseUnits(s, 'staff', share);
+export function unitsLost(s, tab, share) {
+  return Object.values(lossPlan(s, tab, share)).reduce((a, b) => a + b, 0);
+}
+
+// Removes the casualties of lossPlan. Returns them as { itemId: count }.
+export function loseUnits(s, tab, share) {
+  const plan = lossPlan(s, tab, share);
+  for (const [id, n] of Object.entries(plan)) {
+    s.items[id] -= n;
+  }
+  return plan;
+}
 
 // Destroys one level of a building. Storage caps shrink with it, so stockpiles are clamped.
 export function loseLevel(s, id) {

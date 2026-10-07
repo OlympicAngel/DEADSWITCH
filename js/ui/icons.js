@@ -18,6 +18,7 @@ export const ICONS = {
   // defenses
   barricades: 'barrier-block', pillboxes: 'building-castle', turrets: 'focus-2', emp: 'wave-sine', interceptors: 'shield-bolt', aegis: 'umbrella',
   // staff
+  durability: 'shield-check',
   militia: 'user', snipers: 'eye', garrison: 'shield-half', commandos: 'skull', operators: 'device-gamepad-2', legion: 'robot',
   // experts
   engineers: 'tool', hackers: 'terminal-2', analysts: 'chart-line', physicists: 'atom', architects: 'compass',
@@ -53,8 +54,8 @@ export const ICON_LABELS = {
 };
 
 // Icon that names itself on tap. Use only where no adjacent text already says what it is.
-export function labeled(key, cls = '') {
-  return `<svg class="i lbl-i ${cls}" data-label="${ICON_LABELS[key] || key}" aria-label="${ICON_LABELS[key] || key}" role="img"><use href="#i-${ICONS[key] ? key : 'hex'}"/></svg>`;
+export function labeled(key, cls = '', name = ICON_LABELS[key] || key) {
+  return `<svg class="i lbl-i ${cls}" data-label="${name}" aria-label="${name}" role="img"><use href="#i-${ICONS[key] ? key : 'hex'}"/></svg>`;
 }
 
 // Inline icon: <svg class="i"><use href="#i-key"/></svg>

@@ -141,7 +141,9 @@ export const OPS = {
   timePerSqrtDefense: 1.4,
   lootMoneyPerDefense: 6,
   lootPopPerDefense: 0.04,
-  staffLossOnDefeat: 0.15, // share of each Military Staff unit lost when an operation fails
+  // Share of each unit tab killed when an operation fails, from min (narrow loss) to max (rout);
+  // each unit type loses that share x (1 - its durability).
+  unitLoss: { staff: [0.2, 0.45] },
 };
 
 export const RAIDS = {
@@ -155,6 +157,6 @@ export const RAIDS = {
   winSharpness: 4,
   lossMin: 0.05, // share of each stockpile lost on defeat, scaling with how badly you lost
   lossMax: 0.2,
-  staffLossOnDefeat: 0.1,
+  unitLoss: { staff: [0.15, 0.4], defenses: [0.1, 0.3] }, // as OPS.unitLoss, for a breached raid or siege
   lootMoneyPerStrength: 4,
 };
