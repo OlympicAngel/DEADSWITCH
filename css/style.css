@@ -293,7 +293,7 @@ p { margin: 0; }
 .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; }
 .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--warn), #ffe08a); box-shadow: 0 0 8px var(--warn); }
 .card.flash { animation: cardFlash .9s var(--ease); }
-@keyframes cardFlash { 0% { box-shadow: 0 0 0 2px var(--hud), 0 0 40px var(--hud-glow); transform: scale(1.02); } }
+@keyframes cardFlash { 0% { box-shadow: 0 0 0 3px var(--hud-2), 0 0 70px var(--hud-glow), inset 0 0 60px rgba(255,176,61,.35); transform: scale(1.05); } 35% { transform: scale(.99); } }
 .coach { animation: coach 1.2s ease-in-out 3; outline: 2px solid var(--warn); outline-offset: 3px; }
 @keyframes coach { 50% { outline-color: transparent; box-shadow: 0 0 30px rgba(255,176,61,.45); } }
 
@@ -673,10 +673,13 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .tip-sec { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); font: 700 9.5px var(--font-hud); text-transform: uppercase; letter-spacing: .16em; color: var(--hud); }
 
 /* =================== FX =================== */
-.float-text { position: fixed; z-index: 70; pointer-events: none; transform: translateX(-50%); display: flex; gap: 6px; font: 700 15px var(--font-num); white-space: nowrap; text-shadow: 0 2px 8px #000; animation: floatUp 1.1s var(--ease) forwards; }
-@keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, -6px) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -54px); } }
-.spark { position: fixed; z-index: 70; width: 6px; height: 6px; margin: -3px; border-radius: 50%; pointer-events: none; animation: spark .7s var(--ease) forwards; }
+.float-text { position: fixed; z-index: 70; pointer-events: none; transform: translateX(-50%); display: flex; gap: 10px; font: 800 24px var(--font-num); white-space: nowrap; padding: 4px 14px; border-radius: 999px; background: rgba(10,13,16,.92); border: 1px solid var(--line-2); box-shadow: 0 0 24px rgba(255,107,61,.35), 0 8px 20px rgba(0,0,0,.6); animation: floatUp 1.4s var(--ease) forwards; }
+.float-text .i { width: 1.1em; height: 1.1em; stroke-width: 2.4; }
+@keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, 10px) scale(.6); } 18% { opacity: 1; transform: translate(-50%, -14px) scale(1.45); } 35% { transform: translate(-50%, -24px) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -96px) scale(1.1); } }
+.spark { position: fixed; z-index: 70; width: 10px; height: 10px; margin: -5px; box-shadow: 0 0 10px currentColor; border-radius: 50%; pointer-events: none; animation: spark .7s var(--ease) forwards; }
 @keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+.btn.pop { animation: btnPop .35s var(--spring); }
+@keyframes btnPop { 40% { transform: scale(1.12); filter: brightness(1.4); } }
 .screen-flash { position: fixed; inset: 0; z-index: 65; pointer-events: none; animation: sflash .6s ease-out forwards; }
 .sf-alert { background: radial-gradient(circle, rgba(255,93,93,.1), rgba(255,93,93,.45)); }
 @keyframes sflash { from { opacity: 1; } to { opacity: 0; } }
@@ -839,3 +842,4 @@ dialog.cinematic::backdrop { background: rgba(0,0,0,.95); }
 .seg[aria-selected='true'].has-ready::after { background: #1a0b05; box-shadow: 0 0 0 2px rgba(255,255,255,.35); }
 .card[data-status='ready']::after { animation: readyPulse 1.6s ease-in-out infinite; }
 @keyframes readyPulse { 50% { opacity: .55; transform: scale(.8); } }
+.float-text .tag { font: inherit; gap: 4px; }

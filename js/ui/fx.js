@@ -69,7 +69,7 @@ export function screenFlash(kind = 'alert') {
   el.addEventListener('animationend', () => el.remove());
 }
 
-export function burst(anchor, color = 'var(--hud)', count = 14) {
+export function burst(anchor, color = 'var(--hud)', count = 26) {
   if (!anchor || reduced()) {
     return;
   }
@@ -80,10 +80,11 @@ export function burst(anchor, color = 'var(--hud)', count = 14) {
     const p = document.createElement('i');
     p.className = 'spark';
     const a = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-    const d = 40 + Math.random() * 50;
+    const d = 70 + Math.random() * 90;
     p.style.left = cx + 'px';
     p.style.top = cy + 'px';
     p.style.background = color;
+    p.style.color = color;
     p.style.setProperty('--dx', Math.cos(a) * d + 'px');
     p.style.setProperty('--dy', Math.sin(a) * d + 'px');
     document.body.appendChild(p);

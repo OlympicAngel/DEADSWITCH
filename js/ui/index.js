@@ -167,6 +167,7 @@ export function createUI(root, game) {
         if (game.act.build(id)) {
           sfx.click();
           vibrate(15);
+          flash(t, 'pop');
         }
         break;
       case 'pause':
@@ -182,6 +183,8 @@ export function createUI(root, game) {
           const after = E.factors(s);
           const gained = Object.keys(after).filter((k) => after[k] > before[k]).map((k) => factorTag(k, after[k] - before[k]));
           floatText(t, gained.join(' ') || `+${n}`);
+          flash(t, 'pop');
+          burst(t, 'var(--hud-2)', 12);
         }
         break;
       }
