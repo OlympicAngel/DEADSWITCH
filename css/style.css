@@ -888,3 +888,21 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 .card.unbuilt .facility-tag { top: 10px; }
 .card.k-unlocker.unbuilt { padding-top: 30px; }
 .card.k-unlocker[data-status='ready']::after { top: 13px; left: auto; right: 12px; }
+
+/* Outgoing operation on the map */
+.op-glow { stroke: var(--warn); stroke-width: 16; stroke-linecap: round; opacity: .18; filter: blur(3px); }
+.op-line { stroke: var(--warn); stroke-width: 5; stroke-dasharray: 14 9; stroke-linecap: round; animation: march .5s linear infinite; filter: drop-shadow(0 0 8px var(--warn)); }
+.op-dot { fill: #fff; stroke: var(--warn); stroke-width: 3; filter: drop-shadow(0 0 10px var(--warn)); }
+.reticle { pointer-events: none; }
+.ret-ring { fill: none; stroke: var(--bad); stroke-width: 3; stroke-dasharray: 18 10; filter: drop-shadow(0 0 6px var(--bad)); }
+.ret-ticks { stroke: var(--bad); stroke-width: 4; stroke-linecap: round; animation: blink 1s steps(2) infinite; }
+.ret-time { fill: #fff; font: 700 20px var(--font-num); text-anchor: middle; paint-order: stroke; stroke: #0a0d10; stroke-width: 5px; }
+.op-banner {
+  position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; gap: 8px; margin: -2px 0 10px; padding: 10px 12px; cursor: pointer; text-align: left;
+  border-radius: 6px; border: 1px solid rgba(255,176,61,.6); background: rgba(255,176,61,.1); color: var(--warn);
+  animation: alertPulse 1.6s ease-in-out infinite;
+}
+.op-banner span { flex: 1; color: var(--text); }
+.op-banner > b { font: 700 16px var(--font-num); }
+.op-banner-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.node.attacking .def { display: none; }

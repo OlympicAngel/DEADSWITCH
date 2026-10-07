@@ -5,7 +5,7 @@ import {
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
-import { costChips, setChips, tags, bonusText, chanceClass } from '../common.js';
+import { costChips, setChips, tags, bonusText, chanceClass, clock } from '../common.js';
 import { sortedTabs } from '../layout.js';
 
 const W = MAP.height; // the landscape map is turned 90 degrees for portrait: home at the top
@@ -51,6 +51,7 @@ export function renderMapScreen(s, ui) {
         <div class="stat"><b>${s.sectors.length - 1}/${SECTORS.length - 1}</b><small>Sectors</small></div></div>
       </header>
       <nav class="segs" role="tablist">${bar}</nav>
+      ${s.op ? `<button class="op-banner" data-sector="${s.op.sector}">${icon('power')}<span>Attacking <b>${E.sectorById(s.op.sector).name}</b></span><b data-opbanner></b><i class="op-banner-bar" data-opbannerbar></i></button>` : ''}
       ${inner === 'archive' ? renderArchive(s) : renderTheater(s, ui)}
     </div>`;
 }
@@ -79,8 +80,10 @@ function renderTheater(s, ui) {
     const from = E.sectorById(t.links.find((l) => s.sectors.includes(l)));
     const a = P(from);
     const b = P(t);
-    opPath = `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>
-      <circle r="7" class="op-dot"><animateMotion dur="1.4s" repeatCount="indefinite" path="M${a.x},${a.y} L${b.x},${b.y}"/></circle>`;
+    const path = `M${a.x},${a.y} L${b.x},${b.y}`;
+    const dots = [0, 0.45, 0.9].map((d) => `<circle r="8" class="op-dot"><animateMotion dur="1.35s" begin="${d}s" repeatCount="indefinite" path="${path}"/></circle>`).join('');
+    opPath = `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-glow"/>
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>${dots}`;
   }
   const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
@@ -115,10 +118,20 @@ function renderTheater(s, ui) {
         <g>${links.join('')}</g>
         ${opPath}
         <g>${nodes}</g>
+        ${s.op ? reticle(P(E.sectorById(s.op.sector))) : ''}
       </svg>
       <div class="legend">${legend}</div>
     </div>
     <div class="sheet ${ui.sheet ? 'open' : ''}" data-sheet>${ui.sheet ? briefing(s, sec) : ''}</div>`;
+}
+
+// Crosshair over the sector under attack, with the live countdown.
+function reticle(p) {
+  return `<g class="reticle" transform="translate(${p.x},${p.y})">
+    <circle r="46" class="ret-ring"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="6s" repeatCount="indefinite"/></circle>
+    <path d="M0,-58 V-44 M0,44 V58 M-58,0 H-44 M44,0 H58" class="ret-ticks"/>
+    <text class="ret-time" dy="-66" data-optimer></text>
+  </g>`;
 }
 
 function territory(shown) {
@@ -176,6 +189,7 @@ export function bindMapScreen(panel) {
     factors: [...panel.querySelectorAll('[data-factor]')],
     power: q('[data-power]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
     chips: [...panel.querySelectorAll('.sheet .chip')], btn: q('.launch'), label: q('.launch [data-l]'), opbar: q('[data-opbar]'),
+    optimer: q('[data-optimer]'), opbanner: q('[data-opbanner]'), opbannerbar: q('[data-opbannerbar]'),
   };
 }
 
@@ -183,6 +197,12 @@ export function updateMapScreen(s, ui, refs) {
   const f = E.factors(s);
   for (const el of refs.factors) {
     el.textContent = num(f[el.dataset.factor]);
+  }
+  if (s.op) {
+    const left = clock(s.op.remaining);
+    if (refs.optimer) refs.optimer.textContent = left;
+    if (refs.opbanner) refs.opbanner.textContent = left;
+    if (refs.opbannerbar) refs.opbannerbar.style.width = pct(1 - s.op.remaining / s.op.total);
   }
   if (!refs.power || !ui.sheet) {
     return;
