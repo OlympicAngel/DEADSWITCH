@@ -906,3 +906,14 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 .op-banner > b { font: 700 16px var(--font-num); }
 .op-banner-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--warn); box-shadow: 0 0 8px var(--warn); }
 .node.attacking .def { display: none; }
+
+/* Swipe between inner tabs */
+.screen.enter.from-r .list, .screen.enter.from-r .map-card, .screen.enter.from-r .archive { animation: inR .28s var(--ease); }
+.screen.enter.from-l .list, .screen.enter.from-l .map-card, .screen.enter.from-l .archive { animation: inL .28s var(--ease); }
+@keyframes inR { from { opacity: 0; transform: translateX(40px); } }
+@keyframes inL { from { opacity: 0; transform: translateX(-40px); } }
+.screen.bump-l .list { animation: bumpL .3s var(--ease); }
+.screen.bump-r .list { animation: bumpR .3s var(--ease); }
+@keyframes bumpL { 40% { transform: translateX(-14px); } }
+@keyframes bumpR { 40% { transform: translateX(14px); } }
+.view { touch-action: pan-y; }

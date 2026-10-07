@@ -7,7 +7,7 @@ import * as E from '../engine.js';
 import { num, rate, pct, esc } from '../format.js';
 import { icon, mountIcons } from './icons.js';
 import { clock, chanceClass, factorTag } from './common.js';
-import { NAV, locate, domainReq, domainReady } from './layout.js';
+import { NAV, locate, domainReq, domainReady, sortedTabs, DOMAINS } from './layout.js';
 import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
 import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
 import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector } from './screens/map.js';
@@ -153,6 +153,49 @@ export function createUI(root, game) {
     }
     render();
   });
+  // Horizontal swipe on the screen body moves between inner tabs. Strict filters avoid false
+  // triggers: one finger, mostly horizontal, long enough, quick, not from the screen edge (system
+  // back gesture), and not inside anything that scrolls sideways or is interactive by drag.
+  const SWIPE = { minDx: 70, ratio: 2.2, maxMs: 650, edge: 24 };
+  let touch = null;
+  view.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    const blocked = e.touches.length !== 1 || !DOMAINS[ui.screen] || ui.sheet
+      || t.clientX < SWIPE.edge || t.clientX > window.innerWidth - SWIPE.edge
+      || e.target.closest('.segs, .map-card, input, textarea, .sheet');
+    touch = blocked ? null : { x: t.clientX, y: t.clientY, at: performance.now(), scroll: view.scrollTop };
+  }, { passive: true });
+  view.addEventListener('touchmove', (e) => {
+    if (touch && e.touches.length !== 1) touch = null;
+  }, { passive: true });
+  view.addEventListener('touchend', (e) => {
+    const start = touch;
+    touch = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    const quick = performance.now() - start.at < SWIPE.maxMs;
+    const still = Math.abs(view.scrollTop - start.scroll) < 8;
+    if (!quick || !still || Math.abs(dx) < SWIPE.minDx || Math.abs(dx) < Math.abs(dy) * SWIPE.ratio) return;
+    const tabs = sortedTabs(game.state, ui.screen).filter((x) => x.st !== 'locked').map((x) => x.t.id);
+    const i = tabs.indexOf(ui.inner[ui.screen]);
+    const next = tabs[i + (dx < 0 ? 1 : -1)];
+    if (i < 0 || !next) {
+      const el = view.firstElementChild;
+      if (el) {
+        el.classList.remove('bump-l', 'bump-r');
+        void el.offsetWidth;
+        el.classList.add(dx < 0 ? 'bump-l' : 'bump-r');
+      }
+      return;
+    }
+    ui.inner[ui.screen] = next;
+    ui.swipeDir = dx < 0 ? 'from-r' : 'from-l';
+    sfx.click();
+    render();
+  }, { passive: true });
+
   root.addEventListener('keydown', (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && (e.target.dataset.sector || e.target.dataset.req)) {
       e.preventDefault();
@@ -265,8 +308,12 @@ export function createUI(root, game) {
       const screenEl = view.firstElementChild;
       if (entered && screenEl) {
         screenEl.classList.add('enter');
+        if (ui.swipeDir) {
+          screenEl.classList.add(ui.swipeDir);
+        }
       }
       ui.lastInner = ui.inner[ui.screen];
+      ui.swipeDir = null;
       view.scrollTop = scroll;
       centerTab(segsScroll, entered);
       ui.logDirty = true;
