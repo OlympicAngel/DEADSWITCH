@@ -613,6 +613,12 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 }
 .nav-btn.main[aria-current='true'] .nav-ico { background: linear-gradient(160deg, #ff7d4f, #e8552b); color: #1a0b05; filter: drop-shadow(0 0 14px var(--hud-glow)); }
 .nav-btn.main::before { display: none; }
+.nav-lock { display: none; }
+.nav-btn.locked { color: #3a4a55; }
+.nav-btn.locked .nav-ico { position: relative; opacity: .6; }
+.nav-btn.locked .nav-lock { display: grid; place-items: center; position: absolute; right: -8px; bottom: -4px; width: 16px; height: 16px; font-size: 10px; border-radius: 50%; background: #0f1418; border: 1px solid var(--line-2); color: var(--muted); }
+.nav-btn.locked .nav-badge { display: none; }
+.seg.st-locked { cursor: pointer; }
 .nav-badge {
   position: absolute; top: 8px; right: calc(50% - 22px);
   min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;

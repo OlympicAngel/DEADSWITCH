@@ -9,7 +9,7 @@ import { icon } from '../icons.js';
 import {
   resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
-import { DOMAINS, sortedTabs } from '../layout.js';
+import { DOMAINS, sortedTabs, tabReq } from '../layout.js';
 
 export const BUY_MODES = [1, 10, 'max'];
 
@@ -21,7 +21,7 @@ export function renderDomain(s, ui, domain) {
   }
   const tab = d.tabs.find((t) => t.id === ui.inner[domain]);
   const tabBar = tabs.map(({ t, st }) => `
-    <button class="seg st-${st}" data-inner="${t.id}" aria-selected="${t.id === tab.id}">
+    <button class="seg st-${st}" data-inner="${t.id}" aria-selected="${t.id === tab.id}" ${st === 'locked' ? `data-req="${tabReq(s, t)}" aria-disabled="true"` : ''}>
       ${icon(st === 'locked' ? 'lock' : t.icon)}<span>${t.name}</span>
     </button>`).join('');
   const factors = d.factors.map((k) => `

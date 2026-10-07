@@ -22,7 +22,7 @@ Four chapters open with AI Core levels 1, 4, 6, 8: Scavenger Clans, Remnant Mili
 Portrait, phone first (desktop shows the same column).
 - **Top bar**: AI Core level, rank, Threat, settings, and the three resources with storage bars and rates. An alert strip appears under it on every screen while a raid is inbound or orders are pending.
 - **Bottom tabs**: Economy, Military, **Command** (centre), Research, Map. Inner tabs pair each building with what it unlocks: Military has Offense (Armory + weapons), Defense (Fortification Works + defenses), Troops (Barracks + staff); Research has Experts and Tech; Economy has Production (with the AI Core), Conversion, Storage; Map has Theater and Archive.
-- Unlocked tabs and entries come first; only the next locked entry is shown, faded.
+- Unlocked tabs and entries come first; only the next locked entry is shown, faded. A tab (or bottom-nav item) whose contents are all locked is locked itself; tapping any locked thing jumps to and highlights what unlocks it.
 - **Command** is the war room: condition banner, Threat reactor with Power, Defense, Experts and Humanity around it, then incoming raid, outgoing operation, construction, pending orders, the current directive (with a Go button that jumps to and highlights the target), active effects and the system feed.
 - Everything numeric explains itself on hover or tap: resources (sources, bonuses, time to full), factors, Threat, Humanity and every cost chip (shortfall, time to afford, storage limits).
 - Pressure: alarm, vibration, shake and red flash when a raid is spotted; a red pulsing vignette in the final minute; vibrating, shaking battle reports on defeat. Sound and vibration can be turned off in settings.

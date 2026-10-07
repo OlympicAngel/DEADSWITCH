@@ -7,7 +7,7 @@ import * as E from '../engine.js';
 import { num, rate, pct, esc } from '../format.js';
 import { icon, mountIcons } from './icons.js';
 import { clock, chanceClass, factorTag } from './common.js';
-import { NAV, locate } from './layout.js';
+import { NAV, locate, domainReq } from './layout.js';
 import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
 import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
 import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector } from './screens/map.js';
@@ -49,7 +49,7 @@ export function createUI(root, game) {
       <main class="view" id="view"></main>
       <nav class="bottom-nav">
         ${NAV.map((n) => `<button class="nav-btn ${n.main ? 'main' : ''}" data-nav="${n.id}">
-          <span class="nav-ico">${icon(n.icon)}</span><span class="nav-lbl">${n.name}</span><i class="nav-badge" hidden></i></button>`).join('')}
+          <span class="nav-ico">${icon(n.icon)}<span class="nav-lock">${icon('lock')}</span></span><span class="nav-lbl">${n.name}</span><i class="nav-badge" hidden></i></button>`).join('')}
       </nav>
       <div class="vignette"></div>
       <div class="toasts" aria-live="polite"></div>
@@ -120,15 +120,16 @@ export function createUI(root, game) {
       return;
     }
     const s = game.state;
-    if (t.dataset.nav) {
-      sfx.click();
-      go(t.dataset.nav);
-      return;
-    }
+    // Locked things lead to what unlocks them.
     if (t.dataset.req) {
       const l = locate('building', t.dataset.req);
       sfx.click();
       go(l.domain, l.tab, `[data-card="${t.dataset.req}"]`);
+      return;
+    }
+    if (t.dataset.nav) {
+      sfx.click();
+      go(t.dataset.nav);
       return;
     }
     if (t.dataset.go) {
@@ -392,6 +393,16 @@ export function createUI(root, game) {
   }
 
   function updateNav(s) {
+    for (const [id, b] of Object.entries(navBtns)) {
+      const req = domainReq(s, id);
+      b.classList.toggle('locked', !!req);
+      b.setAttribute('aria-disabled', String(!!req));
+      if (req) {
+        b.dataset.req = req;
+      } else {
+        delete b.dataset.req;
+      }
+    }
     badge('command', s.events.length || (s.raid && E.raidChance(s) < 0.8 ? '!' : ''), 'red');
     badge('military', s.raid && E.raidChance(s) < 0.8 ? '!' : '', 'red');
     const idle = !s.build && BUILDINGS.some((b) => E.buildingStatus(s, b) === 'ready');

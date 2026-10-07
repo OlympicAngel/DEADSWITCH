@@ -56,6 +56,28 @@ export function tabStatus(s, tab) {
   return 'open';
 }
 
+// The building a locked tab is waiting on (its first unmet requirement).
+export function tabReq(s, tab) {
+  if (tab.unlocker) {
+    return Object.keys(BY_ID[tab.unlocker].req).find((id) => E.level(s, id) < BY_ID[tab.unlocker].req[id]) || null;
+  }
+  if (tab.kinds) {
+    const next = BUILDINGS.filter((b) => tab.kinds.includes(b.kind)).sort((a, b) => (a.req.core || 0) - (b.req.core || 0))[0];
+    return next ? Object.keys(next.req)[0] : null;
+  }
+  return null;
+}
+
+// A domain whose every inner tab is locked is locked itself; returns the building to unlock it, or null.
+export function domainReq(s, domain) {
+  const d = DOMAINS[domain];
+  if (!d || d.tabs.some((t) => tabStatus(s, t) !== 'locked')) {
+    return null;
+  }
+  const t = d.tabs.find((x) => x.unlocker) || d.tabs[0];
+  return tabReq(s, t);
+}
+
 const ORDER = { open: 0, available: 1, locked: 2 };
 
 // Unlocked first, locked last; declared order breaks ties.
