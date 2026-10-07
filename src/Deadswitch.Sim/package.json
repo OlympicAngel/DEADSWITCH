@@ -1,7 +1,0 @@
-{
-  "name": "com.deadswitch.sim",
-  "displayName": "Deadswitch Simulation Core",
-  "version": "0.1.0",
-  "unity": "6000.0",
-  "description": "Deterministic, engine-agnostic simulation core. Built by the .NET solution and consumed by Unity as a local UPM package."
-}

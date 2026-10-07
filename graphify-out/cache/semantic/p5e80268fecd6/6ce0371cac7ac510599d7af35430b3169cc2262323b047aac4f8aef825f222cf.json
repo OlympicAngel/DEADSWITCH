@@ -1,1 +1,0 @@
-{"nodes": [{"id": "tools_basepreview_page", "label": "Base Preview Tool", "file_type": "code", "source_file": "tools/basepreview/page.html", "rationale": "Three.js implementation of the base diorama for headless previewing."}], "edges": [], "hyperedges": []}
