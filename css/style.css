@@ -949,3 +949,13 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .panel[data-panel='op'] > header { color: var(--power); }
 .panel[data-panel='op'] .timebar i { background: var(--power); box-shadow: 0 0 8px var(--power); }
 .panel.incoming { border-left: 3px solid var(--defense); }
+/* Unlock (level 0) reads as a different action from Upgrade: dark plate, glowing amber outline, hazard stripes */
+.card.unbuilt .btn.unlock:not(:disabled):not(.to-storage) {
+  color: var(--warn);
+  background:
+    repeating-linear-gradient(135deg, rgba(255,176,61,.14) 0 6px, transparent 6px 12px),
+    linear-gradient(180deg, #2a2116, #16110b);
+  box-shadow: inset 0 0 0 2px var(--warn), 0 0 16px rgba(255,176,61,.3);
+  text-shadow: 0 0 8px rgba(255,176,61,.5);
+}
+.card.unbuilt .btn.unlock:not(:disabled):not(.to-storage):hover { filter: brightness(1.2); }
