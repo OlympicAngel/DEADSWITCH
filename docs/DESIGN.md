@@ -7,7 +7,7 @@ You are what is left of the war AI that ended the world. Rebuild a base in the r
    - *Producers* make a resource for free. *Converters* turn one resource into another, throttle themselves on empty input or full output, and can be paused.
    - The **AI Core** caps every other building at `core level × 5` and opens new buildings and new chapters. It can only be upgraded once the average level of all unlocked buildings (unbuilt count as 0) reaches 80% of the current cap.
    - *Unlockers* (Barracks, Armory, Fortification Works, Think Tank, Research Lab) open Arsenal tabs; each level unlocks more and cuts that tab's prices 3%.
-2. **Arsenal**: unlimited units at escalating prices (`base × priceMult × growth^owned`, with every growth stretched by `growthMult`) raise the three factors:
+2. **Arsenal**: unlimited units at escalating prices. Every building level and unit costs `base × priceMult × g^n × (n+1)^pricePower` with `g = 1 + (growth-1) × growthMult` (1.8, 1.35, 0.35) raise the three factors:
    - **AI Power** wins operations. **AI Defense** holds off raids. **AI Experts** add +0.5% to all production each. **Tech** adds % bonuses.
 3. **Operations** (map): attack sectors adjacent to territory you hold. Odds are `P^4 / (P^4 + D^4)` (equal = 50%, double = 94%), shown before you launch and rolled when the operation lands. Wins give loot, a permanent bonus and a memory fragment (story). Losses kill 15% of Military Staff. Capturing a faction's capital stops its raids. Sectors with several approaches (links from sectors closer to home) are fortified: +50% defense while you hold one approach, scaling linearly to 0 when you hold them all (`OPS.flankBonus`).
 4. **Raids**: from AI Core 2, factions you have not beaten attack every 8 to 14 minutes with a visible countdown and strength. Strength tracks 30% of your Threat index, so an all-offense build gets punished. Losing costs 5 to 20% of stockpiles and 10% of troops, and triggers **damage reports**: crisis events where you choose what to lose (a building level, units, people). A rout triggers two. While you are away at most one raid lands, then the timer waits for you.
@@ -34,7 +34,7 @@ Portrait, phone first (desktop shows the same column).
 ## Where things live
 - All content and numbers: `js/data/` (economy, world, story).
 - Rules: `js/sim/` (economy, war, story) behind `js/engine.js`. Pure and seeded (`state.rng`), so offline catch-up and tests are reproducible.
-- `npm run balance` has a bot play 24h and prints milestone times. Last run (prices x1.6, growth x1.3): Core 2 at 14 min, Core 3 at 45 min, Scrap Throne at ~1h10, Core 6 at ~9.5h of nonstop play.
+- `npm run balance` has a bot play 24h and prints milestone times. Last run (price formula 1.8 / 1.35 / 0.35): Core 2 at 19 min, Core 3 at 1h40, Core 4 at 4h45, Core 5 at ~10.5h of nonstop play.
 
 ## Next ideas
 Rival AI players (online), unit upgrades and generals, sector garrisons that can be retaken, seasonal events, prestige reset ("reboot the core").

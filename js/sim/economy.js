@@ -163,13 +163,20 @@ export function projectDefense(s, seconds) {
 }
 
 // Global price tuning: base prices and their growth rates both scale from BALANCE.
+// Price of the n-th level/unit (n = 0 for the first):
+//   base x priceMult x growth'^n x (n + 1)^pricePower,  growth' = 1 + (growth - 1) x growthMult
+// The geometric part sets the long-run climb; the low power term makes every step noticeably dearer.
 export const priceGrowth = (g) => 1 + (g - 1) * BALANCE.growthMult;
 
+export function priceFactor(growth, n) {
+  return BALANCE.priceMult * Math.pow(priceGrowth(growth), n) * Math.pow(n + 1, BALANCE.pricePower);
+}
+
 export function buildingCost(s, b) {
-  const lvl = level(s, b.id);
+  const f = priceFactor(b.growth, level(s, b.id));
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
-    out[k] = Math.ceil(v * BALANCE.priceMult * Math.pow(priceGrowth(b.growth), lvl));
+    out[k] = Math.ceil(v * f);
   }
   return out;
 }
@@ -184,34 +191,41 @@ export function shopDiscount(s, item) {
   return Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, lvl - 1));
 }
 
-// Total cost of buying `count` more of an item (geometric series).
+// Total cost of buying `count` more of an item (sum of each unit's price).
 export function itemCost(s, item, count = 1) {
   const n = owned(s, item.id);
   const d = shopDiscount(s, item);
-  const g = priceGrowth(item.growth);
-  const series = (Math.pow(g, count) - 1) / (g - 1);
+  let sum = 0;
+  for (let i = 0; i < count; i++) {
+    sum += priceFactor(item.growth, n + i);
+  }
   const out = {};
   for (const [k, v] of Object.entries(item.cost)) {
-    out[k] = Math.ceil(v * BALANCE.priceMult * d * Math.pow(g, n) * series);
+    out[k] = Math.ceil(v * d * sum);
   }
   return out;
 }
 
+const MAX_BULK = 5000;
+
 export function maxAffordable(s, item) {
   const n = owned(s, item.id);
   const d = shopDiscount(s, item);
-  const g = priceGrowth(item.growth);
-  let best = Infinity;
-  for (const [k, v] of Object.entries(item.cost)) {
-    const first = v * BALANCE.priceMult * d * Math.pow(g, n);
-    const k1 = Math.floor(Math.log((s.res[k] * (g - 1)) / first + 1) / Math.log(g) + EPS);
-    best = Math.min(best, k1);
+  const spent = {};
+  let count = 0;
+  while (count < MAX_BULK) {
+    const f = priceFactor(item.growth, n + count) * d;
+    const ok = Object.entries(item.cost).every(([k, v]) => (spent[k] || 0) + v * f <= s.res[k] + EPS);
+    if (!ok) break;
+    for (const [k, v] of Object.entries(item.cost)) {
+      spent[k] = (spent[k] || 0) + v * f;
+    }
+    count++;
   }
-  best = Math.max(0, best);
-  while (best > 0 && !canAfford(s, itemCost(s, item, best))) {
-    best--;
+  while (count > 0 && !canAfford(s, itemCost(s, item, count))) {
+    count--;
   }
-  return best;
+  return count;
 }
 
 export function canAfford(s, cost) {
