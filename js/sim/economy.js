@@ -274,17 +274,32 @@ export function giveItems(s, items) {
   checkRank(s);
 }
 
-// Removes a share of every Military Staff unit (battle casualties). Returns units lost.
-export function loseStaff(s, share) {
+// Removes a share of every unit in one Arsenal tab (battle casualties, looting). Returns units lost.
+export function loseUnits(s, tab, share) {
   let lost = 0;
   for (const item of ITEMS) {
-    if (item.tab === 'staff' && owned(s, item.id)) {
+    if (item.tab === tab && owned(s, item.id)) {
       const n = Math.floor(owned(s, item.id) * share);
       s.items[item.id] -= n;
       lost += n;
     }
   }
   return lost;
+}
+
+export const loseStaff = (s, share) => loseUnits(s, 'staff', share);
+
+// Destroys one level of a building. Storage caps shrink with it, so stockpiles are clamped.
+export function loseLevel(s, id) {
+  if (level(s, id) < 1) {
+    return;
+  }
+  s.levels[id]--;
+  s.fx.push({ kind: 'damaged', id });
+  const c = caps(s);
+  for (const k of Object.keys(s.res)) {
+    s.res[k] = Math.min(s.res[k], c[k]);
+  }
 }
 
 export function togglePause(s, id) {

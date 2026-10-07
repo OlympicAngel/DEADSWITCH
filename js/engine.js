@@ -9,7 +9,7 @@ export * from './sim/war.js';
 export * from './sim/story.js';
 export { odds } from './sim/rng.js';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 const EPS = 1e-9;
 const INBOX_LIMIT = 20;
 
@@ -28,7 +28,8 @@ export function newState(seed = 1) {
     raidTimer: 0,
     raidsStarted: false,
     offlineRaids: 0,
-    event: null,
+    events: [],
+    eventSeq: 0,
     eventTimer: EVENTS_CFG.firstDelay,
     recentEvents: [],
     buffs: [],
@@ -36,7 +37,7 @@ export function newState(seed = 1) {
     directive: 0,
     chapter: 0,
     ending: null,
-    stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0 },
+    stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0 },
     inbox: [{ kind: 'boot' }],
     fx: [],
     log: [],
@@ -48,6 +49,8 @@ export function newState(seed = 1) {
   s.seen = unlockedKeys(s);
   say(s, 'boot');
   checkChapters(s);
+  // The boot sequence already introduces chapter 1.
+  s.inbox = s.inbox.filter((m) => m.kind !== 'chapter');
   return s;
 }
 
@@ -83,9 +86,14 @@ export function migrate(raw) {
   if (s.raid && !FACTIONS[s.raid.faction]) {
     s.raid = null;
   }
-  if (s.event && !eventById(s.event)) {
-    s.event = null;
+  // v2 kept one pending event id; v3 keeps a queue of instances with deadlines.
+  if (typeof raw.event === 'string' && eventById(raw.event) && !Array.isArray(raw.events)) {
+    const ev = eventById(raw.event);
+    s.events = [{ uid: 1, id: ev.id, left: ev.deadline, total: ev.deadline, params: {} }];
+    s.eventSeq = 1;
   }
+  delete s.event;
+  s.events = (Array.isArray(s.events) ? s.events : []).filter((x) => x && eventById(x.id) && Number.isFinite(x.left));
   s.sectors = s.sectors.filter((id) => sectorById(id));
   s.inbox = s.inbox.filter((m) => m && m.kind && (m.kind !== 'op' || sectorById(m.sector)) && (m.kind !== 'raid' || FACTIONS[m.faction]));
   if (!raw.v || raw.v < 2) {
@@ -104,7 +112,7 @@ export function step(s, dt, offline = false) {
   advanceBuild(s, dt);
   advanceOp(s, dt);
   advanceRaids(s, dt, offline);
-  advanceEvents(s, dt);
+  advanceEvents(s, dt, offline);
   advanceBuffs(s, dt);
   checkChapters(s);
   checkDirectives(s);

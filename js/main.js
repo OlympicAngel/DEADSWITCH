@@ -42,8 +42,8 @@ game.act = {
   cancel: () => commit(E.cancelBuild(game.state)),
   buy: (id, n) => E.buyItem(game.state, id, n),
   launch: (id) => commit(E.launchOp(game.state, id)),
-  choose: (i) => {
-    const res = E.resolveEvent(game.state, i);
+  choose: (uid, i) => {
+    const res = E.resolveEvent(game.state, uid, i);
     save();
     return res;
   },
@@ -106,6 +106,8 @@ function tick() {
   }
   ui.render();
 }
+
+ui.queuePendingEvents();
 
 // Exposed for debugging from the browser console.
 window.deadswitch = game;

@@ -1,14 +1,43 @@
-// Visual juice: floating numbers, flashes, screen shake, particle bursts.
+// Visual and haptic juice: floating numbers, flashes, shakes, particle bursts, vibration.
+const HAPTICS_KEY = 'deadswitch.haptics';
+let haptics = true;
+try {
+  haptics = localStorage.getItem(HAPTICS_KEY) !== '0';
+} catch {
+  // Storage blocked: keep haptics on.
+}
+
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function floatText(anchor, text, cls = '') {
+export const hapticsOn = () => haptics;
+
+export function setHaptics(on) {
+  haptics = on;
+  try {
+    localStorage.setItem(HAPTICS_KEY, on ? '1' : '0');
+  } catch {
+    // ignore
+  }
+}
+
+export function vibrate(pattern) {
+  if (haptics && navigator.vibrate) {
+    try {
+      navigator.vibrate(pattern);
+    } catch {
+      // Some browsers throw before the first user gesture.
+    }
+  }
+}
+
+export function floatText(anchor, html, cls = '') {
   if (!anchor || reduced()) {
     return;
   }
   const r = anchor.getBoundingClientRect();
   const el = document.createElement('div');
   el.className = 'float-text ' + cls;
-  el.textContent = text;
+  el.innerHTML = html;
   el.style.left = r.left + r.width / 2 + 'px';
   el.style.top = r.top + 'px';
   document.body.appendChild(el);
@@ -25,14 +54,22 @@ export function flash(el, cls = 'flash') {
   el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
 }
 
-export function shake() {
+export function shake(strong = false) {
   if (reduced()) {
     return;
   }
-  flash(document.body, 'shake');
+  flash(document.body, strong ? 'shake-hard' : 'shake');
 }
 
-export function burst(anchor, color = 'var(--accent)', count = 14) {
+// Full-screen colour flash (red for hits, cyan for wins).
+export function screenFlash(kind = 'alert') {
+  const el = document.createElement('div');
+  el.className = 'screen-flash sf-' + kind;
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+export function burst(anchor, color = 'var(--hud)', count = 14) {
   if (!anchor || reduced()) {
     return;
   }

@@ -71,3 +71,17 @@ test('same seed and inputs give the same war outcomes', () => {
   };
   assert.equal(run(), run());
 });
+
+test('a lost raid demands orders, and silence applies the default choice', () => {
+  const s = E.newState(5);
+  Object.assign(s.levels, { core: 2, battery: 2, generator: 2 });
+  s.raidsStarted = true;
+  s.raid = { faction: 'scav', strength: 1e6, remaining: 1, total: 1 };
+  E.step(s, 1);
+  assert.equal(s.stats.raidsLost, 1);
+  assert.ok(s.events.length >= 1 && E.eventById(s.events[0].id).aftermath);
+  const inst = s.events[0];
+  E.catchUp(s, inst.left + 1);
+  assert.ok(!s.events.some((x) => x.uid === inst.uid));
+  assert.equal(s.stats.expired, 1);
+});
