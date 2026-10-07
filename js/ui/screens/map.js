@@ -76,14 +76,16 @@ function renderTheater(s, ui) {
   }
   let opPath = '';
   if (s.op) {
+    // The strike comes from every held sector linked to the target.
     const t = E.sectorById(s.op.sector);
-    const from = E.sectorById(t.links.find((l) => s.sectors.includes(l)));
-    const a = P(from);
     const b = P(t);
-    const path = `M${a.x},${a.y} L${b.x},${b.y}`;
-    const dots = [0, 0.45, 0.9].map((d) => `<circle r="8" class="op-dot"><animateMotion dur="1.35s" begin="${d}s" repeatCount="indefinite" path="${path}"/></circle>`).join('');
-    opPath = `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-glow"/>
-      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>${dots}`;
+    opPath = t.links.filter((l) => s.sectors.includes(l)).map((id) => {
+      const a = P(E.sectorById(id));
+      const path = `M${a.x},${a.y} L${b.x},${b.y}`;
+      const dots = [0, 0.45, 0.9].map((d) => `<circle r="8" class="op-dot"><animateMotion dur="1.35s" begin="${d}s" repeatCount="indefinite" path="${path}"/></circle>`).join('');
+      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-glow"/>
+        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>${dots}`;
+    }).join('');
   }
   const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
@@ -99,7 +101,7 @@ function renderTheater(s, ui) {
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
         <text class="name" dy="${r + 24}">${esc(label)}</text>
-        ${known && st !== 'owned' ? `<text class="def" dy="${-r - 10}">${num(x.defense)}</text>` : ''}
+        ${known && st !== 'owned' ? `<text class="def ${E.flank(s, x).bonus ? 'fort' : ''}" dy="${-r - 10}">${num(E.sectorDefense(s, x))}${E.flank(s, x).bonus ? ' ▲' : ''}</text>` : ''}
       </g>`;
   }).join('');
   const legend = CHAPTERS.map((c) => {
@@ -134,6 +136,13 @@ function reticle(p) {
   </g>`;
 }
 
+// Shown when the target has several approaches.
+function fortRow(s, sec) {
+  const f = E.flank(s, sec);
+  if (f.approaches < 2) return '';
+  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while one approach is held, falling to 0 when all ${f.approaches} are held."><span>${icon('defense')}Approaches held</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${f.held}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
+}
+
 function territory(shown) {
   return Object.keys(FACTIONS).filter((f) => shown.some((x) => x.faction === f)).map((f) => {
     const list = shown.filter((x) => x.faction === f).map(P);
@@ -166,10 +175,11 @@ function briefing(s, sec) {
     <div class="duel">
       <div data-tip="factor:power"><small>${icon('power')}Your power</small><b data-power></b></div>
       <div class="odds-ring"><b data-chance></b><small>odds</small></div>
-      <div><small>${icon('defense')}Their defense</small><b>${num(sec.defense)}</b></div>
+      <div><small>${icon('defense')}Their defense</small><b>${num(E.sectorDefense(s, sec))}</b></div>
     </div>
     <div class="oddsbar"><i data-odds></i></div>
     <div class="rows">
+      ${fortRow(s, sec)}
       <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
       <div class="r"><span>${icon('spark')}Spoils</span><b>${tags(E.opLoot(sec), '+')}</b></div>
       <div class="r"><span>${icon('trend')}Permanent</span><b class="good-t">${bonusText(sec.bonus)}</b></div>

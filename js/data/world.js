@@ -134,6 +134,7 @@ export const SECTORS = [
 
 export const OPS = {
   winSharpness: 4, // chance = P^k / (P^k + D^k)
+  flankBonus: 0.5, // a sector reachable by several routes gets up to +50% defense until you hold its approaches
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,
   timeBase: 20,

@@ -917,3 +917,4 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 @keyframes bumpL { 40% { transform: translateX(-14px); } }
 @keyframes bumpR { 40% { transform: translateX(14px); } }
 .view { touch-action: pan-y; }
+.node .def.fort { fill: var(--bad); }

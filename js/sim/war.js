@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG, MAP } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseStaff, say, caps,
@@ -35,8 +35,49 @@ export function opLoot(sec) {
   };
 }
 
+// Steps from home over the whole map; approaches of a sector are its neighbours closer to home
+// (links leading further out are not approaches).
+let DEPTH = null;
+function depth() {
+  if (!DEPTH) {
+    DEPTH = { [MAP.home]: 0 };
+    const queue = [MAP.home];
+    while (queue.length) {
+      const id = queue.shift();
+      for (const l of SECTOR_BY_ID[id].links) {
+        if (DEPTH[l] === undefined) {
+          DEPTH[l] = DEPTH[id] + 1;
+          queue.push(l);
+        }
+      }
+    }
+  }
+  return DEPTH;
+}
+
+export function approaches(sec) {
+  const d = depth();
+  return sec.links.filter((l) => d[l] < d[sec.id]);
+}
+
+// Multi-route sectors are fortified: +50% defense while you hold only one approach, scaling down
+// linearly to 0 when you hold every approach. Single-approach sectors never get it.
+export function flank(s, sec) {
+  const ins = approaches(sec);
+  const held = ins.filter((l) => s.sectors.includes(l)).length;
+  if (ins.length < 2) {
+    return { approaches: ins.length, held, bonus: 0 };
+  }
+  const missing = Math.min(ins.length - 1, ins.length - held);
+  return { approaches: ins.length, held, bonus: OPS.flankBonus * (missing / (ins.length - 1)) };
+}
+
+export function sectorDefense(s, sec) {
+  return Math.ceil(sec.defense * (1 + flank(s, sec).bonus));
+}
+
 export function opChance(s, sec) {
-  return odds(factors(s).power, sec.defense, OPS.winSharpness);
+  return odds(factors(s).power, sectorDefense(s, sec), OPS.winSharpness);
 }
 
 // owned | locked (chapter) | hidden (not adjacent) | target (attackable)
@@ -81,9 +122,10 @@ export function advanceOp(s, dt) {
   const sec = SECTOR_BY_ID[s.op.sector];
   s.op = null;
   const power = factors(s).power;
-  const chance = odds(power, sec.defense, OPS.winSharpness);
+  const defense = sectorDefense(s, sec);
+  const chance = odds(power, defense, OPS.winSharpness);
   const roll = rand(s);
-  const report = { kind: 'op', sector: sec.id, power, defense: sec.defense, chance, roll, win: roll < chance };
+  const report = { kind: 'op', sector: sec.id, power, defense, chance, roll, win: roll < chance };
   if (report.win) {
     s.sectors.push(sec.id);
     const loot = opLoot(sec);
