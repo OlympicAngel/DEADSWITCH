@@ -34,7 +34,7 @@ Portrait, phone first (desktop shows the same column).
 ## Where things live
 - All content and numbers: `js/data/` (economy, world, story).
 - Rules: `js/sim/` (economy, war, story) behind `js/engine.js`. Pure and seeded (`state.rng`), so offline catch-up and tests are reproducible.
-- `npm run balance` runs the balance simulation: a bot plays 5 seeded 24h runs with every system live (Core gate, price formula, raids, sieges, vengeance, threats, fortified sectors) and random affordable event choices, and prints average/min/max milestone times and end-state averages. Last run: Core 2 18m, Core 3 1h31, Core 4 4h42, Core 5 12h09; Scrap Throne 2h01, Fort Ashgrove 5h35; ~28 of 75 attacks lost per 24h.
+- `npm run balance` runs the balance simulation: a bot plays 5 seeded 24h runs with every system live (Core gate, price formula, raids, sieges, vengeance, threats, fortified sectors) and random affordable event choices, and prints average/min/max milestone times and end-state averages. Last run (Scrip prices x1.5 on top): Core 2 29m, Core 3 2h08, Core 4 6h27, Core 5 20h43; Scrap Throne 2h49, Fort Ashgrove 9h12.
 
 ## Next ideas
 Rival AI players (online), unit upgrades and generals, sector garrisons that can be retaken, seasonal events, prestige reset ("reboot the core").

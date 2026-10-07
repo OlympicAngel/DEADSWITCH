@@ -182,6 +182,8 @@ export function projectDefense(s, seconds, drain = {}) {
 // The geometric part sets the long-run climb; the low power term makes every step noticeably dearer.
 export const priceGrowth = (g) => 1 + (g - 1) * BALANCE.growthMult;
 
+export const resMult = (k) => (BALANCE.resourcePriceMult && BALANCE.resourcePriceMult[k]) || 1;
+
 export function priceFactor(growth, n) {
   return BALANCE.priceMult * Math.pow(priceGrowth(growth), n) * Math.pow(n + 1, BALANCE.pricePower);
 }
@@ -190,7 +192,7 @@ export function buildingCost(s, b) {
   const f = priceFactor(b.growth, level(s, b.id));
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
-    out[k] = Math.ceil(v * f);
+    out[k] = Math.ceil(v * resMult(k) * f);
   }
   return out;
 }
@@ -215,7 +217,7 @@ export function itemCost(s, item, count = 1) {
   }
   const out = {};
   for (const [k, v] of Object.entries(item.cost)) {
-    out[k] = Math.ceil(v * d * sum);
+    out[k] = Math.ceil(v * resMult(k) * d * sum);
   }
   return out;
 }
@@ -229,10 +231,10 @@ export function maxAffordable(s, item) {
   let count = 0;
   while (count < MAX_BULK) {
     const f = priceFactor(item.growth, n + count) * d;
-    const ok = Object.entries(item.cost).every(([k, v]) => (spent[k] || 0) + v * f <= s.res[k] + EPS);
+    const ok = Object.entries(item.cost).every(([k, v]) => (spent[k] || 0) + v * resMult(k) * f <= s.res[k] + EPS);
     if (!ok) break;
     for (const [k, v] of Object.entries(item.cost)) {
-      spent[k] = (spent[k] || 0) + v * f;
+      spent[k] = (spent[k] || 0) + v * resMult(k) * f;
     }
     count++;
   }
