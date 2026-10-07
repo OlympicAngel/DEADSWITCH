@@ -243,6 +243,8 @@ export function createUI(root, game) {
     if (key !== ui.key) {
       ui.key = key;
       const scroll = view.scrollTop;
+      const oldSegs = view.querySelector('.segs');
+      const segsScroll = oldSegs && ui.lastScreen === ui.screen ? oldSegs.scrollLeft : 0;
       if (ui.screen === 'command') {
         view.innerHTML = renderCommand();
         ui.refs = bindCommand(view);
@@ -260,6 +262,7 @@ export function createUI(root, game) {
       }
       ui.lastInner = ui.inner[ui.screen];
       view.scrollTop = scroll;
+      centerTab(segsScroll, entered);
       ui.logDirty = true;
       if (ui.screen === 'map' && (ui.lastScreen !== 'map' || ui.sheet)) {
         focusSector();
@@ -284,6 +287,18 @@ export function createUI(root, game) {
     view.style.scrollBehavior = 'auto';
     view.scrollTop += n.top + n.height / 2 - v.top - room / 2;
     view.style.scrollBehavior = '';
+  }
+
+  // Keeps the selected inner tab centred in its scrollable bar, gliding from where the bar was.
+  function centerTab(from, animate) {
+    const bar = view.querySelector('.segs');
+    const tab = bar && bar.querySelector('[aria-selected="true"]');
+    if (!tab || bar.scrollWidth <= bar.clientWidth) {
+      return;
+    }
+    bar.scrollLeft = from;
+    const left = tab.offsetLeft + tab.offsetWidth / 2 - bar.clientWidth / 2;
+    requestAnimationFrame(() => bar.scrollTo({ left, behavior: animate ? 'smooth' : 'auto' }));
   }
 
   // Points at the element a directive needs: scroll to it and pulse it.
