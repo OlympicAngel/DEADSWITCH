@@ -156,26 +156,28 @@ export const SHOP_TABS = [
 // gives: flat factor points per unit. bonus: additive % per unit (tech). req: { unlockerId: level }.
 export const ITEMS = [
   // Weapons
+  // durability: share of losses a unit type avoids in defeats (max 0.7). Expendable front-line units have none:
+  // drones and gun trucks are thrown at the enemy; artillery and emplacements stay behind the line.
   { id: 'rifles', tab: 'weapons', name: 'Scrap Rifles', req: { armory: 1 }, cost: { money: 60 }, growth: 1.12, gives: { power: 3 } },
   { id: 'trucks', tab: 'weapons', name: 'Gun Trucks', req: { armory: 2 }, cost: { money: 300, energy: 40 }, growth: 1.13, gives: { power: 14 } },
-  { id: 'artillery', tab: 'weapons', name: 'Artillery Battery', req: { armory: 4 }, cost: { money: 1500, energy: 400 }, growth: 1.14, gives: { power: 60 } },
+  { id: 'artillery', tab: 'weapons', name: 'Artillery Battery', req: { armory: 4 }, cost: { money: 1500, energy: 400 }, growth: 1.14, gives: { power: 60 }, durability: 0.4 },
   { id: 'drones', tab: 'weapons', name: 'Strike Drone Swarm', req: { armory: 6 }, cost: { money: 9000, energy: 3000 }, growth: 1.14, gives: { power: 320 } },
-  { id: 'railgun', tab: 'weapons', name: 'Railgun Emplacement', req: { armory: 9 }, cost: { money: 70000, energy: 25000 }, growth: 1.15, gives: { power: 2000 } },
-  { id: 'lance', tab: 'weapons', name: 'Orbital Lance Uplink', req: { armory: 13 }, cost: { money: 800000, energy: 300000 }, growth: 1.15, gives: { power: 15000 } },
+  { id: 'railgun', tab: 'weapons', name: 'Railgun Emplacement', req: { armory: 9 }, cost: { money: 70000, energy: 25000 }, growth: 1.15, gives: { power: 2000 }, durability: 0.55 },
+  { id: 'lance', tab: 'weapons', name: 'Orbital Lance Uplink', req: { armory: 13 }, cost: { money: 800000, energy: 300000 }, growth: 1.15, gives: { power: 15000 }, durability: 0.7 },
   // Defenses
   { id: 'barricades', tab: 'defenses', name: 'Barricades', req: { works: 1 }, cost: { money: 50 }, growth: 1.12, gives: { defense: 3 } },
-  { id: 'pillboxes', tab: 'defenses', name: 'Concrete Pillboxes', req: { works: 2 }, cost: { money: 280, energy: 20 }, growth: 1.13, gives: { defense: 13 }, durability: 0.15 },
-  { id: 'turrets', tab: 'defenses', name: 'Auto-Turrets', req: { works: 4 }, cost: { money: 1400, energy: 500 }, growth: 1.14, gives: { defense: 60 }, durability: 0.3 },
-  { id: 'emp', tab: 'defenses', name: 'EMP Hardening', req: { works: 6 }, cost: { money: 8500, energy: 3500 }, growth: 1.14, gives: { defense: 320 }, durability: 0.45 },
-  { id: 'interceptors', tab: 'defenses', name: 'Interceptor Grid', req: { works: 9 }, cost: { money: 65000, energy: 30000 }, growth: 1.15, gives: { defense: 2000 }, durability: 0.6 },
-  { id: 'aegis', tab: 'defenses', name: 'Aegis Dome', req: { works: 13 }, cost: { money: 750000, energy: 350000 }, growth: 1.15, gives: { defense: 15000 }, durability: 0.7 },
+  { id: 'pillboxes', tab: 'defenses', name: 'Concrete Pillboxes', req: { works: 2 }, cost: { money: 280, energy: 20 }, growth: 1.13, gives: { defense: 13 } },
+  { id: 'turrets', tab: 'defenses', name: 'Auto-Turrets', req: { works: 4 }, cost: { money: 1400, energy: 500 }, growth: 1.14, gives: { defense: 60 }, durability: 0.2 },
+  { id: 'emp', tab: 'defenses', name: 'EMP Hardening', req: { works: 6 }, cost: { money: 8500, energy: 3500 }, growth: 1.14, gives: { defense: 320 }, durability: 0.5 },
+  { id: 'interceptors', tab: 'defenses', name: 'Interceptor Grid', req: { works: 9 }, cost: { money: 65000, energy: 30000 }, growth: 1.15, gives: { defense: 2000 }, durability: 0.15 },
+  { id: 'aegis', tab: 'defenses', name: 'Aegis Dome', req: { works: 13 }, cost: { money: 750000, energy: 350000 }, growth: 1.15, gives: { defense: 15000 }, durability: 0.65 },
   // Military staff (paid partly in people)
   { id: 'militia', tab: 'staff', name: 'Militia', req: { barracks: 1 }, cost: { money: 30, pop: 3 }, growth: 1.1, gives: { power: 1, defense: 1 } },
   { id: 'snipers', tab: 'staff', name: 'Scout Snipers', req: { barracks: 2 }, cost: { money: 200, pop: 6 }, growth: 1.12, gives: { power: 6, defense: 2 }, durability: 0.1 },
-  { id: 'garrison', tab: 'staff', name: 'Garrison Troops', req: { barracks: 3 }, cost: { money: 450, pop: 10 }, growth: 1.12, gives: { power: 3, defense: 12 }, durability: 0.2 },
+  { id: 'garrison', tab: 'staff', name: 'Garrison Troops', req: { barracks: 3 }, cost: { money: 450, pop: 10 }, growth: 1.12, gives: { power: 3, defense: 12 }, durability: 0.25 },
   { id: 'commandos', tab: 'staff', name: 'Commandos', req: { barracks: 5 }, cost: { money: 3000, pop: 25 }, growth: 1.13, gives: { power: 50, defense: 15 }, durability: 0.35 },
-  { id: 'operators', tab: 'staff', name: 'Drone Operators', req: { barracks: 7 }, cost: { money: 15000, energy: 4000, pop: 50 }, growth: 1.14, gives: { power: 150, defense: 150 }, durability: 0.5 },
-  { id: 'legion', tab: 'staff', name: 'Augmented Legion', req: { barracks: 10 }, cost: { money: 120000, energy: 40000, pop: 150 }, growth: 1.15, gives: { power: 1200, defense: 1200 }, durability: 0.7 },
+  { id: 'operators', tab: 'staff', name: 'Drone Operators', req: { barracks: 7 }, cost: { money: 15000, energy: 4000, pop: 50 }, growth: 1.14, gives: { power: 150, defense: 150 }, durability: 0.6 },
+  { id: 'legion', tab: 'staff', name: 'Augmented Legion', req: { barracks: 10 }, cost: { money: 120000, energy: 40000, pop: 150 }, growth: 1.15, gives: { power: 1200, defense: 1200 }, durability: 0.45 },
   // Experts
   { id: 'engineers', tab: 'experts', name: 'Field Engineers', req: { thinktank: 1 }, cost: { money: 250, pop: 8 }, growth: 1.14, gives: { experts: 1 } },
   { id: 'hackers', tab: 'experts', name: 'Hackers', req: { thinktank: 2 }, cost: { money: 1200, energy: 300, pop: 15 }, growth: 1.15, gives: { experts: 4 } },

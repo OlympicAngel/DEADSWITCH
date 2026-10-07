@@ -143,7 +143,7 @@ export const OPS = {
   lootPopPerDefense: 0.04,
   // Share of each unit tab killed when an operation fails: base x (their strength / ours), up to cap
   // (the cap is not shown to the player); each unit type loses that share x (1 - its durability).
-  unitLoss: { staff: { base: 0.067, cap: 0.45 } },
+  unitLoss: { staff: { base: 0.067, cap: 0.45 }, weapons: { base: 0.033, cap: 0.3 } },
 };
 
 export const RAIDS = {

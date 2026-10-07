@@ -184,7 +184,7 @@ function briefing(s, sec) {
       <div class="r"><span>${icon('spark')}Spoils</span><b>${tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
-      <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops killed if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
+      <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
     </div>
     ${st === 'locked'
       ? `<p class="hint">${icon('lock')}Opens in ${ch.title} (Chapter ${ch.id}) at ${icon('core')}AI Core Lv ${ch.core}.</p>`
@@ -221,7 +221,10 @@ export function updateMapScreen(s, ui, refs) {
   const p = E.opChance(s, sec);
   refs.power.textContent = num(f.power);
   refs.chance.textContent = pct(p);
-  if (refs.loss) refs.loss.textContent = `−${pct(E.lossShare(OPS.unitLoss.staff, f.power, E.sectorDefense(s, sec)))} troops`;
+  if (refs.loss) {
+    const d = E.sectorDefense(s, sec);
+    refs.loss.textContent = `−${pct(E.lossShare(OPS.unitLoss.staff, f.power, d))} troops · −${pct(E.lossShare(OPS.unitLoss.weapons, f.power, d))} weapons`;
+  }
   refs.chance.parentElement.className = 'odds-ring odds-' + chanceClass(p);
   refs.odds.style.width = pct(p);
   refs.odds.className = 'bg-' + chanceClass(p);

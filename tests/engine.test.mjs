@@ -149,7 +149,7 @@ test('durable units lose less, never more than 70% protected, and a loss still t
   s.items = { militia: 100, legion: 100 };
   const plan = E.lossPlan(s, 'staff', 0.4);
   assert.equal(plan.militia, 40);
-  assert.equal(plan.legion, 12);
+  assert.equal(plan.legion, 22);
   for (const id of Object.keys(ITEM_BY_ID)) assert.ok((ITEM_BY_ID[id].durability || 0) <= 0.7, id);
   s.items = { legion: 1 };
   assert.deepEqual(E.lossPlan(s, 'staff', 0.1), { legion: 1 });
