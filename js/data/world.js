@@ -143,7 +143,7 @@ export const OPS = {
   lootPopPerDefense: 0.04,
   // Share of each unit tab killed when an operation fails: base x (their strength / ours), up to cap
   // (the cap is not shown to the player); each unit type loses that share x (1 - its durability).
-  unitLoss: { staff: { base: 0.2, cap: 0.45 } },
+  unitLoss: { staff: { base: 0.067, cap: 0.45 } },
 };
 
 export const RAIDS = {
@@ -157,6 +157,6 @@ export const RAIDS = {
   winSharpness: 4,
   lossMin: 0.05, // share of each stockpile lost on defeat, scaling with how badly you lost
   lossMax: 0.2,
-  unitLoss: { staff: { base: 0.15, cap: 0.4 }, defenses: { base: 0.1, cap: 0.3 } }, // as OPS.unitLoss, for a breached raid or siege
+  unitLoss: { staff: { base: 0.05, cap: 0.4 }, defenses: { base: 0.033, cap: 0.3 } }, // as OPS.unitLoss, for a breached raid or siege
   lootMoneyPerStrength: 4,
 };
