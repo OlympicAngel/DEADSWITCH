@@ -143,7 +143,7 @@ function effectHtml(s, b, lvl, max) {
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
     const gate = lvl < max ? `
-      <div class="gate" data-tip="text" data-tip-text="Average level of all unlocked buildings except conversion, counting unbuilt ones as 0.">
+      <div class="gate" data-tip="text" data-tip-text="Average level of unlocked production and storage buildings, counting unbuilt ones as 0.">
         <div class="gate-row"><span class="nn-lbl">Base development</span><b data-gate-v></b></div>
         <div class="gate-bar"><i data-gate-bar></i></div>
       </div>` : '';

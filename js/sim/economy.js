@@ -260,8 +260,8 @@ export function exceedsCap(s, cost) {
 
 // AI Core gate: average level of every unlocked building (built or not) vs the share of the cap it needs.
 export function coreGate(s) {
-  // Converters are optional; only the core economy, storage and facilities count.
-  const list = BUILDINGS.filter((b) => b.kind !== 'core' && b.kind !== 'converter' && b.kind !== 'offline' && meetsReq(s, b.req));
+  // Only production and storage count: converters, the Watch Daemon and military/research facilities do not.
+  const list = BUILDINGS.filter((b) => (b.kind === 'producer' || b.kind === 'storage') && meetsReq(s, b.req));
   const avg = list.length ? list.reduce((sum, b) => sum + level(s, b.id), 0) / list.length : 0;
   const need = level(s, 'core') * BALANCE.levelCapPerCoreLevel * BALANCE.coreGateShare;
   return { avg, need, open: avg + 1e-9 >= need };
