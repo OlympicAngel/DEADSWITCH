@@ -25,6 +25,7 @@ export function createTips(game) {
       if (ex) out.push(row(`${icon('experts')}Experts`, '+' + pct(ex)));
     }
     if (b.tech) out.push(row(`${icon('research')}Tech`, '+' + pct(b.tech)));
+    if (b.sectors) out.push(row(`${icon('map')}Territory`, '+' + pct(b.sectors)));
     if (b.alignment) out.push(row(`${icon('heart')}Alignment`, '+' + pct(b.alignment)));
     if (b.effects) out.push(row(`${icon('spark')}Effects`, (b.effects > 0 ? '+' : '−') + pct(Math.abs(b.effects)), b.effects < 0 ? 'neg' : ''));
     return out.join('');
@@ -49,8 +50,6 @@ export function createTips(game) {
         if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * lvl * cm * eff) + '/s', 'neg'));
       }
     }
-    const terr = E.territory(s, r);
-    if (terr) lines.push(row(`${icon('map')}Territory`, '+' + num(terr) + '/s'));
     let eta = '';
     if (Number.isFinite(c)) {
       if (s.res[r] >= c * 0.999) eta = row('Storage', 'FULL: expand it', 'warn');
@@ -68,11 +67,8 @@ export function createTips(game) {
     const val = E.factors(s)[k];
     const extra = k === 'experts' ? row('Production bonus', '+' + pct(val * BALANCE.expertProductionBonus)) : '';
     const what = { power: 'Attack strength in operations.', defense: 'Strength against raids.', experts: `+${pct(BALANCE.expertProductionBonus)} production each.` }[k];
-    const terr = E.territory(s, k);
-    const bonuses = bonusRows(s, k);
-    return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw))
-      + (terr ? row(`${icon('map')}Territory`, '+' + num(terr)) : '') + extra
-      + (bonuses ? `<div class="tip-sec">Bonuses</div>${bonuses}` : '');
+    return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw)) + extra
+      + (val !== raw ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, k)}` : '');
   }
 
   function costTip(s, r, amt) {

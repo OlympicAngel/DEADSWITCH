@@ -5,7 +5,7 @@ import {
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
-import { tags, bonusText, bonusChips, yieldChips, chanceClass, clock } from './common.js';
+import { tags, bonusText, bonusChips, chanceClass, clock } from './common.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 
@@ -241,7 +241,7 @@ export function createModals(dialog, game, onChange) {
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: r.win
         ? `${r.retaken ? `<div class="r"><span>${icon('check')}Retaken</span><b class="muted">No spoils</b></div>` : `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>`}
-           ${sec.yields ? `<div class="perm"><span>${icon('trend')}Yields while held</span>${yieldChips(E.sectorYield(sec))}</div>` : ''}
+           ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
            ${r.retaken ? '' : `<blockquote class="lore">${esc(sec.lore)}</blockquote>`}`
         : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>
            ${r.strength ? `<div class="r"><span>${icon('trend')}${esc(sec.name)} strength</span><b class="bad-t">×${r.strength.toFixed(2)}</b></div>` : ''}`,

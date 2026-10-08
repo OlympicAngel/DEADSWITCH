@@ -5,7 +5,7 @@ import {
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
-import { costChips, setChips, tags, bonusText, bonusChips, yieldChips, chanceClass, clock } from '../common.js';
+import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } from '../common.js';
 import { sortedTabs } from '../layout.js';
 import { put, setCls, setW } from '../dom.js';
 
@@ -213,7 +213,7 @@ function briefing(s, sec) {
     </header>`;
   if (st === 'owned') {
     const br = E.breaches(s, sec.id);
-    return `${head}${sec.yields ? `<div class="perm"><span>${icon('trend')}Yields while held</span>${yieldChips(E.sectorYield(sec))}</div>` : ''}
+    return `${head}${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
       ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
@@ -234,7 +234,7 @@ function briefing(s, sec) {
       <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
-      <div class="perm"><span>${icon('trend')}Yields while held</span>${yieldChips(E.sectorYield(sec))}</div>
+      <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="Typical strength of its assaults on your bordering sectors."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>

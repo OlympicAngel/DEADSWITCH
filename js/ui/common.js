@@ -59,12 +59,6 @@ export function bonusChips(bonus) {
     `<span class="bchip t-${k}">${labeled(k)}${v >= 0 ? '+' : '−'}${pct(Math.abs(v))}</span>`).join('')}</span>`;
 }
 
-// A held sector's fixed yields: resources per second, forces as flat amounts.
-export function yieldChips(yields) {
-  return `<span class="bonus-chips">${Object.entries(yields || {}).map(([k, v]) =>
-    `<span class="bchip t-${k}">${labeled(k)}+${num(v)}${RESOURCES[k] ? '/s' : ''}</span>`).join('')}</span>`;
-}
-
 export function chanceClass(p) {
   return p >= 0.8 ? 'good' : p >= 0.5 ? 'fair' : 'bad';
 }
