@@ -33,6 +33,11 @@ function place(id, f, rMin, rMax, ang, spread) {
 // Outposts sit outside their faction's heartland, so territories interlock.
 const OUTPOSTS = { scav: ['pyre', 'magpie'], military: ['medic', 'comms'], cult: ['candle', 'martyr'], halcyon: ['hub', 'wing'] };
 const outpost = (id) => Object.values(OUTPOSTS).some((l) => l.includes(id));
+// Capitals are the cities: placed first, in the middle of their heartland, so the rest gathers round.
+place('throne', 'scav', 720, 800, 210, 30);
+place('ashgrove', 'military', 860, 960, HOME_ANGLE.military, 20);
+place('cathedral', 'cult', 860, 960, HOME_ANGLE.cult, 20);
+place('prime', 'halcyon', 900, 1000, HOME_ANGLE.halcyon, 20);
 // Scavengers ring the Nest; the others push in from their heartlands; outposts land anywhere mid-range.
 FACTIONS.scav.filter((id) => id !== 'throne' && !outpost(id)).forEach((id, i) => place(id, 'scav', 240 + i * 28, 300 + i * 36, null, 360));
 for (const f of Object.keys(OUTPOSTS)) OUTPOSTS[f].forEach((id) => place(id, f, 480, 720, null, 360));
@@ -40,10 +45,7 @@ for (const f of ['military', 'cult', 'halcyon']) {
   const list = FACTIONS[f].filter((id) => id !== CAPITAL[f] && !outpost(id));
   list.forEach((id, i) => place(id, f, 560 + i * 60, 640 + i * 75, HOME_ANGLE[f], 80 + i * 4));
 }
-place('throne', 'scav', 700, 820, 210, 40);
-place('ashgrove', 'military', 1150, 1300, HOME_ANGLE.military, 30);
-place('cathedral', 'cult', 1150, 1300, HOME_ANGLE.cult, 30);
-place('prime', 'halcyon', 1250, 1400, HOME_ANGLE.halcyon, 30);
+
 
 // Link budget per sector: mostly 2-3, a few 1 and 4-5; capitals 2, the Nest 4.
 const cap = {};
@@ -52,7 +54,7 @@ for (const p of pts) {
   cap[p.id] = r < 0.1 ? 1 : r < 0.47 ? 2 : r < 0.82 ? 3 : r < 0.95 ? 4 : 5;
 }
 cap.nest = 4;
-for (const c of Object.values(CAPITAL)) cap[c] = 2;
+for (const c of Object.values(CAPITAL)) cap[c] = 5;
 
 const links = Object.fromEntries(pts.map((p) => [p.id, new Set()]));
 const edges = [];
@@ -61,7 +63,16 @@ const cross = (a, b, c, d) => {
   if ([a, b].includes(c) || [a, b].includes(d)) return false;
   return o(a, b, c) !== o(a, b, d) && o(c, d, a) !== o(c, d, b);
 };
-const ok = (a, b) => !edges.some(([c, d]) => cross(a, b, c, d));
+// Two links leaving one sector at almost the same angle would draw on top of each other.
+const tooClose = (a, b, c, d) => {
+  const shared = a === c || a === d ? a : b === c || b === d ? b : null;
+  if (!shared) return false;
+  const o1 = shared === a ? b : a;
+  const o2 = shared === c ? d : c;
+  const ang = Math.abs(Math.atan2(o1.y - shared.y, o1.x - shared.x) - Math.atan2(o2.y - shared.y, o2.x - shared.x));
+  return Math.min(ang, 2 * Math.PI - ang) < (16 * Math.PI) / 180;
+};
+const ok = (a, b) => !edges.some(([c, d]) => cross(a, b, c, d) || tooClose(a, b, c, d));
 const add = (a, b) => { links[a.id].add(b.id); links[b.id].add(a.id); edges.push([a, b]); };
 const pairs = [];
 for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
@@ -69,6 +80,18 @@ for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
   if (d < MIN * 2.1) pairs.push([d, pts[i], pts[j]]);
 }
 pairs.sort((a, b) => a[0] - b[0]);
+// Cities first: each capital links to its 5 nearest reachable neighbours (they may exceed their own budget by one).
+for (const c of Object.values(CAPITAL)) {
+  const me = pts.find((p) => p.id === c);
+  // Own faction first (a city sits in its own heartland), nearest first; anything within reach.
+  const near = pts.filter((p) => p !== me && Math.hypot(p.x, p.y) > 420).map((p) => [Math.hypot(p.x - me.x, p.y - me.y), p])
+    .filter(([d]) => d < MIN * 2.4)
+    .sort((a, b) => (b[1].f === me.f) - (a[1].f === me.f) || a[0] - b[0]);
+  for (const [, p] of near) {
+    if (links[c].size >= 5) break;
+    if (links[p.id].size <= cap[p.id] && !Object.values(CAPITAL).includes(p.id) && ok(me, p)) add(me, p);
+  }
+}
 for (const [, a, b] of pairs) {
   if (links[a.id].size < cap[a.id] && links[b.id].size < cap[b.id] && ok(a, b)) add(a, b);
 }
@@ -99,8 +122,25 @@ for (let c = 1; c <= 4; c++) {
     add(best[1], best[2]);
   }
 }
+// The first directive points at Rust Market: it must border the Nest. Swap it with the nearest Scavenger there.
+if (!links.nest.has('rust')) {
+  const nb = [...links.nest].filter((id) => FACTIONS.scav.includes(id)).sort((a, b) => {
+    const pa = pts.find((p) => p.id === a); const pb = pts.find((p) => p.id === b);
+    return Math.hypot(pa.x, pa.y) - Math.hypot(pb.x, pb.y);
+  })[0];
+  const A = pts.find((p) => p.id === 'rust'); const B = pts.find((p) => p.id === nb);
+  [A.id, B.id] = [B.id, A.id];
+  const la = links.rust; const lb = links[nb];
+  links.rust = lb; links[nb] = la;
+  for (const s of Object.values(links)) {
+    const hasA = s.has('rust'); const hasB = s.has(nb);
+    s.delete('rust'); s.delete(nb);
+    if (hasA) s.add(nb);
+    if (hasB) s.add('rust');
+  }
+}
 const out = {};
 for (const p of pts) out[p.id] = { x: Math.round(p.x), y: Math.round(p.y), links: [...links[p.id]] };
 const deg = pts.map((p) => links[p.id].size);
-console.error('sectors', pts.length, 'links', edges.length, 'degree histogram', [1, 2, 3, 4, 5, 6].map((d) => `${d}:${deg.filter((x) => x === d).length}`).join(' '));
+console.error('capitals', Object.values(CAPITAL).map((c) => c + ':' + links[c].size + '/' + [...links[c]].filter((l) => pts.find((p) => p.id === l).f === pts.find((p) => p.id === c).f).length).join(' '), 'sectors', pts.length, 'links', edges.length, 'degree histogram', [1, 2, 3, 4, 5, 6].map((d) => `${d}:${deg.filter((x) => x === d).length}`).join(' '));
 console.log(JSON.stringify(out));

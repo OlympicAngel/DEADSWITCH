@@ -99,14 +99,16 @@ test('the AI Core only upgrades once the base is developed', () => {
   assert.equal(E.buildingStatus(s, BY_ID.core), 'ready');
 });
 
-test('multi-route sectors are fortified until every approach is held', () => {
+test('sectors are fortified by linked sectors of their own clan, until you take them', () => {
   const s = E.newState(2);
-  const tunnels = E.sectorById('tunnels'); // approached from Drowned Mall and The Sump
-  s.sectors = ['nest', 'drowned'];
-  assert.equal(E.flank(s, tunnels).bonus, 0.5);
-  s.sectors.push('sump');
-  assert.equal(E.flank(s, tunnels).bonus, 0);
-  assert.equal(E.flank(s, E.sectorById('rust')).bonus, 0);
+  const sec = E.sectorById('ashgrove');
+  const clan = sec.links.filter((l) => E.sectorById(l).faction === sec.faction);
+  assert.ok(clan.length >= 2);
+  assert.equal(E.flank(s, sec).bonus, 0.5);
+  s.sectors.push(clan[0]);
+  assert.ok(Math.abs(E.flank(s, sec).bonus - 0.5 * (clan.length - 1) / clan.length) < 1e-9);
+  s.sectors.push(...clan);
+  assert.equal(E.flank(s, sec).bonus, 0);
 });
 
 test('refusing a threat locks a siege to the deadline; silence brings it at once', () => {

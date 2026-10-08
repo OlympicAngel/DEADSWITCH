@@ -279,11 +279,12 @@ function strengthRow(s, sec) {
   return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(sec.defense)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain)} for each operation it repels, −${pct(NODES.defendWinCut)} for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
 }
 
-// Shown when the target has several approaches.
+// Clan support: linked sectors of the same faction that still stand.
 function fortRow(s, sec) {
   const f = E.flank(s, sec);
-  if (f.approaches < 2) return '';
-  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while one approach is held, falling to 0 when all ${f.approaches} are held."><span>${icon('defense')}Approaches held</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${f.held}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
+  if (!f.approaches) return '';
+  const left = f.approaches - f.held;
+  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while every linked ${esc(FACTIONS[sec.faction].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${left}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
 }
 
 // A faint glow of each faction's colour under its sectors (territories interlock).

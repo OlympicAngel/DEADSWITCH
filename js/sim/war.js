@@ -62,41 +62,16 @@ export function advanceNodes(s, dt) {
   }
 }
 
-// Steps from home over the whole map; approaches of a sector are its neighbours closer to home
-// (links leading further out are not approaches).
-let DEPTH = null;
-function depth() {
-  if (!DEPTH) {
-    DEPTH = { [MAP.home]: 0 };
-    const queue = [MAP.home];
-    while (queue.length) {
-      const id = queue.shift();
-      for (const l of SECTOR_BY_ID[id].links) {
-        if (DEPTH[l] === undefined) {
-          DEPTH[l] = DEPTH[id] + 1;
-          queue.push(l);
-        }
-      }
-    }
-  }
-  return DEPTH;
-}
-
-export function approaches(sec) {
-  const d = depth();
-  return sec.links.filter((l) => d[l] < d[sec.id]);
-}
-
-// Multi-route sectors are fortified: +50% defense while you hold only one approach, scaling down
-// linearly to 0 when you hold every approach. Single-approach sectors never get it.
+// Clan support: a sector is fortified by the sectors of its own faction it links to. +flankBonus while
+// every one of them is still theirs, falling linearly to 0 as you take them. Links to other factions
+// (or to your own sectors through another faction) give nothing; an outpost alone among strangers gets none.
 export function flank(s, sec) {
-  const ins = approaches(sec);
-  const held = ins.filter((l) => s.sectors.includes(l)).length;
-  if (ins.length < 2) {
-    return { approaches: ins.length, held, bonus: 0 };
+  const clan = sec.faction ? sec.links.filter((l) => SECTOR_BY_ID[l].faction === sec.faction) : [];
+  const held = clan.filter((l) => s.sectors.includes(l)).length;
+  if (!clan.length) {
+    return { approaches: 0, held: 0, bonus: 0 };
   }
-  const missing = Math.min(ins.length - 1, ins.length - held);
-  return { approaches: ins.length, held, bonus: OPS.flankBonus * (missing / (ins.length - 1)) };
+  return { approaches: clan.length, held, bonus: OPS.flankBonus * ((clan.length - held) / clan.length) };
 }
 
 export function sectorDefense(s, sec) {
