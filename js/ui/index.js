@@ -10,7 +10,7 @@ import { clock, chanceClass, factorTag } from './common.js';
 import { NAV, locate, domainReq, domainReady, sortedTabs, DOMAINS } from './layout.js';
 import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
 import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
-import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector } from './screens/map.js';
+import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector, centerOn } from './screens/map.js';
 import { createModals } from './modals.js';
 import { createTips } from './tooltip.js';
 import { sfx } from './sfx.js';
@@ -352,6 +352,10 @@ export function createUI(root, game) {
 
   // Keeps the selected sector in view: centred on arrival, above the briefing sheet when it opens.
   function focusSector() {
+    if (view.querySelector('[data-mapview]')) {
+      centerOn(view, ui.sector);
+      return;
+    }
     const node = view.querySelector('.node.sel');
     if (!node) return;
     const v = view.getBoundingClientRect();

@@ -101,11 +101,11 @@ test('the AI Core only upgrades once the base is developed', () => {
 
 test('multi-route sectors are fortified until every approach is held', () => {
   const s = E.newState(2);
-  const wrecks = E.sectorById('wrecks');
-  s.sectors = ['nest', 'rust'];
-  assert.equal(E.flank(s, wrecks).bonus, 0.5);
-  s.sectors.push('tunnels');
-  assert.equal(E.flank(s, wrecks).bonus, 0);
+  const tunnels = E.sectorById('tunnels'); // approached from Drowned Mall and The Sump
+  s.sectors = ['nest', 'drowned'];
+  assert.equal(E.flank(s, tunnels).bonus, 0.5);
+  s.sectors.push('sump');
+  assert.equal(E.flank(s, tunnels).bonus, 0);
   assert.equal(E.flank(s, E.sectorById('rust')).bonus, 0);
 });
 

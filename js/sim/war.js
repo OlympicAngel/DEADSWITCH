@@ -355,16 +355,17 @@ function resolveRaid(s, offline) {
 
 // ---------- assaults: bordering enemy sectors try to take yours ----------
 
-// Every (enemy sector -> held sector) border in open chapters; the Nest is never a target.
-export function borders(s) {
+// Every (enemy sector -> held sector) border; the Nest is never a target. Borders with factions whose
+// chapter is not open are marked locked (and left out unless asked for).
+export function borders(s, withLocked = false) {
   const out = [];
   for (const id of s.sectors) {
     if (id === MAP.home) continue;
     for (const l of SECTOR_BY_ID[id].links) {
       const from = SECTOR_BY_ID[l];
-      if (from.faction && !s.sectors.includes(l) && chapterOpen(s, from.chapter)) {
-        out.push({ from: l, target: id });
-      }
+      if (!from.faction || s.sectors.includes(l)) continue;
+      const locked = !chapterOpen(s, from.chapter);
+      if (!locked || withLocked) out.push({ from: l, target: id, locked });
     }
   }
   return out;
@@ -372,17 +373,26 @@ export function borders(s) {
 
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
-  return Math.ceil(sec.defense * nodeStrength(s, fromId) * NODES.assaultShare);
+  const own = sec.defense * nodeStrength(s, fromId) * NODES.assaultShare;
+  return Math.ceil(chapterOpen(s, sec.chapter) ? own : Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
 }
 
-// Launches an assault along one border (a random one unless given); returns it or null.
+// Launches an assault along one border (rolled by weight unless given); returns it or null.
+// Locked borders weigh little, so a front that only touches locked factions is rarely attacked.
 export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax)) {
-  const all = borders(s);
-  const p = pair || (all.length ? pick(s, all) : null);
-  if (!p) return null;
+  let p = pair;
+  if (!p) {
+    const all = borders(s, true);
+    const w = (b) => (b.locked ? NODES.lockedWeight : 1);
+    const total = all.reduce((a, b) => a + w(b), 0);
+    if (!total || rand(s) >= Math.min(1, total)) return null;
+    let r = rand(s) * total;
+    p = all.find((b) => (r -= w(b)) <= 0) || all[all.length - 1];
+  }
   const from = SECTOR_BY_ID[p.from];
+  const locked = !chapterOpen(s, from.chapter);
   const strength = Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax));
-  s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target };
+  s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(delay) }, 'bad');
   return s.assault;
 }
@@ -443,7 +453,8 @@ function resolveAttack(s, raid, offline) {
     // A breached assault takes no stockpiles; it costs troops and a foothold on the sector.
     report.units = casualties(s, RAIDS.unitLoss, defense, raid.strength);
     const n = node(s, raid.target);
-    n.marks++;
+    // Factions whose chapter is closed can wear a sector down but never take it.
+    n.marks = Math.min(n.marks + 1, raid.locked ? NODES.breachesToFall - 1 : NODES.breachesToFall);
     report.breaches = n.marks;
     s.stats.raidsLost++;
     say(s, 'assaultBreached', { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall }, 'bad');

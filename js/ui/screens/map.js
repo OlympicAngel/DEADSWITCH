@@ -1,4 +1,4 @@
-// Map: a portrait theater (home at the bottom, Halcyon at the top), a briefing sheet, and the archive.
+// Map: an open-world theater you drag around (the Nest at the centre), a briefing sheet, and the archive.
 import {
   SECTORS, FACTIONS, MAP, CHAPTERS, CHAPTER_TEXT, OPS, NODES, ENDINGS,
 } from '../../data.js';
@@ -9,10 +9,23 @@ import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } 
 import { sortedTabs } from '../layout.js';
 import { put, setCls, setW } from '../dom.js';
 
-const W = MAP.height; // the landscape map is turned 90 degrees for portrait: home at the top
-const P = (x) => ({ x: x.y, y: x.x });
+const P = (x) => ({ x: x.x, y: x.y });
 const REVEAL_DEPTH = 2; // rings of sectors shown beyond held territory
-const MAP_PAD = 70;
+const SCALE = 0.42; // screen px per map unit
+// Node radius in map units (drawn larger than the old column map, since the world is zoomed out).
+const nodeR = (x) => (x.id === MAP.home ? 52 : x.boss ? 48 : 38);
+const PAD = 170; // map units around the outermost sectors
+// World bounds (map units) from every sector, so the world never changes size as it is revealed.
+const WORLD = (() => {
+  const xs = SECTORS.map((x) => x.x);
+  const ys = SECTORS.map((x) => x.y);
+  const x0 = Math.min(...xs) - PAD;
+  const y0 = Math.min(...ys) - PAD;
+  return { x0, y0, w: Math.max(...xs) + PAD - x0, h: Math.max(...ys) + PAD - y0 };
+})();
+const px = (p) => ({ x: (p.x - WORLD.x0) * SCALE, y: (p.y - WORLD.y0) * SCALE });
+// Where the world sits in the viewport (px); kept across rebuilds so the view stays put.
+let pan = null;
 
 // Steps from held territory to every sector, through map links.
 function distances(s) {
@@ -34,6 +47,85 @@ const hex = (r) => Array.from({ length: 6 }, (_, i) => {
   const a = (Math.PI / 3) * i;
   return `${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`;
 }).join(' ');
+
+// Pixel box (in world px) around the revealed sectors, padded: how far the map can be dragged.
+function shownBounds(shown) {
+  const ps = shown.map((x) => px(x));
+  const m = 140;
+  return [Math.min(...ps.map((p) => p.x)) - m, Math.min(...ps.map((p) => p.y)) - m, Math.max(...ps.map((p) => p.x)) + m, Math.max(...ps.map((p) => p.y)) + m].map(Math.round).join(',');
+}
+
+// Moves the world so that pan stays inside the revealed area; writes the transform.
+function applyPan(view, world) {
+  const [x0, y0, x1, y1] = world.dataset.bounds.split(',').map(Number);
+  const vw = view.clientWidth;
+  const vh = view.clientHeight;
+  const clamp = (v, lo, hi) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
+  pan.x = clamp(pan.x, vw - x1, -x0);
+  pan.y = clamp(pan.y, vh - y1, -y0);
+  world.style.transform = `translate3d(${Math.round(pan.x)}px, ${Math.round(pan.y)}px, 0)`;
+}
+
+// Centres a sector in the map view (above the briefing sheet when it is open).
+export function centerOn(root, id) {
+  const view = root.querySelector('[data-mapview]');
+  const world = root.querySelector('[data-world]');
+  const sec = E.sectorById(id);
+  if (!view || !world || !sec) return;
+  const sheet = root.querySelector('.sheet.open');
+  const vr = view.getBoundingClientRect();
+  const room = sheet ? Math.max(120, sheet.getBoundingClientRect().top - vr.top) : view.clientHeight;
+  const p = px(sec);
+  pan = { x: view.clientWidth / 2 - p.x, y: Math.min(view.clientHeight, room) / 2 - p.y };
+  applyPan(view, world);
+}
+
+// Drag to move around the map; a drag never counts as a tap on a sector.
+function bindPan(root) {
+  const view = root.querySelector('[data-mapview]');
+  const world = root.querySelector('[data-world]');
+  if (!view || !world) return;
+  if (!pan) {
+    pan = { x: 0, y: 0 };
+    centerOn(root, MAP.home);
+  } else {
+    applyPan(view, world);
+  }
+  let drag = null;
+  let moved = false;
+  view.addEventListener('pointerdown', (e) => {
+    if (e.button !== undefined && e.button > 0) return;
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
+    moved = false;
+  });
+  view.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    if (!moved && Math.hypot(dx, dy) < 6) return;
+    if (!moved) {
+      moved = true;
+      view.setPointerCapture(e.pointerId);
+      view.classList.add('dragging');
+    }
+    pan.x = drag.px + dx;
+    pan.y = drag.py + dy;
+    applyPan(view, world);
+  });
+  const end = () => {
+    drag = null;
+    view.classList.remove('dragging');
+  };
+  view.addEventListener('pointerup', end);
+  view.addEventListener('pointercancel', end);
+  view.addEventListener('click', (e) => {
+    if (moved) {
+      e.stopPropagation();
+      e.preventDefault();
+      moved = false;
+    }
+  }, true);
+}
 
 export function defaultSector(s) {
   const target = SECTORS.find((x) => E.sectorStatus(s, x) === 'target');
@@ -61,7 +153,6 @@ function renderTheater(s, ui) {
   const dist = distances(s);
   const shown = SECTORS.filter((x) => dist[x.id] !== undefined && dist[x.id] <= REVEAL_DEPTH);
   const isShown = (id) => shown.some((x) => x.id === id);
-  const H = Math.max(...shown.map((x) => P(x).y)) + MAP_PAD + 30;
   const links = [];
   const fronts = [];
   for (const a of shown) {
@@ -96,22 +187,23 @@ function renderTheater(s, ui) {
   }
   // Pulses and the reticle ring live in small HTML layers over/under the SVG, animated with
   // transform/opacity on the GPU; animating them inside the SVG repaints the whole map every frame.
-  const top = MAP_PAD - 30;
-  const vh = H - MAP_PAD + 30;
-  const fxAt = (p, R, cls, inner, style = '') => `<div class="${cls}" style="left:${(p.x / W) * 100}%;top:${((p.y - top) / vh) * 100}%;width:${(2 * R / W) * 100}%;margin:-${(R / W) * 100}% 0 0 -${(R / W) * 100}%;${style}"><svg viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${inner}</svg></div>`;
+  const W = WORLD.w;
+  const L = (x) => ((x - WORLD.x0) / W) * 100;
+  const T = (y) => ((y - WORLD.y0) / WORLD.h) * 100;
+  const fxAt = (p, R, cls, inner, style = '') => `<div class="${cls}" style="left:${L(p.x)}%;top:${T(p.y)}%;width:${(2 * R / W) * 100}%;margin:-${(R / W) * 100}% 0 0 -${(R / W) * 100}%;${style}"><svg viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${inner}</svg></div>`;
   const pulses = shown.filter((x) => E.sectorStatus(s, x) === 'target').map((x) => {
-    const r = x.id === MAP.home ? 38 : x.boss ? 34 : 27;
-    return fxAt(P(x), r + 6, 'fx-pulse', `<polygon class="pulse" points="${hex(r + 6)}"/>`, `--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}`);
+    const r = nodeR(x);
+    return fxAt(P(x), r + 8, 'fx-pulse', `<polygon class="pulse" points="${hex(r + 8)}"/>`, `--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}`);
   }).join('');
   // A dashed line whose dashes travel along it: the strip is rotated into place and its contents
   // slide by two dash periods per cycle, which looks the same as animating the dash offset.
   const marchLine = ([a, b]) => {
     const len = Math.hypot(b.x - a.x, b.y - a.y);
     const ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
-    return `<div class="fx-march" style="left:${(a.x / W) * 100}%;top:${((a.y - top) / vh) * 100}%;width:${(len / W) * 100}%;aspect-ratio:${len}/6;margin-top:-${(3 / W) * 100}%;transform:rotate(${ang}deg)"><svg viewBox="-32 -3 ${len + 32} 6" style="width:${((len + 32) / len) * 100}%;margin-left:-${(32 / len) * 100}%;--slide:${(32 / (len + 32)) * 100}%" aria-hidden="true"><line x1="-32" y1="0" x2="${len}" y2="0" class="link front"/></svg></div>`;
+    return `<div class="fx-march" style="left:${L(a.x)}%;top:${T(a.y)}%;width:${(len / W) * 100}%;aspect-ratio:${len}/10;margin-top:-${(5 / W) * 100}%;transform:rotate(${ang}deg)"><svg viewBox="-32 -5 ${len + 32} 10" style="width:${((len + 32) / len) * 100}%;margin-left:-${(32 / len) * 100}%;--slide:${(32 / (len + 32)) * 100}%" aria-hidden="true"><line x1="-32" y1="0" x2="${len}" y2="0" class="link front"/></svg></div>`;
   };
   const marches = fronts.map(marchLine).join('');
-  const ring = s.op ? fxAt(P(E.sectorById(s.op.sector)), 52, 'fx-ring', '<circle r="46" class="ret-ring"/>') : '';
+  const ring = s.op ? fxAt(P(E.sectorById(s.op.sector)), 74, 'fx-ring', '<circle r="66" class="ret-ring"/>') : '';
   // An incoming assault: a static line from the attacking sector to its target.
   const a = s.assault;
   const assaultLine = a && isShown(a.from) && isShown(a.target)
@@ -120,7 +212,7 @@ function renderTheater(s, ui) {
   const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
     const p = P(x);
-    const r = x.id === MAP.home ? 38 : x.boss ? 34 : 27;
+    const r = nodeR(x);
     const known = st !== 'far';
     const color = x.faction ? FACTIONS[x.faction].color : 'var(--hud)';
     const label = known ? x.name : 'Unknown signal';
@@ -129,7 +221,7 @@ function renderTheater(s, ui) {
       <g class="node st-${st} ${x.boss ? 'boss' : ''} ${ui.sector === x.id ? 'sel' : ''} ${s.op && s.op.sector === x.id ? 'attacking' : ''}" data-sector="${x.id}" transform="translate(${p.x},${p.y})" style="--fc:${color}" tabindex="0" role="button" aria-label="${esc(label)}">
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
-        <text class="name" dy="${r + 24}">${esc(label)}</text>
+        <text class="name" dy="${r + 34}">${esc(label)}</text>
         ${known && st !== 'owned' ? defLabel(s, x, r) : ''}
         ${st === 'owned' && E.breaches(s, x.id) ? `<text class="def breach" dy="${-r - 10}">${E.breaches(s, x.id)}/${NODES.breachesToFall}</text>` : ''}
       </g>`;
@@ -144,9 +236,10 @@ function renderTheater(s, ui) {
   const sec = E.sectorById(ui.sector);
   return `
     <div class="map-card">
-      <div class="map-stage">
+      <div class="map-viewport" data-mapview>
+      <div class="map-world" data-world style="width:${WORLD.w * SCALE}px;height:${WORLD.h * SCALE}px" data-bounds="${shownBounds(shown)}">
       <div class="map-fx under">${marches}${pulses}</div>
-      <svg class="map" viewBox="0 ${top} ${W} ${vh}" role="img" aria-label="Wasteland map">
+      <svg class="map" viewBox="${WORLD.x0} ${WORLD.y0} ${WORLD.w} ${WORLD.h}" role="img" aria-label="Wasteland map">
         <defs>${Object.entries(FACTIONS).map(([k, d]) => `<radialGradient id="terr-${k}"><stop offset="0" stop-color="${d.color}" stop-opacity=".16"/><stop offset="1" stop-color="${d.color}" stop-opacity="0"/></radialGradient>`).join('')}</defs>
         ${territory(shown)}
         <g>${links.join('')}</g>
@@ -157,6 +250,7 @@ function renderTheater(s, ui) {
       </svg>
       <div class="map-fx over">${ring}</div>
       </div>
+      </div>
       <div class="legend">${legend}</div>
     </div>
     <div class="sheet ${ui.sheet ? 'open' : ''}" data-sheet>${ui.sheet ? briefing(s, sec) : ''}</div>`;
@@ -165,8 +259,8 @@ function renderTheater(s, ui) {
 // Crosshair over the sector under attack, with the live countdown.
 function reticle(p) {
   return `<g class="reticle" transform="translate(${p.x},${p.y})">
-    <path d="M0,-58 V-44 M0,44 V58 M-58,0 H-44 M44,0 H58" class="ret-ticks"/>
-    <text class="ret-time" dy="-66" data-optimer></text>
+    <path d="M0,-82 V-62 M0,62 V82 M-82,0 H-62 M62,0 H82" class="ret-ticks"/>
+    <text class="ret-time" dy="-92" data-optimer></text>
   </g>`;
 }
 
@@ -192,13 +286,9 @@ function fortRow(s, sec) {
   return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while one approach is held, falling to 0 when all ${f.approaches} are held."><span>${icon('defense')}Approaches held</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${f.held}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
 }
 
+// A faint glow of each faction's colour under its sectors (territories interlock).
 function territory(shown) {
-  return Object.keys(FACTIONS).filter((f) => shown.some((x) => x.faction === f)).map((f) => {
-    const list = shown.filter((x) => x.faction === f).map(P);
-    const cx = list.reduce((a, x) => a + x.x, 0) / list.length;
-    const cy = list.reduce((a, x) => a + x.y, 0) / list.length;
-    return `<circle cx="${cx}" cy="${cy}" r="200" fill="url(#terr-${f})"/>`;
-  }).join('');
+  return shown.filter((x) => x.faction).map((x) => `<circle cx="${x.x}" cy="${x.y}" r="190" fill="url(#terr-${x.faction})"/>`).join('');
 }
 
 function briefing(s, sec) {
@@ -248,6 +338,7 @@ function briefing(s, sec) {
 
 export function bindMapScreen(panel) {
   const q = (sel) => panel.querySelector(sel);
+  bindPan(panel);
   return {
     factors: [...panel.querySelectorAll('[data-factor]')],
     power: q('[data-power]'), loss: q('[data-loss]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
