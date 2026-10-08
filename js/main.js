@@ -94,6 +94,7 @@ if (saved && saved.savedAt) {
 
 let last = performance.now();
 let sinceSave = 0;
+let awayRun = 0; // seconds already caught up in the current absence
 // The player counts as active while the page is visible and they touched it recently.
 let lastInput = -Infinity;
 for (const type of ['pointerdown', 'keydown']) {
@@ -105,10 +106,13 @@ function tick() {
   const dt = (now - last) / 1000;
   last = now;
   // Background tabs get throttled timers; fold the gap in as catch-up instead of one giant step.
+  // The offline limit and grace cover the whole absence, not each chunk.
   if (dt > BACKGROUND_GAP_SECONDS) {
-    game.flows = E.catchUp(game.state, dt).flows;
+    game.flows = E.catchUp(game.state, dt, awayRun).flows;
+    awayRun += dt;
   } else {
     game.flows = E.step(game.state, dt, false, isActive(now));
+    awayRun = 0;
   }
   sinceSave += dt;
   if (sinceSave >= BALANCE.autosaveSeconds) {

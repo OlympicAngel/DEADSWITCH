@@ -12,7 +12,7 @@ export const ICONS = {
   core: 'cpu', scrapyard: 'recycle', solar: 'solar-panel', shelter: 'home', battery: 'battery-4', habitat: 'building',
   generator: 'gas-station', fabricator: 'hammer', clinic: 'first-aid-kit', exchange: 'scale', beacon: 'antenna',
   reactor: 'radioactive', foundry: 'building-factory', barracks: 'flag', armory: 'crosshair', works: 'wall',
-  thinktank: 'bulb', lab: 'flask-2',
+  thinktank: 'bulb', lab: 'flask-2', daemon: 'moon-stars',
   // weapons
   rifles: 'target-arrow', trucks: 'truck', artillery: 'bomb', drones: 'drone', railgun: 'rocket', lance: 'satellite',
   // defenses

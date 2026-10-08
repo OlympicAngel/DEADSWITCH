@@ -1,6 +1,6 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS } from './data.js';
-import { produce, advanceBuild, unlockedKeys, say, LOG_LIMIT } from './sim/economy.js';
+import { produce, advanceBuild, unlockedKeys, say, offlineLimits, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById } from './sim/story.js';
 
@@ -113,8 +113,8 @@ export function migrate(raw) {
 
 // Advances the world by dt seconds. Returns per-second flows for the UI.
 // active: the player is at the console right now (host-reported); urgent events need it.
-export function step(s, dt, offline = false, active = false) {
-  const flows = produce(s, dt);
+export function step(s, dt, offline = false, active = false, speed = 1) {
+  const flows = produce(s, dt, speed);
   advanceBuild(s, dt);
   advanceOp(s, dt);
   advanceRaids(s, dt, offline);
@@ -130,9 +130,13 @@ export function step(s, dt, offline = false, active = false) {
   return flows;
 }
 
-// Runs a long stretch (offline time) in bounded steps so timers land mid-way.
-export function catchUp(s, seconds) {
-  const total = Math.min(seconds, BALANCE.offlineMaxSeconds);
+// Runs a stretch of time away in bounded steps so timers land mid-way. Only offlineLimits(s).seconds
+// of an absence count, at offlineLimits(s).efficiency of normal output; its first graceSeconds count
+// in full. `already` is time already counted in this same absence (a background tab catches up in chunks).
+export function catchUp(s, seconds, already = 0) {
+  const limits = offlineLimits(s);
+  const total = Math.max(0, Math.min(seconds, limits.seconds - already));
+  const grace = Math.max(0, Math.min(total, BALANCE.offline.graceSeconds - already));
   const before = { ...s.res };
   const stepSize = Math.max(1, total / 20000);
   let left = total;
@@ -140,13 +144,15 @@ export function catchUp(s, seconds) {
   s.offlineRaids = 0;
   while (left > EPS) {
     let dt = Math.min(stepSize, left);
+    const done = total - left;
+    if (done < grace) dt = Math.min(dt, grace - done);
     // Land exactly on timer completions so new levels and captures count for the rest of the stretch.
     for (const t of [s.build, s.op, ...s.sieges]) {
       if (t && t.remaining > EPS && t.remaining < dt) {
         dt = t.remaining;
       }
     }
-    flows = step(s, dt, true);
+    flows = step(s, dt, true, false, done < grace ? 1 : limits.efficiency);
     left -= dt;
   }
   s.offlineRaids = 0;
@@ -154,5 +160,5 @@ export function catchUp(s, seconds) {
   for (const r of Object.keys(s.res)) {
     gained[r] = s.res[r] - before[r];
   }
-  return { seconds: total, gained, flows };
+  return { seconds: total, away: seconds, efficiency: limits.efficiency, gained, flows };
 }

@@ -260,7 +260,7 @@ export function exceedsCap(s, cost) {
 // AI Core gate: average level of every unlocked building (built or not) vs the share of the cap it needs.
 export function coreGate(s) {
   // Converters are optional; only the core economy, storage and facilities count.
-  const list = BUILDINGS.filter((b) => b.kind !== 'core' && b.kind !== 'converter' && meetsReq(s, b.req));
+  const list = BUILDINGS.filter((b) => b.kind !== 'core' && b.kind !== 'converter' && b.kind !== 'offline' && meetsReq(s, b.req));
   const avg = list.length ? list.reduce((sum, b) => sum + level(s, b.id), 0) / list.length : 0;
   const need = level(s, 'core') * BALANCE.levelCapPerCoreLevel * BALANCE.coreGateShare;
   return { avg, need, open: avg + 1e-9 >= need };
@@ -400,7 +400,17 @@ export function togglePause(s, id) {
 // ---------- production ----------
 
 // Advances production by dt seconds. Returns per-second flows for the UI.
-export function produce(s, dt) {
+// How much time away counts and at what share of normal output, from Watch Daemon levels.
+export function offlineLimits(s, lvl = level(s, 'daemon')) {
+  const o = BALANCE.offline;
+  return {
+    seconds: (o.baseHours + o.hoursPerLevel * lvl) * 3600,
+    efficiency: Math.min(o.maxEfficiency, o.baseEfficiency + o.efficiencyPerLevel * lvl),
+  };
+}
+
+// speed scales all production and conversion alike (offline time runs at reduced efficiency).
+export function produce(s, dt, speed = 1) {
   const f = factors(s);
   const mult = {};
   for (const r of RESOURCE_KEYS) {
@@ -415,7 +425,7 @@ export function produce(s, dt) {
       continue;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      const amount = rate * lvl * mult[r];
+      const amount = rate * lvl * mult[r] * speed;
       s.res[r] += amount * dt;
       flows.prod[r] += amount;
     }
@@ -432,13 +442,13 @@ export function produce(s, dt) {
       continue;
     }
     // Bonuses speed a converter up (input and output alike); they never improve its loss ratio.
-    const m = mult[Object.keys(b.produces)[0]];
+    const m = mult[Object.keys(b.produces)[0]] * speed;
     let eff = 1;
     for (const [r, rate] of Object.entries(b.consumes)) {
       eff = Math.min(eff, Math.max(0, s.res[r]) / (rate * lvl * m * dt));
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      eff = Math.min(eff, Math.max(0, c[r] - s.res[r]) / (rate * lvl * mult[r] * dt));
+      eff = Math.min(eff, Math.max(0, c[r] - s.res[r]) / (rate * lvl * mult[r] * speed * dt));
     }
     eff = Math.max(0, Math.min(1, eff));
     for (const [r, rate] of Object.entries(b.consumes)) {
@@ -446,8 +456,8 @@ export function produce(s, dt) {
       flows.cons[r] += rate * lvl * m * eff;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      s.res[r] += rate * lvl * mult[r] * dt * eff;
-      flows.prod[r] += rate * lvl * mult[r] * eff;
+      s.res[r] += rate * lvl * mult[r] * speed * dt * eff;
+      flows.prod[r] += rate * lvl * mult[r] * speed * eff;
     }
     flows.eff[b.id] = eff;
   }

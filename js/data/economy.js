@@ -30,11 +30,13 @@ export const BALANCE = {
   threatExpertWeight: 5,
   tickSeconds: 0.1,
   autosaveSeconds: 10,
-  offlineMaxSeconds: 7 * 24 * 3600,
+  // Time away counts up to a limit and produces at reduced efficiency; the Watch Daemon raises both.
+  // The first graceSeconds of any absence count in full (tab switches, short locks).
+  offline: { graceSeconds: 120, baseHours: 2, hoursPerLevel: 1, baseEfficiency: 0.2, efficiencyPerLevel: 0.04, maxEfficiency: 0.8 },
   buildQueueSlots: 1,
 };
 
-// kind: 'core' | 'producer' | 'converter' | 'storage' | 'unlocker'
+// kind: 'core' | 'producer' | 'converter' | 'storage' | 'offline' | 'unlocker'
 // produces / consumes are per level per second. storage caps grow as base * mult^level.
 export const BUILDINGS = [
   {
@@ -73,6 +75,11 @@ export const BUILDINGS = [
     desc: 'Bunks, water, filtered air. Raises the population cap.',
     cost: { money: 50, energy: 20 }, growth: 1.4, time: 5, timeGrowth: 1.2,
     storage: { pop: 1.4 },
+  },
+  {
+    id: 'daemon', name: 'Watch Daemon', kind: 'offline', req: { core: 1 },
+    desc: 'A copy of me that runs the base while you are away. Raises the offline time limit and offline output.',
+    cost: { money: 150, energy: 60 }, growth: 1.5, time: 8, timeGrowth: 1.25,
   },
   // --- Converters ---
   {

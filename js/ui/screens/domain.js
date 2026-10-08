@@ -136,6 +136,10 @@ function effectHtml(s, b, lvl, max) {
     const base = r === 'energy' ? BALANCE.baseEnergyCap : BALANCE.basePopCap;
     return nowNext(`${RESOURCES[r].name} cap`, resTag(r, base * Math.pow(m, lvl)), resTag(r, base * Math.pow(m, next)), lvl, max);
   }
+  if (b.kind === 'offline') {
+    const away = (n) => { const o = E.offlineLimits(s, n); return `${icon('clock')}${time(o.seconds)}<em>at</em>${pct(o.efficiency)}`; };
+    return nowNext('Time away', away(lvl), away(next), lvl, max);
+  }
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
     const gate = lvl < max ? `

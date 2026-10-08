@@ -1,15 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { ITEM_BY_ID, BY_ID, EVENTS } from '../js/data.js';
+import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE } from '../js/data.js';
 
-test('offline catch-up lands builds mid-stretch and matches live play closely', () => {
+test('offline catch-up lands builds mid-stretch and matches live play at offline rates', () => {
   const live = E.newState();
   const away = E.newState();
   E.startBuild(live, 'scrapyard');
   E.startBuild(away, 'scrapyard');
+  const { graceSeconds } = BALANCE.offline;
+  const eff = E.offlineLimits(away).efficiency;
   for (let i = 0; i < 6000; i++) {
-    E.step(live, 0.1);
+    E.step(live, 0.1, true, false, i < graceSeconds * 10 ? 1 : eff);
   }
   E.catchUp(away, 600);
   assert.equal(away.levels.scrapyard, 2);
@@ -191,4 +193,17 @@ test('no event choice charges the same resource twice', () => {
       assert.equal(new Set(keys).size, keys.length, `${ev.id}: ${c.label}`);
     }
   }
+});
+
+test('time away counts up to a limit at reduced output; the Watch Daemon raises both', () => {
+  const o = BALANCE.offline;
+  const s = E.newState(14);
+  const r = E.catchUp(s, 10 * 3600);
+  assert.equal(r.seconds, o.baseHours * 3600);
+  assert.equal(r.efficiency, o.baseEfficiency);
+  s.levels.daemon = 3;
+  const lim = E.offlineLimits(s);
+  assert.equal(lim.seconds, (o.baseHours + 3 * o.hoursPerLevel) * 3600);
+  assert.ok(Math.abs(lim.efficiency - (o.baseEfficiency + 3 * o.efficiencyPerLevel)) < 1e-9);
+  assert.ok(E.offlineLimits(s, 1000).efficiency <= o.maxEfficiency);
 });

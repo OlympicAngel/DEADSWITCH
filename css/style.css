@@ -1050,4 +1050,10 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 
 /* Loops nobody can see behind an open dialog's backdrop are paused. */
 .app[data-covered='view'] .view *, .app[data-covered='view'] .view *::before, .app[data-covered='view'] .view *::after,
-.app[data-covered='all'] *, .app[data-covered='all'] *::before, .app[data-covered='all'] *::after { animation-play-state: paused !important; }
+.app[data-covered='all'] :not(dialog, dialog *), .app[data-covered='all'] :not(dialog, dialog *)::before, .app[data-covered='all'] :not(dialog, dialog *)::after { animation-play-state: paused !important; }
+
+/* Battle losses: chips wrap as whole units, right-aligned under each other; the whole chip names the unit */
+.r.losses { align-items: flex-start; }
+.r.losses > span { flex: none; }
+.loss-list { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 12px; min-width: 0; }
+.tap-name { cursor: pointer; }

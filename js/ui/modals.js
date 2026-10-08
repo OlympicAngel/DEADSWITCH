@@ -226,7 +226,7 @@ export function createModals(dialog, game, onChange) {
   function losses(r) {
     const parts = [];
     if (r.lost) parts.push(tags(r.lost, '−'));
-    for (const [id, n] of Object.entries(r.units || {})) parts.push(`<span class="tag t-bad">${labeled(id, '', ITEM_BY_ID[id].name)}−${num(n)}</span>`);
+    for (const [id, n] of Object.entries(r.units || {})) parts.push(`<span class="tag t-bad tap-name" data-label="${esc(ITEM_BY_ID[id].name)}">${icon(id)}−${num(n)}</span>`);
     if (r.staffLost) parts.push(`<span class="tag t-bad">${icon('militia')}−${num(r.staffLost)} troops</span>`); // reports saved before per-unit losses
     return parts.join('') || 'None';
   }
@@ -243,7 +243,7 @@ export function createModals(dialog, game, onChange) {
         ? `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>
            <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
            <blockquote class="lore">${esc(sec.lore)}</blockquote>`
-        : `<div class="r"><span>${icon('skull')}Losses</span><b>${losses(r)}</b></div>`,
+        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>`,
     }, then);
   }
 
@@ -251,13 +251,13 @@ export function createModals(dialog, game, onChange) {
     const f = FACTIONS[r.faction];
     battle({
       mode: 'def', stamp: r.win ? 'Held' : 'Breached',
-      kicker: r.offline ? 'Under attack · while you were away' : 'Under attack', title: r.name || f.raidName,
+      kicker: r.offline ? 'Attacked while away' : 'Under attack', title: r.name || f.raidName,
       youLabel: 'Your defense', youIcon: 'defense', you: r.defense,
       themLabel: 'Their strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: r.win
         ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>`
-        : `<div class="r"><span>${icon('skull')}Losses</span><b>${losses(r)}</b></div>`,
+        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>`,
       note: r.win ? '' : `${icon('fire')}Damage reports incoming.`,
     }, then);
   }
@@ -412,7 +412,7 @@ export function createModals(dialog, game, onChange) {
     open(`
       <span class="kicker">${icon('clock')}Welcome back</span>
       <h2>While you were away</h2>
-      <p class="muted">${time(report.seconds)} passed. The base kept running.</p>
+      <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.</p>
       <div class="rows">${gains}</div>
       <button class="btn primary wide" data-close>Resume command</button>`, { then });
   }

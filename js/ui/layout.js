@@ -17,7 +17,7 @@ export const DOMAINS = {
     tabs: [
       { id: 'production', name: 'Production', icon: 'trend', kinds: ['core', 'producer'] },
       { id: 'conversion', name: 'Conversion', icon: 'exchange', kinds: ['converter'] },
-      { id: 'storage', name: 'Storage', icon: 'battery', kinds: ['storage'] },
+      { id: 'storage', name: 'Storage', icon: 'battery', kinds: ['storage', 'offline'] },
     ],
   },
   military: {
