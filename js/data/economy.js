@@ -24,6 +24,7 @@ export const BALANCE = {
   growthMult: 1.35, // stretches each per-level / per-unit growth: g -> 1 + (g - 1) * growthMult
   economyPriceMult: { money: 1.5 }, // extra multiplier on one resource's share of Economy building prices
   pricePower: 0.35, // extra polynomial climb: price x (n + 1)^pricePower
+  resourceGrowth: { money: 0.8 }, // per-resource share of the per-level climb (growth' - 1): Scrip prices climb slower
   coreGateShare: 0.5, // AI Core upgrades need the average unlocked building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
   unlockerDiscountPerLevel: 0.03, // each level of an unlocker building above 1 cuts its shop prices 3% (compounding)
@@ -32,7 +33,7 @@ export const BALANCE = {
   autosaveSeconds: 10,
   // Time away counts up to a limit and produces at reduced efficiency; the Watch Daemon raises both.
   // The first graceSeconds of any absence count in full (tab switches, short locks).
-  offline: { graceSeconds: 120, baseHours: 2, hoursPerLevel: 1, baseEfficiency: 0.2, efficiencyPerLevel: 0.04, maxEfficiency: 0.8 },
+  offline: { graceSeconds: 120, baseHours: 4, hoursPerLevel: 1, baseEfficiency: 0.5, efficiencyPerLevel: 0.04, maxEfficiency: 0.8 },
   buildQueueSlots: 1,
 };
 

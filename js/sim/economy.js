@@ -177,25 +177,26 @@ export function projectDefense(s, seconds, drain = {}) {
 }
 
 // Global price tuning: base prices and their growth rates both scale from BALANCE.
-// Price of the n-th level/unit (n = 0 for the first):
-//   base x priceMult x growth'^n x (n + 1)^pricePower,  growth' = 1 + (growth - 1) x growthMult
+// Price of the n-th level/unit (n = 0 for the first), per resource k:
+//   base x priceMult x growth'^n x (n + 1)^pricePower,
+//   growth' = 1 + (growth - 1) x growthMult x resourceGrowth[k] (Scrip climbs slower than the rest)
 // The geometric part sets the long-run climb; the low power term makes every step noticeably dearer.
-export const priceGrowth = (g) => 1 + (g - 1) * BALANCE.growthMult;
+export const priceGrowth = (g, k) => 1 + (g - 1) * BALANCE.growthMult * (BALANCE.resourceGrowth[k] ?? 1);
 
 const ECONOMY_KINDS = ['core', 'producer', 'converter', 'storage'];
 
 // Extra per-resource multiplier for Economy-tab buildings only.
 export const econMult = (b, k) => (ECONOMY_KINDS.includes(b.kind) && BALANCE.economyPriceMult[k]) || 1;
 
-export function priceFactor(growth, n) {
-  return BALANCE.priceMult * Math.pow(priceGrowth(growth), n) * Math.pow(n + 1, BALANCE.pricePower);
+export function priceFactor(growth, n, k) {
+  return BALANCE.priceMult * Math.pow(priceGrowth(growth, k), n) * Math.pow(n + 1, BALANCE.pricePower);
 }
 
 export function buildingCost(s, b) {
-  const f = priceFactor(b.growth, level(s, b.id));
+  const n = level(s, b.id);
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
-    out[k] = Math.ceil(v * econMult(b, k) * f);
+    out[k] = Math.ceil(v * econMult(b, k) * priceFactor(b.growth, n, k));
   }
   return out;
 }
@@ -214,12 +215,12 @@ export function shopDiscount(s, item) {
 export function itemCost(s, item, count = 1) {
   const n = owned(s, item.id);
   const d = shopDiscount(s, item);
-  let sum = 0;
-  for (let i = 0; i < count; i++) {
-    sum += priceFactor(item.growth, n + i);
-  }
   const out = {};
   for (const [k, v] of Object.entries(item.cost)) {
+    let sum = 0;
+    for (let i = 0; i < count; i++) {
+      sum += priceFactor(item.growth, n + i, k);
+    }
     out[k] = Math.ceil(v * d * sum);
   }
   return out;
@@ -233,11 +234,11 @@ export function maxAffordable(s, item) {
   const spent = {};
   let count = 0;
   while (count < MAX_BULK) {
-    const f = priceFactor(item.growth, n + count) * d;
-    const ok = Object.entries(item.cost).every(([k, v]) => (spent[k] || 0) + v * f <= s.res[k] + EPS);
+    const price = (k, v) => v * priceFactor(item.growth, n + count, k) * d;
+    const ok = Object.entries(item.cost).every(([k, v]) => (spent[k] || 0) + price(k, v) <= s.res[k] + EPS);
     if (!ok) break;
     for (const [k, v] of Object.entries(item.cost)) {
-      spent[k] = (spent[k] || 0) + v * f;
+      spent[k] = (spent[k] || 0) + price(k, v);
     }
     count++;
   }
