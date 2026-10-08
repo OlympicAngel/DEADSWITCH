@@ -201,9 +201,9 @@ test('time away counts up to a limit at reduced output; the Watch Daemon raises 
   const r = E.catchUp(s, 10 * 3600);
   assert.equal(r.seconds, o.baseHours * 3600);
   assert.equal(r.efficiency, o.baseEfficiency);
-  s.levels.daemon = 3;
+  s.levels.daemon = 3; // levels alternate: time, efficiency, time
   const lim = E.offlineLimits(s);
-  assert.equal(lim.seconds, (o.baseHours + 3 * o.hoursPerLevel) * 3600);
-  assert.ok(Math.abs(lim.efficiency - (o.baseEfficiency + 3 * o.efficiencyPerLevel)) < 1e-9);
+  assert.equal(lim.seconds, (o.baseHours + 2 * o.hoursPerStep) * 3600);
+  assert.ok(Math.abs(lim.efficiency - (o.baseEfficiency + o.efficiencyPerStep)) < 1e-9);
   assert.ok(E.offlineLimits(s, 1000).efficiency <= o.maxEfficiency);
 });

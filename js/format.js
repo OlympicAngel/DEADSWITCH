@@ -43,14 +43,16 @@ export function time(seconds) {
     return s + 's';
   }
   const m = Math.floor(s / 60);
+  // Zero tails are dropped: 6h, not 6h 00m.
+  const tail = (n, unit) => (n ? ' ' + String(n).padStart(2, '0') + unit : '');
   if (m < 60) {
-    return m + 'm ' + String(s % 60).padStart(2, '0') + 's';
+    return m + 'm' + tail(s % 60, 's');
   }
   const h = Math.floor(m / 60);
   if (h < 48) {
-    return h + 'h ' + String(m % 60).padStart(2, '0') + 'm';
+    return h + 'h' + tail(m % 60, 'm');
   }
-  return Math.floor(h / 24) + 'd ' + (h % 24) + 'h';
+  return Math.floor(h / 24) + 'd' + (h % 24 ? ' ' + (h % 24) + 'h' : '');
 }
 
 export function pct(x) {

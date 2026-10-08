@@ -31,9 +31,10 @@ export const BALANCE = {
   threatExpertWeight: 5,
   tickSeconds: 0.1,
   autosaveSeconds: 10,
-  // Time away counts up to a limit and produces at reduced efficiency; the Watch Daemon raises both.
+  // Time away counts up to a limit and produces at reduced efficiency. Watch Daemon levels alternate:
+  // odd levels add hoursPerStep, even levels add efficiencyPerStep; once efficiency is maxed, every level adds time.
   // The first graceSeconds of any absence count in full (tab switches, short locks).
-  offline: { graceSeconds: 120, baseHours: 4, hoursPerLevel: 1, baseEfficiency: 0.5, efficiencyPerLevel: 0.04, maxEfficiency: 0.8 },
+  offline: { graceSeconds: 120, baseHours: 4, hoursPerStep: 1, baseEfficiency: 0.5, efficiencyPerStep: 0.05, maxEfficiency: 0.8 },
   buildQueueSlots: 1,
 };
 

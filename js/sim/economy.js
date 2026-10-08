@@ -404,9 +404,10 @@ export function togglePause(s, id) {
 // How much time away counts and at what share of normal output, from Watch Daemon levels.
 export function offlineLimits(s, lvl = level(s, 'daemon')) {
   const o = BALANCE.offline;
+  const effSteps = Math.min(Math.floor(lvl / 2), Math.round((o.maxEfficiency - o.baseEfficiency) / o.efficiencyPerStep));
   return {
-    seconds: (o.baseHours + o.hoursPerLevel * lvl) * 3600,
-    efficiency: Math.min(o.maxEfficiency, o.baseEfficiency + o.efficiencyPerLevel * lvl),
+    seconds: (o.baseHours + o.hoursPerStep * (lvl - effSteps)) * 3600,
+    efficiency: o.baseEfficiency + o.efficiencyPerStep * effSteps,
   };
 }
 
