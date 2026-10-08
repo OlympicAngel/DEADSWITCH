@@ -1,11 +1,11 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
-  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, BY_ID, SHOP_TABS,
+  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, BY_ID, SHOP_TABS, NODES,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
-import { tags, bonusText, bonusChips, chanceClass, clock } from './common.js';
+import { tags, bonusText, bonusChips, yieldChips, chanceClass, clock } from './common.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 
@@ -240,10 +240,11 @@ export function createModals(dialog, game, onChange) {
       themLabel: 'Their defense', themIcon: 'defense', them: r.defense,
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: r.win
-        ? `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>
-           <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
-           <blockquote class="lore">${esc(sec.lore)}</blockquote>`
-        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>`,
+        ? `${r.retaken ? `<div class="r"><span>${icon('check')}Retaken</span><b class="muted">No spoils</b></div>` : `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>`}
+           ${sec.yields ? `<div class="perm"><span>${icon('trend')}Yields while held</span>${yieldChips(E.sectorYield(sec))}</div>` : ''}
+           ${r.retaken ? '' : `<blockquote class="lore">${esc(sec.lore)}</blockquote>`}`
+        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>
+           ${r.strength ? `<div class="r"><span>${icon('trend')}${esc(sec.name)} strength</span><b class="bad-t">×${r.strength.toFixed(2)}</b></div>` : ''}`,
     }, then);
   }
 
@@ -256,9 +257,11 @@ export function createModals(dialog, game, onChange) {
       themLabel: 'Their strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: r.win
-        ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>`
-        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>`,
-      note: r.win ? '' : `${icon('fire')}Damage reports incoming.`,
+        ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>
+           ${r.assault && r.strengthAfter ? `<div class="r"><span>${icon('trend')}${esc(E.sectorById(r.from).name)} strength</span><b class="good-t">×${r.strengthAfter.toFixed(2)}</b></div>` : ''}`
+        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>
+           ${r.assault ? `<div class="r"><span>${icon('map')}${esc(E.sectorById(r.target).name)}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}`,
+      note: r.win ? '' : r.assault ? (r.fell ? `${icon('fire')}${esc(E.sectorById(r.target).name)} has fallen.` : '') : `${icon('fire')}Damage reports incoming.`,
     }, then);
   }
 
@@ -276,8 +279,9 @@ export function createModals(dialog, game, onChange) {
     if (ch.items) {
       p.push(Object.entries(ch.items).map(([id, n]) => `<span class="tag t-good">${icon(id)}+${n} ${ITEM_BY_ID[id].name}</span>`).join(''));
     }
-    if (ch.buff) {
-      p.push(`<span class="tag ${ch.buff.amount < 0 ? 't-bad' : 't-good'}">${icon(ch.buff.key)}${bonusText({ [ch.buff.key]: ch.buff.amount })} · ${time(ch.buff.duration)}</span>`);
+    const buff = out.buff || ch.buff;
+    if (buff) {
+      p.push(`<span class="tag ${buff.amount < 0 ? 't-bad' : 't-good'}">${icon(buff.key)}${bonusText({ [buff.key]: buff.amount })} · ${time(buff.duration)}</span>`);
     }
     if (out.siege) {
       p.push(`<span class="tag t-bad">${labeled('power')}Attack ${num(out.siege.strength)} at deadline</span>`);
@@ -288,6 +292,19 @@ export function createModals(dialog, game, onChange) {
     if (out.grudge) {
       const f = FACTIONS[out.grudge.faction];
       p.push(`<span class="tag t-bad">${icon(f.icon)}${f.short} vengeance: raids ×${out.grudge.mult}</span>`);
+    }
+    const sname = (id) => esc((E.sectorById(id) || { name: '?' }).name);
+    if (out.strength) {
+      p.push(`<span class="tag ${out.strength.delta < 0 ? 't-good' : 't-bad'}">${icon('defense')}${sname(out.strength.id)} strength ${out.strength.delta > 0 ? '+' : '−'}${pct(Math.abs(out.strength.delta))}</span>`);
+    }
+    if (out.clearMarks) {
+      p.push(`<span class="tag t-good">${icon('check')}${sname(out.clearMarks)} breaches cleared</span>`);
+    }
+    if (out.assault) {
+      p.push(`<span class="tag t-bad">${labeled('power')}${sname(out.assault.from)} attacks in ${time(out.assault.delay)}</span>`);
+    }
+    if (out.cede) {
+      p.push(`<span class="tag t-bad">${icon('map')}Lose ${sname(out.cede)}</span>`);
     }
     const al = out.align ?? ch.align;
     if (al) {
@@ -313,7 +330,7 @@ export function createModals(dialog, game, onChange) {
         <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : ev.urgent ? 'alert' : 'message')}${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Incoming transmission'}</span>
           <span class="deadline" data-deadline></span></div>
         <div class="deadbar"><i data-deadbar></i></div>
-        <h2>${esc(ev.title)}</h2>
+        <h2>${esc(E.fillText(inst, ev.title))}</h2>
         <p class="ev-text">${esc(E.fillText(inst, ev.text))}</p>
         ${ev.threat ? `<div class="threat-box">
           <div class="vs-row them"><span>${icon('power')}Their force</span><div class="vbar"><i data-tfbar></i></div><b>${num(inst.params.strength)}</b></div>
@@ -372,7 +389,7 @@ export function createModals(dialog, game, onChange) {
       }
       open(`
         <div class="event ${ev.aftermath ? 'crisis' : ''}">
-          <span class="kicker">${icon('check')}${esc(ev.title)}</span>
+          <span class="kicker">${icon('check')}${esc(E.fillText(inst, ev.title))}</span>
           <h2>${esc(res.label)}</h2>
           <p class="ev-text result">${esc(res.result)}</p>
           <div class="outcome"><span class="kicker">Outcome</span><div class="fx-line">${preview(res.out, res.choice, inst)}</div></div>

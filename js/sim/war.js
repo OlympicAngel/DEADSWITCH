@@ -1,8 +1,8 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
-  level, factors, threat, canAfford, pay, grant, loseUnits, say, caps,
+  level, factors, threat, canAfford, pay, grant, loseUnits, say, caps, rewardCurve,
 } from './economy.js';
 import { rand, range, pick, odds } from './rng.js';
 
@@ -28,11 +28,38 @@ export function opTime(sec) {
   return OPS.timeBase + Math.sqrt(sec.defense) * OPS.timePerSqrtDefense;
 }
 
+// Capture loot, paid the first time a sector falls to you (retaking a lost sector pays nothing).
 export function opLoot(sec) {
-  return {
-    money: Math.ceil(sec.defense * OPS.lootMoneyPerDefense),
-    pop: Math.ceil(sec.defense * OPS.lootPopPerDefense),
-  };
+  const out = {};
+  for (const [k, curve] of Object.entries(OPS.loot)) {
+    out[k] = Math.ceil(rewardCurve(curve, sec.defense));
+  }
+  return out;
+}
+
+// ---------- living sectors ----------
+
+const node = (s, id) => s.nodes[id] || (s.nodes[id] = { m: 1, marks: 0 });
+
+// Strength multiplier of a sector you do not hold (1 = its base defense).
+export const nodeStrength = (s, id) => (s.nodes[id] ? s.nodes[id].m : 1);
+
+// Breached assaults a held sector has taken (it falls at NODES.breachesToFall).
+export const breaches = (s, id) => (s.nodes[id] ? s.nodes[id].marks : 0);
+
+export function shiftStrength(s, id, delta) {
+  const n = node(s, id);
+  n.m = Math.min(NODES.strengthMax, Math.max(NODES.strengthMin, n.m + delta));
+}
+
+// Enemy sectors in open chapters slowly rebuild on their own, up to the hard ceiling.
+export function advanceNodes(s, dt) {
+  const grow = (NODES.growthPerHour * dt) / 3600;
+  for (const sec of SECTORS) {
+    if (sec.faction && !s.sectors.includes(sec.id) && chapterOpen(s, sec.chapter) && nodeStrength(s, sec.id) < NODES.strengthMax) {
+      shiftStrength(s, sec.id, grow);
+    }
+  }
 }
 
 // Steps from home over the whole map; approaches of a sector are its neighbours closer to home
@@ -73,7 +100,7 @@ export function flank(s, sec) {
 }
 
 export function sectorDefense(s, sec) {
-  return Math.ceil(sec.defense * (1 + flank(s, sec).bonus));
+  return Math.ceil(sec.defense * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
 }
 
 export function opChance(s, sec) {
@@ -128,12 +155,17 @@ export function advanceOp(s, dt) {
   const report = { kind: 'op', sector: sec.id, power, defense, chance, roll, win: roll < chance };
   if (report.win) {
     s.sectors.push(sec.id);
-    const loot = opLoot(sec);
+    delete s.nodes[sec.id];
+    // Loot and memories only the first time; a retaken sector just comes back.
+    const first = !s.taken.includes(sec.id);
+    const loot = first ? opLoot(sec) : {};
+    if (first) s.taken.push(sec.id);
     grant(s, loot);
     report.loot = loot;
+    report.retaken = !first;
     s.stats.opsWon++;
-    say(s, 'opWon', { sector: sec.name }, 'good');
-    say(s, 'lore', { text: sec.lore }, 'story');
+    say(s, first ? 'opWon' : 'opRetaken', { sector: sec.name }, 'good');
+    if (first) say(s, 'lore', { text: sec.lore }, 'story');
     if (sec.boss) {
       say(s, 'bossDown', { faction: FACTIONS[sec.faction].name }, 'rank');
       if (s.raid && s.raid.faction === sec.faction) {
@@ -148,6 +180,9 @@ export function advanceOp(s, dt) {
     }
   } else {
     report.units = casualties(s, OPS.unitLoss, power, defense);
+    // A repelled operation emboldens the defenders.
+    shiftStrength(s, sec.id, NODES.opLossGain);
+    report.strength = nodeStrength(s, sec.id);
     s.stats.opsLost++;
     say(s, 'opLost', { sector: sec.name }, 'bad');
     s.inbox.push(report);
@@ -186,12 +221,13 @@ export function activeRaiders(s) {
 
 // Sieges are threats the player chose (or failed) to answer with force; they land at a fixed time.
 export function attacks(s) {
-  return [s.raid, ...(s.sieges || [])].filter(Boolean).sort((a, b) => a.remaining - b.remaining);
+  return [s.raid, s.assault, ...(s.sieges || [])].filter(Boolean).sort((a, b) => a.remaining - b.remaining);
 }
 
 export const nextAttack = (s) => attacks(s)[0] || null;
 
 export function attackName(atk) {
+  if (atk.assault) return `Assault from ${SECTOR_BY_ID[atk.from].name}`;
   if (atk.siege) return `${FACTIONS[atk.faction].short} siege`;
   if (atk.grudge) return `${FACTIONS[atk.faction].short} vengeance`;
   return FACTIONS[atk.faction].raidName;
@@ -317,18 +353,104 @@ function resolveRaid(s, offline) {
   spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax));
 }
 
+// ---------- assaults: bordering enemy sectors try to take yours ----------
+
+// Every (enemy sector -> held sector) border in open chapters; the Nest is never a target.
+export function borders(s) {
+  const out = [];
+  for (const id of s.sectors) {
+    if (id === MAP.home) continue;
+    for (const l of SECTOR_BY_ID[id].links) {
+      const from = SECTOR_BY_ID[l];
+      if (from.faction && !s.sectors.includes(l) && chapterOpen(s, from.chapter)) {
+        out.push({ from: l, target: id });
+      }
+    }
+  }
+  return out;
+}
+
+export function assaultStrength(s, fromId) {
+  const sec = SECTOR_BY_ID[fromId];
+  return Math.ceil(sec.defense * nodeStrength(s, fromId) * NODES.assaultShare);
+}
+
+// Launches an assault along one border (a random one unless given); returns it or null.
+export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax)) {
+  const all = borders(s);
+  const p = pair || (all.length ? pick(s, all) : null);
+  if (!p) return null;
+  const from = SECTOR_BY_ID[p.from];
+  const strength = Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax));
+  s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target };
+  say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(delay) }, 'bad');
+  return s.assault;
+}
+
+// Like raids: at most one lands per offline stretch (shared with raids).
+export function advanceAssaults(s, dt, offline) {
+  if (level(s, 'core') < NODES.startAtCore) return;
+  const a = s.assault;
+  if (a && (!s.sectors.includes(a.target) || s.sectors.includes(a.from))) {
+    s.assault = null; // the border it used no longer exists
+  }
+  if (!s.assault) {
+    if (offline && s.offlineRaids >= 1) return;
+    if (s.assaultTimer === null) s.assaultTimer = NODES.firstDelay;
+    s.assaultTimer -= dt;
+    if (s.assaultTimer <= 0) {
+      s.assaultTimer = range(s, NODES.intervalMin, NODES.intervalMax);
+      spawnAssault(s);
+    }
+    return;
+  }
+  if (offline && s.offlineRaids >= 1) return;
+  s.assault.remaining -= dt;
+  if (s.assault.remaining > 1e-9) return;
+  const atk = s.assault;
+  s.assault = null;
+  resolveAttack(s, atk, offline);
+  if (offline) s.offlineRaids++;
+}
+
+// A sector of yours falls to the attacker; its yields stop and it can be retaken.
+export function loseSector(s, id, faction) {
+  s.sectors = s.sectors.filter((x) => x !== id);
+  s.nodes[id] = { m: 1, marks: 0 };
+  if (s.op && s.op.sector === id) s.op = null;
+  say(s, 'sectorLost', { sector: SECTOR_BY_ID[id].name, faction: FACTIONS[faction].name }, 'bad');
+}
+
 function resolveAttack(s, raid, offline) {
   const defense = factors(s).defense;
   const chance = odds(defense, raid.strength, RAIDS.winSharpness);
   const roll = rand(s);
   const name = attackName(raid);
   const report = { kind: 'raid', name, faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };
+  if (raid.assault) Object.assign(report, { assault: true, from: raid.from, target: raid.target });
   if (report.win) {
-    const loot = { money: Math.ceil(raid.strength * RAIDS.lootMoneyPerStrength) };
+    const loot = { money: Math.ceil(rewardCurve(RAIDS.loot.money, raid.strength)) };
     grant(s, loot);
     report.loot = loot;
     s.stats.raidsWon++;
     say(s, 'raidWon', { raid: name, loot: loot.money }, 'good');
+    if (raid.assault) {
+      // A broken assault leaves the attacker weaker.
+      shiftStrength(s, raid.from, -NODES.defendWinCut);
+      report.strengthAfter = nodeStrength(s, raid.from);
+    }
+  } else if (raid.assault) {
+    // A breached assault takes no stockpiles; it costs troops and a foothold on the sector.
+    report.units = casualties(s, RAIDS.unitLoss, defense, raid.strength);
+    const n = node(s, raid.target);
+    n.marks++;
+    report.breaches = n.marks;
+    s.stats.raidsLost++;
+    say(s, 'assaultBreached', { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall }, 'bad');
+    if (n.marks >= NODES.breachesToFall) {
+      loseSector(s, raid.target, raid.faction);
+      report.fell = true;
+    }
   } else {
     const share = RAIDS.lossMin + (RAIDS.lossMax - RAIDS.lossMin) * (1 - chance);
     const lost = {};

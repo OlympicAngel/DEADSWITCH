@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT,
+  SECTORS, ALIGNMENT, OPS,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -39,12 +39,33 @@ export function techBonus(s, key) {
   return total;
 }
 
-export function sectorBonus(s, key) {
-  let total = 0;
-  for (const sec of SECTORS) {
-    if (sec.bonus && sec.bonus[key] && s.sectors.includes(sec.id)) {
-      total += sec.bonus[key];
+// a x D^b + c x D, the shape of every fixed reward (see OPS.loot / OPS.yield).
+export const rewardCurve = ([a, b, c], d) => a * Math.pow(d, b) + c * d;
+
+// Two significant figures, so yields read as plain numbers (0.7/s, 26/s, 340).
+const tidy = (x) => (x >= 10 ? Math.round(Number(x.toPrecision(2))) : Number(x.toPrecision(2)));
+
+// What a sector adds while held: resources per second, or flat Power / Defense / Experts.
+const YIELDS = new Map();
+export function sectorYield(sec) {
+  if (!YIELDS.has(sec.id)) {
+    const out = {};
+    for (const k of sec.yields || []) {
+      const v = rewardCurve(OPS.yield[k], sec.defense) * (sec.boss ? OPS.bossYield : 1);
+      out[k] = RESOURCE_KEYS.includes(k) ? tidy(v) : Math.max(1, Math.round(tidy(v)));
     }
+    YIELDS.set(sec.id, out);
+  }
+  return YIELDS.get(sec.id);
+}
+
+// Sum of one yield over every held sector.
+const SECTOR_MAP = new Map(SECTORS.map((x) => [x.id, x]));
+export function territory(s, key) {
+  let total = 0;
+  for (const id of s.sectors) {
+    const sec = SECTOR_MAP.get(id);
+    total += (sec && sectorYield(sec)[key]) || 0;
   }
   return total;
 }
@@ -68,7 +89,6 @@ export function buffBonus(s, key) {
 export function bonusBreakdown(s, key) {
   return {
     tech: techBonus(s, key),
-    sectors: sectorBonus(s, key),
     alignment: alignBonus(s, key),
     effects: buffBonus(s, key),
   };
@@ -76,7 +96,7 @@ export function bonusBreakdown(s, key) {
 
 function bonusTotal(s, key) {
   const b = bonusBreakdown(s, key);
-  return b.tech + b.sectors + b.alignment + b.effects;
+  return b.tech + b.alignment + b.effects;
 }
 
 export function rawFactors(s) {
@@ -96,7 +116,7 @@ export function factors(s) {
   const raw = rawFactors(s);
   const out = {};
   for (const k of FACTOR_KEYS) {
-    out[k] = Math.floor(raw[k] * (1 + bonusTotal(s, k)));
+    out[k] = Math.floor((raw[k] + territory(s, k)) * (1 + bonusTotal(s, k)));
   }
   return out;
 }
@@ -130,7 +150,7 @@ export function grossRate(s, r) {
       total += b.produces[r] * lvl * mult;
     }
   }
-  return total;
+  return total + territory(s, r);
 }
 
 // Real net income per second right now: producers plus converters at their actual throttle, minus
@@ -431,6 +451,13 @@ export function produce(s, dt, speed = 1) {
       s.res[r] += amount * dt;
       flows.prod[r] += amount;
     }
+  }
+
+  // Held sectors add fixed amounts, unaffected by production bonuses.
+  for (const r of RESOURCE_KEYS) {
+    const amount = territory(s, r) * speed;
+    s.res[r] += amount * dt;
+    flows.prod[r] += amount;
   }
 
   // Converters run in declared order, limited by available input and by room in capped outputs.

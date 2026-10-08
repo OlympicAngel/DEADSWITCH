@@ -1,7 +1,7 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, LOG_LIMIT } from './sim/economy.js';
-import { advanceOp, advanceRaids, advanceSieges, sectorById } from './sim/war.js';
+import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById } from './sim/story.js';
 
 export * from './sim/economy.js';
@@ -24,8 +24,12 @@ export function newState(seed = 1) {
     paused: {},
     build: null,
     sectors: [MAP.home],
+    taken: [], // sectors ever captured (loot and memories pay once)
+    nodes: {}, // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours) }
     op: null,
     raid: null,
+    assault: null,
+    assaultTimer: null,
     sieges: [],
     grudges: [],
     raidTimer: 0,
@@ -91,6 +95,13 @@ export function migrate(raw) {
   }
   s.grudges = (Array.isArray(raw.grudges) ? raw.grudges : []).filter((x) => x && FACTIONS[x.faction]);
   s.sieges = (Array.isArray(raw.sieges) ? raw.sieges : []).filter((x) => x && FACTIONS[x.faction] && Number.isFinite(x.remaining));
+  s.nodes = {};
+  for (const [id, n] of Object.entries(raw.nodes && typeof raw.nodes === 'object' ? raw.nodes : {})) {
+    if (sectorById(id) && n && Number.isFinite(n.m)) s.nodes[id] = { m: n.m, marks: Number(n.marks) || 0 };
+  }
+  const a = raw.assault;
+  s.assault = a && sectorById(a.from) && sectorById(a.target) && FACTIONS[a.faction] && Number.isFinite(a.remaining) ? a : null;
+  s.assaultTimer = Number.isFinite(raw.assaultTimer) ? raw.assaultTimer : null;
   // v2 kept one pending event id; v3 keeps a queue of instances with deadlines.
   if (typeof raw.event === 'string' && eventById(raw.event) && !Array.isArray(raw.events)) {
     const ev = eventById(raw.event);
@@ -100,6 +111,8 @@ export function migrate(raw) {
   delete s.event;
   s.events = (Array.isArray(s.events) ? s.events : []).filter((x) => x && eventById(x.id) && Number.isFinite(x.left));
   s.sectors = s.sectors.filter((id) => sectorById(id));
+  // Saves from before retaking existed: everything held was captured once already.
+  s.taken = Array.isArray(raw.taken) ? raw.taken.filter((id) => sectorById(id)) : s.sectors.filter((id) => id !== MAP.home);
   s.inbox = s.inbox.filter((m) => m && m.kind && (m.kind !== 'op' || sectorById(m.sector)) && (m.kind !== 'raid' || FACTIONS[m.faction]));
   if (!raw.v || raw.v < 2) {
     // v1 saves predate chapters: announce whatever is already open, skip the boot intro.
@@ -118,6 +131,8 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
   advanceBuild(s, dt);
   advanceOp(s, dt);
   advanceRaids(s, dt, offline);
+  advanceAssaults(s, dt, offline);
+  advanceNodes(s, dt);
   advanceEvents(s, dt, offline, active && !offline);
   advanceSieges(s, dt, offline);
   advanceBuffs(s, dt);

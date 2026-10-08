@@ -5,7 +5,7 @@ import {
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege, addGrudge } from './war.js';
+import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, spawnAssault, loseSector, sectorById } from './war.js';
 import { range, pick, rand } from './rng.js';
 
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
@@ -55,7 +55,8 @@ export function fillText(inst, str) {
   return String(str)
     .replace(/\{(a|b)\}/g, (_, k) => (BY_ID[p[k]] ? BY_ID[p[k]].name : 'facility'))
     .replace(/\{faction\}/g, () => (FACTIONS[p.faction] ? FACTIONS[p.faction].name : 'raiders'))
-    .replace(/\{strength\}/g, () => String(Math.round(p.strength || 0)));
+    .replace(/\{strength\}/g, () => String(Math.round(p.strength || 0)))
+    .replace(/\{(node|held)\}/g, (_, k) => (sectorById(p[k]) ? sectorById(p[k]).name : 'the border'));
 }
 
 // Concrete consequences of one choice, for both the UI preview and resolution.
@@ -81,7 +82,14 @@ export function choiceOutcome(s, inst, choice) {
     cost[r] = Math.min(cost[r], Math.floor(c[r]));
   }
   const align = choice.align ? Math.round(choice.align * EVENTS_CFG.alignScale) : 0;
-  return { cost, gain, lose, levels, units, siege, align, grudge: choice.grudge || null };
+  const p = inst.params || {};
+  // Buffs last a stretch rolled when the event fired (EVENTS_CFG.buffStretch).
+  const buff = choice.buff ? { ...choice.buff, duration: Math.round(choice.buff.duration * (p.buffStretch || 1)) } : null;
+  // Effects on the sectors named in the event.
+  const strength = choice.strength ? { id: p.node, delta: choice.strength } : null;
+  const assault = choice.assault && p.node ? { from: p.node, target: p.held, delay: choice.assault } : null;
+  const cede = choice.cede && p.held ? p.held : null;
+  return { cost, gain, lose, levels, units, siege, align, grudge: choice.grudge || null, buff, strength, assault, cede, clearMarks: choice.clearMarks && p.held ? p.held : null };
 }
 
 export function canChoose(s, inst, choice) {
@@ -110,6 +118,9 @@ const hasUnits = (s, tab) => ITEMS.some((i) => i.tab === tab && owned(s, i.id) >
 // income the player does not have, no loss of stock or units they do not own, no grudge from a faction
 // that is not raiding, no raid delay before raids start. Otherwise another event fires instead.
 export function applicable(s, ev) {
+  if (ev.border && !borders(s).length) {
+    return false;
+  }
   if (ev.needsUnits && !ev.needsUnits.every((tab) => hasUnits(s, tab))) {
     return false;
   }
@@ -146,6 +157,15 @@ function spawn(s, ev, front) {
     const floor = FACTIONS[params.faction].raidFloor;
     params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max));
   }
+  if (ev.border) {
+    // A border between one of your sectors and an enemy one; the event is about those two.
+    const all = borders(s);
+    if (!all.length) return false;
+    const b = pick(s, all);
+    params.node = b.from;
+    params.held = b.target;
+  }
+  params.buffStretch = range(s, EVENTS_CFG.buffStretch[0], EVENTS_CFG.buffStretch[1]);
   const inst = { uid: ++s.eventSeq, id: ev.id, left: ev.deadline, total: ev.deadline, params };
   if (front) {
     s.events.unshift(inst);
@@ -246,8 +266,20 @@ export function resolveEvent(s, uid, index, expired = false) {
     out.grudgeRoll = addGrudge(s, out.grudge);
     say(s, 'grudge', { faction: FACTIONS[out.grudge.faction].name }, 'bad');
   }
-  if (choice.buff) {
-    s.buffs.push({ ...choice.buff, remaining: choice.buff.duration });
+  if (out.buff) {
+    s.buffs.push({ ...out.buff, remaining: out.buff.duration });
+  }
+  if (out.strength && sectorById(out.strength.id) && !s.sectors.includes(out.strength.id)) {
+    shiftStrength(s, out.strength.id, out.strength.delta);
+  }
+  if (out.clearMarks && s.nodes[out.clearMarks]) {
+    s.nodes[out.clearMarks].marks = 0;
+  }
+  if (out.assault && !s.sectors.includes(out.assault.from) && s.sectors.includes(out.assault.target)) {
+    spawnAssault(s, { from: out.assault.from, target: out.assault.target }, out.assault.delay);
+  }
+  if (out.cede && s.sectors.includes(out.cede)) {
+    loseSector(s, out.cede, sectorById(inst.params.node).faction);
   }
   if (choice.raidDelay) {
     delayRaid(s, choice.raidDelay);
@@ -263,10 +295,10 @@ export function resolveEvent(s, uid, index, expired = false) {
   const result = fillText(inst, choice.result);
   if (expired) {
     s.stats.expired = (s.stats.expired || 0) + 1;
-    say(s, 'eventExpired', { title: ev.title, label }, 'bad');
-    s.inbox.push({ kind: 'expired', id: ev.id, choice: index, title: ev.title, label, result, out });
+    say(s, 'eventExpired', { title: fillText(inst, ev.title), label }, 'bad');
+    s.inbox.push({ kind: 'expired', id: ev.id, choice: index, title: fillText(inst, ev.title), label, result, out });
   }
-  say(s, 'event', { title: ev.title, result }, 'story');
+  say(s, 'event', { title: fillText(inst, ev.title), result }, 'story');
   return { ev, inst, choice, out, label, result };
 }
 

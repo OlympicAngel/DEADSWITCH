@@ -1,6 +1,6 @@
 // Command: the war room. Threat reactor in the middle, live feeds for every front around it.
 import {
-  FACTIONS, FACTORS, RANKS, RAIDS, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
+  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
@@ -166,11 +166,11 @@ function raidPanel(s, refs) {
   }
   const fac = FACTIONS[raid.faction];
   stackPanel(s, refs);
-  const el = slot(refs, 'raid', raid.faction + raid.strength, `
+  const el = slot(refs, 'raid', raid.faction + raid.strength + (raid.assault ? raid.target + E.breaches(s, raid.target) : ''), `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     <div class="inc-main">
       <span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>
-      <div><b>${E.attackName(raid)}</b><small>${fac.name}</small></div>
+      <div><b>${E.attackName(raid)}</b><small>${raid.assault ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches` : fac.name}</small></div>
       <div class="count" data-count></div>
     </div>
     <div class="bars">
@@ -258,7 +258,7 @@ function eventsPanel(s, refs) {
     ${s.events.map((x) => {
       const ev = E.eventById(x.id);
       return `<button class="tx ${ev.aftermath || ev.urgent ? 'crisis' : ''}" data-act="event" data-uid="${x.uid}">
-        ${icon(ev.aftermath ? 'fire' : 'message')}<span><b>${ev.title}</b><small>${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Decision required'}</small></span>
+        ${icon(ev.aftermath ? 'fire' : 'message')}<span><b>${esc(E.fillText(x, ev.title))}</b><small>${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Decision required'}</small></span>
         <span class="tx-time" data-left="${x.uid}"></span></button>`;
     }).join('')}`);
   for (const x of s.events) {

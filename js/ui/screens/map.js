@@ -1,11 +1,11 @@
 // Map: a portrait theater (home at the bottom, Halcyon at the top), a briefing sheet, and the archive.
 import {
-  SECTORS, FACTIONS, MAP, CHAPTERS, CHAPTER_TEXT, OPS, ENDINGS,
+  SECTORS, FACTIONS, MAP, CHAPTERS, CHAPTER_TEXT, OPS, NODES, ENDINGS,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
-import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } from '../common.js';
+import { costChips, setChips, tags, bonusText, bonusChips, yieldChips, chanceClass, clock } from '../common.js';
 import { sortedTabs } from '../layout.js';
 import { put, setCls, setW } from '../dom.js';
 
@@ -112,6 +112,11 @@ function renderTheater(s, ui) {
   };
   const marches = fronts.map(marchLine).join('');
   const ring = s.op ? fxAt(P(E.sectorById(s.op.sector)), 52, 'fx-ring', '<circle r="46" class="ret-ring"/>') : '';
+  // An incoming assault: a static line from the attacking sector to its target.
+  const a = s.assault;
+  const assaultLine = a && isShown(a.from) && isShown(a.target)
+    ? (() => { const f = P(E.sectorById(a.from)); const t = P(E.sectorById(a.target)); return `<line x1="${f.x}" y1="${f.y}" x2="${t.x}" y2="${t.y}" class="assault-line"/>`; })()
+    : '';
   const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
     const p = P(x);
@@ -125,7 +130,8 @@ function renderTheater(s, ui) {
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
         <text class="name" dy="${r + 24}">${esc(label)}</text>
-        ${known && st !== 'owned' ? `<text class="def ${E.flank(s, x).bonus ? 'fort' : ''}" dy="${-r - 10}">${num(E.sectorDefense(s, x))}${E.flank(s, x).bonus ? ' ▲' : ''}</text>` : ''}
+        ${known && st !== 'owned' ? defLabel(s, x, r) : ''}
+        ${st === 'owned' && E.breaches(s, x.id) ? `<text class="def breach" dy="${-r - 10}">${E.breaches(s, x.id)}/${NODES.breachesToFall}</text>` : ''}
       </g>`;
   }).join('');
   const legend = CHAPTERS.map((c) => {
@@ -145,6 +151,7 @@ function renderTheater(s, ui) {
         ${territory(shown)}
         <g>${links.join('')}</g>
         ${opPath}
+        ${assaultLine}
         <g>${nodes}</g>
         ${s.op ? reticle(P(E.sectorById(s.op.sector))) : ''}
       </svg>
@@ -161,6 +168,21 @@ function reticle(p) {
     <path d="M0,-58 V-44 M0,44 V58 M-58,0 H-44 M44,0 H58" class="ret-ticks"/>
     <text class="ret-time" dy="-66" data-optimer></text>
   </g>`;
+}
+
+// Defense above an enemy sector: ▲ fortified by approaches, ↑/↓ stronger/weaker than its base.
+function defLabel(s, x, r) {
+  const fort = E.flank(s, x).bonus;
+  const m = E.nodeStrength(s, x.id);
+  const drift = m > 1.005 ? ' ↑' : m < 0.995 ? ' ↓' : '';
+  return `<text class="def ${fort ? 'fort' : ''} ${drift ? (m > 1 ? 'up' : 'down') : ''}" dy="${-r - 10}">${num(E.sectorDefense(s, x))}${fort ? ' ▲' : ''}${drift}</text>`;
+}
+
+// Current strength against the sector's base defense.
+function strengthRow(s, sec) {
+  const m = E.nodeStrength(s, sec.id);
+  if (Math.abs(m - 1) < 0.005) return '';
+  return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(sec.defense)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain)} for each operation it repels, −${pct(NODES.defendWinCut)} for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
 }
 
 // Shown when the target has several approaches.
@@ -190,7 +212,9 @@ function briefing(s, sec) {
       <button class="icon-btn small" data-act="close-sheet" aria-label="Close">${icon('close')}</button>
     </header>`;
   if (st === 'owned') {
-    return `${head}${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
+    const br = E.breaches(s, sec.id);
+    return `${head}${sec.yields ? `<div class="perm"><span>${icon('trend')}Yields while held</span>${yieldChips(E.sectorYield(sec))}</div>` : ''}
+      ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
@@ -208,8 +232,10 @@ function briefing(s, sec) {
     <div class="rows">
       ${fortRow(s, sec)}
       <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
-      <div class="r"><span>${icon('spark')}Spoils</span><b>${tags(E.opLoot(sec), '+')}</b></div>
-      <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
+      ${strengthRow(s, sec)}
+      <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
+      <div class="perm"><span>${icon('trend')}Yields while held</span>${yieldChips(E.sectorYield(sec))}</div>
+      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="Typical strength of its assaults on your bordering sectors."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
     </div>

@@ -1057,3 +1057,9 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .r.losses > span { flex: none; }
 .loss-list { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 12px; min-width: 0; }
 .tap-name { cursor: pointer; }
+
+/* Living sectors: breaches on yours, strength drift on theirs, the line of an incoming assault */
+.node .def.breach { fill: var(--bad); }
+.node .def.up { fill: #ff9a7a; }
+.node .def.down { fill: var(--ok); }
+.assault-line { stroke: var(--bad); stroke-width: 4; stroke-dasharray: 10 8; stroke-linecap: round; opacity: .85; }

@@ -291,7 +291,8 @@ export function createUI(root, game) {
     const base = [ui.screen, ui.inner[ui.screen]];
     if (ui.screen === 'command') return JSON.stringify(base);
     if (ui.screen === 'map') {
-      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, s.chapter, s.ending, ui.inner.map === 'archive' ? [s.stats, Math.round(s.align)] : E.level(s, 'core')]);
+      const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(2)}${n.marks}`).join();
+      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, s.assault && s.assault.from + s.assault.target, nodes, s.chapter, s.ending, ui.inner.map === 'archive' ? [s.stats, Math.round(s.align)] : E.level(s, 'core')]);
     }
     return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align)]);
   }

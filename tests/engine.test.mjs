@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE } from '../js/data.js';
+import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE, NODES } from '../js/data.js';
 
 test('offline catch-up lands builds mid-stretch and matches live play at offline rates', () => {
   const live = E.newState();
@@ -206,4 +206,24 @@ test('time away counts up to a limit at reduced output; the Watch Daemon raises 
   assert.equal(lim.seconds, (o.baseHours + 2 * o.hoursPerStep) * 3600);
   assert.ok(Math.abs(lim.efficiency - (o.baseEfficiency + o.efficiencyPerStep)) < 1e-9);
   assert.ok(E.offlineLimits(s, 1000).efficiency <= o.maxEfficiency);
+});
+
+test('a held sector falls after enough breached assaults; strength moves within its bounds', () => {
+  const s = E.newState(15);
+  s.levels.core = 3;
+  s.sectors.push('rust', 'tunnels');
+  s.taken.push('rust', 'tunnels');
+  s.items = {}; // no defense: every assault breaches
+  for (let i = 0; i < NODES.breachesToFall; i++) {
+    E.spawnAssault(s, { from: 'alley', target: 'rust' }, 1);
+    E.step(s, 2);
+  }
+  assert.ok(!s.sectors.includes('rust'));
+  E.shiftStrength(s, 'alley', 100);
+  assert.equal(E.nodeStrength(s, 'alley'), NODES.strengthMax);
+  E.shiftStrength(s, 'alley', -100);
+  assert.equal(E.nodeStrength(s, 'alley'), NODES.strengthMin);
+  const old = E.migrate({ ...s, nodes: undefined, taken: undefined, assault: undefined });
+  assert.deepEqual(old.nodes, {});
+  assert.ok(old.taken.includes('tunnels'));
 });

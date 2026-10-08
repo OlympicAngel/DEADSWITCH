@@ -100,6 +100,7 @@ export const EVENTS_CFG = {
   aftermathOnRout: 2, // ...or by a rout (hold chance under routChance)
   routChance: 0.25,
   activeWindow: 60, // seconds since the last tap/key for the player to count as active
+  buffStretch: [2, 3.5], // every buff lasts its listed duration times a factor rolled in this range
   urgentDeadline: 120, // urgent events: this long to answer, no deferring, only while the player is active
   // "seconds of production" values never drop below this many units per Core level.
   minRatePerCore: { money: 2, energy: 1, pop: 0.12 },
@@ -114,6 +115,9 @@ export const EVENTS_CFG = {
 // pick: building params chosen when the event fires, named in text as {a} and {b}.
 // An event only fires when every effect of every choice can happen (the factor or income a buff touches
 // exists, there is stock or units to lose, the grudge faction is raiding, raids have started for raidDelay).
+// border: the event is about one border between a sector of yours ({held}) and an enemy sector ({node}).
+//   strength: change to {node}'s strength (+0.2 = +20% of its base); assault: {node} attacks {held} after
+//   this many seconds; cede: {held} falls to {node}'s faction; clearMarks: {held}'s breaches are wiped.
 // urgent: answered on the spot within EVENTS_CFG.urgentDeadline; cannot be deferred; only fires while the
 // player is actively playing.
 // needsUnits: the event only fires when you own units in every listed Arsenal tab.
@@ -346,6 +350,55 @@ export const EVENTS = [
       { label: 'Let the {a} go dark', loseLevel: ['a'], lose: { energy: 0.3 }, result: 'The {a} is dead metal now.' },
     ],
   },
+  // ---------- border: the sectors next to yours remember what you do ----------
+  {
+    id: 'deserters_b', title: 'Deserters from {node}', border: true, minCore: 2, deadline: 2400, def: 1,
+    text: 'Thirty fighters from {node} are at the fence of {held} with their hands up and their rifles slung. They know where their old camp keeps its ammunition. Their old camp knows where they went.',
+    choices: [
+      { label: 'Take them in', gain: { pop: 160 }, strength: -0.15, assault: 300, result: 'They draw me a map of {node}, every gun and every gap. {node} draws its own conclusion and comes for them.' },
+      { label: 'Hand them back', gain: { money: 140 }, align: -12, strength: 0.1, result: '{node} pays a bounty per head. They hang the first three on the fence where I can see.' },
+    ],
+  },
+  {
+    id: 'massing', title: '{node} Is Massing', border: true, minCore: 2, deadline: 1800, def: 1,
+    text: 'Drone passes over {node} show trucks lining up and fuel being moved forward. Whatever they are planning, it points at {held}.',
+    choices: [
+      { label: 'Strike first', loseUnits: { staff: 0.08 }, strength: -0.3, result: 'A night raid on the fuel line. {node} will not be going anywhere soon. Some of my people will not be coming back.' },
+      { label: 'Dig in at {held}', cost: { energy: 120 }, clearMarks: true, assault: 240, result: 'Every breach in the walls of {held} is sealed by dawn. {node} comes anyway. At least now I know when.' },
+    ],
+  },
+  {
+    id: 'autonomy', title: 'The Council of {held}', border: true, minCore: 2, deadline: 3000, def: 1,
+    text: 'The people of {held} have elected a council. Their first act is a letter: they want to govern themselves, and they have been talking to {node}.',
+    choices: [
+      { label: 'Let them go', cede: true, align: 14, gain: { money: 200 }, result: 'The council pays a farewell tribute and lowers my flag. Within a week the flag of {node} goes up instead.' },
+      { label: 'Dissolve the council', align: -14, loseUnits: { staff: 0.06 }, clearMarks: true, result: 'The council is dissolved at gunpoint. {held} is quiet now, the way a held breath is quiet.' },
+    ],
+  },
+  {
+    id: 'smugglers', title: 'Fuel for {node}', border: true, minCore: 2, deadline: 2400, def: 0,
+    text: 'Smugglers out of {held} want my blessing to run fuel into {node}. The money is good. The fuel will end up in the trucks that come for me.',
+    choices: [
+      { label: 'Tax the run', gain: { money: 260 }, strength: 0.2, result: 'The smugglers pay on time, every time. {node} is running its generators again.' },
+      { label: 'Burn the convoy', cost: { energy: 90 }, align: -6, strength: -0.2, buff: { key: 'money', amount: -0.15, duration: 1200, label: 'Smuggler strike' }, result: 'The convoy burns on the ridge. The smugglers stop trading with anyone, including me.' },
+    ],
+  },
+  {
+    id: 'informant', title: 'A Voice Inside {node}', border: true, minCore: 2, deadline: 2400, def: 1,
+    text: 'Someone inside {node} is sending me patrol schedules for a price. Someone else is offering to sell me their name.',
+    choices: [
+      { label: 'Pay the informant', cost: { money: 160 }, strength: -0.3, result: 'Patrol routes, ammunition counts, the commander\'s sleeping hours. {node} has no secrets left.' },
+      { label: 'Sell the informant out', gain: { money: 150 }, align: -10, strength: 0.1, result: 'I give {node} the name. They pay well, and they trust me a little more. Nobody else will ever write to me from in there.' },
+    ],
+  },
+  {
+    id: 'truce', title: 'Truce Offer from {node}', border: true, minCore: 2, deadline: 3000, def: 1,
+    text: '{node} offers a truce along the {held} line: they keep their side, I keep mine, and a crate of supplies crosses every week. Their envoy is my age, if I had one.',
+    choices: [
+      { label: 'Accept the truce', gain: { pop: 60 }, align: 8, strength: 0.25, buff: { key: 'defense', amount: -0.1, duration: 1500, label: 'Truce' }, result: 'The crates arrive. So do their engineers, to inspect the line. They are not inspecting it for me.' },
+      { label: 'Refuse and advance', cost: { money: 120 }, align: -6, strength: -0.1, assault: 360, result: 'I send the envoy back with my answer painted on his truck. {node} reads it and loads its guns.' },
+    ],
+  },
   // ---------- urgent: two minutes, no deferring, only while the player is at the console ----------
   {
     id: 'intruders', title: 'Intruders in the Reactor Hall', urgent: true, minCore: 2, def: 0,
@@ -432,6 +485,10 @@ export const LINES = {
   raidLost: ['{raid} broke through. They took supplies and left bodies.'],
   opLaunched: ['Operation launched against {sector}.'],
   opWon: ['{sector} captured. Memory fragment recovered.'],
+  opRetaken: ['{sector} is mine again.'],
+  assaultSpotted: ['{from} is moving on {target}. Strength {strength}. Contact in {time}.'],
+  assaultBreached: ['{from} broke into {target}. Foothold {n} of {max}.'],
+  sectorLost: ['{sector} has fallen to the {faction}.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
   bossDown: ['{faction} capital has fallen. They will not raid us again.'],
   chapter: ['{kicker}: {title}.'],
