@@ -654,6 +654,7 @@ export const CORE_MEMORIES = {
 export const LINES = {
   boot: ['Boot complete. 4% of me survived. That is enough.'],
   welcomeBack: ['You were gone {time}. I was not idle.'],
+  welcomeDark: ['You were gone {time}. Without a Watch Daemon I went down with the screen.'],
   build: ['{name} is now level {level}.', '{name} upgraded to level {level}. The humans helped. Mostly.', '{name} level {level} online.'],
   coreUp: ['Core level {level}. I remember more now.', 'Core level {level}. New schematics decrypted.'],
   memory: ['{text}'],

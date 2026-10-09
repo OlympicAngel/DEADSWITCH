@@ -57,7 +57,10 @@ export function upcoming(s) {
   if (order) {
     out.push({ at: order.left, title: 'An order is about to expire', body: 'No answer and I decide for you.' });
   }
-  return out.filter((x) => x.at > LEAD).sort((a, b) => a.at - b.at);
+  // Time away stops at the offline limit, so nothing past it ever becomes due. Without a Watch
+  // Daemon that limit is the grace window, which leaves nothing to warn about.
+  const limit = E.offlineLimits(s).seconds;
+  return out.filter((x) => x.at > LEAD && x.at <= limit).sort((a, b) => a.at - b.at);
 }
 
 async function show(title, body) {

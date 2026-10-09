@@ -201,7 +201,7 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
 
 // Runs a stretch of time away in bounded steps so timers land mid-way. Only offlineLimits(s).seconds
 // of an absence count, at offlineLimits(s).efficiency of normal output; its first graceSeconds count
-// in full. `already` is time already counted in this same absence (a background tab catches up in chunks).
+// in full. Without the Watch Daemon that limit is the grace window, so an absence barely counts. `already` is time already counted in this same absence (a background tab catches up in chunks).
 export function catchUp(s, seconds, already = 0) {
   const limits = offlineLimits(s);
   const total = Math.max(0, Math.min(seconds, limits.seconds - already));
@@ -237,5 +237,5 @@ export function catchUp(s, seconds, already = 0) {
     taken: s.stats.opsWon - was.opsWon,
     lost: Math.max(0, was.sectors - s.sectors.length),
   };
-  return { seconds: total, away: seconds, efficiency: limits.efficiency, gained, happened, flows };
+  return { seconds: total, away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, flows };
 }

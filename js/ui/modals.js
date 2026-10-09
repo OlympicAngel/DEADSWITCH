@@ -505,7 +505,7 @@ export function createModals(dialog, game, onChange) {
     open(`
       <span class="kicker">${icon('clock')}Welcome back</span>
       <h2>While you were away</h2>
-      <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.</p>
+      <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.${report.dark ? ' Nothing in me runs past that without a Watch Daemon.' : ''}</p>
       <div class="rows">${gains}</div>
       ${events ? `<div class="rows away-log">${events}</div>` : ''}
       <button class="btn primary wide" data-close>Resume command</button>`, { then });

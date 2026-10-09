@@ -110,7 +110,7 @@ function catchUp(seconds) {
   const report = E.catchUp(game.state, seconds);
   game.flows = report.flows;
   if (seconds > OFFLINE_REPORT_SECONDS) {
-    E.say(game.state, 'welcomeBack', { time: time(report.seconds) });
+    E.say(game.state, report.dark ? 'welcomeDark' : 'welcomeBack', { time: time(report.away) });
     ui.showOffline(report);
   }
   save(true);

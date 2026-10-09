@@ -425,6 +425,10 @@ export function togglePause(s, id) {
 // How much time away counts and at what share of normal output, from Watch Daemon levels.
 export function offlineLimits(s, lvl = level(s, 'daemon')) {
   const o = BALANCE.offline;
+  // Nothing runs while nobody is watching until the Watch Daemon does: only the grace window counts.
+  if (lvl < 1) {
+    return { seconds: o.graceSeconds, efficiency: 1, dark: true };
+  }
   const effSteps = Math.min(Math.floor(lvl / 2), Math.round((o.maxEfficiency - o.baseEfficiency) / o.efficiencyPerStep));
   return {
     seconds: (o.baseHours + o.hoursPerStep * (lvl - effSteps)) * 3600,

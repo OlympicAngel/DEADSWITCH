@@ -6,6 +6,8 @@ import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE, NODES, AGGR, CLANS, FACTIONS, SECTO
 test('offline catch-up lands builds mid-stretch and matches live play at offline rates', () => {
   const live = E.newState();
   const away = E.newState();
+  live.levels.daemon = 1;
+  away.levels.daemon = 1;
   E.startBuild(live, 'scrapyard');
   E.startBuild(away, 'scrapyard');
   const { graceSeconds } = BALANCE.offline;
@@ -54,7 +56,7 @@ test('old saves missing new fields still load', () => {
 
 test('being away never brings more than one raid', () => {
   const s = E.newState(3);
-  Object.assign(s.levels, { core: 4 });
+  Object.assign(s.levels, { core: 4, daemon: 1 });
   E.catchUp(s, 24 * 3600);
   assert.equal(s.stats.raidsWon + s.stats.raidsLost, 1);
   assert.ok(s.raid, 'the next raid is scheduled and waits for the player');
@@ -76,7 +78,7 @@ test('same seed and inputs give the same war outcomes', () => {
 
 test('a lost raid demands orders, and silence applies the default choice', () => {
   const s = E.newState(5);
-  Object.assign(s.levels, { core: 2, battery: 2, generator: 2 });
+  Object.assign(s.levels, { core: 2, battery: 2, generator: 2, daemon: 1 });
   s.raidsStarted = true;
   s.raid = { faction: 'scav', strength: 1e6, remaining: 1, total: 1 };
   E.step(s, 1);
@@ -221,8 +223,13 @@ test('no event choice charges the same resource twice', () => {
 test('time away counts up to a limit at reduced output; the Watch Daemon raises both', () => {
   const o = BALANCE.offline;
   const s = E.newState(14);
+  // No Watch Daemon: an absence counts for the grace window only, and nothing accrues past it.
+  const dark = E.catchUp(s, 10 * 3600);
+  assert.equal(dark.seconds, o.graceSeconds);
+  assert.equal(dark.dark, true);
+  s.levels.daemon = 1;
   const r = E.catchUp(s, 10 * 3600);
-  assert.equal(r.seconds, o.baseHours * 3600);
+  assert.equal(r.seconds, (o.baseHours + o.hoursPerStep) * 3600);
   assert.equal(r.efficiency, o.baseEfficiency);
   s.levels.daemon = 3; // levels alternate: time, efficiency, time
   const lim = E.offlineLimits(s);
