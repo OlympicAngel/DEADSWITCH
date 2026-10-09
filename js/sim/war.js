@@ -325,9 +325,10 @@ function settleGrudge(s, raid, won) {
   }
 }
 
-export function startSiege(s, faction, strength, delay) {
+// `uid` ties the siege to the order that announced it, so paying that order calls this attack off.
+export function startSiege(s, faction, strength, delay, uid = 0) {
   const t = Math.max(0, delay);
-  s.sieges.push({ faction, strength, remaining: t, total: Math.max(t, 1), siege: true, from: attackSource(s, faction), target: MAP.home });
+  s.sieges.push({ faction, strength, remaining: t, total: Math.max(t, 1), siege: true, uid, from: attackSource(s, faction), target: MAP.home });
 }
 
 export function advanceSieges(s, dt, offline) {

@@ -43,6 +43,7 @@ function play(seed) {
     if (marks[key] === undefined) marks[key] = t;
   };
   const tally = { sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
+  const ignored = new Set(); // threats the bot decided to take on the chin, counted once each
 
   for (let t = 0; t < HOURS * 3600; t++) {
     E.step(s, 1, false, true);
@@ -73,11 +74,18 @@ function play(seed) {
       const ok = ev.choices.map((c, i) => i).filter((i) => E.canChoose(s, inst, ev.choices[i]));
       let idx;
       if (ev.threat) {
+        // A threat's attack is already on the board: paying is the only answer, and it is not always
+        // affordable. Ignoring it is not a choice to make, it is one to live with.
         const pay = ev.choices.findIndex((c) => c.cost);
-        const fight = ev.choices.findIndex((c) => c.siege);
-        idx = ok.includes(pay) ? pay : roll() < 0.5 ? fight : ok.find((i) => i !== fight) ?? fight;
-        if (idx === pay) tally.tributes++;
-        if (idx === fight) tally.sieges++;
+        if (!ok.includes(pay) || roll() < 0.4) {
+          if (!ignored.has(inst.uid)) {
+            ignored.add(inst.uid);
+            tally.sieges++;
+          }
+          continue;
+        }
+        idx = pay;
+        tally.tributes++;
       } else if (ok.length) {
         idx = ok[Math.floor(roll() * ok.length)];
       } else {

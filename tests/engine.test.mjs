@@ -111,19 +111,40 @@ test('sectors are fortified by linked sectors of their own clan, until you take 
   assert.equal(E.flank(s, sec).bonus, 0);
 });
 
-test('refusing a threat locks a siege to the deadline; silence brings it at once', () => {
+test('a threat schedules its attack the moment it arrives; paying is what calls it off', () => {
   const s = E.newState(6);
-  Object.assign(s.levels, { core: 2, works: 1 });
+  Object.assign(s.levels, { core: 2, works: 1, scrapyard: 4, solar: 4 });
   s.items.barricades = 5;
+  s.res = { money: 1e6, energy: 1e5, pop: 500 };
+  s.raidsStarted = true;
   const ev = E.eventById('ultimatum');
-  s.events = [{ uid: 1, id: 'ultimatum', left: 1000, total: 1800, params: { faction: 'scav', strength: 999 } }];
-  E.resolveEvent(s, 1, ev.choices.findIndex((c) => c.siege));
-  assert.equal(s.sieges.length, 1);
-  assert.equal(Math.round(s.sieges[0].remaining), 1000);
-  s.events = [{ uid: 2, id: 'ultimatum', left: 0.5, total: 1800, params: { faction: 'scav', strength: 999 } }];
+  // Firing the order puts the attack on the board straight away, at the deadline.
+  s.eventTimer = 0;
+  s.recentEvents = EVENTS.filter((e) => e.id !== 'ultimatum' && !e.aftermath && !e.urgent).map((e) => e.id);
+  while (!s.events.some((x) => x.id === 'ultimatum')) {
+    s.eventTimer = 0;
+    E.step(s, 0.01, false, true);
+  }
+  const inst = s.events.find((x) => x.id === 'ultimatum');
+  const siege = s.sieges.find((x) => x.uid === inst.uid);
+  assert.ok(siege, 'the attack is visible before anything is decided');
+  assert.ok(Math.abs(siege.remaining - ev.deadline) < 1);
+  // Paying turns it back; nothing else in the queue is touched.
+  assert.ok(E.resolveEvent(s, inst.uid, 0));
+  assert.equal(s.sieges.length, 0);
+});
+
+test('a threat nobody answers simply arrives', () => {
+  const s = E.newState(7);
+  Object.assign(s.levels, { core: 2, works: 1 });
+  s.items.barricades = 2;
+  s.events = [{ uid: 9, id: 'ultimatum', left: 0.5, total: 1800, params: { faction: 'scav', strength: 9999 } }];
+  E.startSiege(s, 'scav', 9999, 0.5, 9);
   const lost = s.stats.raidsLost;
   E.step(s, 1);
-  assert.ok(s.stats.raidsLost >= lost + 1, 'the expired threat attacked immediately');
+  assert.ok(!s.events.some((x) => x.uid === 9), 'the order ran out without deciding anything');
+  assert.equal(s.stats.expired, 0, 'declining a bill is not a missed order');
+  assert.ok(s.stats.raidsLost >= lost + 1, 'the attack landed at its deadline');
 });
 
 test('conversion never creates value: any converter round trip loses resources', () => {

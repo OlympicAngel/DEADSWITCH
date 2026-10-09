@@ -306,8 +306,8 @@ export function createModals(dialog, game, onChange) {
     if (buff) {
       p.push(`<span class="tag ${buff.amount < 0 ? 't-bad' : 't-good'}">${icon(buff.key)}${bonusText({ [buff.key]: buff.amount })} · ${time(buff.duration)}</span>`);
     }
-    if (out.siege) {
-      p.push(`<span class="tag t-bad">${labeled('power')}Attack ${num(out.siege.strength)} at deadline</span>`);
+    if (out.callOff) {
+      p.push(`<span class="tag t-good">${icon('check')}Attack called off</span>`);
     }
     if (ch.raidDelay) {
       p.push(`<span class="tag ${ch.raidDelay > 0 ? 't-good' : 't-bad'}">${icon('threat')}Next raid ${ch.raidDelay > 0 ? 'later' : 'sooner'} (${time(Math.abs(ch.raidDelay))})</span>`);
@@ -368,8 +368,10 @@ export function createModals(dialog, game, onChange) {
           <div class="threat-hold">Hold if attacked <b data-thold></b></div>
         </div>` : ''}
         <div class="choices">${choices}</div>
-        <p class="default-note">${icon('alert')}No order in time and I choose: <b>${esc(E.fillText(inst, ev.choices[ev.def].label))}</b></p>
-        ${ev.urgent ? '' : `<button class="btn ghost wide" data-close>${icon('hourglass')}Decide later</button>`}
+        <p class="default-note">${ev.def === null
+    ? `${icon('alert')}They attack when this runs out.`
+    : `${icon('alert')}No order in time and I choose: <b>${esc(E.fillText(inst, ev.choices[ev.def].label))}</b>`}</p>
+        ${ev.urgent ? '' : `<button class="btn ghost wide" data-close>${icon(ev.def === null ? 'close' : 'hourglass')}${ev.def === null ? 'Ignore' : 'Decide later'}</button>`}
       </div>`, { cls: 'event-modal' + (ev.aftermath ? ' crisis' : '') + (ev.urgent ? ' urgent locked' : '') });
     if (ev.aftermath || ev.urgent) {
       sfx.alarm();

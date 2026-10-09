@@ -76,7 +76,7 @@ export function choiceOutcome(s, inst, choice) {
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
     units[tab] = unitsLost(s, tab, share);
   }
-  const siege = choice.siege && inst.params ? { faction: inst.params.faction, strength: inst.params.strength, at: inst.left } : null;
+  const callOff = choice.cancelSiege && s.sieges.some((x) => x.uid === inst.uid);
   // A price can never exceed storage, or the choice could not exist.
   const cost = scaled(s, choice.cost, EVENTS_CFG.costScale);
   for (const r of Object.keys(cost)) {
@@ -90,7 +90,7 @@ export function choiceOutcome(s, inst, choice) {
   const strength = choice.strength ? { id: p.node, delta: choice.strength } : null;
   const assault = choice.assault && p.node ? { from: p.node, target: p.held, delay: choice.assault } : null;
   const cede = choice.cede && p.held ? p.held : null;
-  return { cost, gain, lose, levels, units, siege, align, grudge: choice.grudge || null, buff, strength, assault, cede, clearMarks: choice.clearMarks && p.held ? p.held : null };
+  return { cost, gain, lose, levels, units, callOff, align, grudge: choice.grudge || null, buff, strength, assault, cede, clearMarks: choice.clearMarks && p.held ? p.held : null };
 }
 
 export function canChoose(s, inst, choice) {
@@ -176,6 +176,12 @@ function spawn(s, ev, front) {
     s.events.push(inst);
   }
   s.events.length = Math.min(s.events.length, EVENTS_CFG.maxPending);
+  // A threat's force is on its way from the moment it is announced: it shows among the inbound
+  // attacks with its own countdown, and only paying turns it back. (Not if the queue dropped it.)
+  if (ev.threat && s.events.includes(inst)) {
+    startSiege(s, inst.params.faction, inst.params.strength, ev.deadline, inst.uid);
+    say(s, 'siege', { faction: FACTIONS[inst.params.faction].name, strength: inst.params.strength }, 'bad');
+  }
   s.recentEvents.push(ev.id);
   if (s.recentEvents.length > RECENT_EVENTS) {
     s.recentEvents.shift();
@@ -205,10 +211,20 @@ export function advanceEvents(s, dt, offline, active = false) {
     inst.left -= dt;
     if (inst.left <= 0) {
       const ev = EVENT_BY_ID[inst.id];
-      resolveEvent(s, inst.uid, ev.def, true);
+      if (ev.def === null) {
+        // Nothing is decided by silence: what it warned about was scheduled when it arrived. Not
+        // paying a bill is not a missed order, so it does not count as one.
+        s.events = s.events.filter((x) => x !== inst);
+        say(s, 'threatIgnored', { title: fillText(inst, ev.title) }, 'bad');
+      } else {
+        resolveEvent(s, inst.uid, ev.def, true);
+      }
     }
   }
-  if (offline || s.events.some((x) => !EVENT_BY_ID[x.id].aftermath)) {
+  // One dilemma at a time, but a threat is a standing bill rather than a question: leaving it unpaid
+  // must not stop the rest of the war from talking to me.
+  const waiting = s.events.some((x) => !EVENT_BY_ID[x.id].aftermath && !EVENT_BY_ID[x.id].threat);
+  if (offline || waiting) {
     return;
   }
   s.eventTimer -= dt;
@@ -293,10 +309,10 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (choice.raidDelay) {
     delayRaid(s, choice.raidDelay);
   }
-  if (out.siege) {
-    // Refusing locks the attack to the original deadline; silence brings it immediately.
-    startSiege(s, out.siege.faction, out.siege.strength, expired ? 0 : out.siege.at);
-    say(s, 'siege', { faction: FACTIONS[out.siege.faction].name, strength: out.siege.strength }, 'bad');
+  if (out.callOff) {
+    // The force was already on its way; paying is what turns it back.
+    s.sieges = s.sieges.filter((x) => x.uid !== inst.uid);
+    say(s, 'siegeOff', { faction: FACTIONS[inst.params.faction].name });
   }
   s.events = s.events.filter((x) => x !== inst);
   s.stats.events++;

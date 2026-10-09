@@ -107,7 +107,8 @@ export const EVENTS_CFG = {
   minRatePerCore: { money: 2, energy: 1, pop: 0.12 },
 };
 
-// Every event must be answered before its deadline (seconds); otherwise choice `def` happens.
+// Every event must be answered before its deadline (seconds); otherwise choice `def` happens, or
+// nothing at all when `def` is null (a threat: its force was scheduled the moment it arrived).
 // Effects: cost/gain = SECONDS of current production; lose = SHARE of a stockpile; items = units granted;
 // loseUnits = share of every unit in an Arsenal tab; loseLevel = building params ('a', 'b') that drop one level;
 // buff = timed % change (negative = penalty); raidDelay = seconds added to the next raid; align = Humanity shift.
@@ -285,29 +286,27 @@ export const EVENTS = [
       { label: 'Jam it', cost: { energy: 200 }, align: 5, buff: { key: 'defense', amount: 0.2, duration: 1800, label: 'Signal blackout' }, result: 'The sky goes quiet. My enemies lose their eyes. So do I.' },
     ],
   },
-  // ---------- threats: pay, or fight a force built to outgrow you ----------
+  // ---------- threats: the attack is already on its way; paying is the only thing that turns it back
+  // ---------- (def null: nothing is decided by silence, so the force simply arrives at the deadline)
   {
-    id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 1800, def: 1, threat: { min: 1.0, max: 1.2 },
+    id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 1800, def: null, threat: { min: 1.0, max: 1.2 },
     text: '{faction} riders ring the valley, strength {strength}. "Tribute by sundown, machine, or we take it all, and the people with it."',
     choices: [
-      { label: 'Pay the tribute', cost: { money: 360, energy: 100 }, align: -3, result: 'They count it twice and ride off laughing. They will be back for more, and they know I will pay.' },
-      { label: 'Man the walls', siege: true, result: 'The gates close. They will hit at sundown with everything they have.' },
+      { label: 'Pay the tribute', cost: { money: 360, energy: 100 }, align: -3, cancelSiege: true, result: 'They count it twice and ride off laughing. They will be back for more, and they know I will pay.' },
     ],
   },
   {
-    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 2700, def: 1, threat: { min: 1.3, max: 1.6 },
+    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 2700, def: null, threat: { min: 1.3, max: 1.6 },
     text: 'The largest {faction} host I have ever recorded is marching on the Nest. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
     choices: [
-      { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
-      { label: 'Stand and fight', siege: true, result: 'Every gun on the wall. Every light out. They come at the deadline.' },
+      { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, cancelSiege: true, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
     ],
   },
   {
-    id: 'blockade', title: 'Blockade', minCore: 2, deadline: 2400, def: 1, threat: { min: 1.05, max: 1.3 },
+    id: 'blockade', title: 'Blockade', minCore: 2, deadline: 2400, def: null, threat: { min: 1.05, max: 1.3 },
     text: '{faction} fighters have cut every road into the Nest, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
     choices: [
-      { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.25, duration: 3600, label: 'Road toll' }, result: 'The roads open. Every caravan now pays them first, and me second.' },
-      { label: 'Break the blockade', siege: true, result: 'We go out to meet them. They will be ready.' },
+      { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.25, duration: 3600, label: 'Road toll' }, cancelSiege: true, result: 'The roads open. Every caravan now pays them first, and me second.' },
     ],
   },
   // ---------- aftermath: fired by lost raids, fast deadlines, no good answers ----------
@@ -665,6 +664,8 @@ export const LINES = {
   buffEnd: ['{label} has worn off.'],
   lore: ['“{text}”'],
   siege: ['{faction} will attack at strength {strength}. No more talking.'],
+  siegeOff: ['{faction} have been paid. They are turning back.'],
+  threatIgnored: ['No answer to "{title}". They come as promised.'],
   grudge: ['{faction} wants revenge. Their next raids will hit harder.'],
   grudgeEnd: ['{faction} has had its revenge. For now.'],
   eventExpired: ['No order received on "{title}". I decided: {label}.'],
