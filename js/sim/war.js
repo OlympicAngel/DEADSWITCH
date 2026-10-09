@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseUnits, say, caps, rewardCurve,
@@ -39,7 +39,8 @@ export function opLoot(sec) {
 
 // ---------- living sectors ----------
 
-const node = (s, id) => s.nodes[id] || (s.nodes[id] = { m: 1, marks: 0 });
+const node = (s, id) => s.nodes[id] || (s.nodes[id] = { m: 1, marks: 0, a: 0, seen: 0 });
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 // Strength multiplier of a sector you do not hold (1 = its base defense).
 export const nodeStrength = (s, id) => (s.nodes[id] ? s.nodes[id].m : 1);
@@ -52,7 +53,8 @@ export function shiftStrength(s, id, delta) {
   n.m = Math.min(NODES.strengthMax, Math.max(NODES.strengthMin, n.m + delta));
 }
 
-// Enemy sectors in open chapters slowly rebuild on their own, up to the hard ceiling.
+// Enemy sectors in open chapters slowly rebuild on their own, up to the hard ceiling, and every
+// sector's anger at you cools off while you leave it alone.
 export function advanceNodes(s, dt) {
   const grow = (NODES.growthPerHour * dt) / 3600;
   for (const sec of SECTORS) {
@@ -60,6 +62,55 @@ export function advanceNodes(s, dt) {
       shiftStrength(s, sec.id, grow);
     }
   }
+  const calm = (AGGR.calmPerHour * dt) / 3600;
+  for (const n of Object.values(s.nodes)) {
+    if (n.a) n.a = Math.abs(n.a) <= calm ? 0 : n.a - Math.sign(n.a) * calm;
+  }
+}
+
+// ---------- aggression: how keen a sector is to attack you (never shown to the player) ----------
+
+/** Stored anger plus what the sector reads off your Power right now. */
+export function aggression(s, id) {
+  const sec = SECTOR_BY_ID[id];
+  if (!sec) return 0;
+  const stored = (s.nodes[id] && s.nodes[id].a) || 0;
+  return clamp(stored + pressure(s, sec), AGGR.min, AGGR.max);
+}
+
+// A sector watches you gain on it: nothing while you are far below its defense, full tension once you match it.
+function pressure(s, sec) {
+  const ratio = factors(s).power / Math.max(1, sectorDefense(s, sec));
+  return AGGR.pressure * clamp((ratio - AGGR.pressureFrom) / (1 - AGGR.pressureFrom), 0, 1);
+}
+
+export function shiftAggression(s, id, delta) {
+  if (!SECTOR_BY_ID[id] || !SECTOR_BY_ID[id].faction || s.sectors.includes(id)) return;
+  const n = node(s, id);
+  n.a = clamp((n.a || 0) + delta, AGGR.min, AGGR.max);
+}
+
+/** Spreads a nudge from one sector: itself, every sector of its clan, and the sectors it links to. */
+export function stirAggression(s, id, spread) {
+  const sec = SECTOR_BY_ID[id];
+  if (!sec) return;
+  if (spread.node) shiftAggression(s, id, spread.node);
+  if (spread.clan && sec.faction) {
+    for (const x of SECTORS) {
+      if (x.faction === sec.faction && x.id !== id) shiftAggression(s, x.id, spread.clan);
+    }
+  }
+  if (spread.near) {
+    for (const l of sec.links) shiftAggression(s, l, spread.near);
+  }
+}
+
+// Opening a sector's briefing tells it someone is looking. The first look counts most.
+export function inspectSector(s, id) {
+  if (!SECTOR_BY_ID[id] || !SECTOR_BY_ID[id].faction || s.sectors.includes(id)) return;
+  const n = node(s, id);
+  n.seen = (n.seen || 0) + 1;
+  shiftAggression(s, id, AGGR.onInspect / n.seen);
 }
 
 // Clan support: a sector is fortified by the sectors of its own faction it links to. +flankBonus while
@@ -107,6 +158,7 @@ export function launchOp(s, id) {
     return false;
   }
   pay(s, opCost(sec));
+  stirAggression(s, id, AGGR.onOp);
   const total = opTime(sec);
   s.op = { sector: id, remaining: total, total };
   say(s, 'opLaunched', { sector: sec.name });
@@ -358,7 +410,7 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
   let p = pair;
   if (!p) {
     const all = borders(s, true);
-    const w = (b) => (b.locked ? NODES.lockedWeight : 1);
+    const w = (b) => (b.locked ? NODES.lockedWeight : 1) * (1 + aggression(s, b.from));
     const total = all.reduce((a, b) => a + w(b), 0);
     if (!total || rand(s) >= Math.min(1, total)) return null;
     let r = rand(s) * total;

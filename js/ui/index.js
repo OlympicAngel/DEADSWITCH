@@ -156,6 +156,7 @@ export function createUI(root, game) {
     } else if (t.dataset.sector) {
       ui.sector = t.dataset.sector;
       ui.sheet = true;
+      game.act.inspect(t.dataset.sector);
       sfx.click();
     } else {
       act(t, s);

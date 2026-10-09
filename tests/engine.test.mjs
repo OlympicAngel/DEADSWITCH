@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE, NODES } from '../js/data.js';
+import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE, NODES, AGGR, SECTORS } from '../js/data.js';
 
 test('offline catch-up lands builds mid-stretch and matches live play at offline rates', () => {
   const live = E.newState();
@@ -228,4 +228,51 @@ test('a held sector falls after enough breached assaults; strength moves within 
   const old = E.migrate({ ...s, nodes: undefined, taken: undefined, assault: undefined });
   assert.deepEqual(old.nodes, {});
   assert.ok(old.taken.includes('tunnels'));
+});
+
+test('every event id is unique, so a pending event resolves with its own choices', () => {
+  assert.equal(new Set(EVENTS.map((e) => e.id)).size, EVENTS.length);
+});
+
+test('aggression rises with what you do to a sector, spreads, and cools off', () => {
+  const s = E.newState(3);
+  const sec = E.sectorById('ashgrove');
+  const clanMate = SECTORS.find((x) => x.faction === sec.faction && x.id !== sec.id && !sec.links.includes(x.id));
+  E.stirAggression(s, sec.id, { node: 0.4, clan: 0.1, near: 0.2 });
+  assert.ok(Math.abs(s.nodes[sec.id].a - 0.4) < 1e-9);
+  assert.ok(Math.abs(s.nodes[clanMate.id].a - 0.1) < 1e-9);
+  const linked = sec.links.filter((l) => E.sectorById(l).faction && !s.sectors.includes(l));
+  assert.ok(linked.length && linked.every((l) => s.nodes[l].a >= 0.2 - 1e-9));
+  // Looking at a sector counts, but each look after the first counts for less.
+  E.inspectSector(s, sec.id);
+  const first = s.nodes[sec.id].a - 0.4;
+  E.inspectSector(s, sec.id);
+  assert.ok(s.nodes[sec.id].a - 0.4 - first < first);
+  // It never leaves its bounds and drifts back to calm while left alone.
+  E.shiftAggression(s, sec.id, 99);
+  assert.equal(s.nodes[sec.id].a, AGGR.max);
+  E.advanceNodes(s, (AGGR.max / AGGR.calmPerHour) * 3600);
+  assert.equal(s.nodes[sec.id].a, 0);
+});
+
+test('a sector you hold is never stirred, and the angrier border attacks more often', () => {
+  const s = E.newState(4);
+  const held = E.sectorById(s.sectors[0]);
+  E.stirAggression(s, held.id, { node: 1 });
+  assert.equal(E.aggression(s, held.id), 0);
+  assert.ok(!s.nodes[held.id]);
+  // A sector you hold with two enemy neighbours: only one of them is angry.
+  const mine = SECTORS.find((x) => x.links.filter((l) => E.sectorById(l).faction).length >= 2 && x.faction);
+  s.sectors.push(mine.id);
+  s.levels.core = 9;
+  const [angry, calm] = mine.links.filter((l) => E.sectorById(l).faction && l !== mine.id);
+  E.shiftAggression(s, angry, AGGR.max);
+  E.shiftAggression(s, calm, AGGR.min);
+  const from = { [angry]: 0, [calm]: 0 };
+  for (let i = 0; i < 400; i++) {
+    s.assault = null;
+    const a = E.spawnAssault(s);
+    if (a && from[a.from] !== undefined) from[a.from]++;
+  }
+  assert.ok(from[angry] > from[calm] * 2, `${from[angry]} vs ${from[calm]}`);
 });

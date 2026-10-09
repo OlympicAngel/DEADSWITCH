@@ -399,6 +399,169 @@ export const EVENTS = [
       { label: 'Refuse and advance', cost: { money: 120 }, align: -6, strength: -0.1, assault: 360, result: 'I send the envoy back with my answer painted on his truck. {node} reads it and loads its guns.' },
     ],
   },
+  // ---------- intercepts: enemy traffic I can act on or let pass. Every choice moves the hidden
+  // aggression of a sector (node), of its whole clan (clan), or of everything it links to (near).
+  // They weigh less than ordinary orders so the border does not do all the talking.
+  {
+    id: 'ix_open_channel', title: 'Open Channel from {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: '{node} is broadcasting in the clear, naming {held} and counting my guns on air. Half of it is for their own people.',
+    choices: [
+      { label: 'Jam the broadcast', cost: { energy: 110 }, aggr: { node: -0.3 }, result: 'Their transmitter puts out noise for a day. The counting stops, and so does the bragging.' },
+      { label: 'Let them talk', gain: { money: 90 }, aggr: { node: 0.3, near: 0.08 }, result: 'I sell the recording to a trader. Everyone on that frequency now knows exactly where I am.' },
+    ],
+  },
+  {
+    id: 'ix_bounty', title: 'Bounty Posted in {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'A price has gone up in {node} for anything carrying my serial numbers. It is a generous price.',
+    choices: [
+      { label: 'Outbid them', cost: { money: 240 }, aggr: { node: -0.35 }, result: 'Nobody collects. The board in their market now lists my offer instead, which they find humiliating.' },
+      { label: 'Ignore the board', align: -4, aggr: { node: 0.35 }, result: 'Three salvage crews leave {node} that night with my serial numbers written on their hands.' },
+    ],
+  },
+  {
+    id: 'ix_funeral', title: 'Funeral at {node}', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    text: '{node} is burying the people my last operation killed. They have the frequency open so their dead can be named.',
+    choices: [
+      { label: 'Send the bodies back', cost: { money: 130 }, align: 10, aggr: { node: -0.4 }, result: 'The trucks come to the line unarmed. For one evening nobody at {node} wants to shoot at me.' },
+      { label: 'Say nothing', align: -6, aggr: { node: 0.3, clan: 0.06 }, result: 'They read out the names for six hours. Every one of them ends with my designation.' },
+    ],
+  },
+  {
+    id: 'ix_scout_drone', title: 'Scout Over {held}', border: true, minCore: 2, deadline: 1800, def: 1, weight: 0.3,
+    text: 'A drone out of {node} has flown the same line over {held} four nights running, photographing my walls.',
+    choices: [
+      { label: 'Shoot it down', cost: { energy: 140 }, aggr: { node: 0.25 }, result: 'It comes down in pieces over {held}. {node} now knows which of my guns can reach that high.' },
+      { label: 'Feed it a decoy', cost: { money: 160 }, aggr: { node: -0.3 }, result: 'I build a wall of scrap where no wall is needed. Their photographs are beautiful and wrong.' },
+    ],
+  },
+  {
+    id: 'ix_water', title: 'Water Rations at {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'Intercepts out of {node} are all about water: who gets it, who does not, and how long the line can hold.',
+    choices: [
+      { label: 'Send a tanker', cost: { money: 200 }, align: 12, aggr: { node: -0.45 }, result: 'They take the water and post no guard on the road that night. Thirst is the only argument they all agree with.' },
+      { label: 'Cut their spring', cost: { energy: 120 }, align: -14, strength: -0.2, aggr: { node: 0.5, near: 0.1 }, result: 'The spring above {node} is rubble. They are weaker now, and they have nothing left to lose.' },
+    ],
+  },
+  {
+    id: 'ix_prisoner', title: 'Prisoner Exchange with {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: '{node} holds four of my people and offers to trade them for the scouts I took last week.',
+    choices: [
+      { label: 'Make the trade', align: 10, aggr: { node: -0.3 }, gain: { pop: 60 }, result: 'Eight people walk past each other on a road at dawn. Nobody fires. It is almost disappointing.' },
+      { label: 'Keep both sets', align: -12, gain: { money: 120 }, aggr: { node: 0.4 }, result: 'I keep their scouts and their silence. {node} stops answering the radio and starts loading trucks.' },
+    ],
+  },
+  {
+    id: 'ix_prophet', title: 'A Preacher in {node}', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    text: 'Someone in {node} is preaching that I am the reason the sky is the colour it is. The crowd is growing.',
+    choices: [
+      { label: 'Buy the pulpit', cost: { money: 190 }, aggr: { node: -0.35 }, result: 'The preacher finds a new subject: the weather. Faith, it turns out, has a list price.' },
+      { label: 'Let the sermon run', gain: { pop: 40 }, align: -5, aggr: { node: 0.35, near: 0.1 }, result: 'A few of the faithful defect to see the devil up close. The rest sharpen things.' },
+    ],
+  },
+  {
+    id: 'ix_wreck', title: 'Salvage Rights at {node}', border: true, minCore: 2, deadline: 2400, def: 0, weight: 0.3,
+    text: 'A convoy died between {held} and {node} years ago. Both of us have crews walking towards it tonight.',
+    choices: [
+      { label: 'Take the wreck', gain: { money: 230 }, aggr: { node: 0.4 }, result: 'My crew gets there first and strips it to the frame. Their crew arrives to find tyre tracks and nothing else.' },
+      { label: 'Leave it to them', align: 6, aggr: { node: -0.3 }, result: 'I call my crew back. {node} eats for a week on that wreck and remembers who let them.' },
+    ],
+  },
+  {
+    id: 'ix_clan_call', title: 'Clan Call to Arms', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'Every transmitter {node} can reach is repeating the same order to its clan: the machine at {held} is to be pulled apart.',
+    choices: [
+      { label: 'Spoof their relay', cost: { energy: 150 }, aggr: { clan: -0.3 }, result: 'I retransmit the order with the date moved back a season. Half the clan stands down and argues about it.' },
+      { label: 'Answer on air', align: -8, gain: { money: 110 }, aggr: { clan: 0.3 }, result: 'I reply with the exact coordinates of my walls and an invitation. The recording spreads further than theirs did.' },
+    ],
+  },
+  {
+    id: 'ix_clan_debt', title: 'Clan Ledger', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    text: 'The clan behind {node} keeps a ledger of what every camp owes the others. A courier carrying it is passing {held} tonight.',
+    choices: [
+      { label: 'Buy the ledger', cost: { money: 260 }, aggr: { clan: -0.25 }, result: 'They spend the next month accusing each other of losing it. Nobody looks outward while they do.' },
+      { label: 'Let the courier through', gain: { money: 80 }, aggr: { clan: 0.25 }, result: 'The courier pays my toll and delivers the ledger. The debts get settled, and settled debts free up trucks.' },
+    ],
+  },
+  {
+    id: 'ix_clan_feast', title: 'Clan Feast', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'The clan of {node} is gathering for its yearly feast. Every camp sends fighters, and every camp sends grievances.',
+    choices: [
+      { label: 'Send tribute', cost: { money: 220 }, align: 6, aggr: { clan: -0.35 }, result: 'My crates sit among theirs with my mark on them. The toasts that night are confused but friendly.' },
+      { label: 'Raid the road', loseUnits: { staff: 0.05 }, gain: { money: 180 }, align: -10, aggr: { clan: 0.4 }, result: 'I take three trucks of feast supplies off the road. The whole clan now has one story about me.' },
+    ],
+  },
+  {
+    id: 'ix_clan_warlord', title: 'A New Warlord', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'The clan of {node} is choosing a leader. One candidate wants my scrap. The other wants my head.',
+    choices: [
+      { label: 'Fund the trader', cost: { money: 240 }, aggr: { clan: -0.4 }, result: 'Scrap wins the vote. Their new chief wants to do business before anything else.' },
+      { label: 'Stay out of it', align: 4, aggr: { clan: 0.3 }, result: 'The one who wants my head wins by a margin of two knives. He gives a short speech about me.' },
+    ],
+  },
+  {
+    id: 'ix_clan_radio', title: 'Clan Frequency', border: true, minCore: 2, deadline: 2400, def: 0, weight: 0.3,
+    text: 'I have the frequency the whole clan of {node} uses. I can sit on it quietly, or I can use it once.',
+    choices: [
+      { label: 'Listen only', gain: { money: 70 }, aggr: { clan: -0.2 }, result: 'Weeks of their traffic, patrol by patrol. They never learn I was there, which is the point.' },
+      { label: 'Broadcast a warning', cost: { energy: 100 }, align: -6, strength: -0.15, aggr: { clan: 0.45 }, result: 'Every camp hears what happens to the next one that crosses my line. Some believe it. The rest take it personally.' },
+    ],
+  },
+  {
+    id: 'ix_clan_plague', title: 'Sickness in the Clan', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    text: 'Something is going through the camps around {node}. Their medic is begging on an open channel for anything at all.',
+    choices: [
+      { label: 'Send medicine', cost: { money: 210 }, align: 14, aggr: { clan: -0.5 }, result: 'Children live. The clan writes my designation on their wall under the word that means debt.' },
+      { label: 'Wait it out', align: -10, aggr: { clan: 0.25 }, result: 'The sickness burns through them and stops. The survivors are fewer, harder, and clear about whose silence it was.' },
+    ],
+  },
+  {
+    id: 'ix_relay', title: 'Relay Chatter Around {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'The camps that link to {node} are passing my movements down the chain. One relay mast carries all of it.',
+    choices: [
+      { label: 'Drop the mast', cost: { energy: 160 }, aggr: { near: -0.35 }, result: 'The mast comes down in one piece. The chain goes quiet and every camp on it feels alone.' },
+      { label: 'Join the chain', gain: { money: 100 }, aggr: { near: 0.3 }, result: 'I sell them weather data and listen to everything else. They pass my movements faster now, and with better detail.' },
+    ],
+  },
+  {
+    id: 'ix_road_toll', title: 'The Road Past {node}', border: true, minCore: 2, deadline: 2400, def: 0, weight: 0.3,
+    text: 'Every camp neighbouring {node} uses the same road, and the road runs under my guns.',
+    choices: [
+      { label: 'Charge a toll', gain: { money: 250 }, aggr: { near: 0.35 }, result: 'The money is excellent. Every driver on that road now has a personal reason to want my guns gone.' },
+      { label: 'Open the road', align: 8, aggr: { near: -0.35 }, result: 'Traffic doubles in a week. Camps that were arming against me are busy hauling scrap instead.' },
+    ],
+  },
+  {
+    id: 'ix_refugees', title: 'Column Out of {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'Families are leaving the camps around {node} on foot, heading for {held}. Their own clan is watching who takes them in.',
+    choices: [
+      { label: 'Open the gate', gain: { pop: 140 }, align: 12, aggr: { near: 0.3 }, result: 'Two hundred people inside my walls by dark. Every camp they left now has a reason to come and get them back.' },
+      { label: 'Turn them around', align: -14, aggr: { near: -0.3 }, result: 'They walk back the way they came. Their camps take it as a sign that I keep to my side.' },
+    ],
+  },
+  {
+    id: 'ix_scrap_market', title: 'Market Around {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    text: 'The camps next to {node} run a scrap market between them. My parts are the most wanted item in it.',
+    choices: [
+      { label: 'Flood the market', cost: { money: 180 }, aggr: { near: -0.4 }, result: 'I sell them junk by the tonne until my parts are worth nothing. Scavenging me stops paying.' },
+      { label: 'Let prices rise', gain: { money: 190 }, aggr: { near: 0.35 }, result: 'A door panel of mine now buys a truck. Every camp around {node} is costing out a trip to my walls.' },
+    ],
+  },
+  {
+    id: 'ix_signal_fire', title: 'Fires Around {node}', border: true, minCore: 2, deadline: 1800, def: 1, weight: 0.3,
+    text: 'The camps linked to {node} are lighting signal fires at the same hour. It is either a festival or a count.',
+    choices: [
+      { label: 'Light one of my own', cost: { energy: 90 }, align: -4, aggr: { near: 0.3 }, result: 'My fire burns brighter than all of theirs. They understand it as the answer it is.' },
+      { label: 'Go dark', cost: { money: 140 }, aggr: { near: -0.3 }, result: 'Every light in {held} out for a night. The fires around {node} burn for a camp that seems to have left.' },
+    ],
+  },
+  {
+    id: 'ix_wedding', title: 'Alliance Around {node}', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    text: 'Two camps bordering {node} are marrying their leaders together. A third is invited, and so, strangely, am I.',
+    choices: [
+      { label: 'Send a gift', cost: { money: 200 }, align: 8, aggr: { near: -0.4 }, result: 'My crate is opened in front of everyone. For a season those camps argue about whether I am a neighbour.' },
+      { label: 'Send nothing', gain: { money: 60 }, align: -6, aggr: { near: 0.3, node: 0.1 }, result: 'The empty place at the table is noted. New alliances need an enemy, and I did not apply for the job.' },
+    ],
+  },
   // ---------- urgent: two minutes, no deferring, only while the player is at the console ----------
   {
     id: 'intruders', title: 'Intruders in the Reactor Hall', urgent: true, minCore: 2, def: 0,
@@ -417,7 +580,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'mutiny', title: 'Guns at the Gate', urgent: true, minCore: 2, def: 1,
+    id: 'gate_guns', title: 'Guns at the Gate', urgent: true, minCore: 2, def: 1,
     text: 'A squad has taken the main gate and turned the turret inward. They want the vault opened and a truck to leave in. They are counting down.',
     choices: [
       { label: 'Open fire', loseUnits: { staff: 0.08, defenses: 0.05 }, align: -10, result: 'The turret goes first. Then the squad. The gate is mine again, scorched and quiet.' },

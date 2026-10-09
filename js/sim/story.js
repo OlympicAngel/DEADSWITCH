@@ -5,7 +5,7 @@ import {
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, spawnAssault, loseSector, sectorById } from './war.js';
+import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById } from './war.js';
 import { range, pick, rand } from './rng.js';
 
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
@@ -226,7 +226,7 @@ export function advanceEvents(s, dt, offline, active = false) {
 
 // Threats come up more often than ordinary dilemmas.
 function weighted(s, pool) {
-  const w = (e) => (e.threat ? EVENTS_CFG.threatWeight : 1);
+  const w = (e) => e.weight || (e.threat ? EVENTS_CFG.threatWeight : 1);
   let r = rand(s) * pool.reduce((a, e) => a + w(e), 0);
   for (const e of pool) {
     r -= w(e);
@@ -271,6 +271,10 @@ export function resolveEvent(s, uid, index, expired = false) {
   }
   if (out.strength && sectorById(out.strength.id) && !s.sectors.includes(out.strength.id)) {
     shiftStrength(s, out.strength.id, out.strength.delta);
+  }
+  // Aggression is hidden, so it is applied straight from the choice and never shown in the preview.
+  if (choice.aggr && inst.params && inst.params.node) {
+    stirAggression(s, inst.params.node, choice.aggr);
   }
   if (out.clearMarks && s.nodes[out.clearMarks]) {
     s.nodes[out.clearMarks].marks = 0;

@@ -340,3 +340,15 @@ export const NODES = {
   spreadMin: 0.85,
   spreadMax: 1.15,
 };
+
+// Aggression: how keen an enemy sector is to come for you. Hidden from the player; it only weights
+// which border the next assault comes from. Your own moves stir it and it cools off on its own.
+export const AGGR = {
+  min: -0.6,
+  max: 1.5,
+  calmPerHour: 0.25, // drift back towards calm
+  pressure: 0.5, // added as your Power catches up with its defense...
+  pressureFrom: 0.7, // ...from this share of it, full once you match it
+  onOp: { node: 0.3, clan: 0.08, near: 0.06 }, // launching an operation against it
+  onInspect: 0.08, // opening its briefing; each look after the first counts for less
+};

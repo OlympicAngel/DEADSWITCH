@@ -43,6 +43,7 @@ game.act = {
   cancel: () => commit(E.cancelBuild(game.state)),
   buy: (id, n) => E.buyItem(game.state, id, n),
   launch: (id) => commit(E.launchOp(game.state, id)),
+  inspect: (id) => E.inspectSector(game.state, id),
   choose: (uid, i) => {
     const res = E.resolveEvent(game.state, uid, i);
     save();

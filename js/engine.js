@@ -25,7 +25,8 @@ export function newState(seed = 1) {
     build: null,
     sectors: [MAP.home],
     taken: [], // sectors ever captured (loot and memories pay once)
-    nodes: {}, // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours) }
+    // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours), a: aggression, seen: times inspected }
+    nodes: {},
     op: null,
     raid: null,
     assault: null,
@@ -97,7 +98,7 @@ export function migrate(raw) {
   s.sieges = (Array.isArray(raw.sieges) ? raw.sieges : []).filter((x) => x && FACTIONS[x.faction] && Number.isFinite(x.remaining));
   s.nodes = {};
   for (const [id, n] of Object.entries(raw.nodes && typeof raw.nodes === 'object' ? raw.nodes : {})) {
-    if (sectorById(id) && n && Number.isFinite(n.m)) s.nodes[id] = { m: n.m, marks: Number(n.marks) || 0 };
+    if (sectorById(id) && n && Number.isFinite(n.m)) s.nodes[id] = { m: n.m, marks: Number(n.marks) || 0, a: Number(n.a) || 0, seen: Number(n.seen) || 0 };
   }
   const a = raw.assault;
   s.assault = a && sectorById(a.from) && sectorById(a.target) && FACTIONS[a.faction] && Number.isFinite(a.remaining) ? a : null;
