@@ -20,6 +20,8 @@ import {
 import { put, setAttr, setCls, setData, setW } from './dom.js';
 import { watchVisible, measureVisible } from './onscreen.js';
 import { stepAmbientLoops } from './framerate.js';
+import { setFocus } from './focus.js';
+import { createDebug } from './debug/panel.js';
 
 export function createUI(root, game) {
   stepAmbientLoops();
@@ -66,6 +68,9 @@ export function createUI(root, game) {
   const view = $('#view');
   const app = $('.app');
   const modals = createModals($('#modal'), game, () => render());
+  // The developer panel reads the focus and may change anything; a run of it rebuilds the screen.
+  const debug = createDebug(game, () => { ui.key = ''; render(); });
+  game.dev.panel = debug;
   const tips = createTips(game);
   const pills = Object.fromEntries(RESOURCE_KEYS.map((r) => {
     const el = root.querySelector(`[data-pill="${r}"]`);
@@ -85,6 +90,7 @@ export function createUI(root, game) {
     if (inner) {
       ui.inner[screen] = inner;
     }
+    setFocus('screen', inner ? `${screen}:${inner}` : screen);
     ui.sheet = false;
     ui.coach = focus || null;
     tips.hide();
@@ -125,6 +131,11 @@ export function createUI(root, game) {
       return;
     }
     const s = game.state;
+    // Whatever was tapped is now the thing the debugger inspects.
+    const card = e.target.closest('[data-card], [data-item]');
+    if (card) {
+      setFocus(card.dataset.card ? 'building' : 'item', card.dataset.card || card.dataset.item);
+    }
     // A locked bottom-nav item does nothing.
     if (t.dataset.nav && t.classList.contains('locked')) {
       return;
@@ -150,12 +161,14 @@ export function createUI(root, game) {
     if (t.dataset.inner) {
       ui.inner[ui.screen] = t.dataset.inner;
       ui.sheet = false;
+      setFocus('screen', `${ui.screen}:${t.dataset.inner}`);
       sfx.click();
     } else if (t.dataset.mode) {
       ui.buyMode = t.dataset.mode === 'max' ? 'max' : Number(t.dataset.mode);
     } else if (t.dataset.sector) {
       ui.sector = t.dataset.sector;
       ui.sheet = true;
+      setFocus('sector', t.dataset.sector);
       game.act.inspect(t.dataset.sector);
       sfx.click();
     } else {
@@ -225,6 +238,7 @@ export function createUI(root, game) {
         break;
       case 'fl-open':
         if (ui.floats[t.dataset.key]) ui.floats[t.dataset.key] = { since: performance.now(), collapsed: false };
+        if (t.dataset.key.startsWith('atk:')) setFocus('attack', 'next');
         break;
       case 'fl-close':
         if (ui.floats[t.dataset.key]) ui.floats[t.dataset.key].collapsed = true;
@@ -424,6 +438,7 @@ export function createUI(root, game) {
     }
     updateLog(s);
     drainFx(s);
+    debug.update();
     if (!modals.pump() && !modals.isOpen() && !s.inbox.length) {
       const next = s.events.find((x) => ui.unseen.has(x.uid));
       if (next) {

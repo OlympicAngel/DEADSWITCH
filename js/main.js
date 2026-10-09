@@ -9,7 +9,8 @@ const SAVE_KEY = 'deadswitch.save';
 const OFFLINE_REPORT_SECONDS = 60;
 const BACKGROUND_GAP_SECONDS = 2;
 
-const game = { state: null, flows: null, act: {} };
+// dev: the developer panel's hold on the simulation (speed 0 pauses it).
+const game = { state: null, flows: null, act: {}, dev: { speed: 1 } };
 
 function readSave() {
   try {
@@ -104,18 +105,19 @@ for (const type of ['pointerdown', 'keydown']) {
 const isActive = (now) => !document.hidden && now - lastInput < EVENTS_CFG.activeWindow * 1000;
 function tick() {
   const now = performance.now();
-  const dt = (now - last) / 1000;
+  const real = (now - last) / 1000;
+  const dt = real * game.dev.speed;
   last = now;
   // Background tabs get throttled timers; fold the gap in as catch-up instead of one giant step.
   // The offline limit and grace cover the whole absence, not each chunk.
-  if (dt > BACKGROUND_GAP_SECONDS) {
+  if (real > BACKGROUND_GAP_SECONDS) {
     game.flows = E.catchUp(game.state, dt, awayRun).flows;
     awayRun += dt;
-  } else {
+  } else if (dt > 0) {
     game.flows = E.step(game.state, dt, false, isActive(now));
     awayRun = 0;
   }
-  sinceSave += dt;
+  sinceSave += real;
   if (sinceSave >= BALANCE.autosaveSeconds) {
     sinceSave = 0;
     save();

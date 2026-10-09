@@ -8,6 +8,7 @@ import { icon, labeled } from './icons.js';
 import { tags, bonusText, bonusChips, chanceClass, clock } from './common.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
+import { setFocus } from './focus.js';
 
 export function createModals(dialog, game, onChange) {
   let onClose = null;
@@ -321,6 +322,7 @@ export function createModals(dialog, game, onChange) {
       return;
     }
     const ev = E.eventById(inst.id);
+    setFocus('order', inst.uid);
     const choices = ev.choices.map((ch, i) => `
       <button class="choice ${i === ev.def ? 'is-default' : ''}" data-choice="${i}">
         <b>${esc(E.fillText(inst, ch.label))}</b><span class="fx">${preview(E.choiceOutcome(s, inst, ch), ch, inst)}</span>
@@ -446,6 +448,7 @@ export function createModals(dialog, game, onChange) {
         <button class="btn" id="mImport">${icon('import')}<span>Import save</span></button>
         <button class="btn danger" id="mReset">${icon('trash')}<span>Wipe progress</span></button>
       </div>
+      <button class="btn link" id="mDev">${icon('dev')}<span>Developer panel</span></button>
       <textarea id="mText" rows="4" placeholder="Save code" spellcheck="false" hidden></textarea>
       <p class="muted" id="mMsg"></p>
       <button class="btn primary wide" data-close>Close</button>`);
@@ -482,6 +485,10 @@ export function createModals(dialog, game, onChange) {
         return;
       }
       msg.textContent = game.act.importSave(text.value.trim()) ? 'Imported.' : 'That code is not a valid save.';
+    };
+    $('#mDev').onclick = () => {
+      game.dev.panel.toggle();
+      close();
     };
     let armed = false;
     $('#mReset').onclick = (e) => {

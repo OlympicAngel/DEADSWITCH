@@ -1081,3 +1081,47 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .map-world .ret-time { font-size: 28px; stroke-width: 7px; }
 .map-world .ret-ring { stroke-width: 4; }
 .map-world .map-fx .pulse { stroke-width: 3.5; }
+
+/* =================== Developer panel =================== */
+/* A floating window over the game, switched on in Settings. It sits in the top layer (popover) so it
+   stays readable over dialogs, and it is dense on purpose: data first, chrome last. */
+.dbg {
+  position: fixed; right: 8px; top: 8px; bottom: auto; left: auto; z-index: 99; width: min(360px, calc(100vw - 16px)); margin: 0; padding: 0;
+  display: none; flex-direction: column; max-height: min(56vh, 620px); overflow: hidden;
+  border: 1px solid #2f6f6a; border-radius: 8px; background: rgba(8,12,14,.96); color: #cfe9e5;
+  font: 11.5px/1.45 var(--font-num); box-shadow: 0 12px 40px rgba(0,0,0,.6);
+}
+.dbg.on { display: flex; }
+.dbg.folded .dbg-tabs, .dbg.folded .dbg-body, .dbg.folded .dbg-foot { display: none; }
+.dbg-foot { padding: 3px 8px; border-top: 1px solid #1d3b38; color: var(--dim); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dbg-bar { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #11211f; cursor: grab; touch-action: none; }
+.dbg-bar > b { display: inline-flex; align-items: center; gap: 5px; color: #6fe3cf; letter-spacing: .12em; }
+.dbg-bar .i { width: 13px; height: 13px; }
+.dbg-head { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.dbg-x { width: 20px; height: 20px; border: 1px solid #2f6f6a; border-radius: 4px; background: none; color: #6fe3cf; line-height: 1; }
+.dbg-tabs { display: flex; border-bottom: 1px solid #1d3b38; }
+.dbg-tabs button { flex: 1; padding: 5px 2px; border: 0; background: none; color: var(--dim); font: 10px var(--font-hud); text-transform: uppercase; letter-spacing: .1em; }
+.dbg-tabs button.on { color: #6fe3cf; box-shadow: inset 0 -2px 0 #6fe3cf; }
+.dbg-body { flex: 1; overflow: auto; overscroll-behavior: contain; padding: 4px 0 8px; }
+.dbg-title { padding: 5px 8px; color: #6fe3cf; font-weight: 700; border-bottom: 1px solid #1d3b38; }
+.dbg-note { padding: 4px 8px; color: var(--dim); font-size: 10.5px; }
+.dbg-row { display: flex; align-items: center; gap: 6px; padding: 2px 8px 2px 6px; }
+.dbg-row:nth-child(even) { background: rgba(255,255,255,.025); }
+.dbg-row.branch { cursor: pointer; color: #9fd6cd; }
+.dbg-k { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dbg-v { max-width: 58%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e7fffb; }
+.dbg-v.dim { color: var(--dim); }
+.dbg-in { width: 44%; padding: 1px 4px; border: 1px solid #27514d; border-radius: 3px; background: #0b1416; color: #e7fffb; font: 11px var(--font-num); }
+.dbg-in:focus { outline: 1px solid #6fe3cf; }
+.dbg-in.bad { border-color: var(--bad); }
+.dbg-btns { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px; }
+.dbg-btns button { padding: 3px 7px; border: 1px solid #2f6f6a; border-radius: 4px; background: #11211f; color: #9fe9dc; font: 10.5px var(--font-num); }
+.dbg-btns button:active, .dbg-btns button.on { background: #1c3b38; color: #6fe3cf; }
+.dbg-tab { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+.dbg-tab th { padding: 3px 4px; color: var(--dim); text-align: left; font-weight: 600; border-bottom: 1px solid #1d3b38; }
+.dbg-tab td { padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,.04); white-space: nowrap; }
+.dbg-tab tr.mine td:first-child { color: var(--hud); }
+.dbg-tab tbody tr { cursor: pointer; }
+.dbg-json { padding: 6px 8px; color: var(--dim); }
+.dbg-json pre { max-height: 180px; overflow: auto; margin: 4px 0 0; white-space: pre-wrap; word-break: break-all; color: #9fd6cd; }
+.btn.link { width: 100%; margin-top: 6px; border-color: transparent; background: none; color: var(--dim); font-size: 11px; }

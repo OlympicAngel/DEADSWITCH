@@ -42,6 +42,7 @@ Portrait, phone first (desktop shows the same column).
 - Everything numeric explains itself on hover or tap: resources (sources, bonuses, time to full), factors, Threat, Humanity and every cost chip (shortfall, time to afford, storage limits).
 - Pressure: alarm, vibration, shake and red flash when a raid is spotted; a red pulsing vignette in the final minute; vibrating, shaking battle reports on defeat. Sound and vibration can be turned off in settings.
 - Icons: Tabler line icons (MIT), compiled into `js/ui/icon-sprite.js` by `tools/build-icons.mjs`.
+- **Developer panel** (`js/ui/debug/`): switched on in Settings, remembered per browser, floating over the game (and inside an open dialog, so nothing covers it). Five tabs: **focus** inspects whatever the player last looked at (`js/ui/focus.js` records it: screen, sector, building, unit, order, attack) with its hidden numbers and buttons to force its states; **state** is the whole save as an editable tree plus quick grants; **time** sets the clock speed (pause to ×100), skips stretches of live play or offline catch-up, and fires orders, raids and assaults on demand; **world** lists every sector with its strength, aggression and assault weight; **data** is every balance constant, read-only.
 
 ## Where things live
 - All content and numbers: `js/data/` (economy, world, story).
