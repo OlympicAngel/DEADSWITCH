@@ -652,7 +652,7 @@ export const LINES = {
   opRetaken: ['{sector} is mine again.'],
   assaultSpotted: ['{from} is moving on {target}. Strength {strength}. Contact in {time}.'],
   assaultBreached: ['{from} broke into {target}. Foothold {n} of {max}.'],
-  assaultOverrun: ['{from} went through {target} in one push. There was nothing left to hold with.'],
+  assaultOverrun: ['{from} came at {target} with {mult}x my defense and went through in one push. There was nothing left to hold with.'],
   assaultPlundered: ['{from} emptied the stores at {target} and left the walls standing. Efficient.'],
   stance: ['{text}'],
   stanceEnd: ['The {faction} are done with {stance}.'],

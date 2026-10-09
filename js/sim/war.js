@@ -262,6 +262,25 @@ export function activeRaiders(s) {
   return list;
 }
 
+// Where an attack comes from: a sector of that faction, the frontier first so it is somewhere the
+// player can see, and the keenest of those. A faction with no ground left attacks from nowhere.
+export function attackSource(s, faction) {
+  const own = SECTORS.filter((x) => x.faction === faction && !s.sectors.includes(x.id));
+  const front = own.filter((x) => x.links.some((l) => s.sectors.includes(l)));
+  const pool = front.length ? front : own;
+  if (!pool.length) return null;
+  const w = (x) => 1 + aggression(s, x.id) - AGGR.min;
+  let r = rand(s) * pool.reduce((a, x) => a + w(x), 0);
+  return (pool.find((x) => (r -= w(x)) <= 0) || pool[pool.length - 1]).id;
+}
+
+/** The two sectors an attack runs between, or null while it has no place on the map any more. */
+export function attackPlace(s, atk) {
+  if (!atk || !SECTOR_BY_ID[atk.from] || !SECTOR_BY_ID[atk.target]) return null;
+  if (s.sectors.includes(atk.from) || !s.sectors.includes(atk.target)) return null;
+  return [atk.from, atk.target];
+}
+
 // Sieges are threats the player chose (or failed) to answer with force; they land at a fixed time.
 export function attacks(s) {
   return [s.raid, s.assault, ...(s.sieges || [])].filter(Boolean).sort((a, b) => a.remaining - b.remaining);
@@ -308,7 +327,7 @@ function settleGrudge(s, raid, won) {
 
 export function startSiege(s, faction, strength, delay) {
   const t = Math.max(0, delay);
-  s.sieges.push({ faction, strength, remaining: t, total: Math.max(t, 1), siege: true });
+  s.sieges.push({ faction, strength, remaining: t, total: Math.max(t, 1), siege: true, from: attackSource(s, faction), target: MAP.home });
 }
 
 export function advanceSieges(s, dt, offline) {
@@ -338,7 +357,8 @@ function spawnRaid(s, delay) {
   const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
   const base = Math.max(floor, threat(s) * RAIDS.threatShare);
   const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax) * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
-  s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge };
+  // Raids march on the Nest itself, from wherever that faction still holds ground.
+  s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge, from: attackSource(s, faction), target: MAP.home };
   say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, strength, time: fmtShort(delay) }, 'bad');
 }
 
@@ -517,7 +537,7 @@ function resolveAttack(s, raid, offline) {
   const name = attackName(raid);
   const prof = clanProfile(s, raid.faction);
   const report = { kind: 'raid', name, faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };
-  if (raid.assault) Object.assign(report, { assault: true, from: raid.from, target: raid.target });
+  Object.assign(report, { assault: !!raid.assault, from: raid.from, target: raid.target });
   // Both sides bleed. Holding the line still costs people, and their dead stay dead.
   takeLosses(s, report, report.win ? RAIDS.winLoss : RAIDS.unitLoss, defense, raid.strength);
   report.theirLoss = Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition);
@@ -547,7 +567,8 @@ function resolveAttack(s, raid, offline) {
       // An assault this far over my defense does not need a second visit.
       report.overrun = raid.strength >= defense * NODES.overrunRatio;
       say(s, report.overrun ? 'assaultOverrun' : 'assaultBreached',
-        { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall }, 'bad');
+        { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall,
+          mult: (raid.strength / Math.max(1, defense)).toFixed(1) }, 'bad');
       if (report.overrun || n.marks >= NODES.breachesToFall) {
         loseSector(s, raid.target, raid.faction, raid.strength);
         report.fell = true;
