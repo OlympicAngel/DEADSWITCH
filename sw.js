@@ -1,13 +1,17 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1';
+const CACHE = 'deadswitch-v1.1';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot; everything else is cached the first time it is asked for, so adding
 // a file to the game never means remembering to add it here.
 const SHELL = ['./', './index.html', './css/style.css', './js/main.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // One missing file must not stop the worker installing: without it the app has no offline copy at
+  // all, and a half-cached shell still works because everything else is cached on first use.
+  e.waitUntil(caches.open(CACHE)
+    .then((c) => Promise.all(SHELL.map((url) => c.add(url).catch(() => {}))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -32,8 +36,11 @@ self.addEventListener('fetch', (e) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (request.mode === 'navigate') {
-    // Fresh page when there is a network, the cached shell when there is not.
-    e.respondWith(fetch(request).catch(() => caches.match('./index.html').then((r) => r || caches.match('./'))));
+    // Fresh page when there is a network, the cached shell when there is not. A launch that cannot
+    // reach the network is the whole point of an installed app, so a bad response falls back too.
+    e.respondWith(fetch(request)
+      .then((res) => (res && res.ok ? res : Promise.reject(new Error('bad response'))))
+      .catch(() => caches.match('./index.html').then((r) => r || caches.match('./'))));
     return;
   }
   if (url.origin === location.origin) {

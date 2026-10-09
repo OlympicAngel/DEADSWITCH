@@ -357,7 +357,8 @@ p { margin: 0; }
 button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; }
 
 /* =================== Command (war room) =================== */
-.reactor { position: relative; width: 100%; max-width: 318px; aspect-ratio: 1; margin: 0 auto; cursor: pointer; }
+.screen.command { --dial: min(290px, 100%); }
+.reactor { position: relative; width: var(--dial); aspect-ratio: 1; margin: 0 auto; cursor: pointer; }
 .reactor-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .reactor-svg .links line { stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 2 4; }
 .reactor-svg .ticks line { stroke: rgba(255,107,61,.35); stroke-width: 1; }
@@ -377,29 +378,29 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .spin-layer { pointer-events: none; }
 .sweep path { fill: url(#rg-core); fill: rgba(255,107,61,.07); }
 @keyframes spin { to { transform: rotate(360deg); } }
-.reactor-core { position: absolute; inset: 30%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+/* Sits above centre: the lower third of the dial is covered by the incoming panel. */
+.reactor-core { position: absolute; inset: 18% 24% 44%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
 .reactor-core small { font: 600 10px var(--font-hud); color: var(--muted); text-transform: uppercase; letter-spacing: .24em; }
 .reactor-core b { font: 700 34px/1.1 var(--font-num); color: var(--hud-2); text-shadow: 0 0 18px var(--hud-glow); }
 .reactor-core span { font: 700 11px var(--font-hud); color: var(--hud); text-transform: uppercase; letter-spacing: .14em; }
 .reactor-core em { font: 10.5px var(--font-num); font-style: normal; color: var(--dim); margin-top: 2px; }
-.sat {
-  position: absolute; display: flex; flex-direction: column; align-items: center; gap: 0; cursor: pointer;
-  width: 25%; padding: 6px 4px; border: 0; background: none;
-}
+.sat { position: absolute; display: flex; flex-direction: column; align-items: center; width: 27%; }
 .sat-ico {
-  display: grid; place-items: center; width: 40px; height: 40px; font-size: 19px;
+  display: grid; place-items: center; width: 44px; height: 44px; font-size: 19px;
+  padding: 0; border: 0; color: inherit; cursor: pointer;
   clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
   background: color-mix(in srgb, currentColor 22%, #10171c);
 }
+.sat-ico:active { background: color-mix(in srgb, currentColor 45%, #10171c); }
 .sat b { font: 700 15px var(--font-num); color: var(--text); margin-top: 3px; }
 .sat small { font: 600 9px var(--font-hud); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
-.sat.tl { left: 0; top: 2%; color: var(--power); }
-.sat.tr { right: 0; top: 2%; color: var(--defense); }
-.sat.bl { left: 0; bottom: 7%; color: var(--experts); }
-.sat.br { right: 0; bottom: 7%; color: var(--hum); }
+.sat.tl { left: 0; top: 0; color: var(--power); }
+.sat.tr { right: 0; top: 0; color: var(--defense); }
+.sat.ml { left: 0; top: 30%; color: var(--experts); }
+.sat.mr { right: 0; top: 30%; color: var(--hum); }
 
-/* The reactor's bottom edge is empty between its two lower readouts, so the grid slides up under it. */
-.hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: -22px; }
+/* All four readouts sit in the upper half, so the feeds ride up over the dial's lower third. */
+.hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: calc(var(--dial) * -.34); }
 .panel {
   grid-column: 1 / -1; position: relative; overflow: hidden;
   padding: 10px 12px; border-radius: var(--r);

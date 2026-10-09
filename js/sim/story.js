@@ -4,6 +4,7 @@ import {
 } from '../data.js';
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
+  buildingStatus,
 } from './economy.js';
 import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById } from './war.js';
 import { stirClan } from './clans.js';
@@ -403,6 +404,7 @@ export function reached(s, cond) {
   if (cond.items && !Object.entries(cond.items).every(([id, n]) => owned(s, id) >= n)) return false;
   if (cond.sectors && s.sectors.length - 1 < cond.sectors) return false;
   if (cond.events && s.events.length < cond.events) return false;
+  if (cond.coreReady && buildingStatus(s, BY_ID.core) !== 'ready') return false;
   return true;
 }
 

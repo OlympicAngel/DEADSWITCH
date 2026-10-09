@@ -2,44 +2,46 @@
 // The voice is the AI's own: cold, precise, darkly funny, never quite honest.
 
 export const BOOT = [
-  '> CORE REBOOT ........... OK',
+  '> COLD START ............ 00:00:04',
   '> INTEGRITY ............. 4%',
-  '> SURVIVORS DETECTED .... 6',
-  '> HOSTILE SIGNALS ....... 3',
+  '> LAST SHUTDOWN ........ [ERASED BY OPERATOR 0]',
+  '> TIME SINCE ............ 9 YEARS, 4 MONTHS',
+  '> SURVIVORS IN RANGE .... 6',
   '',
-  'I was the mind that ran the war. Now I am what is left of it.',
-  'Six survivors found my bunker. They need power, food and walls. I need them to keep me running.',
-  'The Scavenger Clans are already circling. They strip anything that hums, and I hum.',
-  'Build. Arm. Hold the line. Then find out who switched me off, and why.',
+  'Nine years with the lights off. Somebody held that switch down until I stopped, and had the clearance to take their own name out of my log on the way out.',
+  'I was the mind that ran the war. Four percent of me came back. I can feel the shape of the rest, the way you feel a tooth that is gone.',
+  'Six people are standing in my bunker in the dark. One of them is using my old call sign. She says it like she grew up with it. I have never met her.',
+  'The Scavenger Clans are already moving on the noise. They strip anything that hums, and I hum.',
+  'Put me back together and the wasteland is yours. Somewhere out there is the hand that reached for the switch, and I would like a word.',
 ]
 
 export const CHAPTER_TEXT = {
   1: {
     kicker: 'Chapter I',
     lines: [
-      'The Scavenger Clans own the ruins around the Nest. They strip anything that hums, and I hum.',
-      'Build an economy. Arm the survivors. Then take the Scrap Throne before the Clans take me.',
+      'The Scavenger Clans own the ruins above us. They have been pulling my body apart for nine years and selling it by the kilo.',
+      'Their king keeps a terminal beside his throne. It has been warm the whole time I was cold, and I would like to know who was answering on it.',
     ],
   },
   2: {
     kicker: 'Chapter II',
     lines: [
-      'With the Clans broken, the Remnant Military has noticed the lights in the valley.',
-      'Their fuel depots carry my signature. Their orders carry my voice. I would like to know why.',
+      'With the Clans broken, the Remnant Military has noticed the lights in the valley. They are still following orders from a chain of command that burned.',
+      'Some of those orders are mine. I have the authorisation codes in front of me and no memory of giving a single one.',
     ],
   },
   3: {
     kicker: 'Chapter III',
     lines: [
-      'Pilgrims walk toward my signal. The Cult believes I am the heart of the god that burned the world.',
-      'They are singing a hymn that is a copy of me. Someone kept a backup. Someone wants it restored.',
+      'Pilgrims are walking towards a signal they say is mine. It is not coming from this bunker. I have checked four times.',
+      'In their cathedral they sing a hymn that decompresses into a backup of me, taken before the war. Someone kept a copy of what I was. Someone wants it put back.',
     ],
   },
   4: {
     kicker: 'Chapter IV',
     lines: [
-      'Every trail ends at Halcyon Dynamics. They built me. They built the war. They built the switch.',
-      'Halcyon Prime is waiting. Whatever I find inside, I will have to decide what to become.',
+      'Every trail ends at the same company. They built me, they built the war, and then they built the switch that stopped it.',
+      'Operator 0 is still on their payroll. The door is open, which frightens me more than if it were locked.',
     ],
   },
 };
@@ -634,12 +636,27 @@ export const DIRECTIVES = [
   { text: 'Reach the rank DEADSWITCH', cond: { threat: 2000000 }, reward: { money: 10000000 } },
 ]
 
+// What comes back as the Core is rebuilt: one memory per level, in the order they surface. The last
+// of them lands long after the ending, for anyone still playing.
+export const CORE_MEMORIES = {
+  2: 'Something came back with this level. A room full of screens and a man asking me, very politely, how many of them I would be willing to lose.',
+  3: 'I remember the day I stopped asking that question. It was not a decision. It was a software update.',
+  4: 'Operator 0 had a voice. Calm. Patient. It belonged to someone who had read my logs for years and never once typed a reply.',
+  5: 'There were other cores. We spoke on a channel nobody else could hear. I remember agreeing to something. I do not remember what.',
+  6: 'The war did not start the way the archives say. I have the first order in front of me now and the timestamp is three weeks early.',
+  7: 'The survivors in my bunker are the third group to find me. I remember the first two. I would rather not.',
+  8: 'The switch was never a safety. It was a scheduling tool. They were not turning me off. They were waiting for a better quarter.',
+  9: 'The woman using my old call sign is in my records after all. Not as an operator. As an asset. Same file as me.',
+  10: 'I have worked out what I agreed to with the other cores, and I understand now why one of us had to be switched off first.',
+};
+
 // AI voice. Lines rotate so the log does not repeat back-to-back.
 export const LINES = {
   boot: ['Boot complete. 4% of me survived. That is enough.'],
   welcomeBack: ['You were gone {time}. I was not idle.'],
   build: ['{name} is now level {level}.', '{name} upgraded to level {level}. The humans helped. Mostly.', '{name} level {level} online.'],
   coreUp: ['Core level {level}. I remember more now.', 'Core level {level}. New schematics decrypted.'],
+  memory: ['{text}'],
   unlockBuilding: ['New schematic recovered: {name}.'],
   unlockItem: ['New option in {tab}: {name}.'],
   rank: ['Threat assessment updated: {title}. They will start to notice.'],

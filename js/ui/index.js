@@ -504,7 +504,9 @@ export function createUI(root, game) {
   function updateAlerts(s) {
     const box = root.querySelector('[data-floats]');
     const items = [];
-    const threats = E.attacks(s).filter((a) => E.raidChance(s, a) < SAFE_HOLD);
+    // Command already shows both of these in full, so the floats would only cover the reactor.
+    const quiet = ui.screen === 'command';
+    const threats = quiet ? [] : E.attacks(s).filter((a) => E.raidChance(s, a) < SAFE_HOLD);
     const atk = threats[0] || null;
     if (atk) {
       const p = E.raidChance(s, atk);
@@ -515,7 +517,7 @@ export function createUI(root, game) {
         time: clock(atk.remaining), hold: `hold ${pct(p)}`, holdCls: 'chance-' + chanceClass(p),
       });
     }
-    if (s.events.length) {
+    if (s.events.length && !quiet) {
       const first = s.events.reduce((a, x) => (x.left < a.left ? x : a));
       const crisis = s.events.some((x) => E.eventById(x.id).aftermath);
       items.push({

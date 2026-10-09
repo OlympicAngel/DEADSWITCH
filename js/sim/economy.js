@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT,
+  SECTORS, ALIGNMENT, CORE_MEMORIES,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -504,6 +504,10 @@ export function advanceBuild(s, dt) {
   s.levels[b.id] = level(s, b.id) + 1;
   if (b.id === 'core') {
     say(s, 'coreUp', { level: s.levels.core }, 'core');
+    // Rebuilding the Core gives a piece of what it was back (data/story.js).
+    if (CORE_MEMORIES[s.levels.core]) {
+      say(s, 'memory', { text: CORE_MEMORIES[s.levels.core] }, 'story');
+    }
   } else {
     say(s, 'build', { name: b.name, level: s.levels[b.id] });
   }

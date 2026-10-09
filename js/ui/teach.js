@@ -38,6 +38,7 @@ export function createTutor(root, game, onChange) {
   let at = 0;
   let tapped = false;
   let shown = ''; // what the card is currently saying, so it is only written when it changes
+  let centred = ''; // the step the target was last scrolled into view for
 
   const step = () => (lesson ? lesson.steps[at] : null);
 
@@ -82,6 +83,20 @@ export function createTutor(root, game, onChange) {
     else advance();
     onChange();
   });
+
+/** Brings the target into the middle of the screen, unless it is already somewhere it can be seen.
+ *  Without this a step can point at a control below the fold and cut its hole over whatever is. */
+  function centre(el) {
+    const r = el.getBoundingClientRect();
+    if (!r.width && !r.height) {
+      return;
+    }
+    const h = innerHeight;
+    if (r.top > h * 0.16 && r.bottom < h * 0.6) {
+      return;
+    }
+    el.scrollIntoView({ block: 'center', inline: 'nearest' });
+  }
 
   /** Puts the four panels and the ring around the target, and the card in whatever room is left. */
   function frame(target) {
@@ -138,8 +153,12 @@ export function createTutor(root, game, onChange) {
         nextBtn.hidden = now.done !== 'read';
       }
       // What the step points at, or, while that is on another screen, the way to get there.
-      const target = now.at && (root.querySelector(now.at) || root.querySelector('.bottom-nav'));
-      frame(target || null);
+      const wanted = now.at ? root.querySelector(now.at) : null;
+      if (wanted && centred !== shown) {
+        centred = shown;
+        centre(wanted);
+      }
+      frame(wanted || (now.at ? root.querySelector('.bottom-nav') : null));
     },
   };
 }

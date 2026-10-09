@@ -33,11 +33,12 @@ export function renderCommand() {
   // Each rotating part is its own <svg> rotated as a whole: the GPU turns it without repainting
   // (rotating shapes inside an SVG repaints the whole drawing every frame).
   const spinLayer = (cls, inner) => `<svg class="reactor-svg spin-layer ${cls}" viewBox="0 0 320 320" aria-hidden="true">${inner}</svg>`;
-  const sat = (k, cls, tip) => `
-    <button class="sat ${cls}" data-tip="${tip}">
-      <span class="sat-ico">${icon(k === 'align' ? 'heart' : k)}</span>
+  // The hex is the button (it leads to where the number is made); the number itself keeps the tooltip.
+  const sat = (k, cls, tip, to) => `
+    <div class="sat ${cls}" data-tip="${tip}">
+      <button class="sat-ico" ${to}>${icon(k === 'align' ? 'heart' : k)}</button>
       <b data-sat="${k}"></b><small>${k === 'align' ? 'Humanity' : FACTORS[k].name.replace('AI ', '')}</small>
-    </button>`;
+    </div>`;
   return `
     <div class="screen command">
       <section class="reactor" data-tip="threat">
@@ -45,7 +46,7 @@ export function renderCommand() {
           <defs>
             <radialGradient id="rg-core"><stop offset="0" stop-color="var(--hud)" stop-opacity=".35"/><stop offset=".6" stop-color="var(--hud)" stop-opacity=".06"/><stop offset="1" stop-color="var(--hud)" stop-opacity="0"/></radialGradient>
           </defs>
-          <g class="links"><line x1="${R}" y1="${R}" x2="40" y2="44"/><line x1="${R}" y1="${R}" x2="280" y2="44"/><line x1="${R}" y1="${R}" x2="40" y2="276"/><line x1="${R}" y1="${R}" x2="280" y2="276"/></g>
+          <g class="links"><line x1="${R}" y1="${R}" x2="40" y2="44"/><line x1="${R}" y1="${R}" x2="280" y2="44"/><line x1="${R}" y1="${R}" x2="40" y2="188"/><line x1="${R}" y1="${R}" x2="280" y2="188"/></g>
           <circle cx="${R}" cy="${R}" r="150" fill="url(#rg-core)"/>
           <circle class="ring r-outer" cx="${R}" cy="${R}" r="118"/>
           <path class="align-track" d="${arc(146, 200, 340)}"/>
@@ -63,10 +64,10 @@ export function renderCommand() {
           <span data-rank></span>
           <em data-next></em>
         </div>
-        ${sat('power', 'tl', 'factor:power')}
-        ${sat('defense', 'tr', 'factor:defense')}
-        ${sat('experts', 'bl', 'factor:experts')}
-        ${sat('align', 'br', 'align')}
+        ${sat('power', 'tl', 'factor:power', 'data-go="military:offense"')}
+        ${sat('defense', 'tr', 'factor:defense', 'data-go="military:defense"')}
+        ${sat('experts', 'ml', 'factor:experts', 'data-go="research:experts"')}
+        ${sat('align', 'mr', 'align', 'data-act="archive"')}
       </section>
       <div class="hud-grid">
         <section class="panel incoming" data-panel="raid"></section>

@@ -1,12 +1,10 @@
 {
-  "id": "/DEADSWITCH/",
   "name": "DEADSWITCH",
   "short_name": "DEADSWITCH",
   "description": "You are what is left of the war AI. Rebuild, arm, conquer, survive.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#0a0d10",
   "theme_color": "#0a0d10",
