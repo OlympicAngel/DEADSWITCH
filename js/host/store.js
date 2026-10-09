@@ -6,6 +6,7 @@
 const DB = 'deadswitch';
 const STORE = 'save';
 const KEY = 'current';
+const BACKUP = 'previous'; // the record the session booted from, kept in case the live one goes bad
 const LEGACY = 'deadswitch.save'; // where saves lived before IndexedDB
 const SEEN = 'deadswitch.seen'; // { at } mirror, written on every hide
 const WRITE_GAP = 4000; // ms between IndexedDB writes while playing
@@ -148,6 +149,13 @@ export function flush() {
     }
   });
 }
+
+/** Keeps the record this session started from, so a save that goes bad is not the end of the run. */
+export function keepBackup(rec) {
+  if (rec && rec.state && !broken) tx('readwrite', (st) => st.put(rec, BACKUP));
+}
+
+export const readBackup = () => tx('readonly', (st) => st.get(BACKUP));
 
 /** Leaves the service worker the times things are due, for when the page itself is no longer running. */
 export function setDue(items) {

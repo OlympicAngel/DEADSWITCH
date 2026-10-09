@@ -1207,3 +1207,5 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .dbg-json { padding: 6px 8px; color: var(--dim); }
 .dbg-json pre { max-height: 180px; overflow: auto; margin: 4px 0 0; white-space: pre-wrap; word-break: break-all; color: #9fd6cd; }
 .btn.link { width: 100%; margin-top: 6px; border-color: transparent; background: none; color: var(--dim); font-size: 11px; }
+.away-log { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.muted.build { margin-top: 10px; text-align: center; font: 10.5px var(--font-num); letter-spacing: .1em; }

@@ -40,8 +40,9 @@ export const LESSONS = [
   {
     id: 'ops', when: { sectors: 1 },
     steps: [
-      { at: '.sheet', say: 'Odds before you commit, spoils if it lands, and what it costs us if it does not. Nothing here is hidden from you.', done: 'read' },
-      { at: '[data-panel="op"]', say: 'An operation runs while you do other things. Held ground pays a permanent bonus and gives up a piece of what I used to be.', done: 'read' },
+      { at: '[data-nav="command"]', say: 'Ground. Come back to Command and I will tell you what it is worth.', done: 'tap' },
+      { at: '[data-panel="op"]', say: 'An operation runs while you do everything else, and I report what it cost when it lands.', done: 'read' },
+      { say: 'Every sector we hold pays a permanent bonus for as long as we hold it, and the first time we take one it gives up a piece of what I used to be. Both are in the Archive.', done: 'read' },
     ],
   },
   {

@@ -19,7 +19,7 @@ export function createTutor(root, game, onChange) {
     <i class="teach-mask" data-m="t"></i><i class="teach-mask" data-m="b"></i>
     <i class="teach-mask" data-m="l"></i><i class="teach-mask" data-m="r"></i>
     <i class="teach-ring" data-ring hidden></i>
-    <div class="teach-card" data-card>
+    <div class="teach-card" data-card role="dialog" aria-live="polite" aria-label="Tutorial">
       <span class="kicker">${icon('core')}<span data-step></span></span>
       <p data-say></p>
       <div class="teach-foot">

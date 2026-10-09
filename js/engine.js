@@ -12,6 +12,20 @@ export * from './sim/clans.js';
 export { odds, rand, peek, daySeed } from './sim/rng.js';
 
 export const SAVE_VERSION = 3;
+// Loose numbers an imported or corrupted save could carry, with the range each one has to sit in.
+const NUMBERS = [['align', -1e3, 1e3], ['playTime', 0, 1e12], ['directive', 0, 1e3], ['chapter', 0, 1e3],
+  ['rank', 0, 1e3], ['lineSeq', 0, 1e9], ['eventSeq', 0, 1e9], ['raidTimer', 0, 1e9], ['offlineRaids', 0, 1e6]];
+const MAX_LEVEL = 1e4; // nothing in the game reaches this; anything past it is a corrupt save
+
+/** A map of counts with every value forced to a sane whole number. */
+function whole(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj || {})) {
+    const n = Math.floor(Number(v));
+    if (Number.isFinite(n) && n > 0) out[k] = Math.min(n, MAX_LEVEL);
+  }
+  return out;
+}
 const EPS = 1e-9;
 const INBOX_LIMIT = 20;
 
@@ -79,9 +93,18 @@ export function migrate(raw) {
   }
   const s = { ...base, ...raw };
   s.res = { ...base.res, ...raw.res };
-  s.levels = { ...raw.levels };
-  s.items = { ...raw.items };
-  s.paused = { ...raw.paused };
+  // Counts come from a file the player can edit, export and import, so none of them is trusted: a
+  // level of "9e99" or NaN anywhere would spread through every price and bar on the screen.
+  s.levels = whole(raw.levels);
+  s.items = whole(raw.items);
+  s.paused = {};
+  for (const [k, v] of Object.entries(raw.paused || {})) {
+    if (v) s.paused[k] = true;
+  }
+  s.name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 16) : '';
+  for (const [k, lo, hi] of NUMBERS) {
+    s[k] = Number.isFinite(Number(raw[k])) ? Math.min(hi, Math.max(lo, Number(raw[k]))) : base[k];
+  }
   s.stats = { ...base.stats, ...raw.stats };
   s.sectors = Array.isArray(raw.sectors) ? raw.sectors : base.sectors;
   s.buffs = Array.isArray(raw.buffs) ? raw.buffs : [];
@@ -184,6 +207,7 @@ export function catchUp(s, seconds, already = 0) {
   const total = Math.max(0, Math.min(seconds, limits.seconds - already));
   const grace = Math.max(0, Math.min(total, BALANCE.offline.graceSeconds - already));
   const before = { ...s.res };
+  const was = { ...s.stats, sectors: s.sectors.length };
   const stepSize = Math.max(1, total / 20000);
   let left = total;
   let flows = null;
@@ -206,5 +230,12 @@ export function catchUp(s, seconds, already = 0) {
   for (const r of Object.keys(s.res)) {
     gained[r] = s.res[r] - before[r];
   }
-  return { seconds: total, away: seconds, efficiency: limits.efficiency, gained, flows };
+  // What the wasteland did while nobody was watching, so coming back is not a guessing game.
+  const happened = {
+    held: s.stats.raidsWon - was.raidsWon,
+    breached: s.stats.raidsLost - was.raidsLost,
+    taken: s.stats.opsWon - was.opsWon,
+    lost: Math.max(0, was.sectors - s.sectors.length),
+  };
+  return { seconds: total, away: seconds, efficiency: limits.efficiency, gained, happened, flows };
 }

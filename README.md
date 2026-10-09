@@ -7,6 +7,7 @@ A browser strategy / idle game. You are the last fragment of the war AI that end
 - No build step, no dependencies: plain HTML, CSS and ES modules.
 - Saves in IndexedDB (a pre-IndexedDB save is taken over on first load); export/import from the ☰ menu.
 - Installable: plays with no network, and warns about attacks while you are away if you let it.
+- No accounts, no servers, no analytics: the save never leaves the device unless you export it.
 - Design: [`docs/DESIGN.md`](docs/DESIGN.md).
 - Icons: [Tabler Icons](https://tabler.io/icons) (MIT), bundled as an SVG sprite.
 

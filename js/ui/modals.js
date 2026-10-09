@@ -1,6 +1,6 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
-  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, BY_ID, SHOP_TABS, SECTORS, NODES,
+  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
@@ -494,12 +494,45 @@ export function createModals(dialog, game, onChange) {
 
   function showOffline(report, then) {
     const gains = Object.keys(RESOURCES).map((r) => `<div class="r"><span>${icon(r)}${RESOURCES[r].name}</span><b class="${report.gained[r] < 0 ? 'bad-t' : 'good-t'}">${report.gained[r] >= 0 ? '+' : '−'}${num(Math.abs(report.gained[r]))}</b></div>`).join('');
+    const h = report.happened || {};
+    const events = [
+      ['defense', 'Attacks held', h.held, 'good-t'],
+      ['fire', 'Attacks broke through', h.breached, 'bad-t'],
+      ['power', 'Sectors taken', h.taken, 'good-t'],
+      ['map', 'Sectors lost', h.lost, 'bad-t'],
+    ].filter(([, , n]) => n > 0)
+      .map(([ic, label, n, cls]) => `<div class="r"><span>${icon(ic)}${label}</span><b class="${cls}">${num(n)}</b></div>`).join('');
     open(`
       <span class="kicker">${icon('clock')}Welcome back</span>
       <h2>While you were away</h2>
       <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.</p>
       <div class="rows">${gains}</div>
+      ${events ? `<div class="rows away-log">${events}</div>` : ''}
       <button class="btn primary wide" data-close>Resume command</button>`, { then });
+  }
+
+  // Something threw where it should not have. Say so plainly and keep the save within reach.
+  function showCrash(detail) {
+    open(`
+      <span class="kicker">${icon('alert')}Fault</span>
+      <h2>Something in me stopped working</h2>
+      <p class="muted">Your progress is saved up to a few seconds ago. Reloading usually fixes it; take a copy of the save first if you want to be sure.</p>
+      <p class="ev-text result">${esc(String(detail || 'unknown fault')).slice(0, 300)}</p>
+      <div class="menu-actions">
+        <button class="btn" id="cCopy">${icon('export')}<span>Copy save</span></button>
+        <button class="btn primary" id="cReload">${icon('play')}<span>Reload</span></button>
+      </div>
+      <p class="muted" id="cMsg">Build ${VERSION}</p>`, { cls: 'locked' });
+    const msg = dialog.querySelector('#cMsg');
+    dialog.querySelector('#cCopy').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(game.act.exportSave());
+        msg.textContent = 'Copied. Keep it somewhere safe.';
+      } catch {
+        msg.textContent = 'Could not reach the clipboard. Reload and export from Settings.';
+      }
+    };
+    dialog.querySelector('#cReload').onclick = () => location.reload();
   }
 
   function openMenu() {
@@ -513,9 +546,12 @@ export function createModals(dialog, game, onChange) {
         ${notifySupported() ? `<button class="btn" id="mNotify">${icon('bell')}<span>${notifyWanted() ? 'Alerts on' : 'Alerts off'}</span></button>` : ''}
         <button class="btn" id="mExport">${icon('export')}<span>Export save</span></button>
         <button class="btn" id="mImport">${icon('import')}<span>Import save</span></button>
+        <button class="btn" id="mTeach">${icon('core')}<span>Replay tutorials</span></button>
+        <button class="btn" id="mRestore">${icon('import')}<span>Restore last session</span></button>
         <button class="btn danger" id="mReset">${icon('trash')}<span>Wipe progress</span></button>
       </div>
       <button class="btn link" id="mDev">${icon('dev')}<span>Developer panel</span></button>
+      <p class="muted build">DEADSWITCH ${VERSION}</p>
       <textarea id="mText" rows="4" placeholder="Save code" spellcheck="false" hidden></textarea>
       <p class="muted" id="mMsg"></p>
       <button class="btn primary wide" data-close>Close</button>`);
@@ -552,15 +588,39 @@ export function createModals(dialog, game, onChange) {
         msg.textContent = 'Copy the code above.';
       }
     };
+    let importArmed = false;
     $('#mImport').onclick = () => {
       if (text.hidden || !text.value.trim()) {
         text.hidden = false;
         text.value = '';
         text.focus();
+        importArmed = false;
         msg.textContent = 'Paste a save code, then press Import again.';
         return;
       }
+      if (!importArmed) {
+        importArmed = true;
+        msg.textContent = 'This replaces the run you are playing. Press Import again to go ahead.';
+        return;
+      }
+      importArmed = false;
       msg.textContent = game.act.importSave(text.value.trim()) ? 'Imported.' : 'That code is not a valid save.';
+    };
+    $('#mTeach').onclick = () => {
+      game.act.forgetLessons();
+      close();
+    };
+    let restoreArmed = false;
+    $('#mRestore').onclick = async (e) => {
+      if (!restoreArmed) {
+        restoreArmed = true;
+        e.currentTarget.querySelector('span').textContent = 'Tap again to roll back';
+        msg.textContent = 'This replaces the run with the one this session started from.';
+        return;
+      }
+      msg.textContent = (await game.act.restore()) ? 'Rolled back.' : 'Nothing to roll back to.';
+      restoreArmed = false;
+      e.currentTarget.querySelector('span').textContent = 'Restore last session';
     };
     $('#mDev').onclick = () => {
       game.dev.panel.toggle();
@@ -608,5 +668,5 @@ export function createModals(dialog, game, onChange) {
     return true;
   }
 
-  return { open, close, pump, showEvent, showOffline, showArchive, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
+  return { open, close, pump, showEvent, showOffline, showArchive, showCrash, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
 }

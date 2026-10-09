@@ -18,4 +18,5 @@ Browser idle/strategy game, static site on GitHub Pages. Read `README.md` and `d
 - Every new feature is wired into the developer panel (`js/ui/debug/`): call `setFocus` (`js/ui/focus.js`) wherever the player opens the thing, and give it rows and actions in `js/ui/debug/inspect.js` — the numbers it hides, and buttons that force its states. New save fields are reachable in the state tree for free, but anything derived or rolled needs a row. A feature you cannot inspect and force from the panel is not finished.
 - Tests: only for rules that would break silently (catch-up, caps, pricing, save migration). Run `npm test` before pushing.
 - After balance changes run `npm run balance` and sanity-check the milestone times.
+- Anything the player can see changing means bumping `VERSION` in `js/data/economy.js`; it is what they can quote when something breaks.
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).

@@ -70,7 +70,40 @@ game.act = {
     ui.reset();
     save(true);
   },
+  forgetLessons: () => {
+    game.state.taught = [];
+    save(true);
+  },
+  // Rolls the run back to the save this session started from, for when the live one has gone bad.
+  restore: async () => {
+    const rec = await store.readBackup();
+    if (!rec || !rec.state) {
+      return false;
+    }
+    game.state = E.migrate(rec.state);
+    ui.reset();
+    save(true);
+    return true;
+  },
 };
+
+// One thrown error used to stop the loop and leave a frozen screen with no way to get the save out.
+let crashed = false;
+function crash(detail) {
+  if (crashed) {
+    return;
+  }
+  crashed = true;
+  stopLoop();
+  try {
+    store.write(game.state, true);
+  } catch { /* the save is as safe as it is going to get */ }
+  if (ui) {
+    ui.crash(detail);
+  }
+}
+addEventListener('error', (e) => crash(e.message));
+addEventListener('unhandledrejection', (e) => crash(e.reason && e.reason.message));
 
 // Hands a stretch of absence to the engine in one piece and reports on it if it was worth reporting.
 function catchUp(seconds) {
@@ -84,6 +117,14 @@ function catchUp(seconds) {
 }
 
 function tick() {
+  try {
+    advance();
+  } catch (err) {
+    crash(err && err.message);
+  }
+}
+
+function advance() {
   const now = performance.now();
   const real = (now - last) / 1000;
   last = now;
@@ -131,6 +172,7 @@ const stopLoop = () => { looping = false; };
 async function boot() {
   const saved = await store.read();
   game.state = saved && saved.state ? E.migrate(saved.state) : E.newState(seed());
+  store.keepBackup(saved); // the record that booted is known good; keep it for the rest of the session
   ui = createUI(document.getElementById('app'), game);
   // How long they were gone: whichever is later, the moment the page went away or the last write.
   const seen = Math.max(store.lastSeen(), (saved && saved.savedAt) || 0);
