@@ -413,3 +413,18 @@ test('rolls are a pure function of the save, so a reload keeps the same future',
   const later = { ...s, playTime: s.playTime + 86400 };
   assert.notEqual(E.peek(later, 'raid'), E.peek(s, 'raid'));
 });
+
+test('lessons are owed once each, in order, as the state reaches them', () => {
+  const s = E.newState(41);
+  assert.equal(E.lessonDue(s).id, 'first', 'the first lesson is owed from the first second');
+  E.markTaught(s, 'first');
+  assert.equal(E.lessonDue(s), null, 'nothing else is owed yet');
+  s.levels.barracks = 1;
+  assert.equal(E.lessonDue(s).id, 'arsenal');
+  E.markTaught(s, 'arsenal');
+  s.levels.core = 2;
+  assert.equal(E.lessonDue(s).id, 'war', 'a new system unlocking brings its own lesson');
+  // What is taught survives a save, so nothing is ever explained twice.
+  const back = E.migrate(JSON.parse(JSON.stringify(s)));
+  assert.deepEqual(back.taught, ['first', 'arsenal']);
+});

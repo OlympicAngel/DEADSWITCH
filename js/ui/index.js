@@ -22,6 +22,7 @@ import { watchVisible, measureVisible } from './onscreen.js';
 import { stepAmbientLoops } from './framerate.js';
 import { setFocus } from './focus.js';
 import { createDebug } from './debug/panel.js';
+import { createTutor } from './teach.js';
 
 export function createUI(root, game) {
   stepAmbientLoops();
@@ -72,6 +73,7 @@ export function createUI(root, game) {
   const debug = createDebug(game, () => { ui.key = ''; render(); });
   game.dev.panel = debug;
   const tips = createTips(game);
+  const tutor = createTutor(root, game, () => render());
   const pills = Object.fromEntries(RESOURCE_KEYS.map((r) => {
     const el = root.querySelector(`[data-pill="${r}"]`);
     return [r, { el, v: el.querySelector('[data-v]'), fill: el.querySelector('[data-fill]'), rate: el.querySelector('[data-rate]') }];
@@ -450,8 +452,9 @@ export function createUI(root, game) {
     }
     updateLog(s);
     drainFx(s);
+    tutor.update(covered);
     debug.update();
-    if (!modals.pump() && !modals.isOpen() && !s.inbox.length) {
+    if (!modals.pump() && !modals.isOpen() && !s.inbox.length && !tutor.active()) {
       const next = s.events.find((x) => ui.unseen.has(x.uid));
       if (next) {
         ui.unseen.delete(next.uid);

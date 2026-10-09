@@ -2,3 +2,4 @@
 export * from './data/economy.js';
 export * from './data/world.js';
 export * from './data/story.js';
+export * from './data/lessons.js';

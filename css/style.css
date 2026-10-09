@@ -1138,6 +1138,31 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .battle.has-map .vs { font-size: 11px; letter-spacing: .3em; }
 .event.has-map .ev-text { padding-right: 118px; min-height: 132px; }
 
+/* =================== Tutor =================== */
+/* Four panels with a hole left over the control being explained: the only thing on screen that can
+   be tapped is the thing being talked about. Panels rather than a raised target, because the target
+   can sit inside any scrolling box on the screen. */
+.teach { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.teach[hidden] { display: none; }
+.teach-mask { position: fixed; background: rgba(4,7,9,.84); pointer-events: auto; }
+.teach-ring {
+  position: fixed; border: 2px solid var(--hud); border-radius: 8px; pointer-events: none;
+  box-shadow: 0 0 0 3px rgba(255,107,61,.2), 0 0 26px rgba(255,107,61,.55);
+}
+.teach-ring::after { content: ''; position: absolute; inset: -3px; border-radius: 10px; box-shadow: 0 0 0 2px var(--hud); opacity: 0; animation: teachPulse 1.6s ease-in-out infinite; }
+@keyframes teachPulse { 50% { opacity: .9; } }
+.teach-card {
+  position: fixed; left: 12px; right: 12px; pointer-events: auto;
+  padding: 14px 16px; border: 1px solid var(--hud); border-radius: var(--r);
+  background: var(--brackets), linear-gradient(180deg, #16222a, #0d1217);
+  box-shadow: 0 18px 50px rgba(0,0,0,.7);
+}
+.teach-card p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.55; color: #dbe6ec; }
+.teach-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+/* A .btn carries its own display, which beats the hidden attribute on its own. */
+.teach-foot .btn[hidden] { display: none; }
+.teach-foot .btn.link { width: auto; margin: 0; padding: 4px 2px; border: 0; box-shadow: none; background: none; color: var(--dim); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+
 /* =================== Developer panel =================== */
 /* A floating window over the game, switched on in Settings. It sits in the top layer (popover) so it
    stays readable over dialogs, and it is dense on purpose: data first, chrome last. */

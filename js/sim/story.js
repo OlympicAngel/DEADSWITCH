@@ -1,6 +1,6 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS,
+  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS,
 } from '../data.js';
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
@@ -390,6 +390,31 @@ export function checkDirectives(s) {
   s.directive++;
   say(s, 'directive', { text: d.text }, 'good');
   s.fx.push({ kind: 'directive', text: d.text, reward: d.reward });
+}
+
+// ---------- lessons ----------
+
+/** Whether the state has reached what a lesson (or a step) is waiting for. */
+export function reached(s, cond) {
+  if (!cond || typeof cond !== 'object') {
+    return false;
+  }
+  if (cond.level && !Object.entries(cond.level).every(([id, n]) => level(s, id) >= n)) return false;
+  if (cond.items && !Object.entries(cond.items).every(([id, n]) => owned(s, id) >= n)) return false;
+  if (cond.sectors && s.sectors.length - 1 < cond.sectors) return false;
+  if (cond.events && s.events.length < cond.events) return false;
+  return true;
+}
+
+/** The next lesson owed to the player, or null. One at a time, in the order they are written. */
+export function lessonDue(s) {
+  return LESSONS.find((l) => !s.taught.includes(l.id) && reached(s, l.when)) || null;
+}
+
+export function markTaught(s, id) {
+  if (!s.taught.includes(id)) {
+    s.taught.push(id);
+  }
 }
 
 // ---------- chapters ----------

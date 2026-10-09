@@ -51,6 +51,7 @@ export function newState(seed = 1) {
     chapter: 0,
     ending: null,
     stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0 },
+    taught: [], // lessons already given (data/lessons.js)
     inbox: [{ kind: 'boot' }],
     fx: [],
     log: [],
@@ -102,6 +103,7 @@ export function migrate(raw) {
   if (s.raid && !FACTIONS[s.raid.faction]) {
     s.raid = null;
   }
+  s.taught = Array.isArray(raw.taught) ? raw.taught.filter((x) => typeof x === 'string') : [];
   s.rolls = {};
   for (const [k, n] of Object.entries(raw.rolls && typeof raw.rolls === 'object' ? raw.rolls : {})) {
     if (Number.isFinite(n)) s.rolls[k] = Math.max(0, Math.floor(n));
