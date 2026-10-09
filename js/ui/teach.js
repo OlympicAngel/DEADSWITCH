@@ -2,7 +2,6 @@
 // four panels cover the screen with a hole left over the one control the step is about, so the only
 // thing that can be tapped is the thing being explained. The hole is cut with panels rather than a
 // z-index because the target can live inside any scrolling box or stacking context on the screen.
-import { LESSONS } from '../data.js';
 import * as E from '../engine.js';
 import { icon } from './icons.js';
 import { esc } from '../format.js';
@@ -144,5 +143,3 @@ export function createTutor(root, game, onChange) {
     },
   };
 }
-
-export const lessonCount = LESSONS.length;

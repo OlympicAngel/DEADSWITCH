@@ -48,7 +48,5 @@ export function createPresence({ onLeave, onReturn }) {
     here: () => here,
     /** On screen and touched recently: the player is actually watching (urgent orders need this). */
     active: () => here && Date.now() - touchedAt < ACTIVE_WINDOW,
-    /** Treats this moment as a departure, for a gap no event explained (a sleeping device). */
-    slept: (ms) => onLeave(Date.now() - ms),
   };
 }
