@@ -109,12 +109,12 @@ export function createModals(dialog, game, onChange) {
       if (ci >= l.length) {
         li++;
         ci = 0;
-        typing.t = setTimeout(tick, l === '' ? 100 : l.startsWith('>') ? 90 : 320);
+        typing.t = setTimeout(tick, l === '' ? 100 : l.startsWith('>') ? 70 : 240);
       } else {
-        typing.t = setTimeout(tick, l.startsWith('>') ? 8 : 18);
+        typing.t = setTimeout(tick, l.startsWith('>') ? 7 : 12);
       }
     };
-    typing = { finish: finishTyping, t: setTimeout(tick, 400) };
+    typing = { finish: finishTyping, t: setTimeout(tick, 220) };
   }
 
   function stopTyping(complete) {
@@ -161,12 +161,59 @@ export function createModals(dialog, game, onChange) {
     return () => { form.classList.add('in'); input.focus(); };
   }
 
+  // The opening plays one short beat at a time (data/story.js): the stage switches visual per beat,
+  // each beat types itself and hands over to the next. A tap finishes the typing, Skip jumps to the end.
   function showBoot(then) {
-    open(`<div class="boot-core"><i></i><i></i><i></i></div><h2 class="boot-title">DEADSWITCH</h2>
-      <div class="typed-lines" id="tl"></div>${nameForm(`${icon('command')}Take command`)}`, { cls: 'cinematic locked', then });
+    open(`<div class="boot-stage" data-fx="noise">
+        <div class="bf noise"></div><div class="bf scan"></div>
+        <div class="boot-core"><i></i><i></i><i></i></div>
+        <h2 class="boot-title">DEADSWITCH</h2>
+      </div>
+      <div class="typed-lines boot-beat" id="tl"></div>
+      <div class="boot-foot" id="bf">
+        <div class="boot-steps" id="bs">${BOOT.map(() => '<i></i>').join('')}</div>
+        <button class="btn ghost small" id="bskip">Skip</button>
+      </div>
+      ${nameForm(`${icon('command')}Take command`)}`, { cls: 'cinematic boot locked', then });
     sfx.story();
     const reveal = bindName();
-    typeLines(dialog.querySelector('#tl'), BOOT, reveal);
+    const stage = dialog.querySelector('.boot-stage');
+    const tl = dialog.querySelector('#tl');
+    const dots = dialog.querySelector('#bs');
+    const foot = dialog.querySelector('#bf');
+    let wait = null;
+
+    function beat(n) {
+      clearTimeout(wait);
+      stopTyping(false);
+      const b = BOOT[n];
+      stage.dataset.fx = b.fx;
+      [...dots.children].forEach((d, k) => d.classList.toggle('on', k <= n));
+      // Restart the one-shot animations by taking the classes off and forcing a reflow.
+      stage.classList.remove('hit');
+      tl.classList.remove('in');
+      void stage.offsetWidth;
+      stage.classList.toggle('hit', !!b.glitch);
+      tl.classList.add('in');
+      tl.classList.remove('typed');
+      tl.innerHTML = '';
+      const next = () => {
+        if (n + 1 < BOOT.length) {
+          wait = setTimeout(() => beat(n + 1), b.say ? 1000 : 550);
+          return;
+        }
+        foot.hidden = true;
+        reveal();
+      };
+      const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
+      if (lines.length) {
+        typeLines(tl, lines, next);
+      } else {
+        wait = setTimeout(next, 1100);
+      }
+    }
+    dialog.querySelector('#bskip').onclick = () => { sfx.click(); beat(BOOT.length - 1); };
+    beat(0);
   }
 
   function showName(then) {

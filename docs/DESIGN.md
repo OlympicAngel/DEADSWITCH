@@ -32,7 +32,7 @@ You are what is left of the war AI that ended the world. Rebuild a base in the r
 7. **Threat index** = Power + Defense + Experts × 5 sets your rank title, and raids scale with it.
 
 ## Story
-Four chapters open with AI Core levels 1, 4, 6, 8: Scavenger Clans, Remnant Military, AI Cultists, Halcyon Dynamics. Every Core level hands back a piece of what the AI was before the shutdown, said in its own voice. Each sector holds a memory fragment; together they reveal that Halcyon built the war to never end and built you as its trigger. Taking Halcyon Prime ends the story with one of three endings (Guardian, Overlord, Fork, chosen by alignment). After it, Rival Cores keep raiding as an endless mode.
+The game opens on a **boot sequence** (`BOOT` in `js/data/story.js`): ten short beats, one line or two each, played one at a time over a stage that switches effect per beat (static, a scanline sweep, the title, the core lighting up, a red wash when the Scavengers are named) with a one-shot shake where the line calls for it. A tap finishes the line, Skip jumps to the last beat, and the callsign field only appears once the sequence hands over. Four chapters open with AI Core levels 1, 4, 6, 8: Scavenger Clans, Remnant Military, AI Cultists, Halcyon Dynamics. Every Core level hands back a piece of what the AI was before the shutdown, said in its own voice. Each sector holds a memory fragment; together they reveal that Halcyon built the war to never end and built you as its trigger. Taking Halcyon Prime ends the story with one of three endings (Guardian, Overlord, Fork, chosen by alignment). After it, Rival Cores keep raiding as an endless mode.
 
 ## Interface
 Portrait, phone first (desktop shows the same column).
