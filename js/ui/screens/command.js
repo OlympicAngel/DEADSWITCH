@@ -46,7 +46,7 @@ export function renderCommand() {
           <defs>
             <radialGradient id="rg-core"><stop offset="0" stop-color="var(--hud)" stop-opacity=".35"/><stop offset=".6" stop-color="var(--hud)" stop-opacity=".06"/><stop offset="1" stop-color="var(--hud)" stop-opacity="0"/></radialGradient>
           </defs>
-          <g class="links"><line x1="${R}" y1="${R}" x2="40" y2="44"/><line x1="${R}" y1="${R}" x2="280" y2="44"/><line x1="${R}" y1="${R}" x2="40" y2="188"/><line x1="${R}" y1="${R}" x2="280" y2="188"/></g>
+          <g class="links"><line x1="${R}" y1="${R}" x2="22" y2="36"/><line x1="${R}" y1="${R}" x2="298" y2="36"/><line x1="${R}" y1="${R}" x2="18" y2="130"/><line x1="${R}" y1="${R}" x2="302" y2="130"/></g>
           <circle cx="${R}" cy="${R}" r="150" fill="url(#rg-core)"/>
           <circle class="ring r-outer" cx="${R}" cy="${R}" r="118"/>
           <path class="align-track" d="${arc(146, 200, 340)}"/>

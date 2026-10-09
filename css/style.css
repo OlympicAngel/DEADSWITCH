@@ -357,9 +357,12 @@ p { margin: 0; }
 button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; }
 
 /* =================== Command (war room) =================== */
-.screen.command { --dial: min(290px, 100%); }
-.reactor { position: relative; width: var(--dial); aspect-ratio: 1; margin: 0 auto; cursor: pointer; }
-.reactor-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* A concrete length: it also sizes the reactor's height, where a percentage would resolve to nothing. */
+.screen.command { --dial: min(290px, calc(100vw - 36px)); }
+/* The box runs the full column so the readouts sit on its edges; only the dial is centred in it.
+   The dial is offset with margin, not transform, which the spinning layers need for themselves. */
+.reactor { position: relative; width: 100%; height: var(--dial); cursor: pointer; }
+.reactor-svg { position: absolute; top: 0; left: 50%; width: var(--dial); height: var(--dial); margin-left: calc(var(--dial) / -2); overflow: visible; }
 .reactor-svg .links line { stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 2 4; }
 .reactor-svg .ticks line { stroke: rgba(255,107,61,.35); stroke-width: 1; }
 .s-ticks { animation: spin 90s linear infinite; }
@@ -379,12 +382,12 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .sweep path { fill: url(#rg-core); fill: rgba(255,107,61,.07); }
 @keyframes spin { to { transform: rotate(360deg); } }
 /* Sits above centre: the lower third of the dial is covered by the incoming panel. */
-.reactor-core { position: absolute; inset: 18% 24% 44%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+.reactor-core { position: absolute; top: calc(var(--dial) * .18); bottom: calc(var(--dial) * .44); left: 50%; width: calc(var(--dial) * .52); margin-left: calc(var(--dial) * -.26); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
 .reactor-core small { font: 600 10px var(--font-hud); color: var(--muted); text-transform: uppercase; letter-spacing: .24em; }
 .reactor-core b { font: 700 34px/1.1 var(--font-num); color: var(--hud-2); text-shadow: 0 0 18px var(--hud-glow); }
 .reactor-core span { font: 700 11px var(--font-hud); color: var(--hud); text-transform: uppercase; letter-spacing: .14em; }
 .reactor-core em { font: 10.5px var(--font-num); font-style: normal; color: var(--dim); margin-top: 2px; }
-.sat { position: absolute; display: flex; flex-direction: column; align-items: center; width: 27%; }
+.sat { position: absolute; display: flex; flex-direction: column; align-items: center; width: min(25%, 88px); }
 .sat-ico {
   display: grid; place-items: center; width: 44px; height: 44px; font-size: 19px;
   padding: 0; border: 0; color: inherit; cursor: pointer;
