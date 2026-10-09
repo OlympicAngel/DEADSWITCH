@@ -1111,6 +1111,7 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .dbg-k { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dbg-v { max-width: 58%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e7fffb; }
 .dbg-v.dim { color: var(--dim); }
+.dbg-v.wrap { white-space: normal; word-break: break-all; }
 .dbg-in { width: 44%; padding: 1px 4px; border: 1px solid #27514d; border-radius: 3px; background: #0b1416; color: #e7fffb; font: 11px var(--font-num); }
 .dbg-in:focus { outline: 1px solid #6fe3cf; }
 .dbg-in.bad { border-color: var(--bad); }

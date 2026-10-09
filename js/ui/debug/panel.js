@@ -227,6 +227,9 @@ export function createDebug(game, rerender) {
   }
 
   el.addEventListener('click', (e) => {
+    // A long value is cut to one line; tapping it lets it wrap.
+    const v = e.target.closest('.dbg-v');
+    if (v && !v.dataset.live) v.classList.toggle('wrap');
     const t = e.target.closest('[data-dact], [data-dtab], [data-dspeed], [data-open], [data-dsector]');
     if (!t) return;
     if (t.dataset.dtab) {
