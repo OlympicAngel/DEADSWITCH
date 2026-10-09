@@ -512,9 +512,6 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .link { stroke: rgba(255,107,61,.18); stroke-width: 2.5; stroke-dasharray: 3 8; stroke-linecap: round; }
 .link.front { stroke: rgba(255,176,61,.6); stroke-dasharray: 8 8; }
 .link.own { stroke: var(--hud); stroke-width: 4; stroke-dasharray: none; filter: drop-shadow(0 0 4px var(--hud-glow)); }
-@keyframes march { to { stroke-dashoffset: -32; } }
-.op-line { stroke: var(--warn); stroke-width: 4; stroke-dasharray: 12 8; animation: march .6s linear infinite; filter: drop-shadow(0 0 6px var(--warn)); }
-.op-dot { fill: #fff; filter: drop-shadow(0 0 8px var(--warn)); }
 .node { cursor: pointer; }
 .node .hex { fill: #10171c; stroke: var(--fc); stroke-width: 2.5; transform-box: fill-box; transform-origin: center; transition: transform .2s var(--spring); }
 .node-ico { color: var(--fc); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
@@ -898,13 +895,9 @@ dialog { overflow-y: auto; overscroll-behavior: contain; }
 .card.k-unlocker.unbuilt { padding-top: 30px; }
 .card.k-unlocker[data-status='ready']::after { top: 13px; left: auto; right: 12px; }
 
-/* Outgoing operation on the map */
-.op-glow { stroke: var(--warn); stroke-width: 16; stroke-linecap: round; opacity: .18; filter: blur(3px); }
-.op-line { stroke: var(--warn); stroke-width: 5; stroke-dasharray: 14 9; stroke-linecap: round; animation: march .5s linear infinite; filter: drop-shadow(0 0 8px var(--warn)); }
-.op-dot { fill: #fff; stroke: var(--warn); stroke-width: 3; filter: drop-shadow(0 0 10px var(--warn)); }
-.reticle { pointer-events: none; }
-.ret-ring { fill: none; stroke: var(--bad); stroke-width: 3; stroke-dasharray: 18 10; filter: drop-shadow(0 0 6px var(--bad)); }
-.ret-ticks { stroke: var(--bad); stroke-width: 4; stroke-linecap: round; animation: blink 1s steps(2) infinite; }
+/* Crosshair over a sector under attack: --rc is the attacker's colour */
+.ret-ring { fill: none; stroke: var(--rc); stroke-width: 3; stroke-dasharray: 18 10; }
+.ret-ticks { stroke: var(--rc); stroke-width: 4; stroke-linecap: round; fill: none; }
 .ret-time { fill: #fff; font: 700 20px var(--font-num); text-anchor: middle; paint-order: stroke; stroke: #0a0d10; stroke-width: 5px; }
 .op-banner {
   position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; gap: 8px; margin: -2px 0 10px; padding: 10px 12px; cursor: pointer; text-align: left;
@@ -1035,9 +1028,12 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 
 /* Map effects on GPU layers: target pulses under the map drawing, the attack reticle ring over it */
 /* Open-world map: a fixed viewport; the world inside moves with a GPU transform while dragged */
+/* Zoom buttons float over the map; the world itself scales with the drag transform */
+.map-zoom { position: absolute; right: 10px; top: 10px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
+.map-zoom .icon-btn { background: rgba(10,13,16,.72); border: 1px solid var(--line); }
 .map-viewport { position: relative; height: min(64vh, 620px); min-height: 360px; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .map-viewport.dragging { cursor: grabbing; }
-.map-world { position: absolute; left: 0; top: 0; will-change: transform; }
+.map-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
 .map-world .map { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
 .map-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .map-fx.over { z-index: 2; }
@@ -1065,7 +1061,14 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .node .def.breach { fill: var(--bad); }
 .node .def.up { fill: #ff9a7a; }
 .node .def.down { fill: var(--ok); }
-.assault-line { stroke: var(--bad); stroke-width: 4; stroke-dasharray: 10 8; stroke-linecap: round; opacity: .85; }
+
+/* Attack beams, yours and theirs: a glowing dashed line with pulses running along it, all on the GPU */
+.map-fx > .fx-beam { aspect-ratio: auto; height: 18px; margin-top: -9px; transform-origin: 0 50%; overflow: hidden; }
+.fx-beam svg { animation: marchSlide 1.2s linear infinite; }
+.beam-glow { stroke: var(--fc); stroke-width: 8; stroke-linecap: round; opacity: .22; }
+.beam-line { stroke: var(--fc); stroke-width: 3; stroke-dasharray: 28 18; stroke-linecap: round; }
+.fx-beam i { position: absolute; left: 0; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #fff; box-shadow: 0 0 7px var(--fc); animation: beamDot 1.2s linear infinite; }
+@keyframes beamDot { from { transform: translateX(0); opacity: 0; } 15%, 85% { opacity: 1; } to { transform: translateX(var(--run)); opacity: 0; } }
 
 /* The open-world map is drawn zoomed out: lines and labels are sized up in map units to match */
 .map-world .node .name { font-size: 28px; stroke-width: 7px; }
@@ -1074,8 +1077,6 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .map-world .link { stroke-width: 3.5; stroke-dasharray: 4 11; }
 .map-world .link.own { stroke-width: 5.5; stroke-dasharray: none; }
 .map-world .link.front { stroke-width: 3.5; stroke-dasharray: 8 8; }
-.map-world .op-line { stroke-width: 7; }
-.map-world .assault-line { stroke-width: 6; }
 .map-world .ret-ticks { stroke-width: 5.5; }
 .map-world .ret-time { font-size: 28px; stroke-width: 7px; }
 .map-world .ret-ring { stroke-width: 4; }

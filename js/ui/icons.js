@@ -31,7 +31,7 @@ export const ICONS = {
   up: 'arrow-up', down: 'arrow-down', fire: 'flame', heart: 'heart', trend: 'trending-up', hourglass: 'hourglass', message: 'message',
   unlock: 'lock-open', book: 'book', sound: 'volume', mute: 'volume-off', vibrate: 'device-mobile-vibration', export: 'download', import: 'upload',
   trash: 'trash', city: 'building-skyscraper', bell: 'bell-ringing', hex: 'hexagon', spark: 'sparkles', stop: 'hand-stop',
-  play: 'player-play', info: 'info-circle',
+  play: 'player-play', info: 'info-circle', zoomin: 'zoom-in', zoomout: 'zoom-out',
 };
 
 let mounted = false;

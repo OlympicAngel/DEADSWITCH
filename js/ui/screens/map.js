@@ -24,8 +24,10 @@ const WORLD = (() => {
   return { x0, y0, w: Math.max(...xs) + PAD - x0, h: Math.max(...ys) + PAD - y0 };
 })();
 const px = (p) => ({ x: (p.x - WORLD.x0) * SCALE, y: (p.y - WORLD.y0) * SCALE });
-// Where the world sits in the viewport (px); kept across rebuilds so the view stays put.
+// Where the world sits in the viewport (px) and how far it is zoomed; kept across rebuilds.
 let pan = null;
+let zoom = 1;
+const ZOOM = { min: 0.5, max: 1.5, step: 1.25 };
 
 // Steps from held territory to every sector, through map links.
 function distances(s) {
@@ -48,6 +50,22 @@ const hex = (r) => Array.from({ length: 6 }, (_, i) => {
   return `${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`;
 }).join(' ');
 
+// An attack beam between two sectors: a glowing dashed line with pulses running along it. The strip is
+// rotated into place and its dashes and pulses only move by transform, so nothing repaints per frame.
+const BEAM_DASH = 46; // px of one dash plus gap: how far the dashes slide per cycle
+function beam(a, b, color) {
+  const pa = px(a);
+  const pb = px(b);
+  const len = Math.hypot(pb.x - pa.x, pb.y - pa.y);
+  const ang = (Math.atan2(pb.y - pa.y, pb.x - pa.x) * 180) / Math.PI;
+  const dots = [0, 0.4, 0.8].map((d) => `<i style="animation-delay:${d}s"></i>`).join('');
+  return `<div class="fx-beam" style="left:${pa.x}px;top:${pa.y}px;width:${len}px;transform:rotate(${ang}deg);--fc:${color};--run:${len}px">
+    <svg viewBox="${-BEAM_DASH} -9 ${len + BEAM_DASH} 18" style="width:${len + BEAM_DASH}px;margin-left:${-BEAM_DASH}px;--slide:${BEAM_DASH}px" aria-hidden="true">
+      <line x1="${-BEAM_DASH}" y1="0" x2="${len}" y2="0" class="beam-glow"/>
+      <line x1="${-BEAM_DASH}" y1="0" x2="${len}" y2="0" class="beam-line"/>
+    </svg>${dots}</div>`;
+}
+
 // Pixel box (in world px) around the revealed sectors, padded: how far the map can be dragged.
 function shownBounds(shown) {
   const ps = shown.map((x) => px(x));
@@ -61,9 +79,19 @@ function applyPan(view, world) {
   const vw = view.clientWidth;
   const vh = view.clientHeight;
   const clamp = (v, lo, hi) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
-  pan.x = clamp(pan.x, vw - x1, -x0);
-  pan.y = clamp(pan.y, vh - y1, -y0);
-  world.style.transform = `translate3d(${Math.round(pan.x)}px, ${Math.round(pan.y)}px, 0)`;
+  pan.x = clamp(pan.x, vw - x1 * zoom, -x0 * zoom);
+  pan.y = clamp(pan.y, vh - y1 * zoom, -y0 * zoom);
+  world.style.transform = `translate3d(${Math.round(pan.x)}px, ${Math.round(pan.y)}px, 0) scale(${zoom})`;
+}
+
+/** Zooms around a point of the viewport, keeping whatever sits under it in place. */
+function setZoom(view, world, z, cx, cy) {
+  const next = Math.min(ZOOM.max, Math.max(ZOOM.min, z));
+  if (next === zoom) return;
+  pan.x = cx - ((cx - pan.x) / zoom) * next;
+  pan.y = cy - ((cy - pan.y) / zoom) * next;
+  zoom = next;
+  applyPan(view, world);
 }
 
 // Centres a sector in the map view (above the briefing sheet when it is open).
@@ -76,11 +104,11 @@ export function centerOn(root, id) {
   const vr = view.getBoundingClientRect();
   const room = sheet ? Math.max(120, sheet.getBoundingClientRect().top - vr.top) : view.clientHeight;
   const p = px(sec);
-  pan = { x: view.clientWidth / 2 - p.x, y: Math.min(view.clientHeight, room) / 2 - p.y };
+  pan = { x: view.clientWidth / 2 - p.x * zoom, y: Math.min(view.clientHeight, room) / 2 - p.y * zoom };
   applyPan(view, world);
 }
 
-// Drag to move around the map; a drag never counts as a tap on a sector.
+// Drag to move around the map, pinch or wheel to zoom; a drag never counts as a tap on a sector.
 function bindPan(root) {
   const view = root.querySelector('[data-mapview]');
   const world = root.querySelector('[data-world]');
@@ -91,14 +119,35 @@ function bindPan(root) {
   } else {
     applyPan(view, world);
   }
+  /** Pointer position inside the viewport. */
+  const at = (e) => {
+    const r = view.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  const points = new Map(); // live pointers, so two of them can pinch
   let drag = null;
+  let pinch = null;
   let moved = false;
   view.addEventListener('pointerdown', (e) => {
     if (e.button !== undefined && e.button > 0) return;
+    points.set(e.pointerId, at(e));
+    if (points.size === 2) {
+      const [a, b] = [...points.values()];
+      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom };
+      drag = null;
+      moved = true; // a pinch must not land as a tap on a sector
+      return;
+    }
     drag = { id: e.pointerId, x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
     moved = false;
   });
   view.addEventListener('pointermove', (e) => {
+    if (points.has(e.pointerId)) points.set(e.pointerId, at(e));
+    if (pinch && points.size >= 2) {
+      const [a, b] = [...points.values()];
+      setZoom(view, world, (pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.dist, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      return;
+    }
     if (!drag || e.pointerId !== drag.id) return;
     const dx = e.clientX - drag.x;
     const dy = e.clientY - drag.y;
@@ -112,12 +161,26 @@ function bindPan(root) {
     pan.y = drag.py + dy;
     applyPan(view, world);
   });
-  const end = () => {
+  const end = (e) => {
+    points.delete(e.pointerId);
+    if (points.size < 2) pinch = null;
     drag = null;
     view.classList.remove('dragging');
   };
   view.addEventListener('pointerup', end);
   view.addEventListener('pointercancel', end);
+  view.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const p = at(e);
+    setZoom(view, world, zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), p.x, p.y);
+  }, { passive: false });
+  for (const b of root.querySelectorAll('[data-zoom]')) {
+    b.addEventListener('pointerdown', (e) => e.stopPropagation());
+    b.addEventListener('click', () => {
+      const step = b.dataset.zoom === 'in' ? ZOOM.step : 1 / ZOOM.step;
+      setZoom(view, world, zoom * step, view.clientWidth / 2, view.clientHeight / 2);
+    });
+  }
   view.addEventListener('click', (e) => {
     if (moved) {
       e.stopPropagation();
@@ -172,19 +235,14 @@ function renderTheater(s, ui) {
       }
     }
   }
-  let opPath = '';
-  if (s.op) {
-    // The strike comes from every held sector linked to the target.
-    const t = E.sectorById(s.op.sector);
-    const b = P(t);
-    opPath = t.links.filter((l) => s.sectors.includes(l)).map((id) => {
-      const a = P(E.sectorById(id));
-      const path = `M${a.x},${a.y} L${b.x},${b.y}`;
-      const dots = [0, 0.45, 0.9].map((d) => `<circle r="8" class="op-dot"><animateMotion dur="1.35s" begin="${d}s" repeatCount="indefinite" path="${path}"/></circle>`).join('');
-      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-glow"/>
-        <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="op-line"/>${dots}`;
-    }).join('');
-  }
+  // An incoming assault is drawn like your own strike, in the attacking clan's colour.
+  const atk = s.assault && isShown(s.assault.from) && isShown(s.assault.target)
+    ? { from: E.sectorById(s.assault.from), target: E.sectorById(s.assault.target), color: FACTIONS[s.assault.faction].color }
+    : null;
+  // Your strike comes from every held sector linked to the target.
+  const opTarget = s.op ? E.sectorById(s.op.sector) : null;
+  const beams = (opTarget ? opTarget.links.filter((l) => s.sectors.includes(l)).map((id) => beam(P(E.sectorById(id)), P(opTarget), 'var(--warn)')).join('') : '')
+    + (atk ? beam(P(atk.from), P(atk.target), atk.color) : '');
   // Pulses and the reticle ring live in small HTML layers over/under the SVG, animated with
   // transform/opacity on the GPU; animating them inside the SVG repaints the whole map every frame.
   const W = WORLD.w;
@@ -203,12 +261,9 @@ function renderTheater(s, ui) {
     return `<div class="fx-march" style="left:${L(a.x)}%;top:${T(a.y)}%;width:${(len / W) * 100}%;aspect-ratio:${len}/10;margin-top:-${(5 / W) * 100}%;transform:rotate(${ang}deg)"><svg viewBox="-32 -5 ${len + 32} 10" style="width:${((len + 32) / len) * 100}%;margin-left:-${(32 / len) * 100}%;--slide:${(32 / (len + 32)) * 100}%" aria-hidden="true"><line x1="-32" y1="0" x2="${len}" y2="0" class="link front"/></svg></div>`;
   };
   const marches = fronts.map(marchLine).join('');
-  const ring = s.op ? fxAt(P(E.sectorById(s.op.sector)), 74, 'fx-ring', '<circle r="66" class="ret-ring"/>') : '';
-  // An incoming assault: a static line from the attacking sector to its target.
-  const a = s.assault;
-  const assaultLine = a && isShown(a.from) && isShown(a.target)
-    ? (() => { const f = P(E.sectorById(a.from)); const t = P(E.sectorById(a.target)); return `<line x1="${f.x}" y1="${f.y}" x2="${t.x}" y2="${t.y}" class="assault-line"/>`; })()
-    : '';
+  // Crosshair over a sector under attack: one layer, rotated whole, in the attacker's colour.
+  const crosshair = (p, color) => fxAt(p, 86, 'fx-ring', '<circle r="66" class="ret-ring"/><path d="M0,-86 V-64 M0,64 V86 M-86,0 H-64 M64,0 H86" class="ret-ticks"/>', `--rc:${color}`);
+  const rings = (opTarget ? crosshair(P(opTarget), 'var(--bad)') : '') + (atk ? crosshair(P(atk.target), atk.color) : '');
   const nodes = shown.map((x) => {
     const st = E.sectorStatus(s, x);
     const p = P(x);
@@ -238,17 +293,20 @@ function renderTheater(s, ui) {
     <div class="map-card">
       <div class="map-viewport" data-mapview>
       <div class="map-world" data-world style="width:${WORLD.w * SCALE}px;height:${WORLD.h * SCALE}px" data-bounds="${shownBounds(shown)}">
-      <div class="map-fx under">${marches}${pulses}</div>
+      <div class="map-fx under">${marches}${beams}${pulses}</div>
       <svg class="map" viewBox="${WORLD.x0} ${WORLD.y0} ${WORLD.w} ${WORLD.h}" role="img" aria-label="Wasteland map">
         <defs>${Object.entries(FACTIONS).map(([k, d]) => `<radialGradient id="terr-${k}"><stop offset="0" stop-color="${d.color}" stop-opacity=".16"/><stop offset="1" stop-color="${d.color}" stop-opacity="0"/></radialGradient>`).join('')}</defs>
         ${territory(shown)}
         <g>${links.join('')}</g>
-        ${opPath}
-        ${assaultLine}
         <g>${nodes}</g>
-        ${s.op ? reticle(P(E.sectorById(s.op.sector))) : ''}
+        ${opTarget ? retTimer(P(opTarget), 'data-optimer') : ''}
+        ${atk ? retTimer(P(atk.target), 'data-asltimer') : ''}
       </svg>
-      <div class="map-fx over">${ring}</div>
+      <div class="map-fx over">${rings}</div>
+      </div>
+      <div class="map-zoom">
+        <button class="icon-btn small" data-zoom="in" aria-label="Zoom in">${icon('zoomin')}</button>
+        <button class="icon-btn small" data-zoom="out" aria-label="Zoom out">${icon('zoomout')}</button>
       </div>
       </div>
       <div class="legend">${legend}</div>
@@ -256,12 +314,9 @@ function renderTheater(s, ui) {
     <div class="sheet ${ui.sheet ? 'open' : ''}" data-sheet>${ui.sheet ? briefing(s, sec) : ''}</div>`;
 }
 
-// Crosshair over the sector under attack, with the live countdown.
-function reticle(p) {
-  return `<g class="reticle" transform="translate(${p.x},${p.y})">
-    <path d="M0,-82 V-62 M0,62 V82 M-82,0 H-62 M62,0 H82" class="ret-ticks"/>
-    <text class="ret-time" dy="-92" data-optimer></text>
-  </g>`;
+// Live countdown over a sector under attack (the crosshair around it is a GPU layer).
+function retTimer(p, attr) {
+  return `<text class="ret-time" x="${p.x}" y="${p.y - 96}" ${attr}></text>`;
 }
 
 // Defense above an enemy sector: ▲ fortified by approaches, ↑/↓ stronger/weaker than its base.
@@ -344,7 +399,7 @@ export function bindMapScreen(panel) {
     factors: [...panel.querySelectorAll('[data-factor]')],
     power: q('[data-power]'), loss: q('[data-loss]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
     chips: [...panel.querySelectorAll('.sheet .chip')], btn: q('.launch'), label: q('.launch [data-l]'), opbar: q('[data-opbar]'),
-    optimer: q('[data-optimer]'), opbanner: q('[data-opbanner]'), opbannerbar: q('[data-opbannerbar]'),
+    optimer: q('[data-optimer]'), asltimer: q('[data-asltimer]'), opbanner: q('[data-opbanner]'), opbannerbar: q('[data-opbannerbar]'),
   };
 }
 
@@ -358,6 +413,9 @@ export function updateMapScreen(s, ui, refs) {
     if (refs.optimer) put(refs.optimer, left);
     if (refs.opbanner) put(refs.opbanner, left);
     if (refs.opbannerbar) setW(refs.opbannerbar, pct(1 - s.op.remaining / s.op.total));
+  }
+  if (refs.asltimer && s.assault) {
+    put(refs.asltimer, clock(s.assault.remaining));
   }
   if (!refs.power || !ui.sheet) {
     return;
