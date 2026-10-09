@@ -844,9 +844,15 @@ dialog.boot .modal-body { position: relative; }
 .boot-foot { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 0 10px; }
 .boot-foot[hidden] { display: none; }
 .boot-foot .btn { opacity: .55; }
-.boot-steps { display: flex; gap: 5px; }
-.boot-steps i { width: 14px; height: 2px; background: var(--line-2); transition: background .3s; }
-.boot-steps i.on { background: var(--hud); }
+.boot-hint { display: flex; align-items: center; gap: 2px; margin-left: auto; opacity: 0; transition: opacity .4s; font: 600 9.5px var(--font-hud); text-transform: uppercase; letter-spacing: .18em; color: var(--muted); }
+.boot-foot.tap .boot-hint { opacity: .75; animation: hintPulse 1.8s ease-in-out infinite; }
+@keyframes hintPulse { 50% { opacity: .25; } }
+/* One segment per beat: past beats are lit, the current one fills over however long it will take. */
+.boot-steps { display: flex; align-items: center; gap: 5px; }
+.boot-steps i { width: 14px; height: 2px; overflow: hidden; background: var(--line-2); transition: width .4s var(--ease), background .3s; }
+.boot-steps i.done { background: var(--hud); }
+.boot-steps i.now { width: 48px; }
+.boot-steps b { display: block; height: 100%; background: var(--hud); box-shadow: 0 0 6px var(--hud); transform-origin: left; transform: scaleX(0); }
 /* The callsign field only exists once the sequence hands over, so the beats are not framed by a gap. */
 dialog.boot .callsign:not(.in) { display: none; }
 .chapter-screen .kicker { color: var(--fc, var(--hud)); }

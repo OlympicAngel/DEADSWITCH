@@ -7,7 +7,7 @@ import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
 import { tags, bonusText, bonusChips, chanceClass, clock, factorTag } from './common.js';
 import { mapBackdrop } from './minimap.js';
-import { sfx, isMuted, setMuted } from './sfx.js';
+import { sfx, bootSfx, ambient, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
 import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
@@ -37,6 +37,7 @@ export function createModals(dialog, game, onChange) {
   }
 
   dialog.addEventListener('close', () => {
+    ambient(false); // nothing of the opening outlives its dialog
     if (!dialog.open) {
       finish();
     }
@@ -78,6 +79,12 @@ export function createModals(dialog, game, onChange) {
   }
 
   // Types lines into el one character at a time; a tap finishes instantly.
+  // Typing speeds, in one place because a beat has to know how long it will take before it starts.
+  const TYPE = { lead: 500, term: 14, say: 26, gapTerm: 260, gapSay: 560, gapBlank: 100 };
+  const charMs = (l) => (l.startsWith('>') ? TYPE.term : TYPE.say);
+  const gapMs = (l) => (l === '' ? TYPE.gapBlank : l.startsWith('>') ? TYPE.gapTerm : TYPE.gapSay);
+  const typeDuration = (lines) => TYPE.lead + lines.reduce((a, l) => a + l.length * charMs(l) + gapMs(l), 0);
+
   function typeLines(el, lines, done) {
     const paras = lines.map((l) => {
       const p = document.createElement('p');
@@ -109,12 +116,12 @@ export function createModals(dialog, game, onChange) {
       if (ci >= l.length) {
         li++;
         ci = 0;
-        typing.t = setTimeout(tick, l === '' ? 100 : l.startsWith('>') ? 110 : 340);
+        typing.t = setTimeout(tick, gapMs(l));
       } else {
-        typing.t = setTimeout(tick, l.startsWith('>') ? 10 : 17);
+        typing.t = setTimeout(tick, charMs(l));
       }
     };
-    typing = { finish: finishTyping, t: setTimeout(tick, 360) };
+    typing = { finish: finishTyping, t: setTimeout(tick, TYPE.lead) };
   }
 
   function stopTyping(complete) {
@@ -161,8 +168,10 @@ export function createModals(dialog, game, onChange) {
     return () => { form.classList.add('in'); input.focus(); };
   }
 
-  // The opening plays one short beat at a time (data/story.js): the stage switches visual per beat,
-  // each beat types itself and hands over to the next. A tap finishes the typing, Skip jumps to the end.
+  // The opening plays one short beat at a time (data/story.js): the stage switches effect per beat,
+  // each beat types itself, sounds its own cue, moves the ambient bed under it and hands over to the
+  // next. The segment under the text fills over the whole beat, so the wait is visible. A tap
+  // finishes the line, a second tap moves on, Skip jumps to the end.
   function showBoot(then) {
     open(`<div class="boot-stage" data-fx="gate">
         <div class="bf noise"></div>
@@ -178,7 +187,8 @@ export function createModals(dialog, game, onChange) {
       <div class="typed-lines boot-beat in" id="tl"><p class="term">&gt; CARRIER DETECTED. SOURCE UNKNOWN.</p></div>
       <button class="btn primary wide boot-start" id="bstart">${icon('play')}Answer it</button>
       <div class="boot-foot" id="bf" hidden>
-        <div class="boot-steps" id="bs">${BOOT.map(() => '<i></i>').join('')}</div>
+        <div class="boot-steps" id="bs">${BOOT.map(() => '<i><b></b></i>').join('')}</div>
+        <span class="boot-hint">tap${icon('next')}</span>
         <button class="btn ghost small" id="bskip">Skip</button>
       </div>
       ${nameForm(`${icon('command')}Take command`)}`, { cls: 'cinematic boot locked', then });
@@ -188,44 +198,78 @@ export function createModals(dialog, game, onChange) {
     const dots = dialog.querySelector('#bs');
     const foot = dialog.querySelector('#bf');
     let wait = null;
+    let at = -1;
 
     function beat(n) {
       clearTimeout(wait);
       stopTyping(false);
+      at = n;
       const b = BOOT[n];
+      const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
+      const hold = b.hold ?? (b.say ? 3000 : 1800);
       stage.dataset.fx = b.fx;
-      [...dots.children].forEach((d, k) => d.classList.toggle('on', k <= n));
+      bootSfx[b.fx]?.();
+      ambient(true, b.fx);
       // Restart the one-shot animations by taking the classes off and forcing a reflow.
       stage.classList.remove('hit');
       tl.classList.remove('in');
       void stage.offsetWidth;
       stage.classList.toggle('hit', !!b.glitch);
+      foot.classList.remove('tap');
       tl.classList.add('in');
       tl.classList.remove('typed');
       tl.innerHTML = '';
+      step(n, (lines.length ? typeDuration(lines) : 0) + hold);
       const next = () => {
+        foot.classList.add('tap'); // the line is done: a tap now moves on instead of finishing it
         if (n + 1 < BOOT.length) {
-          wait = setTimeout(() => beat(n + 1), b.hold ?? (b.say ? 1700 : 900));
+          wait = setTimeout(() => beat(n + 1), hold);
           return;
         }
         foot.hidden = true;
+        ambient(false);
         reveal();
       };
-      const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
       if (lines.length) {
         typeLines(tl, lines, next);
       } else {
-        wait = setTimeout(next, b.hold ?? 1500);
+        wait = setTimeout(next, hold);
       }
     }
+
+    // Marks the beat we are on and fills its segment over however long the beat will take.
+    function step(n, ms) {
+      [...dots.children].forEach((d, k) => {
+        d.classList.toggle('done', k < n);
+        d.classList.toggle('now', k === n);
+      });
+      const fill = dots.children[n].firstElementChild;
+      fill.style.transition = 'none';
+      fill.style.transform = 'scaleX(0)';
+      void fill.offsetWidth;
+      fill.style.transition = `transform ${Math.round(ms)}ms linear`;
+      fill.style.transform = 'scaleX(1)';
+    }
     dialog.querySelector('#bskip').onclick = () => { sfx.click(); beat(BOOT.length - 1); };
+    // Tapping the stage finishes the line it is typing; tapping again moves the sequence on.
+    // pointerdown so this runs before the dialog's own click handler empties `typing`.
+    dialog.addEventListener('pointerdown', (e) => {
+      if (!dialog.classList.contains('boot') || at < 0 || e.target.closest('button')) {
+        return;
+      }
+      if (typing) {
+        stopTyping(true);
+      } else if (at + 1 < BOOT.length) {
+        beat(at + 1);
+      }
+    });
     // The sequence waits on one tap: a browser only lets sound start from a gesture, and the
     // opening is the one place where every beat has a sound to make.
     const start = dialog.querySelector('#bstart');
     start.onclick = () => {
       start.hidden = true;
       foot.hidden = false;
-      sfx.story();
+      ambient(true, 'gate');
       beat(0);
     };
   }
