@@ -25,18 +25,26 @@ jobs:
           node-version: 22
       - run: npm test
 
-  deploy:
+  # Uploading and deploying are separate jobs on purpose: the artifact API needs a moment to index an
+  # upload before deploy-pages can find it, and re-running only the deploy job never uploads a second
+  # artifact (two of them in one run fail the deployment).
+  build:
     if: github.event_name != 'pull_request'
     needs: test
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Stage site
         run: mkdir _site && cp -r index.html .nojekyll manifest.webmanifest icon.svg css js _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
