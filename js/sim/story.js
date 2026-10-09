@@ -106,7 +106,7 @@ function pickBuildings(s, keys) {
   }
   const params = {};
   for (const k of keys) {
-    const id = pick(s, pool);
+    const id = pick(s, pool, 'event');
     params[k] = id;
     pool.splice(pool.indexOf(id), 1);
   }
@@ -153,10 +153,10 @@ function spawn(s, ev, front) {
     if (!raiders.length) {
       return false;
     }
-    params.faction = pick(s, raiders);
+    params.faction = pick(s, raiders, 'event');
     const grown = factors(s).defense + projectDefense(s, ev.deadline / 2, eventDrain(s));
     const floor = FACTIONS[params.faction].raidFloor;
-    params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max));
+    params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max, 'event'));
   }
   if (ev.border) {
     // A border between one of your sectors and an enemy one; the event is about those two. Clans whose
@@ -164,11 +164,11 @@ function spawn(s, ev, front) {
     const all = borders(s, true);
     if (!all.length) return false;
     const open = all.filter((b) => !b.locked);
-    const b = pick(s, open.length && rand(s) >= EVENTS_CFG.lockedBorderChance ? open : all);
+    const b = pick(s, open.length && rand(s, 'event') >= EVENTS_CFG.lockedBorderChance ? open : all, 'event');
     params.node = b.from;
     params.held = b.target;
   }
-  params.buffStretch = range(s, EVENTS_CFG.buffStretch[0], EVENTS_CFG.buffStretch[1]);
+  params.buffStretch = range(s, EVENTS_CFG.buffStretch[0], EVENTS_CFG.buffStretch[1], 'event');
   const inst = { uid: ++s.eventSeq, id: ev.id, left: ev.deadline, total: ev.deadline, params };
   if (front) {
     s.events.unshift(inst);
@@ -195,7 +195,7 @@ export function spawnAftermath(s, rout) {
   let n = rout ? EVENTS_CFG.aftermathOnRout : EVENTS_CFG.aftermathOnDefeat;
   const pool = EVENTS.filter((e) => e.aftermath && !s.events.some((x) => x.id === e.id));
   while (n > 0 && pool.length) {
-    const ev = pick(s, pool);
+    const ev = pick(s, pool, 'event');
     pool.splice(pool.indexOf(ev), 1);
     if (spawn(s, ev, true)) {
       say(s, 'aftermath', { title: ev.title }, 'bad');
@@ -231,7 +231,7 @@ export function advanceEvents(s, dt, offline, active = false) {
   if (s.eventTimer > 0) {
     return;
   }
-  s.eventTimer = range(s, EVENTS_CFG.intervalMin, EVENTS_CFG.intervalMax);
+  s.eventTimer = range(s, EVENTS_CFG.intervalMin, EVENTS_CFG.intervalMax, 'event');
   const core = level(s, 'core');
   const pool = EVENTS.filter((e) => !e.aftermath && (!e.urgent || active) && e.minCore <= core && !s.recentEvents.includes(e.id));
   while (pool.length) {
@@ -246,7 +246,7 @@ export function advanceEvents(s, dt, offline, active = false) {
 // Threats come up more often than ordinary dilemmas.
 function weighted(s, pool) {
   const w = (e) => e.weight || (e.threat ? EVENTS_CFG.threatWeight : 1);
-  let r = rand(s) * pool.reduce((a, e) => a + w(e), 0);
+  let r = rand(s, 'event') * pool.reduce((a, e) => a + w(e), 0);
   for (const e of pool) {
     r -= w(e);
     if (r <= 0) return e;

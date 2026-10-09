@@ -49,7 +49,7 @@ Portrait, phone first (desktop shows the same column).
 
 ## Where things live
 - All content and numbers: `js/data/` (economy, world, story).
-- Rules: `js/sim/` (economy, war, story) behind `js/engine.js`. Pure and seeded (`state.rng`), so offline catch-up and tests are reproducible.
+- Rules: `js/sim/` (economy, war, story) behind `js/engine.js`. Pure and seeded, so offline catch-up and tests are reproducible. Nothing draws from a moving stream: a roll is a hash of the save's seed, the day of play it is on, which system is asking and how many times that system has asked (`js/sim/rng.js`). So the same state always has the same future and can be read ahead without playing it out (`peek`, which is how the host knows what to warn about), one system rolling never shifts another's results, and the seed turns over every day of play so a run never repeats itself.
 - `npm run balance` runs the balance simulation: a bot plays 5 seeded 24h runs with every system live (Core gate, price formula, raids, sieges, vengeance, threats, fortified sectors, clan profiles) and random affordable event choices, and prints average/min/max milestone times and end-state averages. Last run (clan profiles, 2 breaches and standing sieges live): Core 2 44m, Core 3 2h05; no capital inside 24h. Capture loot ~5.9 min of Scrip income, salvage ~4.2 min; ~35 breached assaults and ~14 sectors lost a day, against ~25 retaken. The war is bloodier than it was: both sides lose units in every battle, so the end-of-day Power and Defense sit about a third below the pre-clan numbers.
 
 ## Next ideas

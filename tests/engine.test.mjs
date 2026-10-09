@@ -396,3 +396,20 @@ test('a defeat always costs someone; a win only when it was close enough to', ()
   assert.deepEqual(E.lossPlan(s, 'staff', 0.0001), { militia: 1 });
   assert.deepEqual(E.lossPlan(s, 'staff', 0.1, false), { militia: 10 });
 });
+
+test('rolls are a pure function of the save, so a reload keeps the same future', () => {
+  const s = E.newState(99);
+  Object.assign(s.levels, { core: 4 });
+  E.catchUp(s, 3600);
+  // What each system will roll next is readable without taking it...
+  const ahead = ['raid', 'assault', 'event'].map((k) => E.peek(s, k));
+  const reloaded = E.migrate(JSON.parse(JSON.stringify(s)));
+  assert.deepEqual(['raid', 'assault', 'event'].map((k) => E.peek(reloaded, k)), ahead);
+  // ...and one system rolling never moves another's.
+  E.rand(s, 'event');
+  assert.equal(E.peek(s, 'raid'), ahead[0]);
+  assert.notEqual(E.peek(s, 'event'), ahead[2]);
+  // A new day of play turns the seed over, so nothing repeats.
+  const later = { ...s, playTime: s.playTime + 86400 };
+  assert.notEqual(E.peek(later, 'raid'), E.peek(s, 'raid'));
+});

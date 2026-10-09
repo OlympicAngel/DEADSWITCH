@@ -182,7 +182,7 @@ export function advanceOp(s, dt) {
   const power = factors(s).power;
   const defense = sectorDefense(s, sec);
   const chance = odds(power, defense, OPS.winSharpness);
-  const roll = rand(s);
+  const roll = rand(s, 'op');
   const report = { kind: 'op', sector: sec.id, power, defense, chance, roll, win: roll < chance };
   // Taking ground costs people too; the garrison that held it is gone either way.
   takeLosses(s, report, report.win ? OPS.winLoss : OPS.unitLoss, power, defense);
@@ -270,7 +270,7 @@ export function attackSource(s, faction) {
   const pool = front.length ? front : own;
   if (!pool.length) return null;
   const w = (x) => 1 + aggression(s, x.id) - AGGR.min;
-  let r = rand(s) * pool.reduce((a, x) => a + w(x), 0);
+  let r = rand(s, 'source') * pool.reduce((a, x) => a + w(x), 0);
   return (pool.find((x) => (r -= w(x)) <= 0) || pool[pool.length - 1]).id;
 }
 
@@ -297,9 +297,9 @@ export function attackName(atk) {
 
 // Revenge: the faction's next raids are multiplied, for a set count or until one breaks through.
 export function addGrudge(s, g) {
-  const untilLoss = rand(s) < EVENTS_CFG.grudgeUntilLossChance;
+  const untilLoss = rand(s, 'grudge') < EVENTS_CFG.grudgeUntilLossChance;
   const [lo, hi] = EVENTS_CFG.grudgeRaids;
-  const left = untilLoss ? EVENTS_CFG.grudgeUntilLossMax : lo + Math.floor(rand(s) * (hi - lo + 1));
+  const left = untilLoss ? EVENTS_CFG.grudgeUntilLossMax : lo + Math.floor(rand(s, 'grudge') * (hi - lo + 1));
   const old = s.grudges.find((x) => x.faction === g.faction);
   if (old) {
     old.mult = Math.max(old.mult, g.mult);
@@ -354,10 +354,10 @@ function spawnRaid(s, delay) {
     return;
   }
   // A faction with a grudge takes the next raid, active chapter or not, and hits harder.
-  const faction = grudge ? grudge.faction : pick(s, raiders);
+  const faction = grudge ? grudge.faction : pick(s, raiders, 'raid');
   const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
   const base = Math.max(floor, threat(s) * RAIDS.threatShare);
-  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax) * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
+  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid') * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   // Raids march on the Nest itself, from wherever that faction still holds ground.
   s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge, from: attackSource(s, faction), target: MAP.home };
   say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, strength, time: fmtShort(delay) }, 'bad');
@@ -395,7 +395,7 @@ export function advanceRaids(s, dt, offline) {
     }
     s.raidTimer -= dt;
     if (s.raidTimer <= 0) {
-      spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax));
+      spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax, 'raid'));
     }
     return;
   }
@@ -414,7 +414,7 @@ function resolveRaid(s, offline) {
     s.offlineRaids++;
   }
   s.raidTimer = 0;
-  spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax));
+  spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax, 'raid'));
 }
 
 // ---------- assaults: bordering enemy sectors try to take yours ----------
@@ -454,7 +454,7 @@ function assaultTempo(s) {
 
 // Launches an assault along one border (rolled by weight unless given); returns it or null.
 // Locked borders weigh little, so a front that only touches locked factions is rarely attacked.
-export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax)) {
+export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax, 'assault')) {
   let p = pair;
   if (!p) {
     const all = borders(s, true);
@@ -470,13 +470,13 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
       return Math.max(0, base) * prof.weight * back;
     };
     const total = all.reduce((a, b) => a + w(b), 0);
-    if (!total || rand(s) >= Math.min(1, total)) return null;
-    let r = rand(s) * total;
+    if (!total || rand(s, 'assault') >= Math.min(1, total)) return null;
+    let r = rand(s, 'assault') * total;
     p = all.find((b) => (r -= w(b)) <= 0) || all[all.length - 1];
   }
   const from = SECTOR_BY_ID[p.from];
   const locked = !chapterOpen(s, from.chapter);
-  const strength = Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax));
+  const strength = Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(delay) }, 'bad');
   return s.assault;
@@ -494,7 +494,7 @@ export function advanceAssaults(s, dt, offline) {
     if (s.assaultTimer === null) s.assaultTimer = NODES.firstDelay;
     s.assaultTimer -= dt;
     if (s.assaultTimer <= 0) {
-      s.assaultTimer = range(s, NODES.intervalMin, NODES.intervalMax) / assaultTempo(s);
+      s.assaultTimer = range(s, NODES.intervalMin, NODES.intervalMax, 'assault') / assaultTempo(s);
       spawnAssault(s);
     }
     return;
@@ -534,7 +534,7 @@ function takeStock(s, chance, scale = 1) {
 function resolveAttack(s, raid, offline) {
   const defense = factors(s).defense;
   const chance = odds(defense, raid.strength, RAIDS.winSharpness);
-  const roll = rand(s);
+  const roll = rand(s, 'battle');
   const name = attackName(raid);
   const prof = clanProfile(s, raid.faction);
   const report = { kind: 'raid', name, faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };

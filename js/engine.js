@@ -9,7 +9,7 @@ export * from './sim/economy.js';
 export * from './sim/war.js';
 export * from './sim/story.js';
 export * from './sim/clans.js';
-export { odds } from './sim/rng.js';
+export { odds, rand, peek, daySeed } from './sim/rng.js';
 
 export const SAVE_VERSION = 3;
 const EPS = 1e-9;
@@ -18,7 +18,8 @@ const INBOX_LIMIT = 20;
 export function newState(seed = 1) {
   const s = {
     v: SAVE_VERSION,
-    rng: seed >>> 0,
+    rng: seed >>> 0, // the save's own seed; the day of play turns it into the seed in force (sim/rng.js)
+    rolls: {}, // per system: how many rolls it has taken, which is all a roll needs to be reproducible
     name: '',
     res: { ...BALANCE.start },
     levels: { ...BALANCE.startLevels },
@@ -100,6 +101,10 @@ export function migrate(raw) {
   }
   if (s.raid && !FACTIONS[s.raid.faction]) {
     s.raid = null;
+  }
+  s.rolls = {};
+  for (const [k, n] of Object.entries(raw.rolls && typeof raw.rolls === 'object' ? raw.rolls : {})) {
+    if (Number.isFinite(n)) s.rolls[k] = Math.max(0, Math.floor(n));
   }
   s.grudges = (Array.isArray(raw.grudges) ? raw.grudges : []).filter((x) => x && FACTIONS[x.faction]);
   s.sieges = (Array.isArray(raw.sieges) ? raw.sieges : []).filter((x) => x && FACTIONS[x.faction] && Number.isFinite(x.remaining));
