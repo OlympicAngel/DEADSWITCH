@@ -109,12 +109,12 @@ export function createModals(dialog, game, onChange) {
       if (ci >= l.length) {
         li++;
         ci = 0;
-        typing.t = setTimeout(tick, l === '' ? 100 : l.startsWith('>') ? 70 : 240);
+        typing.t = setTimeout(tick, l === '' ? 100 : l.startsWith('>') ? 110 : 340);
       } else {
-        typing.t = setTimeout(tick, l.startsWith('>') ? 7 : 12);
+        typing.t = setTimeout(tick, l.startsWith('>') ? 10 : 17);
       }
     };
-    typing = { finish: finishTyping, t: setTimeout(tick, 220) };
+    typing = { finish: finishTyping, t: setTimeout(tick, 360) };
   }
 
   function stopTyping(complete) {
@@ -164,18 +164,24 @@ export function createModals(dialog, game, onChange) {
   // The opening plays one short beat at a time (data/story.js): the stage switches visual per beat,
   // each beat types itself and hands over to the next. A tap finishes the typing, Skip jumps to the end.
   function showBoot(then) {
-    open(`<div class="boot-stage" data-fx="noise">
-        <div class="bf noise"></div><div class="bf scan"></div>
+    open(`<div class="boot-stage" data-fx="gate">
+        <div class="bf noise"></div>
+        <div class="bf scan"></div>
+        <div class="bf shock"><i></i><i></i><i></i></div>
+        <div class="bf sparks">${[...Array(10)].map((_, k) => `<i style="--a:${k * 36}deg;--d:${(k % 4) * 60}ms"></i>`).join('')}</div>
+        <div class="bf crowd">${'<i></i>'.repeat(6)}</div>
         <div class="boot-core"><i></i><i></i><i></i></div>
         <h2 class="boot-title">DEADSWITCH</h2>
+        <div class="bf gauge"><i></i></div>
+        <div class="bf flash"></div>
       </div>
-      <div class="typed-lines boot-beat" id="tl"></div>
-      <div class="boot-foot" id="bf">
+      <div class="typed-lines boot-beat in" id="tl"><p class="term">&gt; CARRIER DETECTED. SOURCE UNKNOWN.</p></div>
+      <button class="btn primary wide boot-start" id="bstart">${icon('play')}Answer it</button>
+      <div class="boot-foot" id="bf" hidden>
         <div class="boot-steps" id="bs">${BOOT.map(() => '<i></i>').join('')}</div>
         <button class="btn ghost small" id="bskip">Skip</button>
       </div>
       ${nameForm(`${icon('command')}Take command`)}`, { cls: 'cinematic boot locked', then });
-    sfx.story();
     const reveal = bindName();
     const stage = dialog.querySelector('.boot-stage');
     const tl = dialog.querySelector('#tl');
@@ -199,7 +205,7 @@ export function createModals(dialog, game, onChange) {
       tl.innerHTML = '';
       const next = () => {
         if (n + 1 < BOOT.length) {
-          wait = setTimeout(() => beat(n + 1), b.say ? 1000 : 550);
+          wait = setTimeout(() => beat(n + 1), b.hold ?? (b.say ? 1700 : 900));
           return;
         }
         foot.hidden = true;
@@ -209,11 +215,19 @@ export function createModals(dialog, game, onChange) {
       if (lines.length) {
         typeLines(tl, lines, next);
       } else {
-        wait = setTimeout(next, 1100);
+        wait = setTimeout(next, b.hold ?? 1500);
       }
     }
     dialog.querySelector('#bskip').onclick = () => { sfx.click(); beat(BOOT.length - 1); };
-    beat(0);
+    // The sequence waits on one tap: a browser only lets sound start from a gesture, and the
+    // opening is the one place where every beat has a sound to make.
+    const start = dialog.querySelector('#bstart');
+    start.onclick = () => {
+      start.hidden = true;
+      foot.hidden = false;
+      sfx.story();
+      beat(0);
+    };
   }
 
   function showName(then) {
@@ -552,7 +566,7 @@ export function createModals(dialog, game, onChange) {
     open(`
       <span class="kicker">${icon('clock')}Welcome back</span>
       <h2>While you were away</h2>
-      <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.${report.dark ? ' Nothing in me runs past that without a Watch Daemon.' : ''}</p>
+      <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.</p>
       <div class="rows">${gains}</div>
       ${events ? `<div class="rows away-log">${events}</div>` : ''}
       <button class="btn primary wide" data-close>Resume command</button>`, { then });

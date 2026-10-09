@@ -405,6 +405,7 @@ export function reached(s, cond) {
   if (cond.sectors && s.sectors.length - 1 < cond.sectors) return false;
   if (cond.events && s.events.length < cond.events) return false;
   if (cond.coreReady && buildingStatus(s, BY_ID.core) !== 'ready') return false;
+  if (cond.scripted && !Object.entries(cond.scripted).every(([k, n]) => (s.scripted[k] || 0) >= n)) return false;
   return true;
 }
 

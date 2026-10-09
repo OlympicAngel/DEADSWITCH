@@ -324,6 +324,19 @@ export const RAIDS = {
 // rises when your operation against it fails and falls when its assault on you fails. Sectors that
 // border yours launch assaults on the sector of yours they touch; breachesToFall breached assaults (or
 // one overwhelming one) and that sector is theirs. The Nest never falls.
+// The scripted opening. The first target a directive names is soft while that directive stands, so
+// the first operation is a lesson rather than a coin flip. At AI Core 2 the clan comes back for it
+// hard enough to overrun it, which is where breaches, overruns and retaking get taught, and the
+// sector goes back to its real defense from then on (js/sim/war.js).
+export const TUTORIAL = {
+  target: 'rust',
+  directive: 4, // index of "Capture Rust Market" in DIRECTIVES
+  defense: 8, // what it is worth while that directive stands
+  retakeCore: 2, // the Core level that brings them back for it
+  retakeDelay: 150, // seconds of visible warning before the assault lands
+  retakeMargin: 1.25, // x the overrun threshold, so the first breach takes it
+};
+
 export const NODES = {
   strengthMin: 0.6,
   strengthMax: 2, // hard ceiling, passive growth included

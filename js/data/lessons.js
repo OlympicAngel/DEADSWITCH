@@ -49,6 +49,15 @@ export const LESSONS = [
     ],
   },
   {
+    // Fires on the scripted loss at AI Core 2 (js/sim/war.js), with the sector already gone.
+    id: 'overrun', when: { scripted: { retake: 2 } },
+    steps: [
+      { say: 'They took it back. An assault that far over our Defense does not need a second breach: it carries the sector on the first one. The report says the strength and the threshold it crossed.', done: 'read' },
+      { at: '[data-nav="map"]', say: 'It is still on the board.', done: 'tap' },
+      { at: '.map-viewport', say: 'Ground we have held once stays a target, whatever chapter its clan belongs to. The number over a sector is what holds it now.', done: 'read' },
+    ],
+  },
+  {
     id: 'ops', when: { sectors: 1 },
     steps: [
       { at: '[data-nav="command"]', say: 'Ground. Come back and I will tell you what it is worth.', done: 'tap' },

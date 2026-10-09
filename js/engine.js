@@ -1,5 +1,5 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
-import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS } from './data.js';
+import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById, reached } from './sim/story.js';
@@ -66,6 +66,7 @@ export function newState(seed = 1) {
     ending: null,
     stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0 },
     taught: [], // lessons already given (data/lessons.js)
+    scripted: {}, // one-off scripted moments that have already played (js/sim/war.js)
     inbox: [{ kind: 'boot' }],
     fx: [],
     log: [],
@@ -131,6 +132,11 @@ export function migrate(raw) {
   s.taught = Array.isArray(raw.taught)
     ? raw.taught.filter((x) => typeof x === 'string')
     : LESSONS.filter((l) => reached(s, l.when)).map((l) => l.id);
+  // A run already past the opening is not owed the scripted loss; it would read as a random mugging.
+  s.scripted = (raw.scripted && typeof raw.scripted === 'object') ? { ...raw.scripted } : {};
+  if (s.scripted.retake === undefined && ((s.levels.core || 0) > TUTORIAL.retakeCore || s.directive > TUTORIAL.directive + 1)) {
+    s.scripted.retake = 2;
+  }
   s.rolls = {};
   for (const [k, n] of Object.entries(raw.rolls && typeof raw.rolls === 'object' ? raw.rolls : {})) {
     if (Number.isFinite(n)) s.rolls[k] = Math.max(0, Math.floor(n));

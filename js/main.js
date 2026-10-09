@@ -106,11 +106,12 @@ addEventListener('error', (e) => crash(e.message));
 addEventListener('unhandledrejection', (e) => crash(e.reason && e.reason.message));
 
 // Hands a stretch of absence to the engine in one piece and reports on it if it was worth reporting.
+// Nothing ran without a Watch Daemon, so there is nothing to report and nothing to interrupt with.
 function catchUp(seconds) {
   const report = E.catchUp(game.state, seconds);
   game.flows = report.flows;
-  if (seconds > OFFLINE_REPORT_SECONDS) {
-    E.say(game.state, report.dark ? 'welcomeDark' : 'welcomeBack', { time: time(report.away) });
+  if (seconds > OFFLINE_REPORT_SECONDS && !report.dark) {
+    E.say(game.state, 'welcomeBack', { time: time(report.away) });
     ui.showOffline(report);
   }
   save(true);

@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
@@ -129,6 +129,11 @@ export function flank(s, sec) {
 }
 
 export function sectorDefense(s, sec) {
+  // The first target a directive names sits at a fixed, soft number, drift and clan support aside,
+  // until the clan takes it back at AI Core 2 (data/world.js).
+  if (sec.id === TUTORIAL.target && s.directive >= TUTORIAL.directive && (s.scripted.retake || 0) < 2) {
+    return TUTORIAL.defense;
+  }
   return Math.ceil(sec.defense * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
 }
 
@@ -454,7 +459,7 @@ function assaultTempo(s) {
 
 // Launches an assault along one border (rolled by weight unless given); returns it or null.
 // Locked borders weigh little, so a front that only touches locked factions is rarely attacked.
-export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax, 'assault')) {
+export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax, 'assault'), force = 0) {
   let p = pair;
   if (!p) {
     const all = borders(s, true);
@@ -476,15 +481,40 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
   }
   const from = SECTOR_BY_ID[p.from];
   const locked = !chapterOpen(s, from.chapter);
-  const strength = Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
+  const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(delay) }, 'bad');
   return s.assault;
 }
 
+// The one scripted assault in the game: at AI Core 2 the clan comes back for the sector the opening
+// directive handed the player, strong enough to overrun it on the first breach. It is how breaches,
+// overruns and retaking are met, and it ends the soft defense on that sector (data/world.js).
+export function scriptedRetake(s) {
+  const sec = SECTOR_BY_ID[TUTORIAL.target];
+  if (s.scripted.retake || level(s, 'core') < TUTORIAL.retakeCore) {
+    return false;
+  }
+  // It needs to be in the player's hands, with ground of the clan's own next door to come from.
+  const from = sec.links.find((l) => SECTOR_BY_ID[l].faction === sec.faction && !s.sectors.includes(l));
+  if (!s.sectors.includes(sec.id) || !from) {
+    s.scripted.retake = 2; // the window has passed: the sector is worth its real defense again
+    return false;
+  }
+  if (s.assault) {
+    return false; // one assault at a time; this one goes out at the next opening
+  }
+  s.scripted.retake = 1;
+  const strength = Math.ceil(factors(s).defense * NODES.overrunRatio * TUTORIAL.retakeMargin);
+  spawnAssault(s, { from, target: sec.id }, TUTORIAL.retakeDelay, strength);
+  return true;
+}
+
 // Like raids: at most one lands per offline stretch (shared with raids).
 export function advanceAssaults(s, dt, offline) {
   if (level(s, 'core') < NODES.startAtCore) return;
+  // The scripted assault jumps the queue, and only while the player is there to watch it happen.
+  if (!offline && scriptedRetake(s)) return;
   const a = s.assault;
   if (a && (!s.sectors.includes(a.target) || s.sectors.includes(a.from))) {
     s.assault = null; // the border it used no longer exists
@@ -514,6 +544,9 @@ export function loseSector(s, id, faction, strength = 0) {
   s.sectors = s.sectors.filter((x) => x !== id);
   const held = strength ? clamp(strength / Math.max(1, SECTOR_BY_ID[id].defense), NODES.strengthMin, NODES.takenMax) : 1;
   s.nodes[id] = { m: held, marks: 0, a: 0, seen: 0 };
+  if (id === TUTORIAL.target && s.scripted.retake === 1) {
+    s.scripted.retake = 2; // the scripted loss landed: this sector is worth its real defense now
+  }
   stirClan(s, faction, CLANS.stir.sectorSeized);
   stirAggression(s, id, AGGR.onFall);
   if (s.op && s.op.sector === id) s.op = null;
