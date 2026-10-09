@@ -10,6 +10,7 @@ import { mapBackdrop } from './minimap.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
+import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
 
 export function createModals(dialog, game, onChange) {
   let onClose = null;
@@ -509,6 +510,7 @@ export function createModals(dialog, game, onChange) {
       <div class="menu-actions">
         <button class="btn" id="mSound">${icon(isMuted() ? 'mute' : 'sound')}<span>${isMuted() ? 'Sound off' : 'Sound on'}</span></button>
         <button class="btn" id="mHaptic">${icon('vibrate')}<span>${hapticsOn() ? 'Vibration on' : 'Vibration off'}</span></button>
+        ${notifySupported() ? `<button class="btn" id="mNotify">${icon('bell')}<span>${notifyWanted() ? 'Alerts on' : 'Alerts off'}</span></button>` : ''}
         <button class="btn" id="mExport">${icon('export')}<span>Export save</span></button>
         <button class="btn" id="mImport">${icon('import')}<span>Import save</span></button>
         <button class="btn danger" id="mReset">${icon('trash')}<span>Wipe progress</span></button>
@@ -530,6 +532,15 @@ export function createModals(dialog, game, onChange) {
       vibrate(40);
       e.currentTarget.innerHTML = `${icon('vibrate')}<span>${hapticsOn() ? 'Vibration on' : 'Vibration off'}</span>`;
     };
+    const notifyBtn = $('#mNotify');
+    if (notifyBtn) {
+      // Permission can only be asked for on a tap, so this is the only place it is asked.
+      notifyBtn.onclick = async (e) => {
+        const on = await setNotify(!notifyWanted());
+        e.currentTarget.querySelector('span').textContent = on ? 'Alerts on' : 'Alerts off';
+        msg.textContent = on ? 'I will warn you about attacks while you are away.' : '';
+      };
+    }
     $('#mExport').onclick = async () => {
       text.hidden = false;
       text.value = game.act.exportSave();

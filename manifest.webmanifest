@@ -1,11 +1,26 @@
 {
+  "id": "/DEADSWITCH/",
   "name": "DEADSWITCH",
   "short_name": "DEADSWITCH",
   "description": "You are what is left of the war AI. Rebuild, arm, conquer, survive.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#0a0d10",
   "theme_color": "#0a0d10",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "strategy"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "icons/shot-command.jpg", "sizes": "390x844", "type": "image/jpeg", "form_factor": "narrow", "label": "The war room" },
+    { "src": "icons/shot-map.jpg", "sizes": "390x844", "type": "image/jpeg", "form_factor": "narrow", "label": "The wasteland" }
+  ]
 }

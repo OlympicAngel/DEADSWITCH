@@ -1,37 +1,31 @@
 // Host: owns the clock, the save slot and the loop. The engine never sees wall time.
-import { BALANCE, EVENTS_CFG } from './data.js';
+// While the page is away the loop stops entirely and the time is handed to the engine in one piece
+// when the player comes back, which is both cheaper and closer to what "offline" means.
+import { BALANCE } from './data.js';
 import * as E from './engine.js';
 import { createUI } from './ui/index.js';
 import { nextStep } from './ui/framerate.js';
 import { time } from './format.js';
+import * as store from './host/store.js';
+import { createPresence } from './host/presence.js';
+import { scheduleAlerts, cancelAlerts } from './host/notify.js';
 
-const SAVE_KEY = 'deadswitch.save';
-const OFFLINE_REPORT_SECONDS = 60;
-const BACKGROUND_GAP_SECONDS = 2;
+const OFFLINE_REPORT_SECONDS = 60; // a shorter absence is caught up quietly
+const AWAY_FLOOR = 2; // under this, the gap was a slow frame, not an absence
+const MAX_LIVE_STEP = 2; // a longer gap with the page on screen was a sleeping device
 
 // dev: the developer panel's hold on the simulation (speed 0 pauses it).
 const game = { state: null, flows: null, act: {}, dev: { speed: 1 } };
+let ui = null;
+let presence = null;
+let last = 0;
+let sinceSave = 0;
+let looping = false;
 
-function readSave() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function save() {
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ state: game.state, savedAt: Date.now() }));
-  } catch {
-    // Storage blocked (private mode): the game still runs, it just will not persist.
-  }
-}
-
+const save = (now = false) => store.write(game.state, now);
 const commit = (ok) => {
   if (ok) {
-    save();
+    save(true);
   }
   return ok;
 };
@@ -47,15 +41,15 @@ game.act = {
   inspect: (id) => E.inspectSector(game.state, id),
   choose: (uid, i) => {
     const res = E.resolveEvent(game.state, uid, i);
-    save();
+    save(true);
     return res;
   },
   toggle: (id) => E.togglePause(game.state, id),
   setName: (name) => {
     game.state.name = String(name).trim().slice(0, 16);
-    save();
+    save(true);
   },
-  save,
+  save: () => save(true),
   exportSave: () => encode({ state: game.state, savedAt: Date.now() }),
   importSave: (code) => {
     try {
@@ -65,7 +59,7 @@ game.act = {
       }
       game.state = E.migrate(data.state);
       ui.reset();
-      save();
+      save(true);
       return true;
     } catch {
       return false;
@@ -74,74 +68,102 @@ game.act = {
   reset: () => {
     game.state = E.newState(seed());
     ui.reset();
-    save();
+    save(true);
   },
 };
 
-const saved = readSave();
-game.state = saved ? E.migrate(saved.state) : E.newState(seed());
-const ui = createUI(document.getElementById('app'), game);
-
-if (saved && saved.savedAt) {
-  const away = (Date.now() - saved.savedAt) / 1000;
-  if (away > BACKGROUND_GAP_SECONDS) {
-    const report = E.catchUp(game.state, away);
-    game.flows = report.flows;
-    if (away > OFFLINE_REPORT_SECONDS) {
-      E.say(game.state, 'welcomeBack', { time: time(report.seconds) });
-      ui.showOffline(report);
-    }
+// Hands a stretch of absence to the engine in one piece and reports on it if it was worth reporting.
+function catchUp(seconds) {
+  const report = E.catchUp(game.state, seconds);
+  game.flows = report.flows;
+  if (seconds > OFFLINE_REPORT_SECONDS) {
+    E.say(game.state, 'welcomeBack', { time: time(report.seconds) });
+    ui.showOffline(report);
   }
+  save(true);
 }
 
-let last = performance.now();
-let sinceSave = 0;
-let awayRun = 0; // seconds already caught up in the current absence
-// The player counts as active while the page is visible and they touched it recently.
-let lastInput = -Infinity;
-for (const type of ['pointerdown', 'keydown']) {
-  addEventListener(type, () => { lastInput = performance.now(); }, { capture: true, passive: true });
-}
-const isActive = (now) => !document.hidden && now - lastInput < EVENTS_CFG.activeWindow * 1000;
 function tick() {
   const now = performance.now();
   const real = (now - last) / 1000;
-  const dt = real * game.dev.speed;
   last = now;
-  // Background tabs get throttled timers; fold the gap in as catch-up instead of one giant step.
-  // The offline limit and grace cover the whole absence, not each chunk.
-  if (real > BACKGROUND_GAP_SECONDS) {
-    game.flows = E.catchUp(game.state, dt, awayRun).flows;
-    awayRun += dt;
-  } else if (dt > 0) {
-    game.flows = E.step(game.state, dt, false, isActive(now));
-    awayRun = 0;
+  if (real > MAX_LIVE_STEP && game.dev.speed > 0) {
+    // On screen, but nothing ran for seconds: the device was asleep. That is time away.
+    catchUp(real * game.dev.speed);
+  } else {
+    const dt = real * game.dev.speed;
+    if (dt > 0) {
+      game.flows = E.step(game.state, dt, false, presence.active());
+    }
   }
   sinceSave += real;
   if (sinceSave >= BALANCE.autosaveSeconds) {
     sinceSave = 0;
     save();
   }
-  // Hidden pages keep simulating exactly as before but skip all UI work.
-  if (!document.hidden) {
-    ui.render();
-  }
+  ui.render();
 }
 
-ui.queuePendingEvents();
-
-// Exposed for debugging from the browser console.
-window.deadswitch = game;
-
-ui.render();
 // Ten ticks a second, each just after a step of the ambient animation clock, so screen updates are
 // drawn in frames that are being drawn anyway instead of adding frames of their own (ui/framerate.js).
-let due = performance.now();
+let due = 0;
 function loop() {
+  if (!looping) {
+    return;
+  }
   tick();
   due = Math.max(due + BALANCE.tickSeconds * 1000, performance.now());
   setTimeout(loop, Math.max(0, nextStep(due) + 1 - performance.now()));
 }
-setTimeout(loop, 0);
-addEventListener('visibilitychange', () => (document.hidden ? save() : ui.render()));
-addEventListener('pagehide', save);
+
+function startLoop() {
+  if (looping) {
+    return;
+  }
+  looping = true;
+  last = performance.now();
+  due = last;
+  setTimeout(loop, 0);
+}
+
+const stopLoop = () => { looping = false; };
+
+async function boot() {
+  const saved = await store.read();
+  game.state = saved && saved.state ? E.migrate(saved.state) : E.newState(seed());
+  ui = createUI(document.getElementById('app'), game);
+  // How long they were gone: whichever is later, the moment the page went away or the last write.
+  const seen = Math.max(store.lastSeen(), (saved && saved.savedAt) || 0);
+  const away = seen ? (Date.now() - seen) / 1000 : 0;
+  if (away > AWAY_FLOOR) {
+    catchUp(away);
+  }
+  presence = createPresence({
+    onLeave: () => {
+      stopLoop();
+      save(true);
+      store.flush();
+      scheduleAlerts(game.state);
+    },
+    onReturn: (awayMs) => {
+      cancelAlerts();
+      if (awayMs / 1000 > AWAY_FLOOR) {
+        catchUp(awayMs / 1000);
+      }
+      startLoop();
+      ui.render();
+    },
+  });
+  ui.queuePendingEvents();
+  ui.render();
+  if (presence.here()) {
+    startLoop();
+  }
+  // Exposed for debugging from the browser console.
+  window.deadswitch = game;
+}
+
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+boot();
