@@ -1,8 +1,8 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
-import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS } from './data.js';
+import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
-import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById } from './sim/story.js';
+import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
 
 export * from './sim/economy.js';
@@ -103,7 +103,11 @@ export function migrate(raw) {
   if (s.raid && !FACTIONS[s.raid.faction]) {
     s.raid = null;
   }
-  s.taught = Array.isArray(raw.taught) ? raw.taught.filter((x) => typeof x === 'string') : [];
+  // A save from before lessons existed belongs to someone who already knows how to play: only the
+  // systems they have not reached yet are still worth explaining.
+  s.taught = Array.isArray(raw.taught)
+    ? raw.taught.filter((x) => typeof x === 'string')
+    : LESSONS.filter((l) => reached(s, l.when)).map((l) => l.id);
   s.rolls = {};
   for (const [k, n] of Object.entries(raw.rolls && typeof raw.rolls === 'object' ? raw.rolls : {})) {
     if (Number.isFinite(n)) s.rolls[k] = Math.max(0, Math.floor(n));

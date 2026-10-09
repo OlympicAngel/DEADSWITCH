@@ -262,7 +262,7 @@ export function updateDomain(s, ui, refs, flows) {
     if (atk) {
       const p = E.raidChance(s, atk);
       setCls(refs.raid, 'raid-mini odds-' + chanceClass(p));
-      putHtml(refs.raid, `${icon('alert')}<span>${atk.siege ? 'Siege' : 'Raid'} in <b>${clock(atk.remaining)}</b></span><span>Strength <b>${num(atk.strength)}</b></span><span>Hold <b>${pct(p)}</b></span>`);
+      putHtml(refs.raid, `${icon('alert')}<span>${esc(E.attackName(atk))} in <b>${clock(atk.remaining)}</b></span><span>Strength <b>${num(atk.strength)}</b></span><span>Hold <b>${pct(p)}</b></span>`);
     }
   }
   for (const c of refs.cards) {

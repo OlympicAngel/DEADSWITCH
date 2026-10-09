@@ -19,6 +19,10 @@
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
+  "shortcuts": [
+    { "name": "War room", "short_name": "Command", "url": "./?go=command", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "The wasteland", "short_name": "Map", "url": "./?go=map", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ],
   "screenshots": [
     { "src": "icons/shot-command.jpg", "sizes": "390x844", "type": "image/jpeg", "form_factor": "narrow", "label": "The war room" },
     { "src": "icons/shot-map.jpg", "sizes": "390x844", "type": "image/jpeg", "form_factor": "narrow", "label": "The wasteland" }

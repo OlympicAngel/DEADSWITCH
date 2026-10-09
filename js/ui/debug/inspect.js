@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, SECTORS } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS } from '../../data.js';
 
 const n2 = (v) => (Number.isFinite(v) ? v.toFixed(2) : '-');
 const pc = (v) => `${(v * 100).toFixed(1)}%`;
@@ -230,9 +230,15 @@ function screen(s, id) {
       ['directive', () => (E.currentDirective(s) ? `${s.directive}: ${E.currentDirective(s).text}` : 'all done')],
       ['events seen', () => s.recentEvents.join(' ') || '-'],
       ['clan stances', () => Object.keys(FACTIONS).map((f) => `${f}:${E.stanceList(s, f).length}`).join(' ')],
+      ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
+      ['day seed / rolls', () => `${E.daySeed(s)} · ${Object.entries(s.rolls).map(([k, n]) => `${k}:${n}`).join(' ') || 'none'}`],
+      ['next raid / assault roll', () => `${E.peek(s, 'raid').toFixed(3)} / ${E.peek(s, 'assault').toFixed(3)}`],
     ],
     json: () => ({ screen: id }),
-    actions: [],
+    actions: [
+      ['forget lessons', (g) => { g.state.taught = []; }],
+      ['teach nothing', (g) => { g.state.taught = LESSONS.map((l) => l.id); }],
+    ],
   };
 }
 

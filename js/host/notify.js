@@ -88,6 +88,22 @@ export function scheduleAlerts(s) {
     .catch(() => {});
 }
 
+// Android has no home-screen widget for a web app, but it does have the icon badge: how many things
+// are waiting on the commander, visible without opening anything.
+export function setBadge(s) {
+  const n = s.events.length + E.attacks(s).length;
+  try {
+    if (n) navigator.setAppBadge?.(n);
+    else navigator.clearAppBadge?.();
+  } catch { /* unsupported, or not installed */ }
+}
+
+export function clearBadge() {
+  try {
+    navigator.clearAppBadge?.();
+  } catch { /* nothing to clear */ }
+}
+
 export function cancelAlerts() {
   timers.forEach(clearTimeout);
   timers = [];

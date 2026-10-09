@@ -8,7 +8,7 @@ import { nextStep } from './ui/framerate.js';
 import { time } from './format.js';
 import * as store from './host/store.js';
 import { createPresence } from './host/presence.js';
-import { scheduleAlerts, cancelAlerts } from './host/notify.js';
+import { scheduleAlerts, cancelAlerts, setBadge, clearBadge } from './host/notify.js';
 
 const OFFLINE_REPORT_SECONDS = 60; // a shorter absence is caught up quietly
 const AWAY_FLOOR = 2; // under this, the gap was a slow frame, not an absence
@@ -144,9 +144,11 @@ async function boot() {
       save(true);
       store.flush();
       scheduleAlerts(game.state);
+      setBadge(game.state);
     },
     onReturn: (awayMs) => {
       cancelAlerts();
+      clearBadge();
       if (awayMs / 1000 > AWAY_FLOOR) {
         catchUp(awayMs / 1000);
       }
@@ -154,6 +156,11 @@ async function boot() {
       ui.render();
     },
   });
+  // The home-screen shortcuts open straight onto a screen.
+  const go = new URLSearchParams(location.search).get('go');
+  if (go) {
+    ui.go(go);
+  }
   ui.queuePendingEvents();
   ui.render();
   if (presence.here()) {
