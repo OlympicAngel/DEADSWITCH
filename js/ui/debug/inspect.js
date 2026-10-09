@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, AGGR, SECTORS } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, SECTORS } from '../../data.js';
 
 const n2 = (v) => (Number.isFinite(v) ? v.toFixed(2) : '-');
 const pc = (v) => `${(v * 100).toFixed(1)}%`;
@@ -173,6 +173,10 @@ function screen(s, id) {
       ['next raid in', () => secs(s.raidTimer)],
       ['next assault in', () => secs(s.assaultTimer)],
       ['pending orders', () => s.events.length],
+      ['net income /s', () => Object.entries(E.netRates(s)).map(([r, v]) => `${r} ${v.toFixed(2)}`).join(' ')],
+      ['caps', () => JSON.stringify(E.caps(s))],
+      ['sectors held', () => `${s.sectors.length - 1} · align ${Math.round(s.align)}`],
+      ['event drain', () => JSON.stringify(E.eventDrain(s))],
       ['directive', () => (E.currentDirective(s) ? `${s.directive}: ${E.currentDirective(s).text}` : 'all done')],
       ['events seen', () => s.recentEvents.join(' ') || '-'],
     ],
@@ -205,5 +209,3 @@ export function worldRows(s) {
     weight: x.faction && !s.sectors.includes(x.id) ? 1 + E.aggression(s, x.id) : 0,
   }));
 }
-
-export const AGGR_BOUNDS = AGGR;

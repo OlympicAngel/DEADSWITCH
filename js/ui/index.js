@@ -126,18 +126,17 @@ export function createUI(root, game) {
   }
 
   root.addEventListener('click', (e) => {
+    // Whatever was tapped is now the thing the debugger inspects, button or not.
+    const card = e.target.closest('[data-card], [data-item]');
+    if (card && !card.closest('dialog')) {
+      if (card.dataset.card) setFocus('building', card.dataset.card);
+      else setFocus('item', card.dataset.item);
+    }
     const t = e.target.closest('[data-act], [data-nav], [data-go], [data-inner], [data-mode], [data-sector], [data-req]');
     if (!t || t.disabled || t.closest('dialog')) {
       return;
     }
     const s = game.state;
-    // Whatever was tapped is now the thing the debugger inspects.
-    const card = e.target.closest('[data-card], [data-item]');
-    if (card && card.dataset.card) {
-      setFocus('building', card.dataset.card);
-    } else if (card) {
-      setFocus('item', card.dataset.item);
-    }
     // A locked bottom-nav item does nothing.
     if (t.dataset.nav && t.classList.contains('locked')) {
       return;
