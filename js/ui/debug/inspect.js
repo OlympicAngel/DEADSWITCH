@@ -232,6 +232,7 @@ function screen(s, id) {
       ['clan stances', () => Object.keys(FACTIONS).map((f) => `${f}:${E.stanceList(s, f).length}`).join(' ')],
       ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
       ['scripted', () => `${TUTORIAL.target} def ${E.sectorDefense(s, E.sectorById(TUTORIAL.target))} · retake ${['armed', 'inbound', 'done'][s.scripted.retake || 0]}`],
+      ['frontier leaks', () => Object.keys(FACTIONS).map((f) => `${f}:${E.earlyTargets(s, f).filter((id) => E.sectorOpen(s, E.sectorById(id))).join('/') || '-'}`).join(' ')],
       ['day seed / rolls', () => `${E.daySeed(s)} · ${Object.entries(s.rolls).map(([k, n]) => `${k}:${n}`).join(' ') || 'none'}`],
       ['next raid / assault roll', () => `${E.peek(s, 'raid').toFixed(3)} / ${E.peek(s, 'assault').toFixed(3)}`],
     ],

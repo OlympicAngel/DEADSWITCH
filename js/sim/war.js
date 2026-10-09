@@ -16,6 +16,30 @@ export function chapterOpen(s, chapterId) {
   return level(s, 'core') >= chapterOf(chapterId).core;
 }
 
+/** The AI Core level a sector needs: its own hard gate, or its chapter's (data/world.js). */
+export const sectorGate = (sec) => sec.core ?? chapterOf(sec.chapter).core;
+
+// The weakest sectors of a faction that border ground we hold, which is what leaks early.
+// Sorted by defense, then id, so the set only moves when the front does.
+export function earlyTargets(s, faction) {
+  return SECTORS
+    .filter((x) => x.faction === faction && x.core === undefined
+      && !s.sectors.includes(x.id) && x.links.some((l) => s.sectors.includes(l)))
+    .sort((a, b) => a.defense - b.defense || (a.id < b.id ? -1 : 1))
+    .slice(0, MAP.earlyOpen)
+    .map((x) => x.id);
+}
+
+/** A sector is open when its gate is met, or when its clan's frontier is already leaking it. */
+export function sectorOpen(s, sec) {
+  const gate = sectorGate(sec);
+  const core = level(s, 'core');
+  if (core >= gate) {
+    return true;
+  }
+  return core >= gate - MAP.earlyLead && earlyTargets(s, sec.faction).includes(sec.id);
+}
+
 // ---------- operations ----------
 
 export function opCost(sec) {
@@ -60,7 +84,7 @@ export function advanceNodes(s, dt) {
   const grow = (NODES.growthPerHour * dt) / 3600;
   const profiles = clanProfiles(s);
   for (const sec of SECTORS) {
-    if (sec.faction && !s.sectors.includes(sec.id) && chapterOpen(s, sec.chapter) && nodeStrength(s, sec.id) < NODES.strengthMax) {
+    if (sec.faction && !s.sectors.includes(sec.id) && sectorOpen(s, sec) && nodeStrength(s, sec.id) < NODES.strengthMax) {
       shiftStrength(s, sec.id, grow * profiles[sec.faction].growth);
     }
   }
@@ -151,7 +175,7 @@ export function sectorStatus(s, sec) {
     return 'far';
   }
   // Ground I have held once is always mine to take back, whatever chapter its clan belongs to.
-  if (!chapterOpen(s, sec.chapter) && !s.taken.includes(sec.id)) {
+  if (!sectorOpen(s, sec) && !s.taken.includes(sec.id)) {
     return 'locked';
   }
   return 'target';
@@ -433,7 +457,7 @@ export function borders(s, withLocked = false) {
     for (const l of SECTOR_BY_ID[id].links) {
       const from = SECTOR_BY_ID[l];
       if (!from.faction || s.sectors.includes(l)) continue;
-      const locked = !chapterOpen(s, from.chapter);
+      const locked = !sectorOpen(s, from);
       if (!locked || withLocked) out.push({ from: l, target: id, locked });
     }
   }
@@ -443,7 +467,7 @@ export function borders(s, withLocked = false) {
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
   const own = sec.defense * nodeStrength(s, fromId) * NODES.assaultShare * clanProfile(s, sec.faction).strength;
-  return Math.ceil(chapterOpen(s, sec.chapter) ? own : Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
+  return Math.ceil(sectorOpen(s, sec) ? own : Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
 }
 
 /** True when an inbound assault is strong enough to take its target on the first breach. */
@@ -480,7 +504,7 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
     p = all.find((b) => (r -= w(b)) <= 0) || all[all.length - 1];
   }
   const from = SECTOR_BY_ID[p.from];
-  const locked = !chapterOpen(s, from.chapter);
+  const locked = !sectorOpen(s, from);
   const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(delay) }, 'bad');

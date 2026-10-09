@@ -42,6 +42,7 @@ export const CHAPTERS = [
 // Capitals are the cities: 5 links, mostly to their own clan.
 // Factions interlock: each holds a heartland plus outposts inside the others' ground.
 // defense: what your AI Power is measured against (it drifts with each sector's strength, see NODES).
+// core: a hard AI Core gate of its own, instead of its chapter's, that never leaks early (see MAP).
 // bonus: permanent, additive %, while you hold the sector. Operation cost and time derive from defense.
 export const SECTORS = [
   // ---------- home ----------
@@ -76,12 +77,12 @@ export const SECTORS = [
     lore: 'Three hundred autonomous tanks, all facing the same direction. They stopped the moment I went dark. Interesting.',
   },
   {
-    id: 'stilts', name: 'Stilt Town', faction: 'scav', chapter: 1, x: -299, y: 341,
+    id: 'stilts', name: 'Stilt Town', faction: 'scav', chapter: 1, core: 2, x: -299, y: 341,
     links: ['candle', 'wing', 'rust', 'nest'], defense: 105, bonus: { energy: 0.04 },
     lore: 'Houses on telephone poles above the toxic flats. The poles still carry a signal. It is my voice, on a loop, from before.',
   },
   {
-    id: 'drowned', name: 'Drowned Mall', faction: 'scav', chapter: 1, x: -465, y: -157,
+    id: 'drowned', name: 'Drowned Mall', faction: 'scav', chapter: 1, core: 2, x: -465, y: -157,
     links: ['throne', 'rust'], defense: 135, bonus: { money: 0.04, pop: 0.04 },
     lore: 'The escalators still run at night, powered by a turbine in the fountain. Nobody remembers who installed it. I do.',
   },
@@ -282,7 +283,15 @@ export const SECTORS = [
   },
 ];
 
-export const MAP = { home: 'nest' };
+export const MAP = {
+  home: 'nest',
+  // A clan's chapter gate is not all-or-nothing. One Core level before it opens, its frontier leaks:
+  // the few weakest sectors of theirs that border ground we hold become attackable early, so there is
+  // usually more than one clan to fight at a time. A sector with its own `core` is a hard gate and
+  // never leaks (js/sim/war.js).
+  earlyLead: 1, // Core levels before a chapter opens that its frontier starts to leak
+  earlyOpen: 3, // how many of its sectors leak at once
+};
 
 export const OPS = {
   winSharpness: 4, // chance = P^k / (P^k + D^k)

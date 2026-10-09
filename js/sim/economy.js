@@ -207,7 +207,9 @@ export function buildingCost(s, b) {
 }
 
 export function buildTime(s, b) {
-  return b.time * Math.pow(b.timeGrowth, level(s, b.id));
+  const t = b.time * Math.pow(b.timeGrowth, level(s, b.id));
+  // The opening runs fast: at AI Core 1 there is nothing to learn from watching a timer.
+  return level(s, 'core') > 1 ? t : t / BALANCE.earlyBuildSpeed;
 }
 
 export function shopDiscount(s, item) {

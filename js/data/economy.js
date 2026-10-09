@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -23,6 +23,7 @@ export const BALANCE = {
   baseEnergyCap: 150,
   basePopCap: 20,
   levelCapPerCoreLevel: 5, // non-core buildings max level = core level * this
+  earlyBuildSpeed: 3, // build times are divided by this while the AI Core is still level 1
   priceMult: 1.8, // every building, unit and operation price
   growthMult: 1.35, // stretches each per-level / per-unit growth: g -> 1 + (g - 1) * growthMult
   economyPriceMult: { money: 1.5 }, // extra multiplier on one resource's share of Economy building prices
