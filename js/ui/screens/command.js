@@ -1,6 +1,6 @@
 // Command: the war room. Threat reactor in the middle, live feeds for every front around it.
 import {
-  FACTIONS, FACTORS, RANKS, RAIDS, NODES, CLANS, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
+  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
@@ -8,7 +8,7 @@ import { icon, labeled } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
 import { put, putHtml, setCls, setData, setW, setAttr, setStyle } from '../dom.js';
 import { onScreen } from '../onscreen.js';
-import { miniMap } from '../minimap.js';
+import { mapBackdrop } from '../minimap.js';
 
 const R = 160; // reactor centre in its 320 viewBox
 
@@ -40,7 +40,6 @@ export function renderCommand() {
     </button>`;
   return `
     <div class="screen command">
-      <div class="condition" data-cond></div>
       <section class="reactor" data-tip="threat">
         <svg class="reactor-svg" viewBox="0 0 320 320" aria-hidden="true">
           <defs>
@@ -76,7 +75,6 @@ export function renderCommand() {
         <section class="panel half" data-panel="build"></section>
         <section class="panel" data-panel="events"></section>
         <section class="panel" data-panel="directive"></section>
-        <section class="panel" data-panel="clans"></section>
         <section class="panel" data-panel="effects"></section>
         <section class="panel feed" data-panel="feed"></section>
       </div>
@@ -86,7 +84,7 @@ export function renderCommand() {
 export function bindCommand(panel) {
   const q = (sel) => panel.querySelector(sel);
   return {
-    cond: q('[data-cond]'), threat: q('[data-threat]'), rank: q('[data-rank]'), next: q('[data-next]'),
+    threat: q('[data-threat]'), rank: q('[data-rank]'), next: q('[data-next]'),
     ring: q('[data-rankring]'), alignArc: q('[data-alignarc]'),
     sats: Object.fromEntries([...panel.querySelectorAll('[data-sat]')].map((el) => [el.dataset.sat, el])),
     panels: Object.fromEntries([...panel.querySelectorAll('[data-panel]')].map((el) => [el.dataset.panel, el])),
@@ -104,26 +102,7 @@ function slot(refs, id, key, html) {
   return el;
 }
 
-export function condition(s) {
-  const after = s.events.some((x) => E.eventById(x.id).aftermath);
-  const atk = E.nextAttack(s);
-  if (atk && E.raidChance(s, atk) < 0.5) return ['red', 'Condition red', 'Attack inbound'];
-  if (after) return ['red', 'Damage control', 'Damage reports pending'];
-  if (atk) return ['amber', 'Condition amber', 'Attack inbound'];
-  if (s.events.length) return ['amber', 'Orders pending', 'Transmissions waiting'];
-  if (E.level(s, 'core') < RAIDS.startAtCore) return ['green', 'Condition green', 'No hostiles'];
-  return ['green', 'Condition green', 'Perimeter secure'];
-}
-
 export function updateCommand(s, ui, refs) {
-  const [lvl, title, sub] = condition(s);
-  const ckey = lvl + title;
-  if (refs.keys.cond !== ckey) {
-    refs.keys.cond = ckey;
-    setCls(refs.cond, 'condition cond-' + lvl);
-    refs.cond.innerHTML = `<span class="pip"></span><b>${title}</b><span>${sub}</span>`;
-  }
-
   const f = E.factors(s);
   const t = E.threat(s, f);
   const ri = E.rankIndex(t);
@@ -150,7 +129,6 @@ export function updateCommand(s, ui, refs) {
   if (on('build')) buildPanel(s, refs);
   if (on('events')) eventsPanel(s, refs);
   if (on('directive')) directivePanel(s, refs);
-  if (on('clans')) clansPanel(s, refs);
   if (on('effects')) effectsPanel(s, refs);
   if (on('feed')) feedPanel(s, refs);
 }
@@ -169,15 +147,19 @@ function raidPanel(s, refs) {
   }
   const fac = FACTIONS[raid.faction];
   stackPanel(s, refs);
-  const el = slot(refs, 'raid', raid.faction + raid.strength + (raid.assault ? raid.target + E.breaches(s, raid.target) : ''), `
+  // Where it is coming from and what it is coming for, drawn behind the panel.
+  const place = E.attackPlace(s, raid);
+  const sub = raid.assault
+    ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches`
+    : place ? `${fac.name} · out of ${esc(E.sectorById(place[0]).name)}` : fac.name;
+  const el = slot(refs, 'raid', raid.faction + raid.strength + (place || []).join() + (raid.assault ? E.breaches(s, raid.target) : ''), `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
-    ${raid.assault ? miniMap(s, [raid.from, raid.target], { beam: [raid.from, raid.target], label: false, cls: 'strip' }) : ''}
+    ${place ? mapBackdrop(s, [place[1], place[0]], { beam: place, cls: 'panel' }) : ''}
     <div class="inc-main">
-      ${raid.assault ? '' : `<span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>`}
-      <div><b>${E.attackName(raid)}</b><small>${raid.assault ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches` : fac.name}</small></div>
+      ${place ? '' : `<span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>`}
+      <div><b>${E.attackName(raid)}</b><small>${sub}</small></div>
       <div class="count" data-count></div>
     </div>
-    ${raid.assault ? `<div class="overrun-warn" data-over hidden>${icon('skull')}<span>Overrun: ${esc(E.sectorById(raid.target).name)} falls on the first breach</span></div>` : ''}
     <div class="bars">
       <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
       <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b>${num(raid.strength)}</b></div>
@@ -189,8 +171,7 @@ function raidPanel(s, refs) {
   const max = Math.max(def, raid.strength, 1);
   setData(el, 'level', p < 0.5 ? 'danger' : 'warn');
   el.classList.toggle('imminent', raid.remaining < 60);
-  const over = el.querySelector('[data-over]');
-  if (over) over.hidden = !E.overrunRisk(s, raid);
+  el.classList.toggle('has-map', !!place);
   put(el.querySelector('[data-count]'), clock(raid.remaining));
   setW(el.querySelector('[data-dbar]'), pct(def / max));
   setW(el.querySelector('[data-sbar]'), pct(raid.strength / max));
@@ -221,7 +202,7 @@ function opPanel(s, refs) {
     slot(refs, 'op', 'idle' + any, `
       <header>${icon('power')}Outgoing</header>
       <p class="idle">${any ? 'No operation running' : 'No targets in range'}</p>
-      <button class="btn ghost small" data-go="map:theater">${icon('map')}${any ? 'Targets' : 'Map'}</button>`);
+      <button class="btn ghost small" data-go="map">${icon('map')}${any ? 'Targets' : 'Map'}</button>`);
     return;
   }
   const sec = E.sectorById(s.op.sector);
@@ -261,13 +242,18 @@ function eventsPanel(s, refs) {
     slot(refs, 'events', 'none', `<header>${icon('message')}Transmissions</header><p class="idle">No orders pending.</p>`);
     return;
   }
-  const el = slot(refs, 'events', key, `<header>${icon('message')}Transmissions<span class="count-badge">${s.events.length}</span></header>
+  // The order closest to its deadline sets the scene behind the list.
+  const lead = s.events.reduce((a, x) => (x.left < a.left ? x : a));
+  const where = [(lead.params || {}).held, (lead.params || {}).node].filter((id) => E.sectorById(id));
+  const el = slot(refs, 'events', key + where.join(), `<header>${icon('message')}Transmissions<span class="count-badge">${s.events.length}</span></header>
+    ${where.length ? mapBackdrop(s, where, { cls: 'panel' }) : ''}
     ${s.events.map((x) => {
       const ev = E.eventById(x.id);
       return `<button class="tx ${ev.aftermath || ev.urgent ? 'crisis' : ''}" data-act="event" data-uid="${x.uid}">
         ${icon(ev.aftermath ? 'fire' : 'message')}<span><b>${esc(E.fillText(x, ev.title))}</b><small>${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Decision required'}</small></span>
         <span class="tx-time" data-left="${x.uid}"></span></button>`;
     }).join('')}`);
+  el.classList.toggle('has-map', !!where.length);
   for (const x of s.events) {
     const t = el.querySelector(`[data-left="${x.uid}"]`);
     putHtml(t, `${icon('hourglass')}${clock(x.left)}`);
@@ -291,27 +277,6 @@ function directivePanel(s, refs) {
   setW(el.querySelector('[data-b]'), pct(Math.min(1, have / need)));
 }
 
-// What each clan is doing about me: the stances their profile currently adds up to (sim/clans.js).
-function clansPanel(s, refs) {
-  const live = Object.keys(FACTIONS).filter((f) => E.clanAwake(s, f));
-  const sets = live.map((f) => [f, E.stanceList(s, f)]);
-  const el = slot(refs, 'clans', E.level(s, 'core') < CLANS.startAtCore ? '' : sets.map(([f, st]) => f + st.map((x) => x.id).join()).join('|'),
-    `<header>${icon('military')}Clans</header>
-     ${sets.map(([f, stances]) => {
-    const fac = FACTIONS[f];
-    const own = SECTORS.filter((x) => x.faction === f);
-    const held = own.filter((x) => s.sectors.includes(x.id)).length;
-    const capital = own.find((x) => x.boss);
-    return `<div class="clan" style="--fc:${fac.color}" data-clan="${f}">
-        <div class="clan-top"><span class="fac-ico sm">${icon(fac.icon)}</span><b>${fac.short}</b>
-          <small>${held}/${own.length} sectors${capital && s.sectors.includes(capital.id) ? ' · capital taken' : ''}</small></div>
-        ${stances.length
-      ? `<div class="stances">${stances.map((x) => `<span class="stance" data-tip="text" data-tip-text="${esc(x.desc)}">${icon(x.icon)}${esc(x.name)}</span>`).join('')}</div>`
-      : '<p class="idle">No change in posture.</p>'}</div>`;
-  }).join('')}`);
-  el.hidden = !live.length || E.level(s, 'core') < CLANS.startAtCore;
-}
-
 function effectsPanel(s, refs) {
   const g = s.grudges || [];
   const key = s.buffs.map((b) => b.label).join(',') + '|' + g.map((x) => x.faction + x.left + x.mult).join(',');
@@ -327,6 +292,6 @@ function effectsPanel(s, refs) {
 
 function feedPanel(s, refs) {
   const key = 'f' + s.lineSeq;
-  slot(refs, 'feed', key, `<header>${icon('message')}System feed</header>
+  slot(refs, 'feed', key, `<header>${icon('message')}System feed<button class="btn ghost small" data-act="archive">${icon('book')}Archive</button></header>
     <ol>${s.log.slice(-6).reverse().map((l) => `<li class="tone-${l.tone}"><time>${time(l.t)}</time><span>${esc(l.text)}</span></li>`).join('')}</ol>`);
 }

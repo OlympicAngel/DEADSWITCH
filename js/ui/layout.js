@@ -35,13 +35,8 @@ export const DOMAINS = {
       { id: 'tech', name: 'Tech', icon: 'lab', unlocker: 'lab', shop: 'tech' },
     ],
   },
-  map: {
-    title: 'Map', factors: ['power'],
-    tabs: [
-      { id: 'theater', name: 'Theater', icon: 'map' },
-      { id: 'archive', name: 'Archive', icon: 'book' },
-    ],
-  },
+  // The map is one screen, so it has no inner tabs; the archive is a dialog off Command.
+  map: { title: 'Map', factors: ['power'], tabs: [{ id: 'theater', name: 'Theater', icon: 'map' }] },
 };
 
 // open: usable now. available: can be built now. locked: requirement not met.

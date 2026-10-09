@@ -1,12 +1,11 @@
 // Map: an open-world theater you drag around (the Nest at the centre), a briefing sheet, and the archive.
 import {
-  SECTORS, FACTIONS, MAP, CHAPTERS, CHAPTER_TEXT, OPS, NODES, ENDINGS,
+  SECTORS, FACTIONS, MAP, CHAPTERS, OPS, NODES,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
 import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } from '../common.js';
-import { sortedTabs } from '../layout.js';
 import { put, setCls, setW } from '../dom.js';
 
 const P = (x) => ({ x: x.x, y: x.y });
@@ -94,8 +93,8 @@ function setZoom(view, world, z, cx, cy) {
   applyPan(view, world);
 }
 
-// Centres a sector in the map view (above the briefing sheet when it is open).
-export function centerOn(root, id) {
+// Centres a sector in the map view (above the briefing sheet when it is open), gliding there.
+export function centerOn(root, id, animate = true) {
   const view = root.querySelector('[data-mapview]');
   const world = root.querySelector('[data-world]');
   const sec = E.sectorById(id);
@@ -105,6 +104,12 @@ export function centerOn(root, id) {
   const room = sheet ? Math.max(120, sheet.getBoundingClientRect().top - vr.top) : view.clientHeight;
   const p = px(sec);
   pan = { x: view.clientWidth / 2 - p.x * zoom, y: Math.min(view.clientHeight, room) / 2 - p.y * zoom };
+  // Glide there, so it is clear the map moved rather than cut. Dragging never gets the transition.
+  if (animate) {
+    world.classList.add('gliding');
+    world.addEventListener('transitionend', () => world.classList.remove('gliding'), { once: true });
+    void world.offsetWidth; // the browser has to see where the map is now, or there is nothing to glide from
+  }
   applyPan(view, world);
 }
 
@@ -115,7 +120,7 @@ function bindPan(root) {
   if (!view || !world) return;
   if (!pan) {
     pan = { x: 0, y: 0 };
-    centerOn(root, MAP.home);
+    centerOn(root, MAP.home, false);
   } else {
     applyPan(view, world);
   }
@@ -196,9 +201,6 @@ export function defaultSector(s) {
 }
 
 export function renderMapScreen(s, ui) {
-  const tabs = sortedTabs(s, 'map');
-  const inner = ui.inner.map || 'theater';
-  const bar = tabs.map(({ t }) => `<button class="seg" data-inner="${t.id}" aria-selected="${t.id === inner}">${icon(t.icon)}<span>${t.name}</span></button>`).join('');
   return `
     <div class="screen mapscreen">
       <header class="screen-head">
@@ -206,10 +208,16 @@ export function renderMapScreen(s, ui) {
         <div class="stats"><div class="stat stat-power" data-tip="factor:power">${icon('power')}<b data-factor="power"></b><small>Power</small></div>
         <div class="stat"><b>${s.sectors.length - 1}/${SECTORS.length - 1}</b><small>Sectors</small></div></div>
       </header>
-      <nav class="segs" role="tablist">${bar}</nav>
       ${s.op ? `<button class="op-banner" data-sector="${s.op.sector}">${icon('power')}<span>Attacking <b>${E.sectorById(s.op.sector).name}</b></span><b data-opbanner></b><i class="op-banner-bar" data-opbannerbar></i></button>` : ''}
-      ${inner === 'archive' ? renderArchive(s) : renderTheater(s, ui)}
+      ${renderTheater(s, ui)}
     </div>`;
+}
+
+/** The sector the map should open on while something is happening: an attack first, then our strike. */
+export function liveSector(s) {
+  const atk = E.attacks(s).map((a) => E.attackPlace(s, a)).find(Boolean);
+  if (atk) return atk[1];
+  return s.op ? s.op.sector : null;
 }
 
 /** Every sector the player can see: held territory plus REVEAL_DEPTH rings around it. */
@@ -240,14 +248,17 @@ function renderTheater(s, ui) {
       }
     }
   }
-  // An incoming assault is drawn like your own strike, in the attacking clan's colour.
-  const atk = s.assault && isShown(s.assault.from) && isShown(s.assault.target)
-    ? { from: E.sectorById(s.assault.from), target: E.sectorById(s.assault.target), color: FACTIONS[s.assault.faction].color }
-    : null;
+  // Every inbound attack that still has a place is drawn like your own strike, in its clan's colour.
+  const inbound = E.attacks(s).map((a) => {
+    const place = E.attackPlace(s, a);
+    return place && isShown(place[0]) && isShown(place[1])
+      ? { from: E.sectorById(place[0]), target: E.sectorById(place[1]), color: FACTIONS[a.faction].color } : null;
+  }).filter(Boolean);
+  const atk = inbound[0] || null;
   // Your strike comes from every held sector linked to the target.
   const opTarget = s.op ? E.sectorById(s.op.sector) : null;
   const beams = (opTarget ? opTarget.links.filter((l) => s.sectors.includes(l)).map((id) => beam(P(E.sectorById(id)), P(opTarget), 'var(--warn)')).join('') : '')
-    + (atk ? beam(P(atk.from), P(atk.target), atk.color) : '');
+    + inbound.map((a) => beam(P(a.from), P(a.target), a.color)).join('');
   // Pulses and the reticle ring live in small HTML layers over/under the SVG, animated with
   // transform/opacity on the GPU; animating them inside the SVG repaints the whole map every frame.
   const W = WORLD.w;
@@ -282,7 +293,7 @@ function renderTheater(s, ui) {
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
         <text class="name" dy="${r + 34}">${esc(label)}</text>
-        ${known && st !== 'owned' ? defLabel(s, x, r) : ''}
+        ${known && st !== 'owned' ? defLabel(s, x, r) + stancePin(s, x, r) : ''}
         ${st === 'owned' && E.breaches(s, x.id) ? `<text class="def breach" dy="${-r - 10}">${E.breaches(s, x.id)}/${NODES.breachesToFall}</text>` : ''}
       </g>`;
   }).join('');
@@ -326,6 +337,14 @@ function retTimer(p, attr) {
   return `<text class="ret-time" x="${p.x}" y="${p.y - 96}" ${attr}></text>`;
 }
 
+// What this sector's clan is doing, as one icon pinned to its hex (sim/clans.js names them).
+function stancePin(s, x, r) {
+  const st = x.faction && E.stanceList(s, x.faction)[0];
+  if (!st) return '';
+  return `<g class="stance-pin" transform="translate(${(r * 0.92).toFixed(0)},${(-r * 0.92).toFixed(0)})">
+    <circle r="15"/><use href="#i-${st.icon}" x="-9" y="-9" width="18" height="18"/></g>`;
+}
+
 // Defense above an enemy sector: ▲ fortified by approaches, ↑/↓ stronger/weaker than its base.
 function defLabel(s, x, r) {
   const fort = E.flank(s, x).bonus;
@@ -345,7 +364,7 @@ function strengthRow(s, sec) {
 function postureRow(s, sec) {
   const stances = sec.faction ? E.stanceList(s, sec.faction) : [];
   if (!stances.length) return '';
-  return `<div class="r" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[sec.faction].icon)}${esc(FACTIONS[sec.faction].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>`;
+  return `<div class="r" data-clan="${sec.faction}" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[sec.faction].icon)}${esc(FACTIONS[sec.faction].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>`;
 }
 
 // Clan support: linked sectors of the same faction that still stand.
@@ -458,34 +477,4 @@ export function updateMapScreen(s, ui, refs) {
   if (refs.opbar && s.op) {
     setW(refs.opbar, pct(1 - s.op.remaining / s.op.total));
   }
-}
-
-// ---------- archive ----------
-
-function renderArchive(s) {
-  const chapters = CHAPTERS.filter((c) => s.chapter >= c.id).map((c) => {
-    const t = CHAPTER_TEXT[c.id];
-    const fac = FACTIONS[c.faction];
-    return `<article class="panel chapter" style="--fc:${fac.color}"><header>${icon(fac.icon)}${t.kicker}</header><h3>${c.title}</h3>${t.lines.map((l) => `<p>${esc(l)}</p>`).join('')}</article>`;
-  }).join('');
-  const sealed = CHAPTERS.find((c) => s.chapter < c.id);
-  const ending = s.ending ? `<article class="panel chapter ending"><header>${icon('spark')}Epilogue</header><h3>${ENDINGS[s.ending].title}</h3>${ENDINGS[s.ending].lines.map((l) => `<p>${esc(l)}</p>`).join('')}<p class="muted">${esc(ENDINGS.after)}</p></article>` : '';
-  const frags = SECTORS.filter((x) => s.sectors.includes(x.id));
-  const st = s.stats;
-  const rec = [
-    ['map', 'Sectors held', `${s.sectors.length - 1} / ${SECTORS.length - 1}`],
-    ['power', 'Operations won / lost', `${st.opsWon} / ${st.opsLost}`],
-    ['defense', 'Raids repelled / suffered', `${st.raidsWon} / ${st.raidsLost}`],
-    ['message', 'Orders given / missed', `${st.events - (st.expired || 0)} / ${st.expired || 0}`],
-    ['heart', 'Alignment', `${E.alignmentLabel(s.align)} (${s.align > 0 ? '+' : ''}${Math.round(s.align)})`],
-  ].map(([ic, k, v]) => `<div class="r"><span>${icon(ic)}${k}</span><b>${v}</b></div>`).join('');
-  return `
-    <div class="archive">
-      ${ending}${chapters}
-      ${sealed ? `<article class="panel chapter sealed"><header>${icon('lock')}${CHAPTER_TEXT[sealed.id].kicker}</header><p class="muted">Sealed. Opens at ${icon('core')}AI Core Lv ${sealed.core}.</p></article>` : ''}
-      <section class="panel"><header>${icon('book')}Memory fragments<span class="count-badge">${frags.length}/${SECTORS.length}</span></header>
-        <ol class="memories">${frags.map((x) => `<li style="--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}"><b>${x.name}</b><span>${esc(x.lore)}</span></li>`).join('')}</ol></section>
-      <section class="panel"><header>${icon('check')}Service record</header><div class="rows">${rec}</div></section>
-      <section class="panel feed"><header>${icon('message')}System log</header><ol class="log"></ol></section>
-    </div>`;
 }

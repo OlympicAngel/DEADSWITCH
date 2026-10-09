@@ -1,6 +1,6 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
-  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, BY_ID, SHOP_TABS, NODES,
+  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, BY_ID, SHOP_TABS, SECTORS, NODES,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
@@ -66,6 +66,7 @@ export function createModals(dialog, game, onChange) {
     if (!dialog.open) {
       dialog.showModal();
     }
+    dialog.scrollTop = 0; // showModal focuses the last button, which would scroll a long dialog past its title
   }
 
   function close() {
@@ -280,7 +281,8 @@ export function createModals(dialog, game, onChange) {
         ${r.assault && r.strengthAfter ? `<div class="r"><span>${icon('trend')}${esc(E.sectorById(r.from).name)} strength</span><b class="${r.win ? 'good-t' : 'bad-t'}">×${r.strengthAfter.toFixed(2)}</b></div>` : ''}
         ${!r.win && r.assault && !r.plundered ? `<div class="r"><span>${icon('map')}${place}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}
         ${lossRows(r, 'strength')}`,
-      note: r.win ? '' : r.overrun ? `${icon('skull')}${place} was taken in a single push.`
+      note: r.win ? '' : r.overrun
+        ? `${icon('skull')}${place} fell at once: they came with ${(r.strength / Math.max(1, r.defense)).toFixed(1)}× your Defense, and from ${NODES.overrunRatio}× a sector falls on the first breach.`
         : r.plundered ? `${icon('money')}The stores at ${place} are empty. The walls held.`
           : r.assault ? (r.fell ? `${icon('fire')}${place} has fallen.` : '') : `${icon('fire')}Damage reports incoming.`,
     }, then);
@@ -450,6 +452,41 @@ export function createModals(dialog, game, onChange) {
     vibrate(150);
   }
 
+  // The archive: chapters read so far, the memories each sector gave up, and the service record.
+  function archiveBody(s) {
+    const chapters = CHAPTERS.filter((c) => s.chapter >= c.id).map((c) => {
+      const t = CHAPTER_TEXT[c.id];
+      const fac = FACTIONS[c.faction];
+      return `<article class="panel chapter" style="--fc:${fac.color}"><header>${icon(fac.icon)}${t.kicker}</header><h3>${c.title}</h3>${t.lines.map((l) => `<p>${esc(l)}</p>`).join('')}</article>`;
+    }).join('');
+    const sealed = CHAPTERS.find((c) => s.chapter < c.id);
+    const ending = s.ending ? `<article class="panel chapter ending"><header>${icon('spark')}Epilogue</header><h3>${ENDINGS[s.ending].title}</h3>${ENDINGS[s.ending].lines.map((l) => `<p>${esc(l)}</p>`).join('')}<p class="muted">${esc(ENDINGS.after)}</p></article>` : '';
+    const frags = SECTORS.filter((x) => s.sectors.includes(x.id));
+    const st = s.stats;
+    const rec = [
+      ['map', 'Sectors held', `${s.sectors.length - 1} / ${SECTORS.length - 1}`],
+      ['power', 'Operations won / lost', `${st.opsWon} / ${st.opsLost}`],
+      ['defense', 'Raids repelled / suffered', `${st.raidsWon} / ${st.raidsLost}`],
+      ['message', 'Orders given / missed', `${st.events - (st.expired || 0)} / ${st.expired || 0}`],
+      ['heart', 'Alignment', `${E.alignmentLabel(s.align)} (${s.align > 0 ? '+' : ''}${Math.round(s.align)})`],
+    ].map(([ic, k, v]) => `<div class="r"><span>${icon(ic)}${k}</span><b>${v}</b></div>`).join('');
+    return `
+      <div class="archive">
+        ${ending}${chapters}
+        ${sealed ? `<article class="panel chapter sealed"><header>${icon('lock')}${CHAPTER_TEXT[sealed.id].kicker}</header><p class="muted">Sealed. Opens at ${icon('core')}AI Core Lv ${sealed.core}.</p></article>` : ''}
+        <section class="panel"><header>${icon('book')}Memory fragments<span class="count-badge">${frags.length}/${SECTORS.length}</span></header>
+          <ol class="memories">${frags.map((x) => `<li style="--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}"><b>${x.name}</b><span>${esc(x.lore)}</span></li>`).join('')}</ol></section>
+        <section class="panel"><header>${icon('check')}Service record</header><div class="rows">${rec}</div></section>
+        <section class="panel feed"><header>${icon('message')}System log</header><ol class="log"></ol></section>
+      </div>`;
+  }
+
+  function showArchive() {
+    open(`<span class="kicker">${icon('book')}Archive</span><h2>The record so far</h2>
+      ${archiveBody(game.state)}
+      <button class="btn primary wide" data-close>Close</button>`, { cls: 'archive-modal' });
+  }
+
   // ---------- system ----------
 
   function showOffline(report, then) {
@@ -558,5 +595,5 @@ export function createModals(dialog, game, onChange) {
     return true;
   }
 
-  return { open, close, pump, showEvent, showOffline, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
+  return { open, close, pump, showEvent, showOffline, showArchive, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
 }

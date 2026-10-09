@@ -357,20 +357,7 @@ p { margin: 0; }
 button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; }
 
 /* =================== Command (war room) =================== */
-.condition {
-  display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 10px; padding: 8px 12px; margin-bottom: 4px;
-  border-radius: 4px; font-size: 12px; border: 1px solid;
-}
-.condition .pip { grid-row: span 2; }
-.condition b { font: 700 12px var(--font-hud); text-transform: uppercase; letter-spacing: .2em; }
-.condition span:last-child { color: var(--muted); font-size: 11.5px; }
-.condition .pip { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: blink 1.6s ease-in-out infinite; }
-.cond-green { color: var(--ok); border-color: rgba(95,211,141,.3); background: rgba(95,211,141,.05); }
-.cond-amber { color: var(--warn); border-color: rgba(255,176,61,.4); background: rgba(255,176,61,.06); }
-.cond-red { color: var(--bad); border-color: rgba(255,93,93,.6); background: rgba(255,93,93,.1); position: relative; }
-.cond-red::after { box-shadow: 0 0 16px rgba(255,93,93,.45); animation: glow 1.2s ease-in-out infinite; }
-
-.reactor { position: relative; width: 100%; max-width: 360px; aspect-ratio: 1; margin: 0 auto; cursor: pointer; }
+.reactor { position: relative; width: 100%; max-width: 318px; aspect-ratio: 1; margin: 0 auto; cursor: pointer; }
 .reactor-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .reactor-svg .links line { stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 2 4; }
 .reactor-svg .ticks line { stroke: rgba(255,107,61,.35); stroke-width: 1; }
@@ -408,25 +395,27 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .sat small { font: 600 9px var(--font-hud); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
 .sat.tl { left: 0; top: 2%; color: var(--power); }
 .sat.tr { right: 0; top: 2%; color: var(--defense); }
-.sat.bl { left: 0; bottom: 2%; color: var(--experts); }
-.sat.br { right: 0; bottom: 2%; color: var(--hum); }
+.sat.bl { left: 0; bottom: 7%; color: var(--experts); }
+.sat.br { right: 0; bottom: 7%; color: var(--hum); }
 
-.hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+/* The reactor's bottom edge is empty between its two lower readouts, so the grid slides up under it. */
+.hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: -22px; }
 .panel {
   grid-column: 1 / -1; position: relative; overflow: hidden;
-  padding: 12px; border-radius: var(--r);
+  padding: 10px 12px; border-radius: var(--r);
   background: var(--brackets), var(--panel);
   border: 1px solid var(--line);
 }
 .panel.half { grid-column: auto; display: flex; flex-direction: column; gap: 6px; }
 .panel[hidden] { display: none; }
 .panel > header {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
   font: 700 10.5px var(--font-hud); text-transform: uppercase; letter-spacing: .2em; color: var(--hud);
 }
 .count-badge { margin-left: auto; font: 700 11px var(--font-num); background: var(--bad); color: #fff; padding: 0 6px; border-radius: 8px; letter-spacing: 0; }
 .idle { color: var(--muted); font-size: 13px; }
 .panel.half .btn { margin-top: auto; }
+.panel > header .btn { margin-left: auto; padding: 3px 8px; font-size: 10px; }
 .timebar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.04); }
 .timebar i { display: block; height: 100%; width: 0; background: var(--hud); box-shadow: 0 0 8px var(--hud); transition: width .25s linear; }
 .timebar.ok i { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
@@ -441,6 +430,11 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 @keyframes blink { 50% { opacity: .2; } }
 .inc-main { display: flex; align-items: center; gap: 10px; }
 .inc-main > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.panel.has-map { min-height: 150px; }
+.panel.has-map .inc-main { display: block; width: 62%; }
+.panel.has-map .inc-main b { font-size: 15px; }
+.panel.has-map .bars, .panel.has-map .inc-foot, .panel.has-map .tx { text-shadow: 0 1px 4px rgba(0,0,0,.9); }
+.panel.has-map .tx { width: 72%; }
 .inc-main b { font: 600 16px var(--font-hud); }
 .inc-main small { color: var(--muted); font-size: 12px; }
 .fac-ico {
@@ -495,7 +489,9 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .buff em { font: 11px var(--font-num); font-style: normal; color: var(--muted); }
 .buff.neg { background: rgba(255,93,93,.08); border-color: rgba(255,93,93,.4); color: var(--bad); }
 .feed ol, .log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font: 12px/1.4 var(--font-num); }
-.feed li { display: grid; grid-template-columns: 52px 1fr; gap: 8px; color: #c6d2d9; }
+.feed li { color: #c6d2d9; }
+/* Only the live feed stamps a time; the archive's copy of the log is one column. */
+.feed li:has(time) { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
 .log li { color: #c6d2d9; padding: 3px 0; border-bottom: 1px solid rgba(255,107,61,.05); }
 .feed time { color: var(--dim); }
 .tone-good span { color: var(--ok); }
@@ -518,6 +514,9 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .node .name { fill: var(--muted); font-size: 19px; font-weight: 600; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: #0a0d10; stroke-width: 5px; }
 .node .def { fill: var(--text); font-family: var(--font-num); font-size: 17px; font-weight: 700; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: #0a0d10; stroke-width: 5px; }
 .node .pulse { fill: none; stroke: var(--fc); stroke-width: 2.5; }
+/* One icon pinned to an enemy hex: what its clan is doing right now. */
+.stance-pin circle { fill: #0a0d10; stroke: var(--fc); stroke-width: 2; }
+.stance-pin use { color: var(--fc); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .node.st-owned .hex { fill: color-mix(in srgb, var(--hud) 25%, #10171c); stroke: var(--hud); stroke-width: 3; }
 .node.st-owned .node-ico { color: var(--hud-2); }
 .node.st-owned .name { fill: var(--text); }
@@ -1007,7 +1006,7 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 @keyframes flFade { 50% { opacity: .75; } }
 /* Pulsing glows: a pseudo-element holding the full shadow fades in and out (GPU opacity),
    instead of animating box-shadow, which repaints every frame. */
-.cond-red::after, .tx::after, .fl.collapsed::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0; }
+.tx::after, .fl.collapsed::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0; }
 @keyframes glow { 50% { opacity: 1; } }
 /* The badge's halo grows out from under the badge and peaks while the badge is dimmed to .75 */
 @keyframes glowGrow { 0%, 100% { transform: scale(.8); } 50% { opacity: .75; transform: none; } }
@@ -1034,6 +1033,7 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .map-viewport { position: relative; height: min(64vh, 620px); min-height: 360px; overflow: hidden; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .map-viewport.dragging { cursor: grabbing; }
 .map-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.map-world.gliding { transition: transform .45s cubic-bezier(.22,.61,.36,1); }
 .map-world .map { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
 .map-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .map-fx.over { z-index: 2; }
@@ -1083,20 +1083,9 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .map-world .map-fx .pulse { stroke-width: 3.5; }
 
 /* Overrun warning on an inbound assault, and the stamp the report lands with. */
-.overrun-warn { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 5px 8px; border: 1px solid rgba(255,93,93,.5); border-radius: 6px; background: rgba(255,93,93,.1); color: var(--bad); font: 600 12px var(--font-hud); }
-.overrun-warn .i { flex: none; width: 15px; height: 15px; }
 /* A sector taken in one push lands differently: a double rule and a slow blink on the stamp. */
 .stamp.overrun { letter-spacing: .14em; border-style: double; border-width: 7px; animation: stamp .35s 1.45s var(--spring) forwards, stampPulse 1.2s 1.8s steps(2) infinite; }
 @keyframes stampPulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-
-/* Clan postures: what each faction is doing about me right now. */
-.clan + .clan { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
-.clan-top { display: flex; align-items: center; gap: 8px; }
-.clan-top b { font: 600 14px var(--font-hud); }
-.clan-top small { margin-left: auto; color: var(--muted); font-size: 11px; }
-.stances { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
-.stance { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border: 1px solid var(--fc); border-radius: 999px; color: var(--fc); font: 600 11px var(--font-hud); background: color-mix(in srgb, var(--fc) 12%, transparent); }
-.stance .i { width: 13px; height: 13px; }
 
 /* =================== Map snapshot =================== */
 /* A close-up of the map inside a panel, a report or an order. Static: no panning, no animation. */
@@ -1116,26 +1105,28 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .mini-beam { stroke: var(--fc); stroke-width: 6; stroke-dasharray: 16 12; stroke-linecap: round; filter: drop-shadow(0 0 6px var(--fc)); }
 .mini-ring circle { fill: none; stroke: var(--fc); stroke-width: 4; stroke-dasharray: 20 12; }
 .mini-ring path { stroke: var(--fc); stroke-width: 5; stroke-linecap: round; fill: none; }
-/* The frame takes its shape from the sectors inside it; only its height is fixed. */
-.map-shot { width: auto; max-width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #0d1216; }
-.map-shot.strip { height: 140px; margin: 0 auto 8px; }
-
-/* A dialog about a place is backed by that place: the theater at its own scale, anchored top right,
-   darkened downwards so the text over it stays readable. The head leaves that corner free. */
+/* Anything about a place is backed by that place: the theater at its own scale, anchored top right,
+   darkened downwards so the text over it stays readable. The content leaves that corner free.
+   A fixed band of map: its height sets the scale, so the focal sector always lands in the same
+   corner however tall the dialog or panel turns out. Two shades do the darkening: the text column on
+   the left is always dark, and everything below the reading area goes dark whatever the height. */
 .modal-body { position: relative; }
-.modal-map { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: 10px; pointer-events: none; }
-/* A fixed band of map: its height is what sets the scale, so the focal sector always lands in the
-   same corner however tall the dialog turns out. */
-.modal-map svg { display: block; width: 100%; height: 420px; }
-.modal-map .link.own, .modal-map .link.front { opacity: .6; }
-/* Two shades: the text column on the left is always dark, and everything below the reading area goes
-   dark whatever the dialog's height, so the map only shows where nothing has to be read. */
-.modal-map::after {
-  content: ''; position: absolute; inset: 0;
+.map-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.map-bg svg { display: block; width: 100%; }
+.map-bg .link.own, .map-bg .link.front { opacity: .6; }
+.map-bg::after { content: ''; position: absolute; inset: 0; }
+.map-bg.modal { border-radius: 10px; }
+.map-bg.modal svg { height: 420px; }
+.map-bg.modal::after {
   background: linear-gradient(90deg, rgba(8,11,14,.9) 0, rgba(8,11,14,.7) 46%, rgba(8,11,14,.24) 74%, rgba(8,11,14,.06) 100%) top / 100% 420px no-repeat,
     linear-gradient(180deg, rgba(8,11,14,0) 0, rgba(8,11,14,.22) 265px, rgba(8,11,14,.84) 352px, rgba(8,11,14,1) 412px);
 }
-.has-map > :not(.modal-map) { position: relative; z-index: 1; }
+.map-bg.panel svg { height: 240px; }
+.map-bg.panel::after {
+  background: linear-gradient(90deg, rgba(8,11,14,.92) 0, rgba(8,11,14,.76) 42%, rgba(8,11,14,.26) 72%, rgba(8,11,14,.05) 100%) top / 100% 240px no-repeat,
+    linear-gradient(180deg, rgba(8,11,14,0) 0, rgba(8,11,14,.3) 132px, rgba(8,11,14,.9) 200px, rgba(8,11,14,1) 238px);
+}
+.has-map > :not(.map-bg) { position: relative; z-index: 1; }
 .has-map .ev-text, .has-map .roll-cap, .has-map .versus { text-shadow: 0 1px 4px rgba(0,0,0,.95); }
 /* The title keeps the whole line; what comes under it steps aside instead, so the focal sector is
    never covered: the strength comparison stacks down the left, an order's text runs beside it. */

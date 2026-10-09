@@ -10,7 +10,7 @@ import { clock, chanceClass, factorTag } from './common.js';
 import { NAV, locate, domainReq, domainReady, sortedTabs, DOMAINS } from './layout.js';
 import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
 import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
-import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector, centerOn } from './screens/map.js';
+import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector, liveSector, centerOn } from './screens/map.js';
 import { createModals } from './modals.js';
 import { createTips } from './tooltip.js';
 import { sfx } from './sfx.js';
@@ -89,6 +89,10 @@ export function createUI(root, game) {
     ui.screen = screen;
     if (inner) {
       ui.inner[screen] = inner;
+    }
+    // Opening the map while something is under way opens on it.
+    if (screen === 'map' && !focus) {
+      ui.sector = liveSector(game.state) || ui.sector;
     }
     setFocus('screen', inner ? `${screen}:${inner}` : screen);
     ui.sheet = false;
@@ -295,6 +299,10 @@ export function createUI(root, game) {
       case 'core':
         go('economy', 'production', '[data-card="core"]');
         break;
+      case 'archive':
+        ui.logDirty = true; // the archive carries its own copy of the log
+        modals.showArchive();
+        break;
       case 'menu':
         modals.openMenu();
         break;
@@ -310,7 +318,8 @@ export function createUI(root, game) {
     if (ui.screen === 'map') {
       const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(2)}${n.marks}`).join();
       const postures = Object.values(s.clans).map((c) => c.stances.join('')).join('|');
-      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, s.assault && s.assault.from + s.assault.target, nodes, postures, s.chapter, s.ending, ui.inner.map === 'archive' ? [s.stats, Math.round(s.align)] : E.level(s, 'core')]);
+      const beams = E.attacks(s).map((a) => (E.attackPlace(s, a) || []).join()).join('|');
+      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, s.chapter, s.ending, E.level(s, 'core')]);
     }
     return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align)]);
   }
@@ -500,7 +509,7 @@ export function createUI(root, game) {
       items.push({
         key: 'atk:' + threats.map((a) => a.faction + a.strength).join(','), level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
         body: `<button class="fl-body" data-go="command"><span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b data-t></b><em data-h></em></button>`,
-        time: clock(atk.remaining), hold: `hold ${pct(p)}${E.overrunRisk(s, atk) ? ' · overrun' : ''}`, holdCls: 'chance-' + chanceClass(p),
+        time: clock(atk.remaining), hold: `hold ${pct(p)}`, holdCls: 'chance-' + chanceClass(p),
       });
     }
     if (s.events.length) {
