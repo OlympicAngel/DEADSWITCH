@@ -358,19 +358,35 @@ export function giveItems(s, items) {
 }
 
 // Casualties when a share of one Arsenal tab is hit: each unit type loses round(owned x share x (1 - durability)).
-// Never zero while any are owned, so a loss is always a real loss: the least durable type takes it.
-export function lossPlan(s, tab, share) {
+// With `floor`, a loss is never zero while any are owned (the least durable type takes it), so a defeat
+// always costs something; without it a share too small to kill anyone kills nobody.
+export function lossPlan(s, tab, share, floor = true) {
   const units = ITEMS.filter((i) => i.tab === tab && owned(s, i.id) > 0);
   const plan = {};
   for (const i of units) {
     const n = Math.min(owned(s, i.id), Math.round(owned(s, i.id) * share * (1 - (i.durability || 0))));
     if (n) plan[i.id] = n;
   }
-  if (units.length && !Object.keys(plan).length) {
+  if (floor && units.length && !Object.keys(plan).length) {
     const weakest = units.reduce((a, b) => ((b.durability || 0) < (a.durability || 0) ? b : a));
     plan[weakest.id] = 1;
   }
   return plan;
+}
+
+/** What a casualty list { itemId: count } was worth as AI Power / Defense / Experts, bonuses included. */
+export function lossValue(s, plan) {
+  const out = {};
+  for (const [id, n] of Object.entries(plan || {})) {
+    for (const k of FACTOR_KEYS) {
+      const g = (ITEM_BY_ID[id].gives || {})[k];
+      if (g) out[k] = (out[k] || 0) + g * n;
+    }
+  }
+  for (const k of Object.keys(out)) {
+    out[k] = Math.round(out[k] * (1 + bonusTotal(s, k)));
+  }
+  return out;
 }
 
 export function unitsLost(s, tab, share) {
@@ -378,8 +394,8 @@ export function unitsLost(s, tab, share) {
 }
 
 // Removes the casualties of lossPlan. Returns them as { itemId: count }.
-export function loseUnits(s, tab, share) {
-  const plan = lossPlan(s, tab, share);
+export function loseUnits(s, tab, share, floor = true) {
+  const plan = lossPlan(s, tab, share, floor);
   for (const [id, n] of Object.entries(plan)) {
     s.items[id] -= n;
   }

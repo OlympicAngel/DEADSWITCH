@@ -1,9 +1,10 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
-  level, factors, threat, canAfford, pay, grant, loseUnits, say, caps, rewardCurve,
+  level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
 } from './economy.js';
+import { clanProfile, clanProfiles, stirClan } from './clans.js';
 import { rand, range, pick, odds } from './rng.js';
 
 const SECTOR_BY_ID = Object.fromEntries(SECTORS.map((x) => [x.id, x]));
@@ -57,9 +58,10 @@ export function shiftStrength(s, id, delta) {
 // sector's anger at you cools off while you leave it alone.
 export function advanceNodes(s, dt) {
   const grow = (NODES.growthPerHour * dt) / 3600;
+  const profiles = clanProfiles(s);
   for (const sec of SECTORS) {
     if (sec.faction && !s.sectors.includes(sec.id) && chapterOpen(s, sec.chapter) && nodeStrength(s, sec.id) < NODES.strengthMax) {
-      shiftStrength(s, sec.id, grow);
+      shiftStrength(s, sec.id, grow * profiles[sec.faction].growth);
     }
   }
   const calm = (AGGR.calmPerHour * dt) / 3600;
@@ -122,7 +124,8 @@ export function flank(s, sec) {
   if (!clan.length) {
     return { approaches: 0, held: 0, bonus: 0 };
   }
-  return { approaches: clan.length, held, bonus: OPS.flankBonus * ((clan.length - held) / clan.length) };
+  const support = OPS.flankBonus * clanProfile(s, sec.faction).support;
+  return { approaches: clan.length, held, bonus: support * ((clan.length - held) / clan.length) };
 }
 
 export function sectorDefense(s, sec) {
@@ -142,7 +145,8 @@ export function sectorStatus(s, sec) {
   if (!adjacent) {
     return 'far';
   }
-  if (!chapterOpen(s, sec.chapter)) {
+  // Ground I have held once is always mine to take back, whatever chapter its clan belongs to.
+  if (!chapterOpen(s, sec.chapter) && !s.taken.includes(sec.id)) {
     return 'locked';
   }
   return 'target';
@@ -180,7 +184,11 @@ export function advanceOp(s, dt) {
   const chance = odds(power, defense, OPS.winSharpness);
   const roll = rand(s);
   const report = { kind: 'op', sector: sec.id, power, defense, chance, roll, win: roll < chance };
+  // Taking ground costs people too; the garrison that held it is gone either way.
+  takeLosses(s, report, report.win ? OPS.winLoss : OPS.unitLoss, power, defense);
   if (report.win) {
+    report.theirLoss = defense;
+    stirClan(s, sec.faction, CLANS.stir[sec.boss ? 'capitalTaken' : 'sectorTaken']);
     s.sectors.push(sec.id);
     delete s.nodes[sec.id];
     // Loot and memories only the first time; a retaken sector just comes back.
@@ -206,9 +214,10 @@ export function advanceOp(s, dt) {
       s.inbox.push({ kind: 'ending', key: s.ending });
     }
   } else {
-    report.units = casualties(s, OPS.unitLoss, power, defense);
-    // A repelled operation emboldens the defenders.
-    shiftStrength(s, sec.id, NODES.opLossGain);
+    // A repelled operation emboldens the defenders, minus what repelling me cost them.
+    report.theirLoss = Math.round(defense * NODES.opDefenderCut);
+    stirClan(s, sec.faction, CLANS.stir.opHeld);
+    shiftStrength(s, sec.id, NODES.opLossGain - NODES.opDefenderCut);
     report.strength = nodeStrength(s, sec.id);
     s.stats.opsLost++;
     say(s, 'opLost', { sector: sec.name }, 'bad');
@@ -221,12 +230,19 @@ export function lossShare(rule, ours, theirs) {
   return Math.min(rule.cap, rule.base * (ours > 0 ? theirs / ours : Infinity));
 }
 
-function casualties(s, rules, ours, theirs) {
+function casualties(s, rules, ours, theirs, floor) {
   const out = {};
   for (const [tab, rule] of Object.entries(rules)) {
-    Object.assign(out, loseUnits(s, tab, lossShare(rule, ours, theirs)));
+    Object.assign(out, loseUnits(s, tab, lossShare(rule, ours, theirs), floor));
   }
   return out;
+}
+
+// Writes my casualties onto a report, both as units and as the Power / Defense they were worth.
+// A win only costs people when it was close: a comfortable one rounds down to nobody.
+function takeLosses(s, report, rules, ours, theirs) {
+  report.units = casualties(s, rules, ours, theirs, !report.win);
+  report.cost = lossValue(s, report.units);
 }
 
 // ---------- raids ----------
@@ -321,7 +337,7 @@ function spawnRaid(s, delay) {
   const faction = grudge ? grudge.faction : pick(s, raiders);
   const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
   const base = Math.max(floor, threat(s) * RAIDS.threatShare);
-  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax) * (grudge ? grudge.mult : 1));
+  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax) * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge };
   say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, strength, time: fmtShort(delay) }, 'bad');
 }
@@ -400,8 +416,19 @@ export function borders(s, withLocked = false) {
 
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
-  const own = sec.defense * nodeStrength(s, fromId) * NODES.assaultShare;
+  const own = sec.defense * nodeStrength(s, fromId) * NODES.assaultShare * clanProfile(s, sec.faction).strength;
   return Math.ceil(chapterOpen(s, sec.chapter) ? own : Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
+}
+
+/** True when an inbound assault is strong enough to take its target on the first breach. */
+export function overrunRisk(s, atk) {
+  return !!(atk && atk.assault && atk.strength >= factors(s).defense * NODES.overrunRatio);
+}
+
+// How fast assaults come: the keenest clan on my borders sets the pace for all of them.
+function assaultTempo(s) {
+  const profiles = clanProfiles(s);
+  return borders(s, true).reduce((m, b) => Math.max(m, profiles[SECTOR_BY_ID[b.from].faction].tempo), 1);
 }
 
 // Launches an assault along one border (rolled by weight unless given); returns it or null.
@@ -410,7 +437,17 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
   let p = pair;
   if (!p) {
     const all = borders(s, true);
-    const w = (b) => (b.locked ? NODES.lockedWeight : 1) * (1 + aggression(s, b.from));
+    const profiles = clanProfiles(s);
+    // A locked clan comes rarely, but stirring one up (an order, an operation) counts for much more.
+    const w = (b) => {
+      const a = aggression(s, b.from);
+      const from = SECTOR_BY_ID[b.from];
+      const prof = profiles[from.faction];
+      const base = b.locked ? NODES.lockedWeight * (1 + a * NODES.lockedAggrGain) : 1 + a;
+      // Ground of theirs that I hold pulls them back to it.
+      const back = SECTOR_BY_ID[b.target].faction === from.faction ? prof.retake : 1;
+      return Math.max(0, base) * prof.weight * back;
+    };
     const total = all.reduce((a, b) => a + w(b), 0);
     if (!total || rand(s) >= Math.min(1, total)) return null;
     let r = rand(s) * total;
@@ -436,7 +473,7 @@ export function advanceAssaults(s, dt, offline) {
     if (s.assaultTimer === null) s.assaultTimer = NODES.firstDelay;
     s.assaultTimer -= dt;
     if (s.assaultTimer <= 0) {
-      s.assaultTimer = range(s, NODES.intervalMin, NODES.intervalMax);
+      s.assaultTimer = range(s, NODES.intervalMin, NODES.intervalMax) / assaultTempo(s);
       spawnAssault(s);
     }
     return;
@@ -451,11 +488,26 @@ export function advanceAssaults(s, dt, offline) {
 }
 
 // A sector of yours falls to the attacker; its yields stop and it can be retaken.
-export function loseSector(s, id, faction) {
+// They hold it as hard as they took it, and the whole front around it is emboldened.
+export function loseSector(s, id, faction, strength = 0) {
   s.sectors = s.sectors.filter((x) => x !== id);
-  s.nodes[id] = { m: 1, marks: 0 };
+  const held = strength ? clamp(strength / Math.max(1, SECTOR_BY_ID[id].defense), NODES.strengthMin, NODES.takenMax) : 1;
+  s.nodes[id] = { m: held, marks: 0, a: 0, seen: 0 };
+  stirClan(s, faction, CLANS.stir.sectorSeized);
+  stirAggression(s, id, AGGR.onFall);
   if (s.op && s.op.sector === id) s.op = null;
   say(s, 'sectorLost', { sector: SECTOR_BY_ID[id].name, faction: FACTIONS[faction].name }, 'bad');
+}
+
+// Stockpiles taken when something breaks through: a bigger share the worse the odds were.
+function takeStock(s, chance, scale = 1) {
+  const share = (RAIDS.lossMin + (RAIDS.lossMax - RAIDS.lossMin) * (1 - chance)) * scale;
+  const lost = {};
+  for (const k of Object.keys(s.res)) {
+    lost[k] = Math.floor(s.res[k] * share);
+    s.res[k] -= lost[k];
+  }
+  return lost;
 }
 
 function resolveAttack(s, raid, offline) {
@@ -463,41 +515,47 @@ function resolveAttack(s, raid, offline) {
   const chance = odds(defense, raid.strength, RAIDS.winSharpness);
   const roll = rand(s);
   const name = attackName(raid);
+  const prof = clanProfile(s, raid.faction);
   const report = { kind: 'raid', name, faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };
   if (raid.assault) Object.assign(report, { assault: true, from: raid.from, target: raid.target });
+  // Both sides bleed. Holding the line still costs people, and their dead stay dead.
+  takeLosses(s, report, report.win ? RAIDS.winLoss : RAIDS.unitLoss, defense, raid.strength);
+  report.theirLoss = Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition);
+  if (raid.assault) {
+    shiftStrength(s, raid.from, -(report.win ? NODES.defendWinCut : NODES.breachCut) * prof.attrition);
+    report.strengthAfter = nodeStrength(s, raid.from);
+  }
+  const outcome = raid.assault ? (report.win ? 'assaultHeld' : 'assaultBreach') : (report.win ? 'raidHeld' : 'raidBroke');
+  stirClan(s, raid.faction, CLANS.stir[outcome]);
   if (report.win) {
     const loot = { money: Math.ceil(rewardCurve(RAIDS.loot.money, raid.strength)) };
     grant(s, loot);
     report.loot = loot;
     s.stats.raidsWon++;
     say(s, 'raidWon', { raid: name, loot: loot.money }, 'good');
-    if (raid.assault) {
-      // A broken assault leaves the attacker weaker.
-      shiftStrength(s, raid.from, -NODES.defendWinCut);
-      report.strengthAfter = nodeStrength(s, raid.from);
-    }
   } else if (raid.assault) {
-    // A breached assault takes no stockpiles; it costs troops and a foothold on the sector.
-    report.units = casualties(s, RAIDS.unitLoss, defense, raid.strength);
-    const n = node(s, raid.target);
-    // Factions whose chapter is closed can wear a sector down but never take it.
-    n.marks = Math.min(n.marks + 1, raid.locked ? NODES.breachesToFall - 1 : NODES.breachesToFall);
-    report.breaches = n.marks;
     s.stats.raidsLost++;
-    say(s, 'assaultBreached', { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall }, 'bad');
-    if (n.marks >= NODES.breachesToFall) {
-      loseSector(s, raid.target, raid.faction);
-      report.fell = true;
+    if (prof.plunder) {
+      // Plunderers want the stores, not the ground: they empty what they can carry and leave the walls.
+      report.lost = takeStock(s, chance, NODES.plunderShare);
+      report.plundered = true;
+      say(s, 'assaultPlundered', { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name }, 'bad');
+    } else {
+      const n = node(s, raid.target);
+      n.marks = Math.min(n.marks + 1, NODES.breachesToFall);
+      report.breaches = n.marks;
+      // An assault this far over my defense does not need a second visit.
+      report.overrun = raid.strength >= defense * NODES.overrunRatio;
+      say(s, report.overrun ? 'assaultOverrun' : 'assaultBreached',
+        { from: SECTOR_BY_ID[raid.from].name, target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall }, 'bad');
+      if (report.overrun || n.marks >= NODES.breachesToFall) {
+        loseSector(s, raid.target, raid.faction, raid.strength);
+        report.fell = true;
+        report.held = nodeStrength(s, raid.target);
+      }
     }
   } else {
-    const share = RAIDS.lossMin + (RAIDS.lossMax - RAIDS.lossMin) * (1 - chance);
-    const lost = {};
-    for (const k of Object.keys(s.res)) {
-      lost[k] = Math.floor(s.res[k] * share);
-      s.res[k] -= lost[k];
-    }
-    report.lost = lost;
-    report.units = casualties(s, RAIDS.unitLoss, defense, raid.strength);
+    report.lost = takeStock(s, chance);
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name }, 'bad');
     spawnAftermath(s, chance < EVENTS_CFG.routChance);

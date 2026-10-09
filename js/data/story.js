@@ -96,6 +96,7 @@ export const EVENTS_CFG = {
   grudgeUntilLossChance: 0.4,
   grudgeUntilLossMax: 6,
   maxPending: 3,
+  lockedBorderChance: 0.25, // share of border orders that may name a clan whose chapter is still sealed
   aftermathOnDefeat: 1, // crisis events spawned by a lost raid...
   aftermathOnRout: 2, // ...or by a rout (hold chance under routChance)
   routChance: 0.25,
@@ -651,9 +652,13 @@ export const LINES = {
   opRetaken: ['{sector} is mine again.'],
   assaultSpotted: ['{from} is moving on {target}. Strength {strength}. Contact in {time}.'],
   assaultBreached: ['{from} broke into {target}. Foothold {n} of {max}.'],
+  assaultOverrun: ['{from} went through {target} in one push. There was nothing left to hold with.'],
+  assaultPlundered: ['{from} emptied the stores at {target} and left the walls standing. Efficient.'],
+  stance: ['{text}'],
+  stanceEnd: ['The {faction} are done with {stance}.'],
   sectorLost: ['{sector} has fallen to the {faction}.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
-  bossDown: ['{faction} capital has fallen. They will not raid us again.'],
+  bossDown: ['{faction} capital has fallen. Their raids stop here. Their survivors will not.'],
   chapter: ['{kicker}: {title}.'],
   directive: ['Directive complete: {text}.'],
   event: ['{title}: {result}'],

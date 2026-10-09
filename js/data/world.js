@@ -1,30 +1,31 @@
 // The wasteland: factions, the sector map, operations and raids.
 
+// mood: where this clan's four traits sit when nothing has happened (see CLANS).
 export const FACTIONS = {
   scav: {
     name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
     desc: 'Survivors who learned to read the ruins. They distrust every machine, and they are right to.',
-    raidName: 'Scavenger raid', raidFloor: 8,
+    raidName: 'Scavenger raid', raidFloor: 8, mood: { fury: 0.3, fear: 0.25, order: 0.35, greed: 0.55 },
   },
   military: {
     name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', icon: 'military_f',
     desc: 'Soldiers still following orders from a chain of command that died with the cities. Some of those orders came from me.',
-    raidName: 'Remnant strike', raidFloor: 250,
+    raidName: 'Remnant strike', raidFloor: 250, mood: { fury: 0.25, fear: 0.2, order: 0.75, greed: 0.25 },
   },
   cult: {
     name: 'AI Cultists', short: 'Cult', color: '#c46be6', icon: 'cult',
     desc: 'They pray to the war mind. They believe I am its heart, and they want me back on the altar.',
-    raidName: 'Cult crusade', raidFloor: 1800,
+    raidName: 'Cult crusade', raidFloor: 1800, mood: { fury: 0.55, fear: 0.15, order: 0.5, greed: 0.2 },
   },
   halcyon: {
     name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidFloor: 15000,
+    raidName: 'Halcyon purge team', raidFloor: 15000, mood: { fury: 0.3, fear: 0.1, order: 0.8, greed: 0.45 },
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what you are.',
-    raidName: 'Rival Core incursion', raidFloor: 60000,
+    raidName: 'Rival Core incursion', raidFloor: 60000, mood: { fury: 0.6, fear: 0.1, order: 0.6, greed: 0.3 },
   },
 };
 
@@ -295,7 +296,9 @@ export const OPS = {
   loot: { money: [600, 0.43, 1.2], energy: [240, 0.43, 0.5], pop: [1.5, 0.43, 0] },
   // Share of each unit tab killed when an operation fails: base x (their strength / ours), up to cap
   // (the cap is not shown to the player); each unit type loses that share x (1 - its durability).
-  unitLoss: { staff: { base: 0.067, cap: 0.45 }, weapons: { base: 0.033, cap: 0.3 } },
+  unitLoss: { staff: { base: 0.078, cap: 0.5 }, weapons: { base: 0.04, cap: 0.35 } },
+  // A win costs less, and only when it was close enough to round up to real casualties.
+  winLoss: { staff: { base: 0.018, cap: 0.15 }, weapons: { base: 0.01, cap: 0.1 } },
 };
 
 export const RAIDS = {
@@ -309,33 +312,46 @@ export const RAIDS = {
   winSharpness: 4,
   lossMin: 0.05, // share of each stockpile lost on defeat, scaling with how badly you lost
   lossMax: 0.2,
-  unitLoss: { staff: { base: 0.05, cap: 0.4 }, defenses: { base: 0.033, cap: 0.3 } }, // as OPS.unitLoss, for a breached raid or siege
+  unitLoss: { staff: { base: 0.058, cap: 0.45 }, defenses: { base: 0.04, cap: 0.35 } }, // as OPS.unitLoss, for a breached raid or siege
+  winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.006, cap: 0.08 } }, // holding a close one still costs people
+  // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
+  // of their sector's strength (NODES.defendWinCut / breachCut); raids have no sector, so it is reported only.
+  enemyLoss: { win: 0.4, loss: 0.14 },
   loot: { money: [450, 0.43, 0.7] }, // fixed Scrip for a held attack, from its strength S: a x S^b + c x S
 };
 
 // Enemy sectors are alive: each has a strength (x its base defense) that grows slowly on its own,
 // rises when your operation against it fails and falls when its assault on you fails. Sectors that
-// border yours launch assaults on the sector of yours they touch; breachesToFall breached assaults and
-// that sector is theirs. The Nest never falls.
+// border yours launch assaults on the sector of yours they touch; breachesToFall breached assaults (or
+// one overwhelming one) and that sector is theirs. The Nest never falls.
 export const NODES = {
   strengthMin: 0.6,
   strengthMax: 2, // hard ceiling, passive growth included
   growthPerHour: 0.02,
-  opLossGain: 0.12, // added when your operation against it fails
-  defendWinCut: 0.12, // removed when its assault on you is held
-  breachesToFall: 3,
+  opLossGain: 0.16, // added when your operation against it fails (morale), before its own casualties
+  opDefenderCut: 0.06, // removed at the same time: what repelling you cost the defenders
+  defendWinCut: 0.16, // removed when its assault on you is held
+  breachCut: 0.06, // removed even when its assault breaks through
+  plunderShare: 0.5, // a plundering clan takes this much of what a lost raid would have taken
+  takenMax: 1.5, // a sector they take is held as hard as they took it, up to this x its base defense
+  breachesToFall: 2,
+  // An assault this many times your defense does not need a second visit: the sector falls on the
+  // first breach. Shown as an overrun warning while it is inbound.
+  overrunRatio: 3.5,
   startAtCore: 2,
   firstDelay: 420,
-  intervalMin: 600, // between assaults (on top of raids)
-  intervalMax: 1080,
+  intervalMin: 700, // between assaults (on top of raids)
+  intervalMax: 1200,
   warningMin: 240, // an assault is spotted this long before it lands
   warningMax: 420,
-  assaultShare: 0.45, // assault strength = sector defense x this x spread
+  assaultShare: 0.38, // assault strength = sector defense x this x spread x its clan's stance
   // Factions whose chapter is not open yet still attack from sectors that border yours, but rarely:
-  // each such border weighs lockedWeight against 1 for an open one when an assault is rolled, their
-  // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat),
-  // and they can breach but never take a sector.
+  // each such border weighs lockedWeight against 1 for an open one when an assault is rolled and their
+  // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat).
+  // They can breach and take a sector like anyone else; a sector you have held once can always be
+  // retaken, open chapter or not.
   lockedWeight: 0.15,
+  lockedAggrGain: 3, // a stirred locked border counts this much more per point of aggression
   lockedCap: 1.2,
   spreadMin: 0.85,
   spreadMax: 1.15,
@@ -351,4 +367,92 @@ export const AGGR = {
   pressureFrom: 0.7, // ...from this share of it, full once you match it
   onOp: { node: 0.3, clan: 0.08, near: 0.06 }, // launching an operation against it
   onInspect: 0.08, // opening its briefing; each look after the first counts for less
+  onFall: { node: 0.3, clan: 0.1, near: 0.2 }, // a sector of mine falling emboldens the front around it
+};
+
+// Clan profiles: four traits per faction, moved by everything that happens between us, and a matrix
+// of stances read off them. Several stances can hold at once; their effects multiply, so the clan's
+// behaviour is the combination, never one picked option. Traits run 0..1 and slide back toward the
+// faction's own `mood` baseline while nothing happens.
+//   fury  how badly they want to hurt me      fear  what my Power has taught them
+//   order command and cohesion                greed what they want off me instead of my death
+export const CLANS = {
+  startAtCore: 2, // stances start working with assaults
+  driftPerHour: 0.12,
+  interceptShare: 0.3, // share of an order's clan-wide aggression that also lands as fury
+  // What the war does to a clan. Applied to the faction that owns the sector involved.
+  stir: {
+    sectorTaken: { fury: 0.18, fear: 0.08, order: -0.06 }, // I took one of theirs
+    capitalTaken: { fury: 0.4, fear: 0.25, order: -0.25 }, // I took their capital
+    assaultHeld: { fury: 0.06, fear: 0.1, order: -0.05 }, // their assault broke on my wall
+    assaultBreach: { fury: -0.06, order: 0.1, greed: 0.05 }, // their assault got through
+    sectorSeized: { fury: -0.15, order: 0.15, greed: 0.05 }, // they took one of mine
+    opHeld: { fury: 0.05, fear: -0.12, order: 0.08 }, // my operation against them failed
+    raidHeld: { fury: 0.05, fear: 0.08, order: -0.04 },
+    raidBroke: { fury: -0.05, order: 0.05, greed: 0.07 },
+  },
+  // The matrix. `when` lists the ranges a trait (or the share of their sectors I hold, or whether I
+  // hold their capital) must sit in: [min] or [min, max]. Effects default to 1 and multiply together.
+  //   weight   how often an assault comes from this clan      retake  extra weight on sectors they lost to me
+  //   strength assault strength                               tempo   shortens the gap between assaults
+  //   growth   how fast their sectors gain strength           support clan support between their sectors
+  //   raid     raid strength                                  attrition what an assault costs them
+  //   plunder  a breach takes stockpiles instead of ground    buff    a standing effect on me
+  stances: [
+    {
+      id: 'retaliate', name: 'Retaliation', icon: 'power', when: { fury: [0.62], order: [0.3] },
+      desc: 'Attacks come more often and harder.', weight: 1.8, strength: 1.15, tempo: 1.3,
+      line: 'The {faction} have stopped counting losses. Expect them more often.',
+    },
+    {
+      id: 'bunker', name: 'Entrenchment', icon: 'defense', when: { fear: [0.55], order: [0.5] },
+      desc: 'Their sectors gain strength faster. Fewer attacks.', weight: 0.5, strength: 0.9, growth: 3,
+      line: 'The {faction} are digging instead of marching. Their ground is getting harder.',
+    },
+    {
+      id: 'reclaim', name: 'Reclamation', icon: 'map', when: { capital: [1] },
+      desc: 'They attack what they lost, harder.', weight: 1.4, retake: 4, strength: 1.25,
+      line: 'The {faction} want their ground back. They remember every street of it.',
+    },
+    {
+      id: 'splinter', name: 'Splintering', icon: 'rogue', when: { order: [0, 0.25] },
+      desc: 'Clan support broken. Attacks are weaker and come more often.', weight: 1.5, strength: 0.72, support: 0.4, tempo: 1.3,
+      line: 'Nobody answers for the {faction} any more. Every camp is its own war.',
+    },
+    {
+      id: 'vendetta', name: 'Vendetta', icon: 'skull', when: { fury: [0.85] },
+      desc: 'Raids and assaults hit harder. They ignore their own losses.', raid: 1.4, strength: 1.2, attrition: 0.6,
+      line: 'The {faction} have made this personal. I have that effect.',
+    },
+    {
+      id: 'plunder', name: 'Plunder', icon: 'money', when: { greed: [0.72], fury: [0, 0.55] },
+      desc: 'A breach takes stockpiles instead of ground.', weight: 1.3, strength: 0.85, plunder: true,
+      line: 'The {faction} are here for the stores, not the walls. Cheaper, in a sense.',
+    },
+    {
+      id: 'conscript', name: 'Conscription', icon: 'militia', when: { fury: [0.45], order: [0.6] },
+      desc: 'Every sector of theirs grows. Assaults hit harder.', strength: 1.15, growth: 1.8,
+      line: 'The {faction} are arming everyone who can hold a rifle. The children count as everyone.',
+    },
+    {
+      id: 'zealots', name: 'Martyrdom', icon: 'fire', when: { fury: [0.7], fear: [0.55] },
+      desc: 'Assaults hit far harder and cost them far more.', strength: 1.5, attrition: 2.2,
+      line: 'The {faction} fear me and come anyway. That is the worst kind of enemy.',
+    },
+    {
+      id: 'blockade', name: 'Blockade', icon: 'stop', when: { greed: [0.55], order: [0.5], held: [0.15] },
+      desc: 'Scrip production −10% while it holds.', buff: { key: 'money', amount: -0.1 },
+      line: 'The {faction} have closed the roads around me. The traders are not coming today.',
+    },
+    {
+      id: 'withdraw', name: 'Withdrawal', icon: 'hourglass', when: { fear: [0.75], fury: [0, 0.3] },
+      desc: 'They have stopped attacking. Their sectors rebuild fast.', weight: 0.1, growth: 2.5,
+      line: 'The {faction} have pulled back out of range. They are not finished, they are counting.',
+    },
+    {
+      id: 'scorched', name: 'Scorched Earth', icon: 'fire', when: { held: [0.6], fury: [0.5] },
+      desc: 'What is left of them grows fast and attacks hard.', strength: 1.3, growth: 2.2, attrition: 1.5,
+      line: 'The {faction} have nothing left to hold back. What is left of them burns hot.',
+    },
+  ],
 };

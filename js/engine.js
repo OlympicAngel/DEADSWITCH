@@ -3,10 +3,12 @@ import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById } from './sim/story.js';
+import { advanceClans, clan } from './sim/clans.js';
 
 export * from './sim/economy.js';
 export * from './sim/war.js';
 export * from './sim/story.js';
+export * from './sim/clans.js';
 export { odds } from './sim/rng.js';
 
 export const SAVE_VERSION = 3;
@@ -27,6 +29,8 @@ export function newState(seed = 1) {
     taken: [], // sectors ever captured (loot and memories pay once)
     // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours), a: aggression, seen: times inspected }
     nodes: {},
+    // per faction: its four traits and the stances they currently add up to (see sim/clans.js)
+    clans: {},
     op: null,
     raid: null,
     assault: null,
@@ -55,6 +59,9 @@ export function newState(seed = 1) {
     playTime: 0,
   };
   s.seen = unlockedKeys(s);
+  for (const f of Object.keys(FACTIONS)) {
+    clan(s, f);
+  }
   say(s, 'boot');
   checkChapters(s);
   // The boot sequence already introduces chapter 1.
@@ -100,6 +107,17 @@ export function migrate(raw) {
   for (const [id, n] of Object.entries(raw.nodes && typeof raw.nodes === 'object' ? raw.nodes : {})) {
     if (sectorById(id) && n && Number.isFinite(n.m)) s.nodes[id] = { m: n.m, marks: Number(n.marks) || 0, a: Number(n.a) || 0, seen: Number(n.seen) || 0 };
   }
+  s.clans = {};
+  for (const f of Object.keys(FACTIONS)) {
+    const old = (raw.clans || {})[f] || {};
+    const c = clan(s, f);
+    for (const k of Object.keys(c)) {
+      if (Number.isFinite(old[k])) c[k] = Math.min(1, Math.max(0, old[k]));
+    }
+    c.stances = Array.isArray(old.stances) ? old.stances : [];
+  }
+  // Stance effects on my economy are re-added by advanceClans; drop any saved copy so none doubles up.
+  s.buffs = s.buffs.filter((b) => !b.clan);
   const a = raw.assault;
   s.assault = a && sectorById(a.from) && sectorById(a.target) && FACTIONS[a.faction] && Number.isFinite(a.remaining) ? a : null;
   s.assaultTimer = Number.isFinite(raw.assaultTimer) ? raw.assaultTimer : null;
@@ -134,6 +152,7 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
   advanceRaids(s, dt, offline);
   advanceAssaults(s, dt, offline);
   advanceNodes(s, dt);
+  advanceClans(s, dt);
   advanceEvents(s, dt, offline, active && !offline);
   advanceSieges(s, dt, offline);
   advanceBuffs(s, dt);

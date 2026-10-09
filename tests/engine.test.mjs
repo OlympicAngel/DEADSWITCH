@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as E from '../js/engine.js';
-import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE, NODES, AGGR, SECTORS } from '../js/data.js';
+import { ITEM_BY_ID, BY_ID, EVENTS, BALANCE, NODES, AGGR, CLANS, FACTIONS, SECTORS } from '../js/data.js';
 
 test('offline catch-up lands builds mid-stretch and matches live play at offline rates', () => {
   const live = E.newState();
@@ -215,9 +215,11 @@ test('a held sector falls after enough breached assaults; strength moves within 
   s.levels.core = 3;
   s.sectors.push('rust', 'tunnels');
   s.taken.push('rust', 'tunnels');
-  s.items = {}; // no defense: every assault breaches
+  s.levels.works = 1;
+  s.items = { barricades: 40 }; // enough defense that it is breached but never overrun
   for (let i = 0; i < NODES.breachesToFall; i++) {
     E.spawnAssault(s, { from: 'alley', target: 'rust' }, 1);
+    s.assault.strength = Math.ceil(E.factors(s).defense * NODES.overrunRatio) - 1;
     E.step(s, 2);
   }
   assert.ok(!s.sectors.includes('rust'));
@@ -275,4 +277,101 @@ test('a sector you hold is never stirred, and the angrier border attacks more of
     if (a && from[a.from] !== undefined) from[a.from]++;
   }
   assert.ok(from[angry] > from[calm] * 2, `${from[angry]} vs ${from[calm]}`);
+});
+
+test('an assault far over your defense takes the sector on the first breach', () => {
+  const s = E.newState(31);
+  s.levels.core = 3;
+  s.levels.works = 1;
+  s.items = { barricades: 20 };
+  s.sectors.push('rust');
+  s.taken.push('rust');
+  // Just under the ratio: a foothold, nothing more.
+  E.spawnAssault(s, { from: 'drowned', target: 'rust' }, 1);
+  s.assault.strength = Math.ceil(E.factors(s).defense * NODES.overrunRatio) - 1;
+  E.step(s, 2);
+  assert.ok(s.sectors.includes('rust'));
+  assert.equal(E.breaches(s, 'rust'), 1);
+  // Over it: the sector is gone, and they hold it as hard as they took it.
+  E.spawnAssault(s, { from: 'drowned', target: 'rust' }, 1);
+  s.assault.strength = Math.ceil(E.factors(s).defense * NODES.overrunRatio) * 20;
+  E.step(s, 2);
+  assert.ok(!s.sectors.includes('rust'));
+  const report = s.inbox.filter((m) => m.kind === 'raid').pop();
+  assert.ok(report.overrun && report.fell);
+  assert.ok(Math.abs(E.nodeStrength(s, 'rust') - NODES.takenMax) < 1e-3);
+});
+
+test('ground you have held once is yours to retake, sealed chapter or not', () => {
+  const s = E.newState(32);
+  s.levels.core = 2;
+  const sec = E.sectorById('checkpoint'); // Remnant, opens at Core 4
+  s.sectors.push('glass');
+  assert.ok(!E.chapterOpen(s, sec.chapter));
+  assert.equal(E.sectorStatus(s, sec), 'locked');
+  s.sectors.push('checkpoint');
+  s.taken.push('checkpoint');
+  // A clan whose chapter is sealed can still take it back...
+  s.items = {};
+  E.spawnAssault(s, { from: 'kilo', target: 'checkpoint' }, 1);
+  E.step(s, 2);
+  assert.ok(!s.sectors.includes('checkpoint'));
+  // ...and it stays a target afterwards, because it was mine once.
+  assert.equal(E.sectorStatus(s, sec), 'target');
+});
+
+test('a clan profile is every stance its traits land in, multiplied together', () => {
+  const s = E.newState(33);
+  Object.assign(E.clan(s, 'scav'), { fury: 0.9, fear: 0.9, order: 0.8, greed: 0 });
+  const ids = E.stanceList(s, 'scav').map((x) => x.id);
+  assert.ok(['retaliate', 'vendetta', 'zealots', 'conscript'].every((x) => ids.includes(x)), ids.join());
+  const expected = CLANS.stances.filter((x) => ids.includes(x.id)).reduce((a, x) => a * (x.strength || 1), 1);
+  assert.ok(Math.abs(E.clanProfile(s, 'scav').strength - expected) < 1e-9);
+  // Back at its baseline mood the clan does nothing in particular.
+  Object.assign(E.clan(s, 'scav'), FACTIONS.scav.mood);
+  assert.deepEqual(E.stanceList(s, 'scav').map((x) => x.id), []);
+});
+
+test('taking a capital turns the clan to taking it back', () => {
+  const s = E.newState(34);
+  Object.assign(s.levels, { core: 3, armory: 1, battery: 8, habitat: 6 });
+  s.res = { money: 1e7, energy: 1e6, pop: 1e5 };
+  s.items = { rifles: 4000 };
+  s.sectors.push('junkfort');
+  const before = E.clan(s, 'scav').fury;
+  assert.ok(E.launchOp(s, 'throne'));
+  s.op.remaining = 0.001;
+  E.step(s, 1);
+  assert.ok(s.sectors.includes('throne'), 'the capital falls');
+  assert.ok(E.clan(s, 'scav').fury > before);
+  assert.ok(E.stanceList(s, 'scav').some((x) => x.id === 'reclaim'));
+  // Their raids stop, but the clan keeps attacking the ground it lost.
+  assert.ok(!E.activeRaiders(s).includes('scav'));
+  assert.ok(E.clanProfile(s, 'scav').retake > 1);
+});
+
+test('stance effects on the economy are rebuilt on load, never saved twice', () => {
+  const s = E.newState(35);
+  s.levels.core = 6;
+  s.sectors.push('candle', 'pilgrim'); // enough of the Cult held for a blockade
+  Object.assign(E.clan(s, 'cult'), { fury: 0.1, fear: 0.1, order: 0.9, greed: 0.95 });
+  E.advanceClans(s, 0.001);
+  const buff = s.buffs.find((b) => b.clan === 'cult');
+  assert.ok(buff && buff.hold && buff.stance === 'blockade');
+  E.advanceBuffs(s, 1e6); // a held effect never times out
+  assert.ok(s.buffs.includes(buff));
+  const back = E.migrate(JSON.parse(JSON.stringify(s)));
+  assert.ok(!back.buffs.some((b) => b.clan));
+  E.advanceClans(back, 0.001);
+  assert.equal(back.buffs.filter((b) => b.clan === 'cult').length, 1);
+  assert.ok(Math.abs(back.clans.cult.greed - 0.95) < 1e-4);
+});
+
+test('a defeat always costs someone; a win only when it was close enough to', () => {
+  const s = E.newState(36);
+  s.levels.barracks = 1;
+  s.items = { militia: 100 };
+  assert.deepEqual(E.lossPlan(s, 'staff', 0.0001, false), {});
+  assert.deepEqual(E.lossPlan(s, 'staff', 0.0001), { militia: 1 });
+  assert.deepEqual(E.lossPlan(s, 'staff', 0.1, false), { militia: 10 });
 });

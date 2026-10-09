@@ -1,11 +1,12 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS,
+  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS,
 } from '../data.js';
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
 } from './economy.js';
 import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById } from './war.js';
+import { stirClan } from './clans.js';
 import { range, pick, rand } from './rng.js';
 
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
@@ -118,7 +119,7 @@ const hasUnits = (s, tab) => ITEMS.some((i) => i.tab === tab && owned(s, i.id) >
 // income the player does not have, no loss of stock or units they do not own, no grudge from a faction
 // that is not raiding, no raid delay before raids start. Otherwise another event fires instead.
 export function applicable(s, ev) {
-  if (ev.border && !borders(s).length) {
+  if (ev.border && !borders(s, true).length) {
     return false;
   }
   if (ev.needsUnits && !ev.needsUnits.every((tab) => hasUnits(s, tab))) {
@@ -158,10 +159,12 @@ function spawn(s, ev, front) {
     params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max));
   }
   if (ev.border) {
-    // A border between one of your sectors and an enemy one; the event is about those two.
-    const all = borders(s);
+    // A border between one of your sectors and an enemy one; the event is about those two. Clans whose
+    // chapter is still sealed come up now and then: an order is one of the few things that wakes them.
+    const all = borders(s, true);
     if (!all.length) return false;
-    const b = pick(s, all);
+    const open = all.filter((b) => !b.locked);
+    const b = pick(s, open.length && rand(s) >= EVENTS_CFG.lockedBorderChance ? open : all);
     params.node = b.from;
     params.held = b.target;
   }
@@ -275,6 +278,8 @@ export function resolveEvent(s, uid, index, expired = false) {
   // Aggression is hidden, so it is applied straight from the choice and never shown in the preview.
   if (choice.aggr && inst.params && inst.params.node) {
     stirAggression(s, inst.params.node, choice.aggr);
+    const sec = sectorById(inst.params.node);
+    stirClan(s, sec.faction, { fury: ((choice.aggr.clan || 0) + (choice.aggr.node || 0)) * CLANS.interceptShare });
   }
   if (out.clearMarks && s.nodes[out.clearMarks]) {
     s.nodes[out.clearMarks].marks = 0;
@@ -320,12 +325,13 @@ export function alignmentLabel(a) {
 
 export function advanceBuffs(s, dt) {
   for (const b of s.buffs) {
+    if (b.hold) continue; // a stance holds its own effect: sim/clans.js adds and removes it
     b.remaining -= dt;
     if (b.remaining <= 0) {
       say(s, 'buffEnd', { label: b.label });
     }
   }
-  s.buffs = s.buffs.filter((b) => b.remaining > 0);
+  s.buffs = s.buffs.filter((b) => b.hold || b.remaining > 0);
 }
 
 // ---------- directives ----------
