@@ -13,7 +13,7 @@ const P = (x) => ({ x: x.x, y: x.y });
 const REVEAL_DEPTH = 2; // rings of sectors shown beyond held territory
 const SCALE = 0.42; // screen px per map unit
 // Node radius in map units (drawn larger than the old column map, since the world is zoomed out).
-const nodeR = (x) => (x.id === MAP.home ? 52 : x.boss ? 48 : 38);
+export const nodeR = (x) => (x.id === MAP.home ? 52 : x.boss ? 48 : 38);
 const PAD = 170; // map units around the outermost sectors
 // World bounds (map units) from every sector, so the world never changes size as it is revealed.
 const WORLD = (() => {
@@ -45,7 +45,7 @@ function distances(s) {
   return dist;
 }
 
-const hex = (r) => Array.from({ length: 6 }, (_, i) => {
+export const hex = (r) => Array.from({ length: 6 }, (_, i) => {
   const a = (Math.PI / 3) * i;
   return `${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`;
 }).join(' ');
@@ -212,9 +212,14 @@ export function renderMapScreen(s, ui) {
     </div>`;
 }
 
-function renderTheater(s, ui) {
+/** Every sector the player can see: held territory plus REVEAL_DEPTH rings around it. */
+export function shownSectors(s) {
   const dist = distances(s);
-  const shown = SECTORS.filter((x) => dist[x.id] !== undefined && dist[x.id] <= REVEAL_DEPTH);
+  return SECTORS.filter((x) => dist[x.id] !== undefined && dist[x.id] <= REVEAL_DEPTH);
+}
+
+function renderTheater(s, ui) {
+  const shown = shownSectors(s);
   const isShown = (id) => shown.some((x) => x.id === id);
   const links = [];
   const fronts = [];
@@ -286,7 +291,9 @@ function renderTheater(s, ui) {
     const capital = SECTORS.find((x) => x.faction === c.faction && x.boss);
     const fallen = s.sectors.includes(capital.id);
     const open = E.chapterOpen(s, c.id);
-    return `<span class="leg ${fallen ? 'down' : ''}" style="--fc:${f.color}">${icon(f.icon)}${f.short}<em>${fallen ? 'Defeated' : open ? 'Hostile' : `Core ${c.core}`}</em></span>`;
+    const stance = E.stanceList(s, c.faction)[0];
+    const state = open && stance ? stance.name : fallen ? 'Capital taken' : open ? 'Hostile' : `Core ${c.core}`;
+    return `<span class="leg ${fallen ? 'down' : ''}" style="--fc:${f.color}">${icon(f.icon)}${f.short}<em>${state}</em></span>`;
   }).join('');
   const sec = E.sectorById(ui.sector);
   return `
@@ -334,6 +341,13 @@ function strengthRow(s, sec) {
   return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(sec.defense)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain)} for each operation it repels, −${pct(NODES.defendWinCut)} for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
 }
 
+// What this sector's clan is doing right now (sim/clans.js); nothing while it is holding its posture.
+function postureRow(s, sec) {
+  const stances = sec.faction ? E.stanceList(s, sec.faction) : [];
+  if (!stances.length) return '';
+  return `<div class="r" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[sec.faction].icon)}${esc(FACTIONS[sec.faction].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>`;
+}
+
 // Clan support: linked sectors of the same faction that still stand.
 function fortRow(s, sec) {
   const f = E.flank(s, sec);
@@ -360,7 +374,7 @@ function briefing(s, sec) {
   if (st === 'owned') {
     const br = E.breaches(s, sec.id);
     return `${head}${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
-      ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
+      ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}, or on the first breach by an attack ${NODES.overrunRatio} times your AI Defense."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
@@ -376,6 +390,7 @@ function briefing(s, sec) {
     </div>
     <div class="oddsbar"><i data-odds></i></div>
     <div class="rows">
+      ${postureRow(s, sec)}
       ${fortRow(s, sec)}
       <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
       ${strengthRow(s, sec)}

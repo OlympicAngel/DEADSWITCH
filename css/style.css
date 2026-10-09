@@ -1082,6 +1082,71 @@ dialog.report:has(.battle.def.loss) { border-color: rgba(255,93,93,.6); backgrou
 .map-world .ret-ring { stroke-width: 4; }
 .map-world .map-fx .pulse { stroke-width: 3.5; }
 
+/* Overrun warning on an inbound assault, and the stamp the report lands with. */
+.overrun-warn { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 5px 8px; border: 1px solid rgba(255,93,93,.5); border-radius: 6px; background: rgba(255,93,93,.1); color: var(--bad); font: 600 12px var(--font-hud); }
+.overrun-warn .i { flex: none; width: 15px; height: 15px; }
+/* A sector taken in one push lands differently: a double rule and a slow blink on the stamp. */
+.stamp.overrun { letter-spacing: .14em; border-style: double; border-width: 7px; animation: stamp .35s 1.45s var(--spring) forwards, stampPulse 1.2s 1.8s steps(2) infinite; }
+@keyframes stampPulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+/* Clan postures: what each faction is doing about me right now. */
+.clan + .clan { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.clan-top { display: flex; align-items: center; gap: 8px; }
+.clan-top b { font: 600 14px var(--font-hud); }
+.clan-top small { margin-left: auto; color: var(--muted); font-size: 11px; }
+.stances { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.stance { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border: 1px solid var(--fc); border-radius: 999px; color: var(--fc); font: 600 11px var(--font-hud); background: color-mix(in srgb, var(--fc) 12%, transparent); }
+.stance .i { width: 13px; height: 13px; }
+
+/* =================== Map snapshot =================== */
+/* A close-up of the map inside a panel, a report or an order. Static: no panning, no animation. */
+.minimap { display: block; width: 100%; height: 100%; font-family: var(--font-hud); }
+.mini-links .link { stroke-width: 4; stroke-dasharray: 5 12; }
+.mini-links .link.own { stroke-width: 6; stroke-dasharray: none; }
+.mini-links .link.front { stroke-width: 4; stroke-dasharray: 10 10; }
+.mini-node .hex { fill: #10171c; stroke: var(--fc); stroke-width: 4; }
+.mini-node .node-ico { color: var(--fc); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mini-node .name { fill: var(--text); font-size: 30px; font-weight: 600; text-anchor: middle; paint-order: stroke; stroke: #0a0d10; stroke-width: 8px; }
+.mini-node.st-owned .hex { fill: color-mix(in srgb, var(--hud) 25%, #10171c); stroke: var(--hud); }
+.mini-node.st-owned .node-ico { color: var(--hud-2); }
+.mini-node.st-target .hex { fill: color-mix(in srgb, var(--fc) 20%, #10171c); }
+.mini-node.st-locked .hex { stroke-dasharray: 7 7; }
+.mini-node.st-far { opacity: .3; }
+.mini-node.dim { opacity: .4; }
+.mini-beam { stroke: var(--fc); stroke-width: 6; stroke-dasharray: 16 12; stroke-linecap: round; filter: drop-shadow(0 0 6px var(--fc)); }
+.mini-ring circle { fill: none; stroke: var(--fc); stroke-width: 4; stroke-dasharray: 20 12; }
+.mini-ring path { stroke: var(--fc); stroke-width: 5; stroke-linecap: round; fill: none; }
+/* The frame takes its shape from the sectors inside it; only its height is fixed. */
+.map-shot { width: auto; max-width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #0d1216; }
+.map-shot.strip { height: 140px; margin: 0 auto 8px; }
+
+/* A dialog about a place is backed by that place: the theater at its own scale, anchored top right,
+   darkened downwards so the text over it stays readable. The head leaves that corner free. */
+.modal-body { position: relative; }
+.modal-map { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: 10px; pointer-events: none; }
+/* A fixed band of map: its height is what sets the scale, so the focal sector always lands in the
+   same corner however tall the dialog turns out. */
+.modal-map svg { display: block; width: 100%; height: 420px; }
+.modal-map .link.own, .modal-map .link.front { opacity: .6; }
+/* Two shades: the text column on the left is always dark, and everything below the reading area goes
+   dark whatever the dialog's height, so the map only shows where nothing has to be read. */
+.modal-map::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(8,11,14,.9) 0, rgba(8,11,14,.7) 46%, rgba(8,11,14,.24) 74%, rgba(8,11,14,.06) 100%) top / 100% 420px no-repeat,
+    linear-gradient(180deg, rgba(8,11,14,0) 0, rgba(8,11,14,.22) 265px, rgba(8,11,14,.84) 352px, rgba(8,11,14,1) 412px);
+}
+.has-map > :not(.modal-map) { position: relative; z-index: 1; }
+.has-map .ev-text, .has-map .roll-cap, .has-map .versus { text-shadow: 0 1px 4px rgba(0,0,0,.95); }
+/* The title keeps the whole line; what comes under it steps aside instead, so the focal sector is
+   never covered: the strength comparison stacks down the left, an order's text runs beside it. */
+.battle.has-map h2 { text-align: left; }
+.battle.has-map .versus { grid-template-columns: 1fr; justify-items: start; gap: 6px; width: 58%; min-height: 148px; align-content: center; }
+.battle.has-map .side { width: 100%; text-align: left; }
+.battle.has-map .side span { justify-content: flex-start; }
+.battle.has-map .side.them .vbar i { margin-left: 0; }
+.battle.has-map .vs { font-size: 11px; letter-spacing: .3em; }
+.event.has-map .ev-text { padding-right: 118px; min-height: 132px; }
+
 /* =================== Developer panel =================== */
 /* A floating window over the game, switched on in Settings. It sits in the top layer (popover) so it
    stays readable over dialogs, and it is dense on purpose: data first, chrome last. */

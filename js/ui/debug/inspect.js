@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, SECTORS } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, SECTORS } from '../../data.js';
 
 const n2 = (v) => (Number.isFinite(v) ? v.toFixed(2) : '-');
 const pc = (v) => `${(v * 100).toFixed(1)}%`;
@@ -28,6 +28,7 @@ function sector(s, id) {
       ['looks taken', () => node().seen || 0],
       ['breaches', () => `${E.breaches(s, id)} / ${NODES.breachesToFall}`],
       ['assault strength', () => E.assaultStrength(s, id)],
+      ['clan stance', () => (sec.faction ? E.stanceList(s, sec.faction).map((x) => x.id).join(' ') || 'none' : '-')],
       ['op odds / cost', () => `${pc(E.opChance(s, sec))} · ${JSON.stringify(E.opCost(sec))}`],
       ['op time', () => secs(E.opTime(sec))],
       ['links', () => sec.links.join(' ')],
@@ -140,6 +141,7 @@ function attack(s, key) {
       ['hold chance', () => pc(E.raidChance(s, find()))],
       ['your defense', () => Math.round(E.factors(s).defense)],
       ['from → target', () => (find().from ? `${find().from} → ${find().target}` : '-')],
+      ['overrun', () => `${E.overrunRisk(s, find())} (x${NODES.overrunRatio} defense)`],
       ['vengeance', () => !!find().vengeance],
     ],
     json: () => find(),
@@ -154,6 +156,54 @@ function attack(s, key) {
         else if (x.siege) g.state.sieges = g.state.sieges.filter((y) => y !== x);
         else g.state.raid = null;
       }],
+    ],
+  };
+}
+
+// A clan's profile: its four traits, the matrix cells they land in, and what that multiplies.
+function clanOf(s, faction) {
+  const fac = FACTIONS[faction];
+  if (!fac) return null;
+  const c = () => E.clan(s, faction);
+  const prof = () => E.clanProfile(s, faction);
+  const ctx = () => E.clanContext(s, faction);
+  const own = SECTORS.filter((x) => x.faction === faction);
+  // Forces a stance: every trait it names is moved into range, and the map facts it needs are granted.
+  const force = (st) => (g) => {
+    const t = E.clan(g.state, faction);
+    for (const [k, [lo, hi = 1]] of Object.entries(st.when)) {
+      if (t[k] !== undefined) t[k] = Math.min(hi, Math.max(lo, lo === 0 ? hi - 0.02 : lo + 0.02));
+      if (k === 'capital' && lo >= 1) {
+        const cap = own.find((x) => x.boss);
+        if (cap && !g.state.sectors.includes(cap.id)) g.state.sectors.push(cap.id);
+      }
+      if (k === 'held') {
+        for (const x of own.slice(0, Math.ceil(lo * own.length) + 1)) {
+          if (!g.state.sectors.includes(x.id)) g.state.sectors.push(x.id);
+        }
+      }
+    }
+  };
+  return {
+    title: `${fac.name} · clan profile`,
+    rows: [
+      ['fury / fear', () => `${n2(c().fury)} / ${n2(c().fear)}`],
+      ['order / greed', () => `${n2(c().order)} / ${n2(c().greed)}`],
+      ['baseline mood', () => JSON.stringify(fac.mood)],
+      ['held / capital', () => `${pc(ctx().held)} / ${ctx().capital}`],
+      ['awake / raiding', () => `${E.clanAwake(s, faction)} / ${E.activeRaiders(s).includes(faction)}`],
+      ['stances', () => prof().stances.map((x) => x.id).join(' ') || 'none'],
+      ['weight / retake', () => `${n2(prof().weight)} / ${n2(prof().retake)}`],
+      ['strength / tempo', () => `${n2(prof().strength)} / ${n2(prof().tempo)}`],
+      ['growth / support', () => `${n2(prof().growth)} / ${n2(prof().support)}`],
+      ['raid / attrition', () => `${n2(prof().raid)} / ${n2(prof().attrition)}`],
+      ['plunder', () => prof().plunder],
+      ['sectors left', () => `${own.filter((x) => !s.sectors.includes(x.id)).length} / ${own.length}`],
+    ],
+    json: () => ({ clan: s.clans[faction], profile: E.clanProfile(s, faction) }),
+    actions: [
+      ['calm', (g) => Object.assign(E.clan(g.state, faction), fac.mood)],
+      ...CLANS.stances.map((st) => [st.id, force(st)]),
     ],
   };
 }
@@ -179,13 +229,14 @@ function screen(s, id) {
       ['event drain', () => JSON.stringify(E.eventDrain(s))],
       ['directive', () => (E.currentDirective(s) ? `${s.directive}: ${E.currentDirective(s).text}` : 'all done')],
       ['events seen', () => s.recentEvents.join(' ') || '-'],
+      ['clan stances', () => Object.keys(FACTIONS).map((f) => `${f}:${E.stanceList(s, f).length}`).join(' ')],
     ],
     json: () => ({ screen: id }),
     actions: [],
   };
 }
 
-export const INSPECTORS = { sector, building, item, order, attack, screen };
+export const INSPECTORS = { sector, building, item, order, attack, screen, clan: clanOf };
 
 /** The inspector for a focus, falling back to the screen one. */
 export function inspect(s, focus) {

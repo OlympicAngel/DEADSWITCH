@@ -5,7 +5,8 @@ import {
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
-import { tags, bonusText, bonusChips, chanceClass, clock } from './common.js';
+import { tags, bonusText, bonusChips, chanceClass, clock, factorTag } from './common.js';
+import { mapBackdrop } from './minimap.js';
 import { sfx, isMuted, setMuted } from './sfx.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
@@ -191,9 +192,10 @@ export function createModals(dialog, game, onChange) {
   function battle(r, then) {
     const max = Math.max(r.you, r.them, 1);
     open(`
-      <div class="battle ${r.mode} ${r.win ? 'win' : 'loss'}">
+      <div class="battle ${r.mode} ${r.win ? 'win' : 'loss'} ${r.shot ? 'has-map' : ''}">
+        ${r.shot || ''}
         <div class="battle-banner">${icon(r.mode === 'op' ? 'power' : 'defense')}<span>${r.kicker}</span></div>
-        <h2>${esc(r.title)}</h2>
+        <div class="modal-head"><h2>${esc(r.title)}</h2></div>
         <div class="versus">
           <div class="side you"><span>${icon(r.youIcon)}${r.youLabel}</span><b>${num(r.you)}</b><div class="vbar"><i style="--w:${pct(r.you / max)}"></i></div></div>
           <div class="vs">VS</div>
@@ -201,7 +203,7 @@ export function createModals(dialog, game, onChange) {
         </div>
         <div class="roll"><div class="zone bg-${chanceClass(r.chance)}" style="width:${pct(r.chance)}"></div><i class="needle" style="--to:${(r.roll * 100).toFixed(1)}%"></i></div>
         <p class="roll-cap"><span>Success ${pct(r.chance)}</span><span>Roll ${Math.round(r.roll * 100)}</span></p>
-        <div class="stamp">${r.stamp}</div>
+        <div class="stamp ${r.stampCls || ''}">${r.stamp}</div>
         <div class="spoils">${r.spoils}</div>
         ${r.note ? `<p class="note">${r.note}</p>` : ''}
         <button class="btn primary wide" data-close>Continue</button>
@@ -224,45 +226,63 @@ export function createModals(dialog, game, onChange) {
     }, 1500);
   }
 
+  // What a battle cost me: stockpiles taken, the Power or Defense that died with the units, then the units.
   function losses(r) {
     const parts = [];
     if (r.lost) parts.push(tags(r.lost, '−'));
+    for (const [k, v] of Object.entries(r.cost || {})) {
+      if (v) parts.push(factorTag(k, v, '−'));
+    }
     for (const [id, n] of Object.entries(r.units || {})) parts.push(`<span class="tag t-bad tap-name" data-label="${esc(ITEM_BY_ID[id].name)}">${icon(id)}−${num(n)}</span>`);
     if (r.staffLost) parts.push(`<span class="tag t-bad">${icon('militia')}−${num(r.staffLost)} troops</span>`); // reports saved before per-unit losses
     return parts.join('') || 'None';
   }
 
+  // Both sides' butcher's bill. `theirs` names what the attacker's losses are counted in.
+  function lossRows(r, theirs) {
+    const mine = losses(r);
+    return `${mine === 'None' ? '' : `<div class="r losses"><span>${icon('skull')}Our losses</span><b class="loss-list">${mine}</b></div>`}
+      ${r.theirLoss ? `<div class="r"><span>${icon('skull')}Their losses</span><b class="good-t">~${num(r.theirLoss)} ${theirs}</b></div>` : ''}`;
+  }
+
   function showOp(r, then) {
+    const s = game.state;
     const sec = E.sectorById(r.sector);
+    const from = sec.links.find((l) => s.sectors.includes(l));
     battle({
       mode: 'op', stamp: r.win ? 'Captured' : 'Repelled',
       kicker: 'Our offensive', title: sec.name,
+      shot: mapBackdrop(s, [sec.id, from].filter(Boolean), { beam: from ? [from, sec.id] : null }),
       youLabel: 'Your power', youIcon: 'power', you: r.power,
       themLabel: 'Their defense', themIcon: 'defense', them: r.defense,
       chance: r.chance, roll: r.roll, win: r.win,
-      spoils: r.win
+      spoils: `${r.win
         ? `${r.retaken ? `<div class="r"><span>${icon('check')}Retaken</span><b class="muted">No spoils</b></div>` : `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>`}
-           ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
-           ${r.retaken ? '' : `<blockquote class="lore">${esc(sec.lore)}</blockquote>`}`
-        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>
-           ${r.strength ? `<div class="r"><span>${icon('trend')}${esc(sec.name)} strength</span><b class="bad-t">×${r.strength.toFixed(2)}</b></div>` : ''}`,
+           ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}`
+        : `${r.strength ? `<div class="r"><span>${icon('trend')}${esc(sec.name)} strength</span><b class="bad-t">×${r.strength.toFixed(2)}</b></div>` : ''}`}
+        ${lossRows(r, 'defense')}
+        ${r.win && !r.retaken ? `<blockquote class="lore">${esc(sec.lore)}</blockquote>` : ''}`,
     }, then);
   }
 
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
+    const place = r.assault && E.sectorById(r.target) ? esc(E.sectorById(r.target).name) : '';
     battle({
-      mode: 'def', stamp: r.win ? 'Held' : 'Breached',
+      mode: 'def', stamp: r.win ? 'Held' : r.overrun ? 'Overrun' : r.plundered ? 'Plundered' : 'Breached',
+      stampCls: r.overrun ? 'overrun' : '',
       kicker: r.offline ? 'Attacked while away' : 'Under attack', title: r.name || f.raidName,
+      shot: r.assault ? mapBackdrop(game.state, [r.target, r.from], { beam: [r.from, r.target] }) : '',
       youLabel: 'Your defense', youIcon: 'defense', you: r.defense,
       themLabel: 'Their strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
-      spoils: r.win
-        ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>
-           ${r.assault && r.strengthAfter ? `<div class="r"><span>${icon('trend')}${esc(E.sectorById(r.from).name)} strength</span><b class="good-t">×${r.strengthAfter.toFixed(2)}</b></div>` : ''}`
-        : `<div class="r losses"><span>${icon('skull')}Losses</span><b class="loss-list">${losses(r)}</b></div>
-           ${r.assault ? `<div class="r"><span>${icon('map')}${esc(E.sectorById(r.target).name)}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}`,
-      note: r.win ? '' : r.assault ? (r.fell ? `${icon('fire')}${esc(E.sectorById(r.target).name)} has fallen.` : '') : `${icon('fire')}Damage reports incoming.`,
+      spoils: `${r.win ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>` : ''}
+        ${r.assault && r.strengthAfter ? `<div class="r"><span>${icon('trend')}${esc(E.sectorById(r.from).name)} strength</span><b class="${r.win ? 'good-t' : 'bad-t'}">×${r.strengthAfter.toFixed(2)}</b></div>` : ''}
+        ${!r.win && r.assault && !r.plundered ? `<div class="r"><span>${icon('map')}${place}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}
+        ${lossRows(r, 'strength')}`,
+      note: r.win ? '' : r.overrun ? `${icon('skull')}${place} was taken in a single push.`
+        : r.plundered ? `${icon('money')}The stores at ${place} are empty. The walls held.`
+          : r.assault ? (r.fell ? `${icon('fire')}${place} has fallen.` : '') : `${icon('fire')}Damage reports incoming.`,
     }, then);
   }
 
@@ -323,16 +343,22 @@ export function createModals(dialog, game, onChange) {
     }
     const ev = E.eventById(inst.id);
     setFocus('order', inst.uid);
+    // Orders about a border open with a close-up of it, so the names in the text have a place.
+    const where = [(inst.params || {}).held, (inst.params || {}).node].filter((id) => E.sectorById(id));
     const choices = ev.choices.map((ch, i) => `
       <button class="choice ${i === ev.def ? 'is-default' : ''}" data-choice="${i}">
         <b>${esc(E.fillText(inst, ch.label))}</b><span class="fx">${preview(E.choiceOutcome(s, inst, ch), ch, inst)}</span>
       </button>`).join('');
+    const shot = where.length ? mapBackdrop(s, where) : '';
     open(`
-      <div class="event ${ev.aftermath ? 'crisis' : ''} ${ev.urgent ? 'urgent' : ''}">
-        <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : ev.urgent ? 'alert' : 'message')}${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Incoming transmission'}</span>
-          <span class="deadline" data-deadline></span></div>
-        <div class="deadbar"><i data-deadbar></i></div>
-        <h2>${esc(E.fillText(inst, ev.title))}</h2>
+      <div class="event ${ev.aftermath ? 'crisis' : ''} ${ev.urgent ? 'urgent' : ''} ${shot ? 'has-map' : ''}">
+        ${shot}
+        <div class="modal-head">
+          <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : ev.urgent ? 'alert' : 'message')}${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Incoming transmission'}</span>
+            <span class="deadline" data-deadline></span></div>
+          <div class="deadbar"><i data-deadbar></i></div>
+          <h2>${esc(E.fillText(inst, ev.title))}</h2>
+        </div>
         <p class="ev-text">${esc(E.fillText(inst, ev.text))}</p>
         ${ev.threat ? `<div class="threat-box">
           <div class="vs-row them"><span>${icon('power')}Their force</span><div class="vbar"><i data-tfbar></i></div><b>${num(inst.params.strength)}</b></div>

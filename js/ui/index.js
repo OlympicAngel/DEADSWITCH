@@ -127,10 +127,11 @@ export function createUI(root, game) {
 
   root.addEventListener('click', (e) => {
     // Whatever was tapped is now the thing the debugger inspects, button or not.
-    const card = e.target.closest('[data-card], [data-item]');
+    const card = e.target.closest('[data-card], [data-item], [data-clan]');
     if (card && !card.closest('dialog')) {
       if (card.dataset.card) setFocus('building', card.dataset.card);
-      else setFocus('item', card.dataset.item);
+      else if (card.dataset.item) setFocus('item', card.dataset.item);
+      else setFocus('clan', card.dataset.clan);
     }
     const t = e.target.closest('[data-act], [data-nav], [data-go], [data-inner], [data-mode], [data-sector], [data-req]');
     if (!t || t.disabled || t.closest('dialog')) {
@@ -308,7 +309,8 @@ export function createUI(root, game) {
     if (ui.screen === 'command') return JSON.stringify(base);
     if (ui.screen === 'map') {
       const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(2)}${n.marks}`).join();
-      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, s.assault && s.assault.from + s.assault.target, nodes, s.chapter, s.ending, ui.inner.map === 'archive' ? [s.stats, Math.round(s.align)] : E.level(s, 'core')]);
+      const postures = Object.values(s.clans).map((c) => c.stances.join('')).join('|');
+      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, s.assault && s.assault.from + s.assault.target, nodes, postures, s.chapter, s.ending, ui.inner.map === 'archive' ? [s.stats, Math.round(s.align)] : E.level(s, 'core')]);
     }
     return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align)]);
   }
@@ -498,7 +500,7 @@ export function createUI(root, game) {
       items.push({
         key: 'atk:' + threats.map((a) => a.faction + a.strength).join(','), level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
         body: `<button class="fl-body" data-go="command"><span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b data-t></b><em data-h></em></button>`,
-        time: clock(atk.remaining), hold: `hold ${pct(p)}`, holdCls: 'chance-' + chanceClass(p),
+        time: clock(atk.remaining), hold: `hold ${pct(p)}${E.overrunRisk(s, atk) ? ' · overrun' : ''}`, holdCls: 'chance-' + chanceClass(p),
       });
     }
     if (s.events.length) {

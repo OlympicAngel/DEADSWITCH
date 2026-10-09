@@ -1,6 +1,6 @@
 // Command: the war room. Threat reactor in the middle, live feeds for every front around it.
 import {
-  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
+  FACTIONS, FACTORS, RANKS, RAIDS, NODES, CLANS, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
@@ -8,6 +8,7 @@ import { icon, labeled } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
 import { put, putHtml, setCls, setData, setW, setAttr, setStyle } from '../dom.js';
 import { onScreen } from '../onscreen.js';
+import { miniMap } from '../minimap.js';
 
 const R = 160; // reactor centre in its 320 viewBox
 
@@ -75,6 +76,7 @@ export function renderCommand() {
         <section class="panel half" data-panel="build"></section>
         <section class="panel" data-panel="events"></section>
         <section class="panel" data-panel="directive"></section>
+        <section class="panel" data-panel="clans"></section>
         <section class="panel" data-panel="effects"></section>
         <section class="panel feed" data-panel="feed"></section>
       </div>
@@ -148,6 +150,7 @@ export function updateCommand(s, ui, refs) {
   if (on('build')) buildPanel(s, refs);
   if (on('events')) eventsPanel(s, refs);
   if (on('directive')) directivePanel(s, refs);
+  if (on('clans')) clansPanel(s, refs);
   if (on('effects')) effectsPanel(s, refs);
   if (on('feed')) feedPanel(s, refs);
 }
@@ -168,11 +171,13 @@ function raidPanel(s, refs) {
   stackPanel(s, refs);
   const el = slot(refs, 'raid', raid.faction + raid.strength + (raid.assault ? raid.target + E.breaches(s, raid.target) : ''), `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
+    ${raid.assault ? miniMap(s, [raid.from, raid.target], { beam: [raid.from, raid.target], label: false, cls: 'strip' }) : ''}
     <div class="inc-main">
-      <span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>
+      ${raid.assault ? '' : `<span class="fac-ico" style="--fc:${fac.color}">${icon(fac.icon)}</span>`}
       <div><b>${E.attackName(raid)}</b><small>${raid.assault ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches` : fac.name}</small></div>
       <div class="count" data-count></div>
     </div>
+    ${raid.assault ? `<div class="overrun-warn" data-over hidden>${icon('skull')}<span>Overrun: ${esc(E.sectorById(raid.target).name)} falls on the first breach</span></div>` : ''}
     <div class="bars">
       <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
       <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b>${num(raid.strength)}</b></div>
@@ -184,6 +189,8 @@ function raidPanel(s, refs) {
   const max = Math.max(def, raid.strength, 1);
   setData(el, 'level', p < 0.5 ? 'danger' : 'warn');
   el.classList.toggle('imminent', raid.remaining < 60);
+  const over = el.querySelector('[data-over]');
+  if (over) over.hidden = !E.overrunRisk(s, raid);
   put(el.querySelector('[data-count]'), clock(raid.remaining));
   setW(el.querySelector('[data-dbar]'), pct(def / max));
   setW(el.querySelector('[data-sbar]'), pct(raid.strength / max));
@@ -284,6 +291,27 @@ function directivePanel(s, refs) {
   setW(el.querySelector('[data-b]'), pct(Math.min(1, have / need)));
 }
 
+// What each clan is doing about me: the stances their profile currently adds up to (sim/clans.js).
+function clansPanel(s, refs) {
+  const live = Object.keys(FACTIONS).filter((f) => E.clanAwake(s, f));
+  const sets = live.map((f) => [f, E.stanceList(s, f)]);
+  const el = slot(refs, 'clans', E.level(s, 'core') < CLANS.startAtCore ? '' : sets.map(([f, st]) => f + st.map((x) => x.id).join()).join('|'),
+    `<header>${icon('military')}Clans</header>
+     ${sets.map(([f, stances]) => {
+    const fac = FACTIONS[f];
+    const own = SECTORS.filter((x) => x.faction === f);
+    const held = own.filter((x) => s.sectors.includes(x.id)).length;
+    const capital = own.find((x) => x.boss);
+    return `<div class="clan" style="--fc:${fac.color}" data-clan="${f}">
+        <div class="clan-top"><span class="fac-ico sm">${icon(fac.icon)}</span><b>${fac.short}</b>
+          <small>${held}/${own.length} sectors${capital && s.sectors.includes(capital.id) ? ' · capital taken' : ''}</small></div>
+        ${stances.length
+      ? `<div class="stances">${stances.map((x) => `<span class="stance" data-tip="text" data-tip-text="${esc(x.desc)}">${icon(x.icon)}${esc(x.name)}</span>`).join('')}</div>`
+      : '<p class="idle">No change in posture.</p>'}</div>`;
+  }).join('')}`);
+  el.hidden = !live.length || E.level(s, 'core') < CLANS.startAtCore;
+}
+
 function effectsPanel(s, refs) {
   const g = s.grudges || [];
   const key = s.buffs.map((b) => b.label).join(',') + '|' + g.map((x) => x.faction + x.left + x.mult).join(',');
@@ -293,7 +321,7 @@ function effectsPanel(s, refs) {
   el.hidden = !any;
   s.buffs.forEach((b, i) => {
     const t = el.querySelector(`[data-buff="${i}"]`);
-    if (t) put(t, time(b.remaining));
+    if (t) put(t, b.hold ? 'while it holds' : time(b.remaining));
   });
 }
 

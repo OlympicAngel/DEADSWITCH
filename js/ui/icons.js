@@ -30,7 +30,7 @@ export const ICONS = {
   settings: 'settings', clock: 'clock', alert: 'alert-triangle', lock: 'lock', check: 'check', close: 'x', next: 'chevron-right',
   up: 'arrow-up', down: 'arrow-down', fire: 'flame', heart: 'heart', trend: 'trending-up', hourglass: 'hourglass', message: 'message',
   unlock: 'lock-open', book: 'book', sound: 'volume', mute: 'volume-off', vibrate: 'device-mobile-vibration', export: 'download', import: 'upload',
-  trash: 'trash', city: 'building-skyscraper', bell: 'bell-ringing', hex: 'hexagon', spark: 'sparkles', stop: 'hand-stop',
+  trash: 'trash', city: 'building-skyscraper', bell: 'bell-ringing', hex: 'hexagon', spark: 'sparkles', stop: 'hand-stop', skull: 'skull',
   play: 'player-play', info: 'info-circle', zoomin: 'zoom-in', zoomout: 'zoom-out', dev: 'bug',
 };
 
