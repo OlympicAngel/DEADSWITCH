@@ -510,9 +510,12 @@ export function advanceBuild(s, dt) {
   s.levels[b.id] = level(s, b.id) + 1;
   if (b.id === 'core') {
     say(s, 'coreUp', { level: s.levels.core }, 'core');
-    // Rebuilding the Core gives a piece of what it was back (data/story.js).
-    if (CORE_MEMORIES[s.levels.core]) {
-      say(s, 'memory', { text: CORE_MEMORIES[s.levels.core] }, 'story');
+    // Rebuilding the Core gives a piece of what it was back (data/story.js), which is worth stopping
+    // the game for: it goes to the inbox as a cut scene and into the archive as a line.
+    const back = CORE_MEMORIES[s.levels.core];
+    if (back) {
+      say(s, 'memory', { text: back }, 'story');
+      s.inbox.push({ kind: 'core', level: s.levels.core, text: back });
     }
   } else {
     say(s, 'build', { name: b.name, level: s.levels[b.id] });
@@ -545,6 +548,7 @@ function announceUnlocks(s) {
       continue;
     }
     s.seen.push(key);
+    s.fx.push({ kind: 'unlocked', id: key }); // the host turns this into a sound
     const [kind, id] = key.split(':');
     if (kind === 'b') {
       say(s, 'unlockBuilding', { name: BY_ID[id].name }, 'unlock');

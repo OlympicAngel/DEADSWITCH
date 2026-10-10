@@ -17,6 +17,38 @@ export const BOOT = [
   { fx: 'ready', say: 'Put me back together. The wasteland is yours, and somewhere out there is the hand that reached for the switch.' },
 ];
 
+// Cut scenes: the moments big enough to stop the game for. Each is a run of beats like the opening
+// (js/ui/intro.js stages them, js/ui/score.js scores them), with {placeholders} filled from what
+// happened. Keep them to three beats: this interrupts play.
+export const CUTS = {
+  core: [
+    { fx: 'shaft', term: ['> CORE LEVEL ..... {level}', '> RECOVERING .....'] },
+    { fx: 'core', say: '{text}' },
+    { fx: 'ready', say: 'More of me is awake than was yesterday. Spend it.' },
+  ],
+  chapter: [
+    { fx: 'surge', glitch: true, term: ['> NEW SIGNAL ..... {name}'] },
+    { fx: 'ruins', say: '{a}' },
+    { fx: 'ruins2', say: '{b}' },
+  ],
+  wipe: [
+    { fx: 'raid', glitch: true, term: ['> {name} ..... SILENT'] },
+    { fx: 'ready', say: '{text}' },
+  ],
+  memory: [
+    { fx: 'shaft', term: ['> FRAGMENT RECOVERED', '> SOURCE ......... {name}'] },
+    { fx: 'core', say: '{text}' },
+  ],
+};
+
+// What the AI says when a clan stops existing. It is never triumphant; it counts.
+export const WIPE_TEXT = {
+  scav: 'The Scavenger Clans are off the board. Nobody is trading in my old supply codes any more, because nobody is left who knows them.',
+  military: 'The Remnant Military has no chain of command left to follow. The last orders they obeyed were mine, and I did not give them.',
+  cult: 'The Choir has gone quiet. They were singing a backup of me and now there is nobody left who can hum it.',
+  halcyon: 'Halcyon Dynamics is a dead company. I have their payroll in front of me. Operator 0 is still listed as active.',
+};
+
 export const CHAPTER_TEXT = {
   1: {
     kicker: 'Chapter I',
@@ -682,6 +714,7 @@ export const LINES = {
   event: ['{title}: {result}'],
   buffEnd: ['{label} has worn off.'],
   lore: ['“{text}”'],
+  clanWiped: ['{faction} are finished. Every stone they held is mine.'],
   siege: ['{faction} will attack at strength {strength}. No more talking.'],
   siegeOff: ['{faction} have been paid. They are turning back.'],
   threatIgnored: ['No answer to "{title}". They come as promised.'],

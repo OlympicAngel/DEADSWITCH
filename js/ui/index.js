@@ -630,10 +630,13 @@ export function createUI(root, game) {
         flash(card);
         burst(card, 'var(--hud)');
       } else if (fx.kind === 'damaged') {
+        sfx.fall();
         shake();
         toast(`${icon('fire')}<b>${esc(BUILDINGS.find((b) => b.id === fx.id).name)}</b> lost a level`, 'bad');
       } else if (fx.kind === 'event') {
         ui.unseen.add(fx.uid);
+      } else if (fx.kind === 'unlocked') {
+        sfx.unlock();
       } else if (fx.kind === 'directive') {
         sfx.win();
         vibrate(30);

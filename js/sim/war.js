@@ -229,7 +229,19 @@ export function advanceOp(s, dt) {
     report.retaken = !first;
     s.stats.opsWon++;
     say(s, first ? 'opWon' : 'opRetaken', { sector: sec.name }, 'good');
-    if (first) say(s, 'lore', { text: sec.lore }, 'story');
+    if (first) {
+      say(s, 'lore', { text: sec.lore }, 'story');
+      // A capital, or every sixth fragment, is the archive moving on: those get a cut scene.
+      if (sec.boss || s.taken.length % MAP.fragmentCut === 0) {
+        s.inbox.push({ kind: 'memory', sector: sec.id });
+      }
+    }
+    // Every stone a clan held is ours: that is the end of them, said once.
+    if (sec.faction && !SECTORS.some((x) => x.faction === sec.faction && !s.sectors.includes(x.id)) && !s.scripted['wipe:' + sec.faction]) {
+      s.scripted['wipe:' + sec.faction] = 1;
+      say(s, 'clanWiped', { faction: FACTIONS[sec.faction].name }, 'rank');
+      s.inbox.push({ kind: 'wipe', faction: sec.faction });
+    }
     if (sec.boss) {
       say(s, 'bossDown', { faction: FACTIONS[sec.faction].name }, 'rank');
       if (s.raid && s.raid.faction === sec.faction) {

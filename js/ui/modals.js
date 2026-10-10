@@ -1,15 +1,16 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
-  RESOURCES, FACTIONS, BOOT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES,
+  RESOURCES, FACTIONS, BOOT, CUTS, WIPE_TEXT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
 import { tags, bonusText, bonusChips, chanceClass, clock, factorTag } from './common.js';
 import { mapBackdrop } from './minimap.js';
-import { sfx, isMuted, setMuted } from './sfx.js';
+import { sfx, volume, setVolume } from './sfx.js';
 import { introStage, playScene, frameHit } from './intro.js';
 import { startScore, scoreScene, stopScore, swell } from './score.js';
+import { duckAmbient } from './ambient.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
 import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
@@ -39,7 +40,8 @@ export function createModals(dialog, game, onChange) {
   }
 
   dialog.addEventListener('close', () => {
-    stopScore(); // nothing of the opening outlives its dialog
+    stopScore(); // nothing of a cut scene outlives its dialog
+    duckAmbient(false);
     if (!dialog.open) {
       finish();
     }
@@ -61,6 +63,7 @@ export function createModals(dialog, game, onChange) {
   });
 
   function open(html, { cls = '', then = null } = {}) {
+    duckAmbient(true); // the bed steps back while a dialog is talking
     stopTyping(true);
     clearInterval(ticker);
     finished = false;
@@ -140,12 +143,6 @@ export function createModals(dialog, game, onChange) {
 
   // ---------- story ----------
 
-  function cinematic(inner, lines, then, btn) {
-    open(`${inner}<div class="typed-lines" id="tl"></div><button class="btn primary wide reveal" data-close>${btn}</button>`, { cls: 'cinematic locked', then });
-    sfx.story();
-    typeLines(dialog.querySelector('#tl'), lines, () => dialog.querySelector('.reveal').classList.add('in'));
-  }
-
   // Callsign field + confirm; used at the end of the boot sequence and for older saves.
   const nameForm = (btn) => `
     <form class="callsign reveal" id="callsign">
@@ -170,23 +167,24 @@ export function createModals(dialog, game, onChange) {
     return () => { form.classList.add('in'); input.focus(); };
   }
 
-  // The opening (data/story.js) is a run of scenes. Each beat cuts the camera to its scene
-  // (js/ui/intro.js), moves the score to it (js/ui/score.js), types its line and hands over to the
-  // next. The segment row under the text fills over the whole beat, so the wait is visible. A tap
-  // finishes the line, a second tap cuts on, Skip jumps to the end.
-  function showBoot(then) {
+  // Every cut scene in the game runs through here (the opening, a Core level, a chapter, a clan
+  // going quiet, a fragment). A beat cuts the camera to its scene (js/ui/intro.js), moves the score
+  // to it (js/ui/score.js), types its line and hands over to the next. The segment row under the
+  // text fills over the whole beat, so the wait is visible. A tap finishes the line, a second tap
+  // cuts on, Skip jumps to the end. `tail` is what the last beat hands over to.
+  function cinema(beats, { then, tail, arm, gate = null }) {
     open(`${introStage()}
       <div class="intro-ui">
-        <div class="typed-lines boot-beat in" id="tl"><p class="term">&gt; CARRIER DETECTED. SOURCE UNKNOWN.</p></div>
-        <button class="btn primary wide boot-start" id="bstart">${icon('play')}Answer it</button>
-        <div class="boot-foot" id="bf" hidden>
-          <div class="boot-steps" id="bs">${BOOT.map(() => '<i><b></b></i>').join('')}</div>
+        <div class="typed-lines boot-beat in" id="tl">${gate ? `<p class="term">${gate.line}</p>` : ''}</div>
+        ${gate ? `<button class="btn primary wide boot-start" id="bstart">${icon('play')}${gate.btn}</button>` : ''}
+        <div class="boot-foot" id="bf"${gate ? ' hidden' : ''}>
+          <div class="boot-steps" id="bs">${beats.map(() => '<i><b></b></i>').join('')}</div>
           <span class="boot-hint">tap${icon('next')}</span>
           <button class="btn ghost small" id="bskip">Skip</button>
         </div>
-        ${nameForm(`${icon('command')}Take command`)}
+        ${tail}
       </div>`, { cls: 'cinematic intro-modal locked', then });
-    const reveal = bindName();
+    const reveal = arm();
     const stage = dialog.querySelector('.intro');
     const tl = dialog.querySelector('#tl');
     const dots = dialog.querySelector('#bs');
@@ -198,7 +196,7 @@ export function createModals(dialog, game, onChange) {
       clearTimeout(wait);
       stopTyping(false);
       at = n;
-      const b = BOOT[n];
+      const b = beats[n];
       const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
       const hold = b.hold ?? (b.say ? 3000 : 1800);
       playScene(stage, b.fx);
@@ -215,7 +213,7 @@ export function createModals(dialog, game, onChange) {
       step(n, (lines.length ? typeDuration(lines) : 0) + hold);
       const next = () => {
         foot.classList.add('tap'); // the line is done: a tap now moves on instead of finishing it
-        if (n + 1 < BOOT.length) {
+        if (n + 1 < beats.length) {
           wait = setTimeout(() => beat(n + 1), hold);
           return;
         }
@@ -242,8 +240,8 @@ export function createModals(dialog, game, onChange) {
       fill.style.transition = `transform ${Math.round(ms)}ms linear`;
       fill.style.transform = 'scaleX(1)';
     }
-    dialog.querySelector('#bskip').onclick = () => { sfx.click(); beat(BOOT.length - 1); };
-    // Tapping the stage finishes the line it is typing; tapping again moves the sequence on.
+    dialog.querySelector('#bskip').onclick = () => { sfx.click(); beat(beats.length - 1); };
+    // Tapping the picture finishes the line it is typing; tapping again cuts on.
     // pointerdown so this runs before the dialog's own click handler empties `typing`.
     dialog.addEventListener('pointerdown', (e) => {
       if (!dialog.classList.contains('intro-modal') || at < 0 || e.target.closest('button')) {
@@ -251,13 +249,17 @@ export function createModals(dialog, game, onChange) {
       }
       if (typing) {
         stopTyping(true);
-      } else if (at + 1 < BOOT.length) {
+      } else if (at + 1 < beats.length) {
         swell();
         beat(at + 1);
       }
     });
-    // The sequence waits on one tap: a browser only lets sound start from a gesture, and the
-    // opening is the one place where every beat has a sound to make.
+    if (!gate) {
+      startScore(beats[0].fx);
+      beat(0);
+      return;
+    }
+    // The opening waits on one tap: a browser only lets sound start from a gesture.
     const start = dialog.querySelector('#bstart');
     start.onclick = () => {
       start.hidden = true;
@@ -265,6 +267,30 @@ export function createModals(dialog, game, onChange) {
       startScore();
       beat(0);
     };
+  }
+
+  function showBoot(then) {
+    cinema(BOOT, {
+      then,
+      tail: nameForm(`${icon('command')}Take command`),
+      arm: () => bindName(),
+      gate: { line: '&gt; CARRIER DETECTED. SOURCE UNKNOWN.', btn: 'Answer it' },
+    });
+  }
+
+  // Fills {placeholders} in a cut scene's beats from what actually happened (data/story.js).
+  function cut(beats, vars, then, btn = 'Continue') {
+    const fill = (l) => l.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+    const filled = beats.map((b) => ({ ...b, term: b.term && b.term.map(fill), say: b.say && fill(b.say) }));
+    cinema(filled, {
+      then,
+      tail: `<button class="btn primary wide reveal" id="cdone">${icon('next')}${btn}</button>`,
+      arm: () => {
+        const done = dialog.querySelector('#cdone');
+        done.onclick = () => { sfx.click(); dialog.close(); finish(); };
+        return () => done.classList.add('in');
+      },
+    });
   }
 
   function showName(then) {
@@ -275,16 +301,21 @@ export function createModals(dialog, game, onChange) {
   function showChapter(id, then) {
     const c = CHAPTERS.find((x) => x.id === id);
     const t = CHAPTER_TEXT[id];
-    const f = FACTIONS[c.faction];
-    cinematic(`<div class="chapter-screen" style="--fc:${f.color}">
-        <span class="kicker">${t.kicker}</span><h2 class="chapter-title">${c.title}</h2>
-        <div class="enemy">${icon(f.icon)}<div><b>${f.name}</b><p>${esc(f.desc)}</p></div></div></div>`, t.lines, then, 'Continue');
+    cut(CUTS.chapter, { name: FACTIONS[c.faction].name.toUpperCase(), a: t.lines[0], b: t.lines[1] }, then);
   }
 
   function showEnding(key, then) {
     const end = ENDINGS[key];
-    cinematic(`<div class="chapter-screen"><span class="kicker">Epilogue</span><h2 class="chapter-title">${end.title.replace('Ending: ', '')}</h2></div>`,
-      [...end.lines, '', ENDINGS.after], then, 'Keep building');
+    const beats = [...end.lines, ENDINGS.after].map((say, i) => ({ fx: ['title', 'core', 'ruins', 'ready'][i] || 'ready', say }));
+    cinema(beats, {
+      then,
+      tail: `<button class="btn primary wide reveal" id="cdone">${icon('next')}Keep building</button>`,
+      arm: () => {
+        const done = dialog.querySelector('#cdone');
+        done.onclick = () => { sfx.click(); dialog.close(); finish(); };
+        return () => done.classList.add('in');
+      },
+    });
   }
 
   // ---------- battle reports ----------
@@ -508,6 +539,8 @@ export function createModals(dialog, game, onChange) {
     refresh();
     ticker = setInterval(refresh, 500);
     dialog.querySelectorAll('[data-choice]').forEach((b) => b.addEventListener('click', () => {
+      const pick = E.eventById(inst.id).choices[Number(b.dataset.choice)];
+      sfx.choose(!pick || !pick.lose);
       const res = game.act.choose(inst.uid, Number(b.dataset.choice));
       if (!res) {
         refresh();
@@ -638,8 +671,11 @@ export function createModals(dialog, game, onChange) {
       <span class="kicker">${icon('settings')}System</span>
       <h2>Settings</h2>
       <p class="muted">Progress saves to this device every ${BALANCE.autosaveSeconds}s and when you leave.</p>
+      <div class="mixer">
+        ${['sfx', 'music'].map((id) => `<label class="vol"><span>${icon(volume(id) ? 'sound' : 'mute')}${id === 'sfx' ? 'Effects' : 'Music'}</span>
+          <input type="range" min="0" max="100" value="${Math.round(volume(id) * 100)}" data-vol="${id}"></label>`).join('')}
+      </div>
       <div class="menu-actions">
-        <button class="btn" id="mSound">${icon(isMuted() ? 'mute' : 'sound')}<span>${isMuted() ? 'Sound off' : 'Sound on'}</span></button>
         <button class="btn" id="mHaptic">${icon('vibrate')}<span>${hapticsOn() ? 'Vibration on' : 'Vibration off'}</span></button>
         ${notifySupported() ? `<button class="btn" id="mNotify">${icon('bell')}<span>${notifyWanted() ? 'Alerts on' : 'Alerts off'}</span></button>` : ''}
         <button class="btn" id="mExport">${icon('export')}<span>Export save</span></button>
@@ -656,11 +692,16 @@ export function createModals(dialog, game, onChange) {
     const $ = (q) => dialog.querySelector(q);
     const msg = $('#mMsg');
     const text = $('#mText');
-    $('#mSound').onclick = (e) => {
-      setMuted(!isMuted());
-      e.currentTarget.innerHTML = `${icon(isMuted() ? 'mute' : 'sound')}<span>${isMuted() ? 'Sound off' : 'Sound on'}</span>`;
-      sfx.click();
-    };
+    for (const el of dialog.querySelectorAll('[data-vol]')) {
+      el.oninput = () => {
+        const id = el.dataset.vol;
+        setVolume(id, el.value / 100);
+        el.previousElementSibling.firstElementChild.outerHTML = icon(volume(id) ? 'sound' : 'mute');
+        if (id === 'sfx') {
+          sfx.click(); // the slider plays what it is setting
+        }
+      };
+    }
     $('#mHaptic').onclick = (e) => {
       setHaptics(!hapticsOn());
       vibrate(40);
@@ -757,6 +798,9 @@ export function createModals(dialog, game, onChange) {
       setTimeout(pump, 250);
     };
     const show = { boot: () => showBoot(next), chapter: () => showChapter(item.id, next), ending: () => showEnding(item.key, next),
+      core: () => cut(CUTS.core, { level: item.level, text: item.text }, next),
+      wipe: () => cut(CUTS.wipe, { name: FACTIONS[item.faction].name.toUpperCase(), text: WIPE_TEXT[item.faction] }, next, 'Go on'),
+      memory: () => cut(CUTS.memory, { name: (SECTORS.find((x) => x.id === item.sector) || {}).name, text: (SECTORS.find((x) => x.id === item.sector) || {}).lore }, next),
       op: () => showOp(item, next), raid: () => showRaid(item, next), expired: () => showExpired(item, next) }[item.kind];
     if (show) {
       show();

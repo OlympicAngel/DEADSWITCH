@@ -2,7 +2,9 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES } from '../../data.js';
+import { ambientMood, moodOf } from '../ambient.js';
+import { volume } from '../audio.js';
 
 const n2 = (v) => (Number.isFinite(v) ? v.toFixed(2) : '-');
 const pc = (v) => `${(v * 100).toFixed(1)}%`;
@@ -233,6 +235,8 @@ function screen(s, id) {
       ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
       ['scripted', () => `${TUTORIAL.target} def ${E.sectorDefense(s, E.sectorById(TUTORIAL.target))} · retake ${['armed', 'inbound', 'done'][s.scripted.retake || 0]}`],
       ['frontier leaks', () => Object.keys(FACTIONS).map((f) => `${f}:${E.earlyTargets(s, f).filter((id) => E.sectorOpen(s, E.sectorById(id))).join('/') || '-'}`).join(' ')],
+      ['music mood', () => `${moodOf(s)} (bed ${ambientMood()}) · sfx ${Math.round(volume('sfx') * 100)}% music ${Math.round(volume('music') * 100)}%`],
+      ['inbox', () => s.inbox.map((x) => x.kind).join(' ') || 'empty'],
       ['day seed / rolls', () => `${E.daySeed(s)} · ${Object.entries(s.rolls).map(([k, n]) => `${k}:${n}`).join(' ') || 'none'}`],
       ['next raid / assault roll', () => `${E.peek(s, 'raid').toFixed(3)} / ${E.peek(s, 'assault').toFixed(3)}`],
     ],
@@ -241,6 +245,10 @@ function screen(s, id) {
       ['forget lessons', (g) => { g.state.taught = []; }],
       ['teach nothing', (g) => { g.state.taught = LESSONS.map((l) => l.id); }],
       ['run scripted retake', (g) => { g.state.scripted.retake = 0; g.state.assault = null; E.scriptedRetake(g.state); }],
+      ['cut: core', (g) => g.state.inbox.push({ kind: 'core', level: E.level(g.state, 'core'), text: CORE_MEMORIES[Math.max(2, E.level(g.state, 'core'))] || 'A fragment with nothing in it.' })],
+      ['cut: chapter', (g) => g.state.inbox.push({ kind: 'chapter', id: Math.min(4, g.state.chapter + 1) })],
+      ['cut: wipe', (g) => g.state.inbox.push({ kind: 'wipe', faction: 'scav' })],
+      ['cut: fragment', (g) => g.state.inbox.push({ kind: 'memory', sector: 'rust' })],
       ['skip scripted retake', (g) => { g.state.scripted.retake = 2; }],
     ],
   };

@@ -9,6 +9,7 @@ import { time } from './format.js';
 import * as store from './host/store.js';
 import { createPresence } from './host/presence.js';
 import { scheduleAlerts, cancelAlerts, setBadge, clearBadge } from './host/notify.js';
+import { startAmbient, stopAmbient, ambientTick } from './ui/ambient.js';
 
 const OFFLINE_REPORT_SECONDS = 60; // a shorter absence is caught up quietly
 const AWAY_FLOOR = 2; // under this, the gap was a slow frame, not an absence
@@ -20,6 +21,7 @@ let ui = null;
 let presence = null;
 let last = 0;
 let sinceSave = 0;
+let sinceMood = 0;
 let looping = false;
 
 const save = (now = false) => store.write(game.state, now);
@@ -143,6 +145,12 @@ function advance() {
     sinceSave = 0;
     save();
   }
+  // The music reads the state once a second: what is inbound, what is pending, how full we are.
+  sinceMood += real;
+  if (sinceMood >= 1) {
+    sinceMood = 0;
+    ambientTick(game.state);
+  }
   ui.render();
 }
 
@@ -184,6 +192,7 @@ async function boot() {
   presence = createPresence({
     onLeave: () => {
       stopLoop();
+      stopAmbient();
       save(true);
       store.flush();
       scheduleAlerts(game.state);
@@ -196,6 +205,7 @@ async function boot() {
         catchUp(awayMs / 1000);
       }
       startLoop();
+      startAmbient(game.state);
       ui.render();
     },
   });
@@ -209,6 +219,8 @@ async function boot() {
   if (presence.here()) {
     startLoop();
   }
+  // A browser only starts audio from a gesture, so the bed waits for the first tap of the session.
+  addEventListener('pointerdown', () => startAmbient(game.state), { once: true });
   // Exposed for debugging from the browser console.
   window.deadswitch = game;
 }

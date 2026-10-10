@@ -291,6 +291,7 @@ export const MAP = {
   // never leaks (js/sim/war.js).
   earlyLead: 1, // Core levels before a chapter opens that its frontier starts to leak
   earlyOpen: 3, // how many of its sectors leak at once
+  fragmentCut: 6, // a memory fragment every this many captures is worth a cut scene
 };
 
 export const OPS = {

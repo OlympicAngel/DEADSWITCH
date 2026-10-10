@@ -708,6 +708,16 @@ dialog::backdrop { background: rgba(1,4,6,.82); backdrop-filter: blur(4px); }
 .modal-body .muted { margin-bottom: 12px; }
 .kicker { display: inline-flex; align-items: center; gap: 6px; font: 700 11px var(--font-hud); text-transform: uppercase; letter-spacing: .2em; color: var(--hud); }
 .menu-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* One slider per audio bus. */
+.mixer { display: grid; gap: 8px; margin-bottom: 10px; }
+.vol { display: grid; grid-template-columns: 108px 1fr; align-items: center; gap: 10px; }
+.vol > span { display: inline-flex; align-items: center; gap: 6px; font: 700 10.5px var(--font-hud); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+.vol input { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: none; outline: none; }
+.vol input:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; border-radius: 4px; }
+.vol input::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: var(--line-2); }
+.vol input::-moz-range-track { height: 3px; border-radius: 2px; background: var(--line-2); }
+.vol input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -7px; border: 0; border-radius: 50%; background: var(--hud); box-shadow: 0 0 10px var(--hud-glow); }
+.vol input::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: var(--hud); box-shadow: 0 0 10px var(--hud-glow); }
 .menu-actions .btn { justify-content: flex-start; font-size: 11.5px; padding: 12px; }
 .menu-actions .danger { grid-column: 1 / -1; background: rgba(255,93,93,.1); color: var(--bad); box-shadow: inset 0 0 0 1px rgba(255,93,93,.4); }
 textarea { width: 100%; margin-top: 10px; resize: vertical; background: #0a0d10; color: var(--text); border: 1px solid var(--line-2); border-radius: 6px; padding: 8px; font: 12px var(--font-num); }

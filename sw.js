@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.6';
+const CACHE = 'deadswitch-v1.7';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot; everything else is cached the first time it is asked for, so adding
 // a file to the game never means remembering to add it here.
