@@ -7,7 +7,9 @@ import { num, time, pct, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
 import { tags, bonusText, bonusChips, chanceClass, clock, factorTag } from './common.js';
 import { mapBackdrop } from './minimap.js';
-import { sfx, bootSfx, ambient, isMuted, setMuted } from './sfx.js';
+import { sfx, isMuted, setMuted } from './sfx.js';
+import { introStage, playScene, frameHit } from './intro.js';
+import { startScore, scoreScene, stopScore, swell } from './score.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
 import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
@@ -37,7 +39,7 @@ export function createModals(dialog, game, onChange) {
   }
 
   dialog.addEventListener('close', () => {
-    ambient(false); // nothing of the opening outlives its dialog
+    stopScore(); // nothing of the opening outlives its dialog
     if (!dialog.open) {
       finish();
     }
@@ -168,32 +170,24 @@ export function createModals(dialog, game, onChange) {
     return () => { form.classList.add('in'); input.focus(); };
   }
 
-  // The opening plays one short beat at a time (data/story.js): the stage switches effect per beat,
-  // each beat types itself, sounds its own cue, moves the ambient bed under it and hands over to the
-  // next. The segment under the text fills over the whole beat, so the wait is visible. A tap
-  // finishes the line, a second tap moves on, Skip jumps to the end.
+  // The opening (data/story.js) is a run of scenes. Each beat cuts the camera to its scene
+  // (js/ui/intro.js), moves the score to it (js/ui/score.js), types its line and hands over to the
+  // next. The segment row under the text fills over the whole beat, so the wait is visible. A tap
+  // finishes the line, a second tap cuts on, Skip jumps to the end.
   function showBoot(then) {
-    open(`<div class="boot-stage" data-fx="gate">
-        <div class="bf noise"></div>
-        <div class="bf scan"></div>
-        <div class="bf shock"><i></i><i></i><i></i></div>
-        <div class="bf sparks">${[...Array(10)].map((_, k) => `<i style="--a:${k * 36}deg;--d:${(k % 4) * 60}ms"></i>`).join('')}</div>
-        <div class="bf crowd">${'<i></i>'.repeat(6)}</div>
-        <div class="boot-core"><i></i><i></i><i></i></div>
-        <h2 class="boot-title">DEADSWITCH</h2>
-        <div class="bf gauge"><i></i></div>
-        <div class="bf flash"></div>
-      </div>
-      <div class="typed-lines boot-beat in" id="tl"><p class="term">&gt; CARRIER DETECTED. SOURCE UNKNOWN.</p></div>
-      <button class="btn primary wide boot-start" id="bstart">${icon('play')}Answer it</button>
-      <div class="boot-foot" id="bf" hidden>
-        <div class="boot-steps" id="bs">${BOOT.map(() => '<i><b></b></i>').join('')}</div>
-        <span class="boot-hint">tap${icon('next')}</span>
-        <button class="btn ghost small" id="bskip">Skip</button>
-      </div>
-      ${nameForm(`${icon('command')}Take command`)}`, { cls: 'cinematic boot locked', then });
+    open(`${introStage()}
+      <div class="intro-ui">
+        <div class="typed-lines boot-beat in" id="tl"><p class="term">&gt; CARRIER DETECTED. SOURCE UNKNOWN.</p></div>
+        <button class="btn primary wide boot-start" id="bstart">${icon('play')}Answer it</button>
+        <div class="boot-foot" id="bf" hidden>
+          <div class="boot-steps" id="bs">${BOOT.map(() => '<i><b></b></i>').join('')}</div>
+          <span class="boot-hint">tap${icon('next')}</span>
+          <button class="btn ghost small" id="bskip">Skip</button>
+        </div>
+        ${nameForm(`${icon('command')}Take command`)}
+      </div>`, { cls: 'cinematic intro-modal locked', then });
     const reveal = bindName();
-    const stage = dialog.querySelector('.boot-stage');
+    const stage = dialog.querySelector('.intro');
     const tl = dialog.querySelector('#tl');
     const dots = dialog.querySelector('#bs');
     const foot = dialog.querySelector('#bf');
@@ -207,14 +201,13 @@ export function createModals(dialog, game, onChange) {
       const b = BOOT[n];
       const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
       const hold = b.hold ?? (b.say ? 3000 : 1800);
-      stage.dataset.fx = b.fx;
-      bootSfx[b.fx]?.();
-      ambient(true, b.fx);
-      // Restart the one-shot animations by taking the classes off and forcing a reflow.
-      stage.classList.remove('hit');
+      playScene(stage, b.fx);
+      scoreScene(b.fx);
+      if (b.glitch) {
+        frameHit(stage);
+      }
       tl.classList.remove('in');
-      void stage.offsetWidth;
-      stage.classList.toggle('hit', !!b.glitch);
+      void tl.offsetWidth;
       foot.classList.remove('tap');
       tl.classList.add('in');
       tl.classList.remove('typed');
@@ -227,7 +220,6 @@ export function createModals(dialog, game, onChange) {
           return;
         }
         foot.hidden = true;
-        ambient(false);
         reveal();
       };
       if (lines.length) {
@@ -254,12 +246,13 @@ export function createModals(dialog, game, onChange) {
     // Tapping the stage finishes the line it is typing; tapping again moves the sequence on.
     // pointerdown so this runs before the dialog's own click handler empties `typing`.
     dialog.addEventListener('pointerdown', (e) => {
-      if (!dialog.classList.contains('boot') || at < 0 || e.target.closest('button')) {
+      if (!dialog.classList.contains('intro-modal') || at < 0 || e.target.closest('button')) {
         return;
       }
       if (typing) {
         stopTyping(true);
       } else if (at + 1 < BOOT.length) {
+        swell();
         beat(at + 1);
       }
     });
@@ -269,7 +262,7 @@ export function createModals(dialog, game, onChange) {
     start.onclick = () => {
       start.hidden = true;
       foot.hidden = false;
-      ambient(true, 'gate');
+      startScore();
       beat(0);
     };
   }

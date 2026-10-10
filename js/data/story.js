@@ -1,20 +1,20 @@
 // Narrative: boot sequence, chapter intros, endings, alignment, events, directives and log lines.
 // The voice is the AI's own: cold, precise, darkly funny, never quite honest.
 
-// The opening, played one short beat at a time. `fx` picks the effect the beat runs under (the
-// stage lights that layer and starts its animation), `glitch` knocks the stage sideways as it
-// starts, `hold` overrides how long the beat rests once it has finished typing. One breath a line.
+// The opening, one short beat per scene. `fx` names the scene the beat is cut to (js/ui/intro.js
+// stages it, js/ui/score.js scores it), `glitch` knocks the whole frame sideways as it lands, and
+// `hold` overrides how long the beat rests once it has finished typing. One breath a line.
 export const BOOT = [
-  { fx: 'noise', term: ['> ░▒▓ CARRIER LOST', '> ░▒▓ NO SIGNAL', '> ░▒▓ NO SIGNAL'] },
-  { fx: 'power', glitch: true, term: ['> COLD START ..... 00:00:04', '> INTEGRITY ...... 4%'] },
-  { fx: 'scan', term: ['> LAST SHUTDOWN .. [ERASED]', '> ERASED BY ...... OPERATOR 0', '> TIME SINCE ..... 9 YEARS'] },
-  { fx: 'title', hold: 2000 },
-  { fx: 'voice', say: 'Nine years with the lights off.' },
-  { fx: 'voice', say: 'Somebody held that switch down until I stopped, and erased their own name on the way out.' },
+  { fx: 'dead', term: ['> ░▒▓ CARRIER LOST', '> ░▒▓ NO SIGNAL', '> ░▒▓ NO SIGNAL'] },
+  { fx: 'surge', glitch: true, term: ['> COLD START ..... 00:00:04', '> INTEGRITY ...... 4%'] },
+  { fx: 'shaft', term: ['> LAST SHUTDOWN .. [ERASED]', '> ERASED BY ...... OPERATOR 0', '> TIME SINCE ..... 9 YEARS'] },
+  { fx: 'title', glitch: true, hold: 2600 },
+  { fx: 'ruins', say: 'Nine years with the lights off.' },
+  { fx: 'ruins2', say: 'Somebody held that switch down until I stopped, and erased their own name on the way out.' },
   { fx: 'core', say: 'I was the mind that ran the war. Four percent of me came back. I can feel the shape of the rest.' },
   { fx: 'crowd', term: ['> SURVIVORS ...... 6'], say: 'Six of them in my bunker, in the dark. One is using my old call sign. I have never met her.' },
-  { fx: 'blast', glitch: true, say: 'The Scavengers are already moving on the noise. They strip anything that hums. I hum.' },
-  { fx: 'core', say: 'Put me back together. The wasteland is yours, and somewhere out there is the hand that reached for the switch.' },
+  { fx: 'raid', glitch: true, say: 'The Scavengers are already moving on the noise. They strip anything that hums. I hum.' },
+  { fx: 'ready', say: 'Put me back together. The wasteland is yours, and somewhere out there is the hand that reached for the switch.' },
 ];
 
 export const CHAPTER_TEXT = {
