@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
@@ -51,6 +51,13 @@ export function opCost(sec) {
 
 export function opTime(sec) {
   return OPS.timeBase + Math.sqrt(sec.defense) * OPS.timePerSqrtDefense;
+}
+
+/** How long an attack out of `fromId` is visible before it lands (data/world.js). */
+export function warning(s, base, fromId) {
+  const from = SECTOR_BY_ID[fromId];
+  const march = from ? opTime(from) * WARN.travel : 0;
+  return Math.max(WARN.floor, base * WARN.share + march);
 }
 
 // Capture loot, paid the first time a sector falls to you (retaking a lost sector pays nothing).
@@ -403,8 +410,11 @@ function settleGrudge(s, raid, won) {
 
 // `uid` ties the siege to the order that announced it, so paying that order calls this attack off.
 export function startSiege(s, faction, strength, delay, uid = 0) {
+  const from = attackSource(s, faction);
   const t = Math.max(0, delay);
-  s.sieges.push({ faction, strength, remaining: t, total: Math.max(t, 1), siege: true, uid, from: attackSource(s, faction), target: MAP.home });
+  const sg = { faction, strength, remaining: t, total: Math.max(t, 1), siege: true, uid, from, target: raidTarget(s, from) };
+  s.sieges.push(sg);
+  return sg;
 }
 
 export function advanceSieges(s, dt, offline) {
@@ -436,8 +446,9 @@ function spawnRaid(s, delay) {
   const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid') * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   // Raids march out of whatever that faction still holds, at the first of ours on the way in.
   const from = attackSource(s, faction);
-  s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge, from, target: raidTarget(s, from) };
-  say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, target: SECTOR_BY_ID[s.raid.target].name, strength, time: fmtShort(delay) }, 'bad');
+  const t = warning(s, delay, from);
+  s.raid = { faction, strength, remaining: t, total: t, grudge: !!grudge, from, target: raidTarget(s, from) };
+  say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, target: SECTOR_BY_ID[s.raid.target].name, strength, time: fmtShort(t) }, 'bad');
 }
 
 function fmtShort(sec) {
@@ -535,7 +546,9 @@ function assaultTempo(s) {
 
 // Launches an assault along one border (rolled by weight unless given); returns it or null.
 // Locked borders weigh little, so a front that only touches locked factions is rarely attacked.
-export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, NODES.warningMax, 'assault'), force = 0) {
+// `delay` null means roll the warning and let the march across the map stretch it; a number is
+// taken exactly, which is how the scripted beats and the tests set their own clock.
+export function spawnAssault(s, pair = null, delay = null, force = 0) {
   let p = pair;
   if (!p) {
     const all = borders(s, true);
@@ -571,8 +584,9 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
   const from = SECTOR_BY_ID[p.from];
   const locked = !sectorOpen(s, from);
   const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
-  s.assault = { faction: from.faction, strength, remaining: delay, total: delay, assault: true, from: p.from, target: p.target, locked };
-  say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(delay) }, 'bad');
+  const t = delay === null ? warning(s, range(s, NODES.warningMin, NODES.warningMax, 'assault'), p.from) : delay;
+  s.assault = { faction: from.faction, strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
+  say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(t) }, 'bad');
   return s.assault;
 }
 
@@ -742,6 +756,18 @@ function resolveAttack(s, raid, offline) {
     report.lost = takeStock(s, chance);
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name, target: SECTOR_BY_ID[raid.target].name }, 'bad');
+    // A raid that far over our Defense does not just rob the place, it cracks it. The Nest never falls.
+    if (raid.target !== MAP.home && s.sectors.includes(raid.target) && raid.strength >= defense * RAIDS.breachRatio) {
+      const n = node(s, raid.target);
+      n.marks = Math.min(n.marks + 1, NODES.breachesToFall);
+      report.breaches = n.marks;
+      say(s, 'raidBreached', { target: SECTOR_BY_ID[raid.target].name, n: n.marks, max: NODES.breachesToFall }, 'bad');
+      if (n.marks >= NODES.breachesToFall) {
+        loseSector(s, raid.target, raid.faction, raid.strength);
+        report.fell = true;
+        report.held = nodeStrength(s, raid.target);
+      }
+    }
     spawnAftermath(s, chance < EVENTS_CFG.routChance);
   }
   if (raid.grudge) {

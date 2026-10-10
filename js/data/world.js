@@ -306,23 +306,31 @@ export const OPS = {
   loot: { money: [600, 0.43, 1.2], energy: [240, 0.43, 0.5], pop: [1.5, 0.43, 0] },
   // Share of each unit tab killed when an operation fails: base x (their strength / ours), up to cap
   // (the cap is not shown to the player); each unit type loses that share x (1 - its durability).
-  unitLoss: { staff: { base: 0.078, cap: 0.5 }, weapons: { base: 0.04, cap: 0.35 } },
+  unitLoss: { staff: { base: 0.11, cap: 0.6 }, weapons: { base: 0.065, cap: 0.45 } },
   // A win costs less, and only when it was close enough to round up to real casualties.
   winLoss: { staff: { base: 0.018, cap: 0.15 }, weapons: { base: 0.01, cap: 0.1 } },
 };
+
+// How long an attack is visible before it lands: half the warning it used to carry, plus the time
+// one of our own operations would need to cover that ground, so a strike out of the next sector
+// barely gives us time to turn around and one from deep in their territory is seen coming.
+export const WARN = { share: 0.5, travel: 3, floor: 45 };
 
 export const RAIDS = {
   startAtCore: 2,
   firstDelay: 300, // seconds of warning before the very first raid
   intervalMin: 480,
   intervalMax: 840,
+  // A raid that lands this far over our Defense does not just rob the place, it cracks it: the
+  // sector takes a breach like an assault would leave, and two of those still lose it.
+  breachRatio: 1.8,
   threatShare: 0.3, // raid strength tracks this share of your threat index...
   spreadMin: 0.85, // ...times a random spread
   spreadMax: 1.2,
   winSharpness: 4,
-  lossMin: 0.05, // share of each stockpile lost on defeat, scaling with how badly you lost
-  lossMax: 0.2,
-  unitLoss: { staff: { base: 0.058, cap: 0.45 }, defenses: { base: 0.04, cap: 0.35 } }, // as OPS.unitLoss, for a breached raid or siege
+  lossMin: 0.07, // share of each stockpile lost on defeat, scaling with how badly you lost
+  lossMax: 0.26,
+  unitLoss: { staff: { base: 0.07, cap: 0.5 }, defenses: { base: 0.05, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
   winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.006, cap: 0.08 } }, // holding a close one still costs people
   // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
   // of their sector's strength (NODES.defendWinCut / breachCut); raids have no sector, so it is reported only.

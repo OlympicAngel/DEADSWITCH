@@ -157,6 +157,7 @@ export const EVENTS_CFG = {
 // border: the event is about one border between a sector of yours ({held}) and an enemy sector ({node}).
 //   strength: change to {node}'s strength (+0.2 = +20% of its base); assault: {node} attacks {held} after
 //   this many seconds; cede: {held} falls to {node}'s faction; clearMarks: {held}'s breaches are wiped.
+// threat: the force picks a target on its way in; {aim} is the place it is walking to.
 // urgent: answered on the spot within EVENTS_CFG.urgentDeadline; cannot be deferred; only fires while the
 // player is actively playing.
 // needsUnits: the event only fires when you own units in every listed Arsenal tab.
@@ -327,21 +328,21 @@ export const EVENTS = [
   // ---------- (def null: nothing is decided by silence, so the force simply arrives at the deadline)
   {
     id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 1800, def: null, threat: { min: 1.0, max: 1.2 },
-    text: '{faction} riders ring the valley, strength {strength}. "Tribute by sundown, machine, or we take it all, and the people with it."',
+    text: '{faction} riders ring {aim}, strength {strength}. "Tribute by sundown, machine, or we take it all, and the people with it."',
     choices: [
       { label: 'Pay the tribute', cost: { money: 360, energy: 100 }, align: -3, cancelSiege: true, result: 'They count it twice and ride off laughing. They will be back for more, and they know I will pay.' },
     ],
   },
   {
     id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 2700, def: null, threat: { min: 1.3, max: 1.6 },
-    text: 'The largest {faction} host I have ever recorded is marching on the Nest. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
+    text: 'The largest {faction} host I have ever recorded is marching on {aim}. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
     choices: [
       { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, cancelSiege: true, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
     ],
   },
   {
     id: 'blockade', title: 'Blockade', minCore: 2, deadline: 2400, def: null, threat: { min: 1.05, max: 1.3 },
-    text: '{faction} fighters have cut every road into the Nest, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
+    text: '{faction} fighters have cut every road into {aim}, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
     choices: [
       { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.25, duration: 3600, label: 'Road toll' }, cancelSiege: true, result: 'The roads open. Every caravan now pays them first, and me second.' },
     ],
@@ -698,6 +699,7 @@ export const LINES = {
   raidSpotted: ['{raid} spotted, moving on {target}. Strength about {strength}. Arrival in {time}.'],
   raidWon: ['{raid} repelled. We salvaged {loot} scrip from the wreckage.'],
   raidLost: ['{raid} broke through at {target}. They took supplies and left bodies.'],
+  raidBreached: ['They cracked the wall at {target} on the way out. Foothold {n} of {max}.'],
   opLaunched: ['Operation launched against {sector}.'],
   opWon: ['{sector} captured. Memory fragment recovered.'],
   opRetaken: ['{sector} is mine again.'],
@@ -717,7 +719,7 @@ export const LINES = {
   lore: ['“{text}”'],
   clanWiped: ['{faction} are finished. Every stone they held is mine.'],
   clanRally: ['{faction} are stripping {n} of their own positions to mass at {lead}. They want {lost} back.'],
-  siege: ['{faction} will attack at strength {strength}. No more talking.'],
+  siege: ['{faction} will attack {target} at strength {strength}. No more talking.'],
   siegeOff: ['{faction} have been paid. They are turning back.'],
   threatIgnored: ['No answer to "{title}". They come as promised.'],
   grudge: ['{faction} wants revenge. Their next raids will hit harder.'],

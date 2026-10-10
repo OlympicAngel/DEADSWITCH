@@ -58,7 +58,7 @@ export function fillText(inst, str) {
     .replace(/\{(a|b)\}/g, (_, k) => (BY_ID[p[k]] ? BY_ID[p[k]].name : 'facility'))
     .replace(/\{faction\}/g, () => (FACTIONS[p.faction] ? FACTIONS[p.faction].name : 'raiders'))
     .replace(/\{strength\}/g, () => String(Math.round(p.strength || 0)))
-    .replace(/\{(node|held)\}/g, (_, k) => (sectorById(p[k]) ? sectorById(p[k]).name : 'the border'));
+    .replace(/\{(node|held|aim)\}/g, (_, k) => (sectorById(p[k]) ? sectorById(p[k]).name : 'the border'));
 }
 
 // Concrete consequences of one choice, for both the UI preview and resolution.
@@ -180,8 +180,9 @@ function spawn(s, ev, front) {
   // A threat's force is on its way from the moment it is announced: it shows among the inbound
   // attacks with its own countdown, and only paying turns it back. (Not if the queue dropped it.)
   if (ev.threat && s.events.includes(inst)) {
-    startSiege(s, inst.params.faction, inst.params.strength, ev.deadline, inst.uid);
-    say(s, 'siege', { faction: FACTIONS[inst.params.faction].name, strength: inst.params.strength }, 'bad');
+    // The force picks its target now, so the announcement can name the place it is walking to.
+    inst.params.aim = startSiege(s, inst.params.faction, inst.params.strength, ev.deadline, inst.uid).target;
+    say(s, 'siege', { faction: FACTIONS[inst.params.faction].name, target: sectorById(inst.params.aim).name, strength: inst.params.strength }, 'bad');
   }
   s.recentEvents.push(ev.id);
   if (s.recentEvents.length > RECENT_EVENTS) {

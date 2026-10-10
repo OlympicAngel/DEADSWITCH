@@ -42,7 +42,7 @@ function play(seed) {
   const mark = (key, t) => {
     if (marks[key] === undefined) marks[key] = t;
   };
-  const tally = { sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
+  const tally = { sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
   const ignored = new Set(); // threats the bot decided to take on the chin, counted once each
 
   for (let t = 0; t < HOURS * 3600; t++) {
@@ -101,8 +101,9 @@ function play(seed) {
       if (m.kind === 'raid' && m.win) tally.salvageMin.push(m.loot.money / inc);
       if (m.kind === 'raid' && m.assault) {
         if (m.win) tally.assaultsHeld++; else tally.assaultsBreached++;
-        if (m.fell) tally.sectorsLost++;
       }
+      if (m.kind === 'raid' && !m.assault && m.breaches) tally.raidBreaches++;
+      if (m.fell) tally.sectorsLost++;
       if (m.kind === 'op' && m.win) mark('op:' + m.sector, t);
       if (m.kind === 'ending') mark('ending', t);
     }
@@ -149,6 +150,6 @@ console.log(`  Power ${n(mean((r) => r.factors.power))}  Defense ${n(mean((r) =>
 console.log(`  Sectors held ${mean((r) => r.sectors).toFixed(1)}  Humanity ${mean((r) => r.align).toFixed(0)}`);
 console.log(`  Raids/sieges won ${mean((r) => r.stats.raidsWon).toFixed(1)}  lost ${mean((r) => r.stats.raidsLost).toFixed(1)}`);
 console.log(`  Operations won ${mean((r) => r.stats.opsWon).toFixed(1)}  lost ${mean((r) => r.stats.opsLost).toFixed(1)}`);
-console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  breached ${mean((r) => r.tally.assaultsBreached).toFixed(1)}  sectors lost ${mean((r) => r.tally.sectorsLost).toFixed(1)}`);
+console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  breached ${mean((r) => r.tally.assaultsBreached).toFixed(1)}  raids that cracked a wall ${mean((r) => r.tally.raidBreaches).toFixed(1)}  sectors lost ${mean((r) => r.tally.sectorsLost).toFixed(1)}`);
 console.log(`  Capture loot ${mean((r) => avg(r.tally.lootMin) || 0).toFixed(1)} min of Scrip income, held-attack salvage ${mean((r) => avg(r.tally.salvageMin) || 0).toFixed(1)} min`);
 console.log(`  Events ${mean((r) => r.stats.events).toFixed(0)}  threats paid ${mean((r) => r.tally.tributes).toFixed(1)}  sieges taken ${mean((r) => r.tally.sieges).toFixed(1)}  grudges ${mean((r) => r.tally.grudges).toFixed(1)}  missed deadlines ${mean((r) => r.stats.expired || 0).toFixed(1)}`);

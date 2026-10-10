@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN } from '../../data.js';
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
@@ -151,7 +151,10 @@ function attack(s, key) {
       ['your defense', () => Math.round(E.factors(s).defense)],
       ['from → target', () => (find().from ? `${find().from} → ${find().target}` : '-')],
       ['would route to', () => (find().from ? E.raidTarget(s, find().from) + ` (${E.breaches(s, E.raidTarget(s, find().from))} breaches)` : '-')],
+      ['warning given', () => { const f = E.sectorById(find().from); return `${secs(find().total)} (march ${f ? secs(E.opTime(f) * WARN.travel) : '-'})`; }],
       ['overrun', () => `${E.overrunRisk(s, find())} (x${NODES.overrunRatio} defense)`],
+      ['cracks a wall', () => (find().assault ? 'n/a (assaults always do)'
+        : `${find().strength >= E.factors(s).defense * RAIDS.breachRatio} (x${RAIDS.breachRatio} defense)`)],
       ['vengeance', () => !!find().vengeance],
     ],
     json: () => find(),
