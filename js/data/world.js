@@ -373,8 +373,12 @@ export const NODES = {
   // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat).
   // They can breach and take a sector like anyone else; a sector you have held once can always be
   // retaken, open chapter or not.
-  lockedWeight: 0.15,
+  lockedWeight: 0.3,
   lockedAggrGain: 3, // a stirred locked border counts this much more per point of aggression
+  lockedFalloff: 0.5, // and weighs less the further its chapter still is from opening
+  // Open borders out-weigh sealed ones so heavily that a sealed clan could go hours without ever
+  // attacking. Every this many assaults the roll is reserved for one, when one borders us at all.
+  lockedEvery: 4,
   lockedCap: 1.2,
   spreadMin: 0.85,
   spreadMax: 1.15,

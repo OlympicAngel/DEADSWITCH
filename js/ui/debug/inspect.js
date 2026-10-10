@@ -243,6 +243,7 @@ function screen(s, id) {
       ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
       ['scripted', () => `${TUTORIAL.target} def ${E.sectorDefense(s, E.sectorById(TUTORIAL.target))} · retake ${['armed', 'inbound', 'done'][s.scripted.retake || 0]}`],
       ['frontier leaks', () => Object.keys(FACTIONS).map((f) => `${f}:${E.earlyTargets(s, f).filter((id) => E.sectorOpen(s, E.sectorById(id))).join('/') || '-'}`).join(' ')],
+      ['sealed fronts', () => { const b = E.borders(s, true).filter((x) => x.locked); return `${b.length} · next turn at ${Math.ceil(((s.assaultSeq || 0) + 1) / NODES.lockedEvery) * NODES.lockedEvery} (now ${s.assaultSeq || 0})`; }],
       ['rally chance', () => Object.keys(FACTIONS).map((f) => { const p = E.clanProfile(s, f); return `${f}:${Math.min(0.95, RALLY.base * p.retake * p.weight).toFixed(2)}`; }).join(' ')],
       ['music mood', () => `${moodOf(s)} (bed ${ambientMood()}) · sfx ${Math.round(volume('sfx') * 100)}% music ${Math.round(volume('music') * 100)}% voice ${Math.round(volume('voice') * 100)}%`],
       ['speaks as', () => voiceName()],

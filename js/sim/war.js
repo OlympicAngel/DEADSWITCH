@@ -540,20 +540,33 @@ export function spawnAssault(s, pair = null, delay = range(s, NODES.warningMin, 
   if (!p) {
     const all = borders(s, true);
     const profiles = clanProfiles(s);
-    // A locked clan comes rarely, but stirring one up (an order, an operation) counts for much more.
+    // An open border out-weighs a sealed one many times over, so on its own a sealed clan can watch
+    // for hours and never come. Every lockedEvery-th assault is reserved for one that borders us.
+    s.assaultSeq = (s.assaultSeq || 0) + 1;
+    const sealed = all.filter((b) => b.locked);
+    const theirTurn = sealed.length > 0 && s.assaultSeq % NODES.lockedEvery === 0;
+    const pool = theirTurn ? sealed : all;
+    // A locked clan comes rarely, rarer the further its chapter still is from opening, but stirring
+    // one up (an order, an operation) counts for much more.
     const w = (b) => {
       const a = aggression(s, b.from);
       const from = SECTOR_BY_ID[b.from];
       const prof = profiles[from.faction];
-      const base = b.locked ? NODES.lockedWeight * (1 + a * NODES.lockedAggrGain) : 1 + a;
+      const away = Math.max(0, chapterOf(from.chapter).core - level(s, 'core') - 1);
+      const base = b.locked
+        ? (NODES.lockedWeight / (1 + away * NODES.lockedFalloff)) * (1 + a * NODES.lockedAggrGain)
+        : 1 + a;
       // Ground of theirs that I hold pulls them back to it.
       const back = SECTOR_BY_ID[b.target].faction === from.faction ? prof.retake : 1;
       return Math.max(0, base) * prof.weight * back;
     };
-    const total = all.reduce((a, b) => a + w(b), 0);
-    if (!total || rand(s, 'assault') >= Math.min(1, total)) return null;
+    const total = pool.reduce((a, b) => a + w(b), 0);
+    if (!total) return null;
+    // On their turn they come whatever the odds would have been; otherwise a thin front often rolls
+    // nothing at all, which is what keeps the map quiet while the player is still small.
+    if (!theirTurn && rand(s, 'assault') >= Math.min(1, total)) return null;
     let r = rand(s, 'assault') * total;
-    p = all.find((b) => (r -= w(b)) <= 0) || all[all.length - 1];
+    p = pool.find((b) => (r -= w(b)) <= 0) || pool[pool.length - 1];
   }
   const from = SECTOR_BY_ID[p.from];
   const locked = !sectorOpen(s, from);
