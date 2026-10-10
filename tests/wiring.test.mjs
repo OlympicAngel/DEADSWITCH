@@ -73,3 +73,19 @@ test('the AI picks the most synthetic voice on offer, never a lifelike one', asy
   assert.match(voiceName(), /eSpeak Deutsch/);
   delete globalThis.speechSynthesis;
 });
+
+test('no handler reads e.currentTarget after awaiting: by then the event has stopped dispatching', () => {
+  // It reads null, which throws on the next property access and takes the whole loop down.
+  const bad = [];
+  for (const f of SOURCES) {
+    const src = readFileSync(f, 'utf8');
+    for (const m of src.matchAll(/currentTarget/g)) {
+      const start = Math.max(src.lastIndexOf('onclick', m.index), src.lastIndexOf('addEventListener', m.index));
+      const handler = src.slice(start, m.index);
+      if (start >= 0 && handler.includes('async') && handler.includes('await')) {
+        bad.push(`${f}: ${src.slice(start, start + 60).split('\n')[0]}`);
+      }
+    }
+  }
+  assert.deepEqual(bad, []);
+});

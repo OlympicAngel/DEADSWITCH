@@ -724,17 +724,19 @@ export function createModals(dialog, game, onChange) {
         }
       };
     }
-    $('#mHaptic').onclick = (e) => {
+    const hapticBtn = $('#mHaptic');
+    hapticBtn.onclick = () => {
       setHaptics(!hapticsOn());
       vibrate(40);
-      e.currentTarget.innerHTML = `${icon('vibrate')}<span>${hapticsOn() ? 'Vibration on' : 'Vibration off'}</span>`;
+      hapticBtn.innerHTML = `${icon('vibrate')}<span>${hapticsOn() ? 'Vibration on' : 'Vibration off'}</span>`;
     };
     const notifyBtn = $('#mNotify');
     if (notifyBtn) {
-      // Permission can only be asked for on a tap, so this is the only place it is asked.
-      notifyBtn.onclick = async (e) => {
+      // Permission can only be asked for on a tap, so this is the only place it is asked. The
+      // button is held from here, not read off the event: awaiting the prompt ends the dispatch.
+      notifyBtn.onclick = async () => {
         const on = await setNotify(!notifyWanted());
-        e.currentTarget.querySelector('span').textContent = on ? 'Alerts on' : 'Alerts off';
+        notifyBtn.querySelector('span').textContent = on ? 'Alerts on' : 'Alerts off';
         msg.textContent = on ? 'I will warn you about attacks while you are away.' : '';
       };
     }
@@ -772,26 +774,28 @@ export function createModals(dialog, game, onChange) {
       close();
     };
     let restoreArmed = false;
-    $('#mRestore').onclick = async (e) => {
+    const restoreBtn = $('#mRestore');
+    restoreBtn.onclick = async () => {
       if (!restoreArmed) {
         restoreArmed = true;
-        e.currentTarget.querySelector('span').textContent = 'Tap again to roll back';
+        restoreBtn.querySelector('span').textContent = 'Tap again to roll back';
         msg.textContent = 'This replaces the run with the one this session started from.';
         return;
       }
       msg.textContent = (await game.act.restore()) ? 'Rolled back.' : 'Nothing to roll back to.';
       restoreArmed = false;
-      e.currentTarget.querySelector('span').textContent = 'Restore last session';
+      restoreBtn.querySelector('span').textContent = 'Restore last session';
     };
     $('#mDev').onclick = () => {
       game.dev.panel.toggle();
       close();
     };
     let armed = false;
-    $('#mReset').onclick = (e) => {
+    const resetBtn = $('#mReset');
+    resetBtn.onclick = () => {
       if (!armed) {
         armed = true;
-        e.currentTarget.querySelector('span').textContent = 'Tap again to wipe';
+        resetBtn.querySelector('span').textContent = 'Tap again to wipe';
         return;
       }
       game.act.reset();
