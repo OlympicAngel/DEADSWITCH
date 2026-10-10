@@ -5,7 +5,7 @@
 // - builds: AI Core whenever the base-development gate allows it, otherwise the cheapest ready building
 // - arsenal: steady spending; when an attack (raid, siege or vengeance) is inbound with a weak hold
 //   chance it pours scrip into defense and troops
-// - map: launches operations at >= 80% odds (fortified multi-route sectors included)
+// - map: launches operations at >= 80% odds (fortified multi-route sectors included), never while an attack it is struggling to hold is inbound, since the troops march out with it
 // - events: picks a random affordable choice, so outcomes average across all options over the runs;
 //   threats are paid when affordable, otherwise refused (siege) or the cheapest give-up option
 import { BUILDINGS, ITEMS, SECTORS, RANKS } from '../js/data.js';
@@ -64,7 +64,9 @@ function play(seed) {
       if (E.canAfford(s, c) && (c.money || 0) < s.res.money * (scared ? 0.8 : 0.4)) E.buyItem(s, i.id);
     }
 
-    if (!s.op) {
+    // Troops leave the wall with the operation, so the bot does not launch into an attack it is
+    // already struggling to hold.
+    if (!s.op && !scared) {
       const target = SECTORS.find((x) => E.sectorStatus(s, x) === 'target' && E.opChance(s, x) > 0.8 && E.canLaunch(s, x));
       if (target) E.launchOp(s, target.id);
     }

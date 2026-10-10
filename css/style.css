@@ -397,6 +397,17 @@ button:focus-visible, [data-sector]:focus-visible { outline: 2px solid var(--war
 .sat-ico:active { background: color-mix(in srgb, currentColor 45%, #10171c); }
 .sat b { font: 700 15px var(--font-num); color: var(--text); margin-top: 3px; }
 .sat small { font: 600 9px var(--font-hud); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+/* Troops are out: the factor is short-handed until they come back. */
+/* Troops out on an operation: said where the number they are missing from is shown. */
+.shop-note { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; padding: 7px 10px; border: 1px solid var(--line);
+  border-radius: 8px; font: 600 11px var(--font-hud); color: var(--muted); background: var(--panel); }
+.shop-note.on { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
+.op-away { display: flex; align-items: center; gap: 4px; margin-top: 4px; font: 700 10px var(--font-hud); color: var(--warn); }
+.away-tag { margin-left: 5px; font: 700 9px var(--font-hud); text-transform: uppercase; letter-spacing: .1em; color: var(--warn); font-style: normal; }
+.stat.away b, .stat.away small { color: var(--warn); }
+.sat.away b { color: var(--warn); }
+.sat.away small { color: var(--warn); letter-spacing: .08em; }
+.sat.away .sat-ico { border-style: dashed; }
 .sat.tl { left: 0; top: 0; color: var(--power); }
 .sat.tr { right: 0; top: 0; color: var(--defense); }
 .sat.ml { left: 0; top: 30%; color: var(--experts); }

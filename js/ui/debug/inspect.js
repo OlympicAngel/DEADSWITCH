@@ -238,6 +238,7 @@ function screen(s, id) {
       ['play time', () => secs(s.playTime)],
       ['core / chapter', () => `${E.level(s, 'core')} / ${s.chapter}`],
       ['power / defense', () => `${Math.round(E.factors(s).power)} / ${Math.round(E.factors(s).defense)}`],
+      ['troops', () => (E.troopsOut(s) ? `out: \u2212${E.troopDefense(s)} defense` : `on the wall: ${E.troopDefense(s)} defense`)],
       ['threat / rank', () => `${Math.round(E.threat(s))} · ${E.rankIndex(E.threat(s))}`],
       ['next order in', () => secs(s.eventTimer)],
       ['next raid in', () => secs(s.raidTimer)],
@@ -278,6 +279,11 @@ function screen(s, id) {
         const mine = g.state.sectors.map((id) => SECTORS.find((x) => x.id === id)).filter((x) => x && x.faction);
         const sec = mine[mine.length - 1];
         if (sec) E.rallyClan(g.state, E.factionOf(g.state, sec.id), sec.id);
+      }],
+      ['send troops out / recall', (g) => {
+        // Fakes an operation, which is what takes the Staff tab off the wall.
+        const t = SECTORS.find((x) => E.sectorStatus(g.state, x) === 'target');
+        g.state.op = g.state.op ? null : (t && { sector: t.id, remaining: 600, total: 600 });
       }],
       ['skip scripted retake', (g) => { g.state.scripted.retake = 2; }],
     ],

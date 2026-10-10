@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT, CORE_MEMORIES,
+  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -84,12 +84,28 @@ function bonusTotal(s, key) {
   return b.tech + b.sectors + b.alignment + b.effects;
 }
 
+/** Defense sitting in the Military Staff tab: it holds the wall only while nobody is out attacking. */
+export function troopDefense(s) {
+  let d = 0;
+  for (const item of ITEMS) {
+    if (item.tab === 'staff' && item.gives && item.gives.defense) {
+      d += item.gives.defense * owned(s, item.id);
+    }
+  }
+  return Math.floor(d * (1 + bonusTotal(s, 'defense')));
+}
+
+/** True while an operation has the troops: they cannot be on the road and on the wall at once. */
+export const troopsOut = (s) => !!s.op;
+
 export function rawFactors(s) {
   const raw = { power: 0, defense: 0, experts: 0 };
+  const away = troopsOut(s);
   for (const item of ITEMS) {
     const n = owned(s, item.id);
     if (n && item.gives) {
       for (const k of FACTOR_KEYS) {
+        if (away && k === 'defense' && item.tab === 'staff') continue;
         raw[k] += (item.gives[k] || 0) * n;
       }
     }
@@ -168,7 +184,9 @@ export function projectDefense(s, seconds, drain = {}) {
     for (const i of pool) {
       const cost = itemCost(tmp, i);
       if (!canAfford(tmp, cost) || exceedsCap(s, cost).length) continue;
-      const ratio = i.gives.defense / (cost.money || 1);
+      // Every resource it costs counts, or a unit paid for in people looks free beside one paid in scrip.
+      const spend = (cost.money || 0) + (cost.energy || 0) + (cost.pop || 0) * CONVERSION.worth.pop;
+      const ratio = i.gives.defense / Math.max(1, spend);
       if (ratio > bestRatio) {
         bestRatio = ratio;
         best = { i, cost };

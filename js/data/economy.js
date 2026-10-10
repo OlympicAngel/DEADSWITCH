@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.11.0';
+export const VERSION = '1.12.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -184,13 +184,15 @@ export const ITEMS = [
   { id: 'emp', tab: 'defenses', name: 'EMP Hardening', req: { works: 6 }, cost: { money: 8500, energy: 3500 }, growth: 1.14, gives: { defense: 320 }, durability: 0.5 },
   { id: 'interceptors', tab: 'defenses', name: 'Interceptor Grid', req: { works: 9 }, cost: { money: 65000, energy: 30000 }, growth: 1.15, gives: { defense: 2000 }, durability: 0.15 },
   { id: 'aegis', tab: 'defenses', name: 'Aegis Dome', req: { works: 13 }, cost: { money: 750000, energy: 350000 }, growth: 1.15, gives: { defense: 15000 }, durability: 0.65 },
-  // Military staff (paid partly in people)
-  { id: 'militia', tab: 'staff', name: 'Militia', req: { barracks: 1 }, cost: { money: 30, pop: 3 }, growth: 1.1, gives: { power: 1, defense: 1 } },
-  { id: 'snipers', tab: 'staff', name: 'Scout Snipers', req: { barracks: 2 }, cost: { money: 200, pop: 6 }, growth: 1.12, gives: { power: 6, defense: 2 }, durability: 0.1 },
-  { id: 'garrison', tab: 'staff', name: 'Garrison Troops', req: { barracks: 3 }, cost: { money: 450, pop: 10 }, growth: 1.12, gives: { power: 3, defense: 12 }, durability: 0.25 },
-  { id: 'commandos', tab: 'staff', name: 'Commandos', req: { barracks: 5 }, cost: { money: 3000, pop: 25 }, growth: 1.13, gives: { power: 50, defense: 15 }, durability: 0.35 },
-  { id: 'operators', tab: 'staff', name: 'Drone Operators', req: { barracks: 7 }, cost: { money: 15000, energy: 4000, pop: 50 }, growth: 1.14, gives: { power: 150, defense: 150 }, durability: 0.6 },
-  { id: 'legion', tab: 'staff', name: 'Augmented Legion', req: { barracks: 10 }, cost: { money: 120000, energy: 40000, pop: 150 }, growth: 1.15, gives: { power: 1200, defense: 1200 }, durability: 0.45 },
+  // Military staff (paid partly in people). People are worth more than scrip and they march: a
+  // soldier counts for both Power and Defense, at a better rate per scrip than either specialist
+  // tab, and none of them hold the wall while an operation is out (sim/economy.js, rawFactors).
+  { id: 'militia', tab: 'staff', name: 'Militia', req: { barracks: 1 }, cost: { money: 30, pop: 3 }, growth: 1.1, gives: { power: 1, defense: 2 } },
+  { id: 'snipers', tab: 'staff', name: 'Scout Snipers', req: { barracks: 2 }, cost: { money: 200, pop: 6 }, growth: 1.12, gives: { power: 7, defense: 4 }, durability: 0.1 },
+  { id: 'garrison', tab: 'staff', name: 'Garrison Troops', req: { barracks: 3 }, cost: { money: 450, pop: 10 }, growth: 1.12, gives: { power: 7, defense: 24 }, durability: 0.25 },
+  { id: 'commandos', tab: 'staff', name: 'Commandos', req: { barracks: 5 }, cost: { money: 3000, pop: 25 }, growth: 1.13, gives: { power: 130, defense: 50 }, durability: 0.35 },
+  { id: 'operators', tab: 'staff', name: 'Drone Operators', req: { barracks: 7 }, cost: { money: 15000, energy: 4000, pop: 50 }, growth: 1.14, gives: { power: 540, defense: 540 }, durability: 0.6 },
+  { id: 'legion', tab: 'staff', name: 'Augmented Legion', req: { barracks: 10 }, cost: { money: 120000, energy: 40000, pop: 150 }, growth: 1.15, gives: { power: 4400, defense: 4400 }, durability: 0.45 },
   // Experts
   { id: 'engineers', tab: 'experts', name: 'Field Engineers', req: { thinktank: 1 }, cost: { money: 250, pop: 8 }, growth: 1.14, gives: { experts: 1 } },
   { id: 'hackers', tab: 'experts', name: 'Hackers', req: { thinktank: 2 }, cost: { money: 1200, energy: 300, pop: 15 }, growth: 1.15, gives: { experts: 4 } },

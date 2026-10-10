@@ -62,6 +62,7 @@ export const LESSONS = [
     steps: [
       { at: '[data-nav="command"]', say: 'Ground. Come back and I will tell you what it is worth.', done: 'tap' },
       { at: '[data-panel="op"]', say: 'An operation runs while you do everything else. When it lands I report what it cost, on both sides.', done: 'read' },
+      { at: '.sat.tr', say: 'Troops march with the operation. While one is out, nothing in the Military Staff tab holds the wall, and Defense says what is missing.', done: 'read' },
       { say: 'A sector we hold pays a permanent bonus for as long as we hold it. The first time we take one it gives up a piece of what I used to be. Both are in the Archive.', done: 'read' },
     ],
   },

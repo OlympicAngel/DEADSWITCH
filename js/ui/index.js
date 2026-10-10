@@ -323,7 +323,7 @@ export function createUI(root, game) {
       const beams = E.attacks(s).map((a) => (E.attackPlace(s, a) || []).join()).join('|');
       return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, s.chapter, s.ending, E.level(s, 'core')]);
     }
-    return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align)]);
+    return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align), !!s.op]);
   }
 
   function render() {

@@ -37,7 +37,7 @@ export function renderCommand() {
   const sat = (k, cls, tip, to) => `
     <div class="sat ${cls}" data-tip="${tip}">
       <button class="sat-ico" ${to}>${icon(k === 'align' ? 'heart' : k)}</button>
-      <b data-sat="${k}"></b><small>${k === 'align' ? 'Humanity' : FACTORS[k].name.replace('AI ', '')}</small>
+      <b data-sat="${k}"></b><small data-satname="${k}">${k === 'align' ? 'Humanity' : FACTORS[k].name.replace('AI ', '')}</small>
     </div>`;
   return `
     <div class="screen command">
@@ -88,6 +88,7 @@ export function bindCommand(panel) {
     threat: q('[data-threat]'), rank: q('[data-rank]'), next: q('[data-next]'),
     ring: q('[data-rankring]'), alignArc: q('[data-alignarc]'),
     sats: Object.fromEntries([...panel.querySelectorAll('[data-sat]')].map((el) => [el.dataset.sat, el])),
+    satNames: Object.fromEntries([...panel.querySelectorAll('[data-satname]')].map((el) => [el.dataset.satname, el])),
     panels: Object.fromEntries([...panel.querySelectorAll('[data-panel]')].map((el) => [el.dataset.panel, el])),
     keys: {},
   };
@@ -120,6 +121,10 @@ export function updateCommand(s, ui, refs) {
   refs.alignArc.classList.toggle('mach', a < 0);
   put(refs.sats.power, num(f.power));
   put(refs.sats.defense, num(f.defense));
+  // Troops out on an operation are off the wall: the number drops, so the reason is written next to it.
+  const away = E.troopsOut(s) ? E.troopDefense(s) : 0;
+  put(refs.satNames.defense, away ? `Defense \u2212${num(away)}` : 'Defense');
+  refs.sats.defense.closest('.sat').classList.toggle('away', !!away);
   put(refs.sats.experts, num(f.experts));
   put(refs.sats.align, `${a > 0 ? '+' : ''}${Math.round(a)}`);
 
@@ -153,7 +158,7 @@ function raidPanel(s, refs) {
   const sub = raid.assault
     ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches`
     : place ? `${fac.name} · out of ${esc(E.sectorById(place[0]).name)}` : fac.name;
-  const el = slot(refs, 'raid', raid.faction + raid.strength + (place || []).join() + (raid.assault ? E.breaches(s, raid.target) : ''), `
+  const el = slot(refs, 'raid', raid.faction + raid.strength + (place || []).join() + E.troopsOut(s) + (raid.assault ? E.breaches(s, raid.target) : ''), `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     ${place ? mapBackdrop(s, [place[1], place[0]], { beam: place, cls: 'panel' }) : ''}
     <div class="inc-main">
@@ -162,7 +167,7 @@ function raidPanel(s, refs) {
       <div class="count" data-count></div>
     </div>
     <div class="bars">
-      <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
+      <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense${E.troopsOut(s) ? ' <em class="away-tag">troops out</em>' : ''}</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
       <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b>${num(raid.strength)}</b></div>
     </div>
     <div class="inc-foot"><span class="hold" data-hold></span><button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
@@ -208,10 +213,12 @@ function opPanel(s, refs) {
   }
   const sec = E.sectorById(s.op.sector);
   const fac = FACTIONS[E.factionOf(s, sec.id)];
-  const el = slot(refs, 'op', s.op.sector, `
+  const away = E.troopDefense(s); // the troops marched out with it
+  const el = slot(refs, 'op', s.op.sector + ':' + away, `
     <header>${icon('power')}Outgoing</header>
     <div class="mini"><span class="fac-ico sm" style="--fc:${fac.color}">${icon(fac.icon)}</span><b>${sec.name}</b></div>
     <div class="mini-stats"><span data-t></span><span data-c></span></div>
+    ${away ? `<small class="op-away">${icon('defense')}\u2212${num(away)} Defense with them</small>` : ''}
     <div class="timebar"><i data-b></i></div>`);
   const p = E.opChance(s, sec);
   putHtml(el.querySelector('[data-t]'), `${labeled('clock')}${clock(s.op.remaining)}`);

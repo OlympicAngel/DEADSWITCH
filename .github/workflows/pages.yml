@@ -1,4 +1,4 @@
-name: Test and deploy to GitHub Pages
+name: Smoke test and deploy to GitHub Pages
 
 on:
   push:
@@ -16,21 +16,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  # The whole check: open the page in a headless browser and fail on anything it throws.
+  smoke:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm test
+      - run: npm i --no-save playwright && npx playwright install --with-deps chromium
+      - run: npm run smoke
 
   # Uploading and deploying are separate jobs on purpose: the artifact API needs a moment to index an
   # upload before deploy-pages can find it, and re-running only the deploy job never uploads a second
   # artifact (two of them in one run fail the deployment).
   build:
     if: github.event_name != 'pull_request'
-    needs: test
+    needs: smoke
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
