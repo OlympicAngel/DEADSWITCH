@@ -710,6 +710,7 @@ dialog::backdrop { background: rgba(1,4,6,.82); backdrop-filter: blur(4px); }
 .menu-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 /* One slider per audio bus. */
 .mixer { display: grid; gap: 8px; margin-bottom: 10px; }
+.voice-name { margin: -2px 0 0; font-size: 11px; opacity: .75; }
 .vol { display: grid; grid-template-columns: 108px 1fr; align-items: center; gap: 10px; }
 .vol > span { display: inline-flex; align-items: center; gap: 6px; font: 700 10.5px var(--font-hud); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
 .vol input { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: none; outline: none; }

@@ -10,6 +10,7 @@ import * as store from './host/store.js';
 import { createPresence } from './host/presence.js';
 import { scheduleAlerts, cancelAlerts, setBadge, clearBadge } from './host/notify.js';
 import { startAmbient, stopAmbient, ambientTick } from './ui/ambient.js';
+import { keepAwake, regainAwake, needsAwake } from './host/awake.js';
 
 const OFFLINE_REPORT_SECONDS = 60; // a shorter absence is caught up quietly
 const AWAY_FLOOR = 2; // under this, the gap was a slow frame, not an absence
@@ -145,11 +146,12 @@ function advance() {
     sinceSave = 0;
     save();
   }
-  // The music reads the state once a second: what is inbound, what is pending, how full we are.
+  // Once a second: the music reads the state, and the screen is held awake if there is a reason.
   sinceMood += real;
   if (sinceMood >= 1) {
     sinceMood = 0;
     ambientTick(game.state);
+    keepAwake(needsAwake(E.nextAttack(game.state), ui.storyOpen()));
   }
   ui.render();
 }
@@ -193,6 +195,7 @@ async function boot() {
     onLeave: () => {
       stopLoop();
       stopAmbient();
+      keepAwake(false);
       save(true);
       store.flush();
       scheduleAlerts(game.state);
@@ -206,6 +209,7 @@ async function boot() {
       }
       startLoop();
       startAmbient(game.state);
+      regainAwake(); // the browser drops the lock when the page hides
       ui.render();
     },
   });
@@ -219,6 +223,7 @@ async function boot() {
   if (presence.here()) {
     startLoop();
   }
+  store.keepStorage(); // ask once that the save not be evicted to reclaim space
   // A browser only starts audio from a gesture, so the bed waits for the first tap of the session.
   addEventListener('pointerdown', () => startAmbient(game.state), { once: true });
   // Exposed for debugging from the browser console.

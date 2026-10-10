@@ -1,6 +1,6 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
-  RESOURCES, FACTIONS, BOOT, CUTS, WIPE_TEXT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES,
+  RESOURCES, FACTIONS, BOOT, CUTS, WIPE_TEXT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES, RANKS,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, esc } from '../format.js';
@@ -11,6 +11,7 @@ import { sfx, volume, setVolume } from './sfx.js';
 import { introStage, playScene, frameHit } from './intro.js';
 import { startScore, scoreScene, stopScore, swell } from './score.js';
 import { duckAmbient } from './ambient.js';
+import { say as speak, stopVoice, voiceName } from './voice.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
 import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
@@ -41,6 +42,7 @@ export function createModals(dialog, game, onChange) {
 
   dialog.addEventListener('close', () => {
     stopScore(); // nothing of a cut scene outlives its dialog
+    stopVoice();
     duckAmbient(false);
     if (!dialog.open) {
       finish();
@@ -210,6 +212,7 @@ export function createModals(dialog, game, onChange) {
       tl.classList.add('in');
       tl.classList.remove('typed');
       tl.innerHTML = '';
+      speak(b.say); // the prose is the AI talking; the > lines are readouts, and stay silent
       step(n, (lines.length ? typeDuration(lines) : 0) + hold);
       const next = () => {
         foot.classList.add('tap'); // the line is done: a tap now moves on instead of finishing it
@@ -610,7 +613,7 @@ export function createModals(dialog, game, onChange) {
         ${sealed ? `<article class="panel chapter sealed"><header>${icon('lock')}${CHAPTER_TEXT[sealed.id].kicker}</header><p class="muted">Sealed. Opens at ${icon('core')}AI Core Lv ${sealed.core}.</p></article>` : ''}
         <section class="panel"><header>${icon('book')}Memory fragments<span class="count-badge">${frags.length}/${SECTORS.length}</span></header>
           <ol class="memories">${frags.map((x) => `<li style="--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}"><b>${x.name}</b><span>${esc(x.lore)}</span></li>`).join('')}</ol></section>
-        <section class="panel"><header>${icon('check')}Service record</header><div class="rows">${rec}</div></section>
+        <section class="panel"><header>${icon('check')}Service record${navigator.share ? `<button class="btn ghost small" data-act="share">${icon('export')}Share</button>` : ''}</header><div class="rows">${rec}</div></section>
         <section class="panel feed"><header>${icon('message')}System log</header><ol class="log"></ol></section>
       </div>`;
   }
@@ -619,6 +622,22 @@ export function createModals(dialog, game, onChange) {
     open(`<span class="kicker">${icon('book')}Archive</span><h2>The record so far</h2>
       ${archiveBody(game.state)}
       <button class="btn primary wide" data-close>Close</button>`, { cls: 'archive-modal' });
+    const share = dialog.querySelector('[data-act="share"]');
+    if (share) {
+      share.onclick = () => { sfx.click(); shareRecord(game.state); };
+    }
+  }
+
+  /** Hands the service record to whatever the device shares with. */
+  function shareRecord(s) {
+    const t = E.threat(s);
+    const lines = [
+      `DEADSWITCH — ${s.name || 'Unnamed'}, ${RANKS[E.rankIndex(t)].title}`,
+      `Threat ${num(t)} · ${s.sectors.length - 1} sectors held · ${time(s.playTime)} awake`,
+      `${s.stats.raidsWon} attacks repelled, ${s.stats.opsWon} taken, ${E.alignmentLabel(s.align)}`,
+    ];
+    navigator.share({ title: 'DEADSWITCH', text: lines.join('\n'), url: location.origin + location.pathname })
+      .catch(() => {}); // dismissed, or the device refused: nothing to say about it
   }
 
   // ---------- system ----------
@@ -672,8 +691,9 @@ export function createModals(dialog, game, onChange) {
       <h2>Settings</h2>
       <p class="muted">Progress saves to this device every ${BALANCE.autosaveSeconds}s and when you leave.</p>
       <div class="mixer">
-        ${['sfx', 'music'].map((id) => `<label class="vol"><span>${icon(volume(id) ? 'sound' : 'mute')}${id === 'sfx' ? 'Effects' : 'Music'}</span>
+        ${[['sfx', 'Effects'], ['music', 'Music'], ['voice', 'Voice']].map(([id, name]) => `<label class="vol"><span>${icon(volume(id) ? 'sound' : 'mute')}${name}</span>
           <input type="range" min="0" max="100" value="${Math.round(volume(id) * 100)}" data-vol="${id}"></label>`).join('')}
+        <p class="muted voice-name">Speaking as ${esc(voiceName())}</p>
       </div>
       <div class="menu-actions">
         <button class="btn" id="mHaptic">${icon('vibrate')}<span>${hapticsOn() ? 'Vibration on' : 'Vibration off'}</span></button>
@@ -698,7 +718,9 @@ export function createModals(dialog, game, onChange) {
         setVolume(id, el.value / 100);
         el.previousElementSibling.firstElementChild.outerHTML = icon(volume(id) ? 'sound' : 'mute');
         if (id === 'sfx') {
-          sfx.click(); // the slider plays what it is setting
+          sfx.click(); // each slider plays what it is setting
+        } else if (id === 'voice') {
+          speak('Voice check.');
         }
       };
     }

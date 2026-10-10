@@ -5,15 +5,19 @@
 
 const KEY = 'deadswitch.audio';
 const LEGACY_MUTE = 'deadswitch.muted';
-const DEFAULTS = { sfx: 0.8, music: 0.55 };
+// `voice` is not a bus: speech synthesis has no node to route, so it only scales the utterance.
+const DEFAULTS = { sfx: 0.8, music: 0.55, voice: 0.9 };
 
 let level = { ...DEFAULTS };
 try {
   const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
   if (raw && Number.isFinite(raw.sfx) && Number.isFinite(raw.music)) {
-    level = { sfx: clamp01(raw.sfx), music: clamp01(raw.music) };
+    level = { ...DEFAULTS, sfx: clamp01(raw.sfx), music: clamp01(raw.music) };
+    if (Number.isFinite(raw.voice)) {
+      level.voice = clamp01(raw.voice);
+    }
   } else if (localStorage.getItem(LEGACY_MUTE) === '1') {
-    level = { sfx: 0, music: 0 }; // a save from when sound was one switch
+    level = { sfx: 0, music: 0, voice: 0 }; // a save from when sound was one switch
   }
 } catch {
   // Storage blocked: defaults are fine.
@@ -27,11 +31,11 @@ let bus = null;
 
 /** Volume of a bus, 0 to 1. */
 export const volume = (id) => level[id];
-export const isMuted = () => !level.sfx && !level.music;
+export const isMuted = () => !level.sfx && !level.music && !level.voice;
 
 export function setVolume(id, v) {
   level[id] = clamp01(v);
-  if (bus) {
+  if (bus && bus[id]) {
     bus[id].gain.setTargetAtTime(level[id], bus.ctx.currentTime, 0.02);
   }
   try {

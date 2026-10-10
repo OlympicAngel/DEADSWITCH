@@ -56,3 +56,20 @@ test('lessons point at something real and can always be finished', () => {
     }
   }
 });
+
+test('the AI picks the most synthetic voice on offer, never a lifelike one', async () => {
+  // The picker runs once per session off whatever the device has, so a bad choice is silent.
+  globalThis.speechSynthesis = {
+    getVoices: () => [
+      { name: 'Google US English', voiceURI: 'Google US English', lang: 'en-US', localService: false },
+      { name: 'Microsoft Aria Online (Natural)', voiceURI: 'aria', lang: 'en-US', localService: false },
+      { name: 'Samantha', voiceURI: 'Samantha', lang: 'en-US', localService: true },
+      { name: 'eSpeak Deutsch', voiceURI: 'espeak-de', lang: 'de-DE', localService: true },
+      { name: 'Google Deutsch', voiceURI: 'Google Deutsch', lang: 'de-DE', localService: false },
+    ],
+    addEventListener: () => {},
+  };
+  const { voiceName } = await import('../js/ui/voice.js');
+  assert.match(voiceName(), /eSpeak Deutsch/);
+  delete globalThis.speechSynthesis;
+});

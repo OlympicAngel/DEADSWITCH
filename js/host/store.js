@@ -82,6 +82,31 @@ const local = {
 };
 
 /** The saved record, taking over a pre-IndexedDB save the first time. */
+// A browser may evict a site's storage to reclaim space, which for an idle game means losing a run
+// that was never anywhere else. Asking once marks the save as worth keeping; it is granted silently
+// on an installed app and on sites the player returns to, and refused quietly everywhere else.
+export async function keepStorage() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist || await navigator.storage.persisted()) {
+      return false;
+    }
+    return await navigator.storage.persist();
+  } catch {
+    return false; // not supported, or the browser said no: nothing changes either way
+  }
+}
+
+/** How much room the save is allowed and using, for the developer panel. */
+export async function storageUse() {
+  try {
+    const e = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null;
+    const kept = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : false;
+    return e ? { kept, used: e.usage || 0, quota: e.quota || 0 } : { kept, used: 0, quota: 0 };
+  } catch {
+    return { kept: false, used: 0, quota: 0 };
+  }
+}
+
 export async function read() {
   const rec = await tx('readonly', (st) => st.get(KEY));
   if (rec) {

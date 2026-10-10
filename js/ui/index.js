@@ -664,6 +664,8 @@ export function createUI(root, game) {
     crash: (detail) => modals.showCrash(detail),
     showOffline: (report) => modals.showOffline(report),
     queuePendingEvents: () => game.state.events.forEach((x) => ui.unseen.add(x.uid)),
+    /** True while a cut scene or a report is holding the screen, so the host can keep it awake. */
+    storyOpen: () => modals.coversTop(),
     reset: () => { ui.key = ''; ui.sector = null; ui.sheet = false; ui.logSeq = -1; ui.raidKey = null; ui.unseen.clear(); },
   };
 }

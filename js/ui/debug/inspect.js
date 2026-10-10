@@ -5,6 +5,13 @@ import * as E from '../../engine.js';
 import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES } from '../../data.js';
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
+import { voiceName, say as speak } from '../voice.js';
+import { awakeHeld } from '../../host/awake.js';
+import { storageUse } from '../../host/store.js';
+
+// The storage figures come from a promise, so they are read once and shown from here.
+const store = { kept: false, used: 0, quota: 0 };
+storageUse().then((r) => Object.assign(store, r));
 
 const n2 = (v) => (Number.isFinite(v) ? v.toFixed(2) : '-');
 const pc = (v) => `${(v * 100).toFixed(1)}%`;
@@ -235,7 +242,10 @@ function screen(s, id) {
       ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
       ['scripted', () => `${TUTORIAL.target} def ${E.sectorDefense(s, E.sectorById(TUTORIAL.target))} · retake ${['armed', 'inbound', 'done'][s.scripted.retake || 0]}`],
       ['frontier leaks', () => Object.keys(FACTIONS).map((f) => `${f}:${E.earlyTargets(s, f).filter((id) => E.sectorOpen(s, E.sectorById(id))).join('/') || '-'}`).join(' ')],
-      ['music mood', () => `${moodOf(s)} (bed ${ambientMood()}) · sfx ${Math.round(volume('sfx') * 100)}% music ${Math.round(volume('music') * 100)}%`],
+      ['music mood', () => `${moodOf(s)} (bed ${ambientMood()}) · sfx ${Math.round(volume('sfx') * 100)}% music ${Math.round(volume('music') * 100)}% voice ${Math.round(volume('voice') * 100)}%`],
+      ['speaks as', () => voiceName()],
+      ['screen awake', () => (awakeHeld() ? 'held' : 'free')],
+      ['storage', () => (store.kept ? 'persisted' : 'evictable') + ` · ${(store.used / 1048576).toFixed(1)}MB of ${(store.quota / 1048576).toFixed(0)}MB`],
       ['inbox', () => s.inbox.map((x) => x.kind).join(' ') || 'empty'],
       ['day seed / rolls', () => `${E.daySeed(s)} · ${Object.entries(s.rolls).map(([k, n]) => `${k}:${n}`).join(' ') || 'none'}`],
       ['next raid / assault roll', () => `${E.peek(s, 'raid').toFixed(3)} / ${E.peek(s, 'assault').toFixed(3)}`],
@@ -249,6 +259,7 @@ function screen(s, id) {
       ['cut: chapter', (g) => g.state.inbox.push({ kind: 'chapter', id: Math.min(4, g.state.chapter + 1) })],
       ['cut: wipe', (g) => g.state.inbox.push({ kind: 'wipe', faction: 'scav' })],
       ['cut: fragment', (g) => g.state.inbox.push({ kind: 'memory', sector: 'rust' })],
+      ['say a line', () => speak('All stations. This is the Nest. Hold what you have.')],
       ['skip scripted retake', (g) => { g.state.scripted.retake = 2; }],
     ],
   };
