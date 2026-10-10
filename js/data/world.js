@@ -5,27 +5,27 @@ export const FACTIONS = {
   scav: {
     name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
     desc: 'Survivors who learned to read the ruins. They distrust every machine, and they are right to.',
-    raidName: 'Scavenger raid', raidFloor: 8, mood: { fury: 0.3, fear: 0.25, order: 0.35, greed: 0.55 },
+    raidName: 'Scavenger raid', raidFloor: 8, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
   },
   military: {
     name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', icon: 'military_f',
     desc: 'Soldiers still following orders from a chain of command that died with the cities. Some of those orders came from me.',
-    raidName: 'Remnant strike', raidFloor: 250, mood: { fury: 0.25, fear: 0.2, order: 0.75, greed: 0.25 },
+    raidName: 'Remnant strike', raidFloor: 250, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
   },
   cult: {
     name: 'AI Cultists', short: 'Cult', color: '#c46be6', icon: 'cult',
     desc: 'They pray to the war mind. They believe I am its heart, and they want me back on the altar.',
-    raidName: 'Cult crusade', raidFloor: 1800, mood: { fury: 0.55, fear: 0.15, order: 0.5, greed: 0.2 },
+    raidName: 'Cult crusade', raidFloor: 1800, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
   },
   halcyon: {
     name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidFloor: 15000, mood: { fury: 0.3, fear: 0.1, order: 0.8, greed: 0.45 },
+    raidName: 'Halcyon purge team', raidFloor: 15000, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what you are.',
-    raidName: 'Rival Core incursion', raidFloor: 60000, mood: { fury: 0.6, fear: 0.1, order: 0.6, greed: 0.3 },
+    raidName: 'Rival Core incursion', raidFloor: 60000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
 
@@ -296,7 +296,7 @@ export const MAP = {
 
 export const OPS = {
   winSharpness: 4, // chance = P^k / (P^k + D^k)
-  flankBonus: 0.5, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
+  flankBonus: 0.75, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,
   timeBase: 20,
@@ -306,9 +306,9 @@ export const OPS = {
   loot: { money: [600, 0.43, 1.2], energy: [240, 0.43, 0.5], pop: [1.5, 0.43, 0] },
   // Share of each unit tab killed when an operation fails: base x (their strength / ours), up to cap
   // (the cap is not shown to the player); each unit type loses that share x (1 - its durability).
-  unitLoss: { staff: { base: 0.11, cap: 0.6 }, weapons: { base: 0.065, cap: 0.45 } },
+  unitLoss: { staff: { base: 0.2, cap: 0.6 }, weapons: { base: 0.1, cap: 0.45 } },
   // A win costs less, and only when it was close enough to round up to real casualties.
-  winLoss: { staff: { base: 0.018, cap: 0.15 }, weapons: { base: 0.01, cap: 0.1 } },
+  winLoss: { staff: { base: 0.018, cap: 0.15 }, weapons: { base: 0.02, cap: 0.1 } },
 };
 
 // How long an attack is visible before it lands: half the warning it used to carry, plus the time
@@ -323,18 +323,18 @@ export const RAIDS = {
   intervalMax: 840,
   // A raid that lands this far over our Defense does not just rob the place, it cracks it: the
   // sector takes a breach like an assault would leave, and two of those still lose it.
-  breachRatio: 1.8,
+  breachRatio: 1.4,
   threatShare: 0.3, // raid strength tracks this share of your threat index...
   spreadMin: 0.85, // ...times a random spread
   spreadMax: 1.2,
   winSharpness: 4,
-  lossMin: 0.07, // share of each stockpile lost on defeat, scaling with how badly you lost
-  lossMax: 0.26,
-  unitLoss: { staff: { base: 0.07, cap: 0.5 }, defenses: { base: 0.05, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
+  lossMin: 0.2, // share of each stockpile lost on defeat, scaling with how badly you lost
+  lossMax: 0.4,
+  unitLoss: { staff: { base: 0.1, cap: 0.5 }, defenses: { base: 0.08, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
   winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.006, cap: 0.08 } }, // holding a close one still costs people
   // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
   // of their sector's strength (NODES.defendWinCut / breachCut); raids have no sector, so it is reported only.
-  enemyLoss: { win: 0.4, loss: 0.14 },
+  enemyLoss: { win: 0.1, loss: 0.3 },
   loot: { money: [450, 0.43, 0.7] }, // fixed Scrip for a held attack, from its strength S: a x S^b + c x S
 };
 
@@ -357,14 +357,14 @@ export const TUTORIAL = {
 
 export const NODES = {
   strengthMin: 0.6,
-  strengthMax: 2, // hard ceiling, passive growth included
+  strengthMax: 3, // hard ceiling, passive growth included
   growthPerHour: 0.02,
   opLossGain: 0.16, // added when your operation against it fails (morale), before its own casualties
   opDefenderCut: 0.06, // removed at the same time: what repelling you cost the defenders
-  defendWinCut: 0.16, // removed when its assault on you is held
-  breachCut: 0.06, // removed even when its assault breaks through
-  plunderShare: 0.5, // a plundering clan takes this much of what a lost raid would have taken
-  takenMax: 1.5, // a sector they take is held as hard as they took it, up to this x its base defense
+  defendWinCut: 0.05, // removed when its assault on you is held
+  breachCut: 0.02, // removed even when its assault breaks through
+  plunderShare: 0.2, // a plundering clan takes this much of what a lost raid would have taken
+  takenMax: 2, // a sector they take is held as hard as they took it, up to this x its base defense
   // Ground a clan takes that was never theirs becomes theirs, and they rebuild it to their own
   // standard: this share of what that clan holds at home on average, never below what the sector
   // was already worth and never more than foreignCap x it.
@@ -373,7 +373,7 @@ export const NODES = {
   breachesToFall: 2,
   // An assault this many times your defense does not need a second visit: the sector falls on the
   // first breach. Shown as an overrun warning while it is inbound.
-  overrunRatio: 3.5,
+  overrunRatio: 1.75,
   startAtCore: 2,
   firstDelay: 420,
   intervalMin: 700, // between assaults (on top of raids)
@@ -387,8 +387,8 @@ export const NODES = {
   // They can breach and take a sector like anyone else; a sector you have held once can always be
   // retaken, open chapter or not.
   lockedWeight: 0.3,
-  lockedAggrGain: 3, // a stirred locked border counts this much more per point of aggression
-  lockedFalloff: 0.5, // and weighs less the further its chapter still is from opening
+  lockedAggrGain: 4, // a stirred locked border counts this much more per point of aggression
+  lockedFalloff: 0.4, // and weighs less the further its chapter still is from opening
   // Open borders out-weigh sealed ones so heavily that a sealed clan could go hours without ever
   // attacking. Every this many assaults the roll is reserved for one, when one borders us at all.
   lockedEvery: 4,
@@ -404,23 +404,23 @@ export const NODES = {
 // them, which then wants it back more than anything (js/sim/clans.js). They only do it when none of
 // the neighbours could manage it alone, and losing a capital is what really moves them.
 export const RALLY = {
-  base: 0.3, // chance before the clan's own profile is read
-  capital: 2.4, // x that chance when it was their capital that fell
+  base: 0.5, // chance before the clan's own profile is read
+  capital: 3, // x that chance when it was their capital that fell
   donors: 3, // how many of their other sectors can send anything
-  take: 0.22, // share of a donor's strength that marches
-  keep: 0.8, // how much of it is still there when it arrives
+  take: 0.5, // share of a donor's strength that marches
+  keep: 1, // how much of it is still there when it arrives
   enough: 1, // a neighbour whose assault already reaches this share of our Defense needs no help
 };
 
 export const AGGR = {
   min: -0.6,
   max: 1.5,
-  calmPerHour: 0.25, // drift back towards calm
-  pressure: 0.5, // added as your Power catches up with its defense...
+  calmPerHour: 0.15, // drift back towards calm
+  pressure: 0.75, // added as your Power catches up with its defense...
   pressureFrom: 0.7, // ...from this share of it, full once you match it
-  onOp: { node: 0.3, clan: 0.08, near: 0.06 }, // launching an operation against it
+  onOp: { node: 0.5, clan: 0.15, near: 0.1 }, // launching an operation against it
   onInspect: 0.08, // opening its briefing; each look after the first counts for less
-  onFall: { node: 0.3, clan: 0.1, near: 0.2 }, // a sector of mine falling emboldens the front around it
+  onFall: { node: 0.3, clan: 0.4, near: 0.25 }, // a sector of mine falling emboldens the front around it
 };
 
 // Clan profiles: four traits per faction, moved by everything that happens between us, and a matrix
@@ -431,16 +431,16 @@ export const AGGR = {
 //   order command and cohesion                greed what they want off me instead of my death
 export const CLANS = {
   startAtCore: 2, // stances start working with assaults
-  driftPerHour: 0.12,
+  driftPerHour: 0.05,
   interceptShare: 0.3, // share of an order's clan-wide aggression that also lands as fury
   // What the war does to a clan. Applied to the faction that owns the sector involved.
   stir: {
-    sectorTaken: { fury: 0.18, fear: 0.08, order: -0.06 }, // I took one of theirs
-    capitalTaken: { fury: 0.4, fear: 0.25, order: -0.25 }, // I took their capital
+    sectorTaken: { fury: 0.18, fear: 0.15, order: -0.06 }, // I took one of theirs
+    capitalTaken: { fury: 0.7, fear: 0.3, order: -0.25 }, // I took their capital
     assaultHeld: { fury: 0.06, fear: 0.1, order: -0.05 }, // their assault broke on my wall
-    assaultBreach: { fury: -0.06, order: 0.1, greed: 0.05 }, // their assault got through
-    sectorSeized: { fury: -0.15, order: 0.15, greed: 0.05 }, // they took one of mine
-    opHeld: { fury: 0.05, fear: -0.12, order: 0.08 }, // my operation against them failed
+    assaultBreach: { fury: 0.2, order: 0.2, greed: 0.3 }, // their assault got through
+    sectorSeized: { fury: -0.15, order: 0.15, greed: 0.1, fear: -0.1 }, // they took one of mine
+    opHeld: { fury: 0.05, fear: -0.15, order: 0.15 }, // my operation against them failed
     raidHeld: { fury: 0.05, fear: 0.08, order: -0.04 },
     raidBroke: { fury: -0.05, order: 0.05, greed: 0.07 },
   },
@@ -453,18 +453,24 @@ export const CLANS = {
   //   plunder  a breach takes stockpiles instead of ground    buff    a standing effect on me
   stances: [
     {
+      id: 'doom', name: 'Doom.', icon: 'power', when: { fury: [0.9], order: [0, 0.4], fear: [0.7] },
+      desc: 'Total chaos. population flees, army marches.', weight: 2, strength: 4, tempo: 0.5, attrition: 10,
+      buff: { key: 'pop', amount: 0.3 }, support: 0,
+      line: '{faction} army executes DOOMSDAY plan! their population flees, hold this one and they might be gone.',
+    },
+    {
       id: 'retaliate', name: 'Retaliation', icon: 'power', when: { fury: [0.62], order: [0.3] },
-      desc: 'Attacks come more often and harder.', weight: 1.8, strength: 1.15, tempo: 1.3,
+      desc: 'Attacks come more often and harder.', weight: 2, strength: 1.2, tempo: 1.4,
       line: 'The {faction} have stopped counting losses. Expect them more often.',
     },
     {
-      id: 'bunker', name: 'Entrenchment', icon: 'defense', when: { fear: [0.55], order: [0.5] },
-      desc: 'Their sectors gain strength faster. Fewer attacks.', weight: 0.5, strength: 0.9, growth: 3,
+      id: 'bunker', name: 'Entrenchment', icon: 'defense', when: { fear: [0.5], order: [0.5] },
+      desc: 'Their sectors gain strength faster. Fewer attacks.', weight: 0.5, strength: 0.9, growth: 4,
       line: 'The {faction} are digging instead of marching. Their ground is getting harder.',
     },
     {
       id: 'reclaim', name: 'Reclamation', icon: 'map', when: { capital: [1] },
-      desc: 'They attack what they lost, harder.', weight: 1.4, retake: 4, strength: 1.25,
+      desc: 'They attack what they lost, harder.', weight: 1.6, retake: 4, strength: 1.3,
       line: 'The {faction} want their ground back. They remember every street of it.',
     },
     {
@@ -474,13 +480,13 @@ export const CLANS = {
     },
     {
       id: 'vendetta', name: 'Vendetta', icon: 'skull', when: { fury: [0.85] },
-      desc: 'Raids and assaults hit harder. They ignore their own losses.', raid: 1.4, strength: 1.2, attrition: 0.6,
+      desc: 'Raids and assaults hit harder. They ignore their own losses.', raid: 1.5, strength: 1.3, attrition: 0.4,
       line: 'The {faction} have made this personal. I have that effect.',
     },
     {
       id: 'plunder', name: 'Plunder', icon: 'money', when: { greed: [0.72], fury: [0, 0.55] },
-      desc: 'A breach takes stockpiles instead of ground.', weight: 1.3, strength: 0.85, plunder: true,
-      line: 'The {faction} are here for the stores, not the walls. Cheaper, in a sense.',
+      desc: 'A breach takes stockpiles instead of ground.', weight: 1.3, strength: 0.85, plunder: true, buff: { key: 'money', amount: -0.05 },
+      line: 'The {faction} are here for the stores, not the walls. Cheaper, in a sense..?',
     },
     {
       id: 'conscript', name: 'Conscription', icon: 'militia', when: { fury: [0.45], order: [0.6] },
@@ -489,17 +495,17 @@ export const CLANS = {
     },
     {
       id: 'zealots', name: 'Martyrdom', icon: 'fire', when: { fury: [0.7], fear: [0.55] },
-      desc: 'Assaults hit far harder and cost them far more.', strength: 1.5, attrition: 2.2,
+      desc: 'Assaults hit far harder and cost them far more.', strength: 1.75, attrition: 5, retake: 1.5,
       line: 'The {faction} fear me and come anyway. That is the worst kind of enemy.',
     },
     {
       id: 'blockade', name: 'Blockade', icon: 'stop', when: { greed: [0.55], order: [0.5], held: [0.15] },
-      desc: 'Scrip production −10% while it holds.', buff: { key: 'money', amount: -0.1 },
+      desc: 'Scrip production −15% while it holds.', buff: { key: 'money', amount: -0.15 },
       line: 'The {faction} have closed the roads around me. The traders are not coming today.',
     },
     {
       id: 'withdraw', name: 'Withdrawal', icon: 'hourglass', when: { fear: [0.75], fury: [0, 0.3] },
-      desc: 'They have stopped attacking. Their sectors rebuild fast.', weight: 0.1, growth: 2.5,
+      desc: 'They have stopped attacking. Their sectors rebuild fast.', weight: 0.2, growth: 3, support: 2,
       line: 'The {faction} have pulled back out of range. They are not finished, they are counting.',
     },
     {

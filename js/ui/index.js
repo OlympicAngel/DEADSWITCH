@@ -1,28 +1,30 @@
 // App shell: top bar, alert strip, screen router, bottom navigation and the frame loop.
 // Screens rebuild only on structural change; numbers and timers are patched in place every frame.
-import {
-  RESOURCES, RESOURCE_KEYS, FACTIONS, ITEMS, ITEM_BY_ID, RANKS, BUILDINGS, SECTORS,
-} from '../data.js';
+import { BUILDINGS, ITEMS, ITEM_BY_ID, RANKS, RESOURCE_KEYS, SECTORS } from '../data.js';
 import * as E from '../engine.js';
-import { num, whole, rate, pct, esc } from '../format.js';
-import { icon, mountIcons } from './icons.js';
-import { clock, chanceClass, factorTag } from './common.js';
-import { NAV, locate, domainReq, domainReady, sortedTabs, DOMAINS } from './layout.js';
-import { renderDomain, bindDomain, updateDomain, buyCount } from './screens/domain.js';
-import { renderCommand, bindCommand, updateCommand } from './screens/command.js';
-import { renderMapScreen, bindMapScreen, updateMapScreen, defaultSector, liveSector, centerOn } from './screens/map.js';
-import { createModals } from './modals.js';
-import { createTips } from './tooltip.js';
-import { sfx } from './sfx.js';
-import {
-  floatText, flash, burst, shake, vibrate, screenFlash,
-} from './fx.js';
-import { put, setAttr, setCls, setData, setW } from './dom.js';
-import { watchVisible, measureVisible } from './onscreen.js';
-import { stepAmbientLoops } from './framerate.js';
-import { setFocus } from './focus.js';
+import { esc, num, pct, rate, whole } from '../format.js';
+import { chanceClass, clock, factorTag } from './common.js';
 import { createDebug } from './debug/panel.js';
+import { put, setAttr, setCls, setData, setW } from './dom.js';
+import { setFocus } from './focus.js';
+import { stepAmbientLoops } from './framerate.js';
+import {
+  burst,
+  flash,
+  floatText,
+  screenFlash,
+  shake, vibrate,
+} from './fx.js';
+import { icon, mountIcons } from './icons.js';
+import { DOMAINS, NAV, domainReady, domainReq, locate, sortedTabs } from './layout.js';
+import { createModals } from './modals.js';
+import { measureVisible, watchVisible } from './onscreen.js';
+import { bindCommand, renderCommand, updateCommand } from './screens/command.js';
+import { bindDomain, buyCount, renderDomain, updateDomain } from './screens/domain.js';
+import { bindMapScreen, centerOn, defaultSector, liveSector, renderMapScreen, updateMapScreen } from './screens/map.js';
+import { sfx } from './sfx.js';
 import { createTutor } from './teach.js';
+import { createTips } from './tooltip.js';
 
 export function createUI(root, game) {
   stepAmbientLoops();
@@ -42,15 +44,14 @@ export function createUI(root, game) {
             <b data-corelvl></b>
           </button>
           <div class="ident"><b data-name></b><span data-rank></span></div>
-          <button class="threat-chip" data-tip="threat">${icon('threat')}<b data-threat></b></button>
+          <div class="tb-res">
+            ${RESOURCE_KEYS.map((r) => `
+              <div class="pill res-${r}" data-tip="res:${r}" data-pill="${r}">
+                <span class="pill-ico">${icon(r)}</span>
+                <div class="pill-body"><b data-v></b><div class="pill-bar"><i data-fill></i></div><small data-rate></small></div>
+              </div>`).join('')}
+          </div>
           <button class="icon-btn" data-act="menu" aria-label="Settings">${icon('settings')}</button>
-        </div>
-        <div class="tb-res">
-          ${RESOURCE_KEYS.map((r) => `
-            <div class="pill res-${r}" data-tip="res:${r}" data-pill="${r}">
-              <span class="pill-ico">${icon(r)}</span>
-              <div class="pill-body"><b data-v></b><div class="pill-bar"><i data-fill></i></div><small data-rate></small></div>
-            </div>`).join('')}
         </div>
       </header>
       <div class="floats" data-floats></div>
@@ -478,7 +479,6 @@ export function createUI(root, game) {
       p.el.classList.toggle('neg', net < -0.005);
     }
     const t = E.threat(s);
-    put(root.querySelector('[data-threat]'), num(t));
     put(root.querySelector('[data-rank]'), RANKS[E.rankIndex(t)].title);
     put(root.querySelector('[data-corelvl]'), E.level(s, 'core'));
     put(root.querySelector('[data-name]'), s.name || 'Commander');
