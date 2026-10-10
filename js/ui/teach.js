@@ -38,7 +38,6 @@ export function createTutor(root, game, onChange) {
   let at = 0;
   let tapped = false;
   let shown = ''; // what the card is currently saying, so it is only written when it changes
-  let centred = ''; // the step the target was last scrolled into view for
 
   const step = () => (lesson ? lesson.steps[at] : null);
 
@@ -84,19 +83,40 @@ export function createTutor(root, game, onChange) {
     onChange();
   });
 
-/** Brings the target into the middle of the screen, unless it is already somewhere it can be seen.
- *  Without this a step can point at a control below the fold and cut its hole over whatever is. */
-  function centre(el) {
-    const r = el.getBoundingClientRect();
-    if (!r.width && !r.height) {
-      return;
+  /** The nearest ancestor that actually scrolls, which is what has to move. */
+  function scroller(from) {
+    for (let p = from.parentElement; p; p = p.parentElement) {
+      if (p.scrollHeight > p.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(p).overflowY)) {
+        return p;
+      }
     }
-    const h = innerHeight;
-    if (r.top > h * 0.16 && r.bottom < h * 0.6) {
-      return;
-    }
-    el.scrollIntoView({ block: 'center', inline: 'nearest' });
+    return null;
   }
+
+  /** Puts the target in the band the tutor leaves free: inside the scroller, above the bottom nav,
+   *  with room under it for the card. Run every frame, because the screen is still laying out
+   *  around it and a target scrolled once drifts; once it fits, this does nothing. */
+  function centre(target) {
+    const box = scroller(target);
+    const r = target.getBoundingClientRect();
+    if (!box || (!r.width && !r.height)) {
+      return;
+    }
+    const br = box.getBoundingClientRect();
+    const nav = root.querySelector('.bottom-nav');
+    const top = Math.max(br.top, 0) + PAD;
+    const bottom = Math.min(br.bottom, innerHeight - (nav ? nav.offsetHeight : 0)) - cardRoom();
+    const room = bottom - top;
+    // Centred in the band, or pinned to the top of it when it is taller than the band.
+    const want = room > r.height ? top + (room - r.height) / 2 : top;
+    const delta = r.top - want;
+    if (Math.abs(delta) > 4) {
+      box.scrollTop += delta;
+    }
+  }
+
+  /** How much height under the target the card needs. */
+  const cardRoom = () => (card.offsetHeight || 150) + CARD_GAP * 2;
 
   /** Puts the four panels and the ring around the target, and the card in whatever room is left. */
   function frame(target) {
@@ -114,10 +134,11 @@ export function createTutor(root, game, onChange) {
     if (box.w) {
       setStyle(ring, 'cssText', `left:${box.x}px;top:${box.y}px;width:${box.w}px;height:${box.h}px`);
     }
-    // Below the target when there is room for the card, otherwise above it.
-    const below = vh - (box.y + box.h) > 190 || box.y < 190;
+    // Below the target when there is room for the card, otherwise above it, and never off-screen.
+    const need = cardRoom();
+    const below = vh - (box.y + box.h) > need || box.y < need;
     setStyle(card, 'cssText', below
-      ? `top:${Math.min(vh - 20, box.y + box.h + CARD_GAP)}px`
+      ? `top:${Math.max(8, Math.min(vh - card.offsetHeight - 8, box.y + box.h + CARD_GAP))}px`
       : `bottom:${Math.max(12, vh - box.y + CARD_GAP)}px`);
   }
 
@@ -154,8 +175,7 @@ export function createTutor(root, game, onChange) {
       }
       // What the step points at, or, while that is on another screen, the way to get there.
       const wanted = now.at ? root.querySelector(now.at) : null;
-      if (wanted && centred !== shown) {
-        centred = shown;
+      if (wanted) {
         centre(wanted);
       }
       frame(wanted || (now.at ? root.querySelector('.bottom-nav') : null));
