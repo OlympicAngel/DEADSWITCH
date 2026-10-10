@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEADSWITCH map editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="./map-editor.css">
+<style>
+  /* The game positions .map-world with left/top; the editor pans it with a translate instead.
+     Zoom resizes the box rather than scaling it: a scaled SVG is rasterised once at its layout
+     size and then stretched, which goes soft as soon as you zoom in. */
+  .ed-stage .map-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .ed-stage .map-world > svg.map { width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+
+<header class="ed-head">
+  <h1>Map editor</h1>
+  <button id="btnLink" title="Shift-drag between two hexes does the same (L)">Link</button>
+  <button id="btnAdd" title="Add a sector next to the selected one">Add</button>
+  <button id="btnDel" title="Delete the selected sector (Del)">Delete</button>
+  <div class="ed-sep"></div>
+  <label title="Round positions to 10 map units while dragging"><input type="checkbox" id="snap"> snap</label>
+  <select id="statPick" title="What the big number over each hex shows"></select>
+  <button id="btnFit" title="Fit the whole map (F)">Fit</button>
+  <div class="ed-sep"></div>
+  <button id="btnSave" class="ed-btn go">Write world.js</button>
+  <button id="btnRevert" class="ed-btn danger">Revert</button>
+  <div class="ed-grow"></div>
+  <div id="status">loading…</div>
+</header>
+
+<div class="ed-main">
+  <div class="ed-stage" id="stage">
+    <div class="map-card">
+      <div class="map-viewport" id="view">
+        <div class="map-world" id="world">
+          <svg class="map" id="svg" role="img" aria-label="Wasteland map">
+            <defs id="defs"></defs>
+            <g id="terr"></g>
+            <g id="links"></g>
+            <g id="nodes"></g>
+            <line class="ed-rubber" id="rubber" style="display:none"></line>
+          </svg>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="ed-hint" id="hint"></div>
+  </div>
+
+  <aside class="ed-side">
+    <div class="ed-tabs" id="tabs"></div>
+    <div class="ed-key">
+      <span><i class="i-set"></i>Setting — saved to world.js</span>
+      <span><i class="i-sim"></i>Simulation — never saved</span>
+      <span><i class="i-out"></i>Readout</span>
+    </div>
+    <div class="ed-panel" id="panel"></div>
+  </aside>
+</div>
+
+<script type="module">
+import * as S from './map-editor-splice.js';
+import { explain, BLOCKS } from './map-editor-glossary.js';
+
+// ---------------------------------------------------------------------------
+// Two things are kept strictly apart everywhere in this tool:
+//
+//   SETTING     a value in js/data/world.js. Changing one splices the file, so only the
+//               characters of that one value move; every comment stays where it was.
+//   SIMULATION  a pretend save — what the player holds, how strong a sector has grown,
+//               how big their army is. None of it is ever written anywhere.
+//
+// Everything else on screen is a READOUT, computed by the game's own functions
+// (js/sim/war.js, js/sim/clans.js, js/sim/economy.js) over the edited data.
+// ---------------------------------------------------------------------------
+
+const SRC = 'js/data/world.js';
+let src = '';   // working copy of the file
+let disk = '';  // what is on disk, for the diff and for revert
+let g = null;   // the freshly imported game modules
+let ver = 0;
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const SVG_TAGS = new Set(['svg', 'g', 'circle', 'line', 'text', 'use', 'polygon', 'path', 'defs', 'radialGradient', 'stop', 'tspan']);
+
+function el(tag, attrs = {}, kids = []) {
+  const n = SVG_TAGS.has(tag) ? document.createElementNS(SVG_NS, tag) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === null || v === undefined) continue;
+    if (k === 'text') n.textContent = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const kid of [].concat(kids)) if (kid) n.append(kid);
+  return n;
+}
+
+const status = (text, kind = '') => { const n = $('#status'); n.textContent = text; n.className = kind; };
+
+// ---------------------------------------------------------------------------
+// SIMULATION state. Editor-only; nothing here reaches a file.
+// ---------------------------------------------------------------------------
+const scene = {
+  core: 4,
+  held: new Set(),
+  owner: {},     // id -> faction that took it off the player
+  strength: {},  // id -> strength multiplier
+  aggr: {},      // id -> stored aggression
+  traits: {},    // faction -> trait overrides
+  items: {},     // unit counts, which is what factors() reads
+  tutorial: false,
+  troopsOut: false,
+};
+
+// ---------------------------------------------------------------------------
+// Module loading. The dev server rewrites relative imports to carry ?v=, so one bump
+// re-imports data, engine, sim and UI helpers together against the staged file.
+// ---------------------------------------------------------------------------
+async function reload() {
+  ver++;
+  const q = `?v=${ver}`;
+  const [world, econ, engine, war, clans, economy, rng, icons, common, format, mapScreen] = await Promise.all([
+    import(`/js/data/world.js${q}`), import(`/js/data/economy.js${q}`),
+    import(`/js/engine.js${q}`), import(`/js/sim/war.js${q}`),
+    import(`/js/sim/clans.js${q}`), import(`/js/sim/economy.js${q}`),
+    import(`/js/sim/rng.js${q}`), import(`/js/ui/icons.js${q}`),
+    import(`/js/ui/common.js${q}`), import(`/js/format.js${q}`),
+    import(`/js/ui/screens/map.js${q}`),
+  ]);
+  g = { world, econ, engine, war, clans, economy, rng, icons, common, format, mapScreen };
+  g.icons.mountIcons();
+}
+
+const icon = (k) => (g ? g.icons.icon(k) : '');
+const num = (v) => g.format.num(v);
+const pct = (v) => g.format.pct(v);
+const time = (v) => g.format.time(v);
+const esc = (v) => g.format.esc(String(v));
+
+async function postJSON(url, body) {
+  const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body || {}) });
+  const out = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(out.error || res.statusText);
+  return out;
+}
+
+/** Stage the working text, re-import the game against it, redraw. */
+let queue = Promise.resolve();
+function apply(label = 'edited') {
+  queue = queue.then(async () => {
+    try {
+      await postJSON('/api/stage', { path: SRC, text: src });
+      await reload();
+      drawAll();
+      status(`${label} · ${dirty() ? 'unsaved' : 'clean'}`, dirty() ? 'warn' : 'good');
+    } catch (e) {
+      status(String(e.message || e), 'bad');
+      console.error(e);
+    }
+  });
+  return queue;
+}
+const dirty = () => src !== disk;
+
+// ---------------------------------------------------------------------------
+// SETTINGS: source splicing. Only the span of the value being changed is rewritten.
+// ---------------------------------------------------------------------------
+function spanAt(path) {
+  let span = S.exportSpan(src, path[0]);
+  for (const seg of path.slice(1)) {
+    if (typeof seg === 'number') span = S.arrayItems(src, span)[seg];
+    else {
+      const k = S.keySpan(src, span, seg);
+      if (!k) throw new Error(`no key ${seg} in ${path.join('.')}`);
+      span = { start: k.start, end: k.end };
+    }
+    if (!span) throw new Error(`bad path ${path.join('.')}`);
+  }
+  return span;
+}
+
+/** Write one leaf. `undefined` removes the key. */
+function setPath(path, value) {
+  const key = path[path.length - 1];
+  const parent = spanAt(path.slice(0, -1));
+  src = value === undefined ? S.removeKey(src, parent, key).text : S.setKey(src, parent, key, S.value(value)).text;
+}
+
+function sectorIndex(id) {
+  const items = S.arrayItems(src, S.exportSpan(src, 'SECTORS'));
+  return items.findIndex((it) => {
+    const k = S.keySpan(src, it, 'id');
+    return k && src.slice(k.start + 1, k.end - 1) === id;
+  });
+}
+
+function setSector(id, key, value) {
+  const i = sectorIndex(id);
+  if (i < 0) throw new Error(`no sector ${id}`);
+  setPath(['SECTORS', i, key], value);
+}
+
+function addSector(sec) {
+  src = S.insertArrayItem(src, S.exportSpan(src, 'SECTORS'), S.sectorText(sec));
+}
+
+function removeSector(id) {
+  for (const other of g.world.SECTORS) {
+    if (other.id !== id && other.links.includes(id)) setSector(other.id, 'links', other.links.filter((l) => l !== id));
+  }
+  const item = S.arrayItems(src, S.exportSpan(src, 'SECTORS'))[sectorIndex(id)];
+  src = S.removeArrayItem(src, item);
+}
+
+/** Links live on both ends, the way the file already keeps them. */
+function toggleLink(a, b) {
+  if (a === b) return;
+  const A = byId(a); const B = byId(b);
+  const on = A.links.includes(b);
+  setSector(a, 'links', on ? A.links.filter((l) => l !== b) : [...A.links, b]);
+  setSector(b, 'links', on ? B.links.filter((l) => l !== a) : [...B.links, a]);
+}
+
+const byId = (id) => g.world.SECTORS.find((x) => x.id === id);
+
+// ---------------------------------------------------------------------------
+// The simulation as a save the game will accept.
+// ---------------------------------------------------------------------------
+function buildState() {
+  const s = g.engine.newState(1);
+  const { SECTORS, FACTIONS, TUTORIAL, MAP } = g.world;
+  const ids = new Set(SECTORS.map((x) => x.id));
+
+  s.levels.core = scene.core;
+  for (const k of ['armory', 'works', 'barracks', 'thinktank']) s.levels[k] = scene.core * 2;
+  s.items = { ...scene.items };
+
+  s.sectors = [MAP.home, ...[...scene.held].filter((id) => ids.has(id) && id !== MAP.home)];
+  s.taken = [...s.sectors];
+  s.owner = Object.fromEntries(Object.entries(scene.owner).filter(([id, f]) => ids.has(id) && FACTIONS[f]));
+
+  s.nodes = {};
+  for (const sec of SECTORS) {
+    const m = scene.strength[sec.id] ?? 1;
+    const a = scene.aggr[sec.id] ?? 0;
+    if (m !== 1 || a !== 0) s.nodes[sec.id] = { m, marks: 0, a, seen: 0 };
+  }
+
+  s.clans = {};
+  for (const [f, fac] of Object.entries(FACTIONS)) {
+    s.clans[f] = { ...fac.mood, ...(scene.traits[f] || {}), stances: [] };
+    s.clans[f].stances = g.clans.stanceList(s, f).map((x) => x.id);
+  }
+
+  s.directive = scene.tutorial ? TUTORIAL.directive : 0;
+  s.scripted = { retake: scene.tutorial ? 0 : 2 };
+  if (scene.troopsOut) s.op = { sector: TUTORIAL.target, remaining: 60, total: 60 };
+  return s;
+}
+
+/** Everything about one sector, every number from the game's own functions. */
+function read(s, sec) {
+  const w = g.war;
+  const f = g.economy.factors(s);
+  const mine = s.sectors.includes(sec.id);
+  const out = {
+    id: sec.id, sec, mine, faction: w.factionOf(s, sec.id),
+    status: w.sectorStatus(s, sec), gate: w.sectorGate(sec), open: w.sectorOpen(s, sec),
+    base: w.baseDefense(s, sec.id), strength: w.nodeStrength(s, sec.id), flank: w.flank(s, sec),
+    defense: w.sectorDefense(s, sec), cost: w.opCost(sec), time: w.opTime(sec),
+    loot: w.opLoot(sec), chance: w.opChance(s, sec), aggression: w.aggression(s, sec.id),
+    power: f.power, myDefense: f.defense,
+  };
+  if (!mine && out.faction) {
+    out.assault = w.assaultStrength(s, sec.id);
+    out.warn = w.warning(s, (g.world.NODES.warningMin + g.world.NODES.warningMax) / 2, sec.id);
+    out.overrun = out.assault >= f.defense * g.world.NODES.overrunRatio;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// MAP — the game's own hexes, links, territory glow, defense labels and stance pins.
+// ---------------------------------------------------------------------------
+const SCALE = 0.42;
+const PAD = 190;
+const view = { x: 0, y: 0, k: 1 };
+let selected = null;
+let linkMode = false;
+let drag = null;
+
+/** What the big number over each hex shows. Readouts come from the sim; settings from the file. */
+const STATS = {
+  defense: { label: 'Sector defense', kind: 'out', get: (r) => num(r.defense), hot: (r) => r.defense > r.power },
+  base: { label: 'Base defense (setting)', kind: 'set', get: (r) => num(r.sec.defense) },
+  odds: { label: 'Operation odds', kind: 'out', get: (r) => (r.mine ? '' : pct(r.chance)), hot: (r) => r.chance < 0.5, cool: (r) => r.chance >= 0.75 },
+  cost: { label: 'Operation cost (scrip)', kind: 'out', get: (r) => num(r.cost.money) },
+  optime: { label: 'Operation time', kind: 'out', get: (r) => time(r.time) },
+  assault: { label: 'Its assault strength', kind: 'out', get: (r) => (r.assault === undefined ? '' : num(r.assault)), hot: (r) => r.overrun },
+  strength: { label: 'Strength ×', kind: 'sim', get: (r) => (r.mine ? '' : `×${r.strength.toFixed(2)}`), hot: (r) => r.strength > 1.005, cool: (r) => r.strength < 0.995 },
+  aggression: { label: 'Aggression', kind: 'sim', get: (r) => (r.mine ? '' : r.aggression.toFixed(2)), hot: (r) => r.aggression > 0.5 },
+  loot: { label: 'Capture loot (scrip)', kind: 'out', get: (r) => num(r.loot.money) },
+  gate: { label: 'AI Core gate', kind: 'set', get: (r) => `Lv ${r.gate}` },
+  none: { label: '— nothing —', kind: 'out', get: () => '' },
+};
+let statKey = 'defense';
+
+function worldBox() {
+  const { SECTORS } = g.world;
+  const xs = SECTORS.map((x) => x.x); const ys = SECTORS.map((x) => x.y);
+  const x0 = Math.min(...xs) - PAD; const y0 = Math.min(...ys) - PAD;
+  return { x0, y0, w: Math.max(...xs) + PAD - x0, h: Math.max(...ys) + PAD - y0 };
+}
+
+/**
+ * Pan with a translate, zoom by resizing the box. The SVG keeps one fixed viewBox, so giving it a
+ * bigger layout size makes the browser re-render the vectors at that size — sharp at any zoom —
+ * where `transform: scale()` would stretch a bitmap taken at the old size.
+ */
+function applyView() {
+  const box = worldBox();
+  const world = $('#world');
+  world.style.width = `${box.w * SCALE * view.k}px`;
+  world.style.height = `${box.h * SCALE * view.k}px`;
+  world.style.transform = `translate(${view.x}px, ${view.y}px)`;
+}
+
+function drawLinks() {
+  const pos = Object.fromEntries(g.world.SECTORS.map((x) => [x.id, x]));
+  const host = $('#links');
+  host.textContent = '';
+  const seen = new Set();
+  const s = drawLinks.state;
+  for (const sec of g.world.SECTORS) {
+    for (const l of sec.links) {
+      const key = sec.id < l ? `${sec.id}|${l}` : `${l}|${sec.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const other = pos[l];
+      if (!other) continue; // dangling: named in Check, not drawn
+      const oneway = !other.links.includes(sec.id);
+      const own = s && s.sectors.includes(sec.id) && s.sectors.includes(other.id);
+      host.append(el('line', {
+        class: `link ${own ? 'own' : ''} ${oneway ? 'ed-oneway' : ''}`,
+        x1: sec.x, y1: sec.y, x2: other.x, y2: other.y,
+      }));
+    }
+  }
+}
+
+function drawMap() {
+  const s = buildState();
+  drawLinks.state = s;
+  const { SECTORS, FACTIONS, MAP } = g.world;
+  const box = worldBox();
+  $('#svg').setAttribute('viewBox', `${box.x0} ${box.y0} ${box.w} ${box.h}`);
+  applyView(); // the box may have grown or shrunk with the sectors
+
+  // the game's faction glow under each sector
+  $('#defs').innerHTML = Object.entries(FACTIONS)
+    .map(([k, d]) => `<radialGradient id="terr-${k}"><stop offset="0" stop-color="${d.color}" stop-opacity=".16"/><stop offset="1" stop-color="${d.color}" stop-opacity="0"/></radialGradient>`).join('');
+  $('#terr').innerHTML = SECTORS.map((x) => [x, g.war.factionOf(s, x.id)]).filter(([, f]) => f)
+    .map(([x, f]) => `<circle cx="${x.x}" cy="${x.y}" r="190" fill="url(#terr-${f})"/>`).join('');
+
+  drawLinks();
+
+  const stat = STATS[statKey];
+  const nodes = $('#nodes');
+  nodes.textContent = '';
+  for (const sec of SECTORS) {
+    const r = g.mapScreen.nodeR(sec);
+    const st = g.war.sectorStatus(s, sec);
+    const f = g.war.factionOf(s, sec.id);
+    const colour = f ? FACTIONS[f].color : 'var(--hud)';
+    const rd = read(s, sec);
+    const ic = st === 'owned' ? (sec.id === MAP.home ? 'core' : 'check') : st === 'locked' ? 'lock' : f ? FACTIONS[f].icon : 'hex';
+    const stance = f && g.clans.stanceList(s, f)[0];
+    const value = stat.get(rd);
+    const cls = ['node', `st-${st}`, sec.boss ? 'boss' : '', sec.id === selected ? 'ed-sel' : '', s.sectors.includes(sec.id) ? 'ed-held' : ''];
+
+    const node = el('g', {
+      class: cls.filter(Boolean).join(' '), transform: `translate(${sec.x},${sec.y})`,
+      'data-id': sec.id, style: `--fc:${colour}`,
+      html: `
+        <polygon class="hex" points="${g.mapScreen.hex(r)}"/>
+        ${sec.boss ? `<polygon class="ed-cap-ring" points="${g.mapScreen.hex(r + 9)}"/>` : ''}
+        <polygon class="ed-halo" points="${g.mapScreen.hex(r + 15)}"/>
+        <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
+        ${value ? `<text class="ed-stat ${stat.hot && stat.hot(rd) ? 'hot' : ''} ${stat.cool && stat.cool(rd) ? 'cool' : ''}" dy="${-r - 14}">${esc(value)}</text>` : ''}
+        <text class="name" dy="${r + 34}">${esc(sec.name)}</text>
+        <text class="ed-sub ${sec.boss ? 'cap' : ''}" dy="${r + 60}">${sec.boss ? 'CAPITAL · ' : ''}Lv ${g.war.sectorGate(sec)}${sec.core !== undefined ? '*' : ''}${sec.bonus ? ' · bonus' : ''}</text>
+        ${stance && !s.sectors.includes(sec.id) ? `<g class="stance-pin" transform="translate(${(r * 0.92).toFixed(0)},${(-r * 0.92).toFixed(0)})"><circle r="15"/><use href="#i-${stance.icon}" x="-9" y="-9" width="18" height="18"/></g>` : ''}`,
+    });
+    node.addEventListener('pointerdown', onNodeDown);
+    nodes.append(node);
+  }
+
+  // the game's own legend, so chapter state reads the same way it does in play
+  $('#legend').innerHTML = g.world.CHAPTERS.map((c) => {
+    const fac = FACTIONS[c.faction];
+    const capital = SECTORS.find((x) => x.faction === c.faction && x.boss);
+    const fallen = capital && s.sectors.includes(capital.id);
+    const open = g.war.chapterOpen(s, c.id);
+    const stance = g.clans.stanceList(s, c.faction)[0];
+    const state = open && stance ? stance.name : fallen ? 'Capital taken' : open ? 'Hostile' : `Core ${c.core}`;
+    return `<span class="leg ${fallen ? 'down' : ''}" style="--fc:${fac.color}">${icon(fac.icon)}${fac.short}<em>${state}</em></span>`;
+  }).join('');
+}
+
+function fit() {
+  const box = worldBox();
+  const port = $('#view').getBoundingClientRect();
+  view.k = Math.min(port.width / (box.w * SCALE), port.height / (box.h * SCALE)) * 0.96;
+  view.x = (port.width - box.w * SCALE * view.k) / 2;
+  view.y = (port.height - box.h * SCALE * view.k) / 2;
+  applyView();
+}
+
+/** Pointer position in map units. */
+function toMap(ev) {
+  const port = $('#view').getBoundingClientRect();
+  const box = worldBox();
+  return {
+    x: (ev.clientX - port.left - view.x) / (view.k * SCALE) + box.x0,
+    y: (ev.clientY - port.top - view.y) / (view.k * SCALE) + box.y0,
+  };
+}
+
+function onNodeDown(ev) {
+  ev.stopPropagation();
+  const id = ev.currentTarget.dataset.id;
+  const sec = byId(id);
+  if (ev.ctrlKey || ev.metaKey) { // SIMULATION: who holds it
+    if (scene.held.has(id)) scene.held.delete(id); else scene.held.add(id);
+    drawAll();
+    return;
+  }
+  select(id);
+  if (linkMode || ev.shiftKey) {
+    drag = { kind: 'link', from: id };
+    const rub = $('#rubber');
+    rub.setAttribute('x1', sec.x); rub.setAttribute('y1', sec.y);
+    rub.setAttribute('x2', sec.x); rub.setAttribute('y2', sec.y);
+    rub.style.display = '';
+  } else {
+    const p = toMap(ev);
+    drag = { kind: 'move', id, dx: sec.x - p.x, dy: sec.y - p.y, moved: false };
+  }
+  $('#view').setPointerCapture(ev.pointerId);
+}
+
+const viewEl = $('#view');
+viewEl.addEventListener('pointerdown', (ev) => {
+  if (drag) return;
+  drag = { kind: 'pan', x: ev.clientX - view.x, y: ev.clientY - view.y };
+  viewEl.classList.add('dragging');
+  viewEl.setPointerCapture(ev.pointerId);
+});
+
+viewEl.addEventListener('pointermove', (ev) => {
+  if (!drag) return;
+  if (drag.kind === 'pan') {
+    view.x = ev.clientX - drag.x; view.y = ev.clientY - drag.y;
+    applyView();
+  } else if (drag.kind === 'move') {
+    const p = toMap(ev);
+    const snap = $('#snap').checked ? 10 : 1;
+    const sec = byId(drag.id);
+    sec.x = Math.round((p.x + drag.dx) / snap) * snap;
+    sec.y = Math.round((p.y + drag.dy) / snap) * snap;
+    drag.moved = true;
+    // No game rule reads x/y, so a drag only redraws; the file is written on drop.
+    $(`.node[data-id="${drag.id}"]`).setAttribute('transform', `translate(${sec.x},${sec.y})`);
+    drawLinks();
+  } else if (drag.kind === 'link') {
+    const p = toMap(ev);
+    $('#rubber').setAttribute('x2', p.x);
+    $('#rubber').setAttribute('y2', p.y);
+  }
+});
+
+viewEl.addEventListener('pointerup', (ev) => {
+  const d = drag;
+  drag = null;
+  viewEl.classList.remove('dragging');
+  $('#rubber').style.display = 'none';
+  if (!d) return;
+  if (d.kind === 'move' && d.moved) {
+    const sec = byId(d.id);
+    setSector(d.id, 'x', sec.x);
+    setSector(d.id, 'y', sec.y);
+    apply(`moved ${sec.name}`);
+  } else if (d.kind === 'link') {
+    const target = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.node');
+    if (target && target.dataset.id !== d.from) {
+      toggleLink(d.from, target.dataset.id);
+      apply(`link ${d.from} ↔ ${target.dataset.id}`);
+    }
+  }
+});
+
+viewEl.addEventListener('wheel', (ev) => {
+  ev.preventDefault();
+  const port = viewEl.getBoundingClientRect();
+  const mx = ev.clientX - port.left; const my = ev.clientY - port.top;
+  const next = Math.min(3, Math.max(0.15, view.k * (ev.deltaY < 0 ? 1.12 : 1 / 1.12)));
+  view.x = mx - ((mx - view.x) / view.k) * next;
+  view.y = my - ((my - view.y) / view.k) * next;
+  view.k = next;
+  applyView();
+}, { passive: false });
+
+function select(id) {
+  selected = id;
+  for (const n of $('#nodes').children) n.classList.toggle('ed-sel', n.dataset.id === id);
+  drawPanel();
+}
+
+// ---------------------------------------------------------------------------
+// PANEL
+// ---------------------------------------------------------------------------
+const TABS = [
+  ['sector', 'Sector', 'set'],
+  ['clans', 'Clans', 'sim'],
+  ['world', 'Rules', 'set'],
+  ['scene', 'Scenario', 'sim'],
+  ['check', 'Check', 'out'],
+  ['save', 'Save', 'set'],
+];
+let tab = 'sector';
+
+function drawTabs() {
+  const bar = $('#tabs');
+  bar.textContent = '';
+  for (const [id, label, kind] of TABS) {
+    bar.append(el('button', {
+      class: `${id === tab ? 'on' : ''} k-${kind}`, text: label,
+      onclick: () => { tab = id; drawTabs(); drawPanel(); },
+    }));
+  }
+}
+
+function drawAll() {
+  drawMap();
+  drawPanel();
+  $('#hint').textContent = 'drag hex   move          shift-drag  link\nctrl-click player holds it   wheel  zoom';
+  $('#btnSave').disabled = !dirty();
+}
+
+function drawPanel() {
+  const host = $('#panel');
+  host.textContent = '';
+  const s = buildState();
+  ({ sector: tabSector, clans: tabClans, world: tabWorld, scene: tabScene, check: tabCheck, save: tabSave })[tab](host, s);
+}
+
+/**
+ * A labelled zone. `kind` is the whole point: 'set' writes to the file, 'sim' never does,
+ * 'out' is computed. Nothing in this tool appears outside one of them.
+ */
+function zone(host, kind, title, why) {
+  const z = el('div', { class: `zone ${kind}` }, [
+    el('h3', {}, [
+      el('span', { text: title }),
+      el('em', { text: kind === 'set' ? 'saved to world.js' : kind === 'sim' ? 'not saved' : 'computed' }),
+    ]),
+  ]);
+  if (why) z.append(el('p', { class: 'why', text: why }));
+  host.append(z);
+  return z;
+}
+
+/** A field with a ? that opens its explanation. `path` looks the explanation up. */
+function field(host, label, control, path, forceHelp) {
+  const help = forceHelp || (path && explain(path));
+  const row = el('div', { class: 'f' });
+  const lab = el('div', { class: 'lab' }, [el('b', { text: label })]);
+  let open = false;
+  let helpEl = null;
+  if (help) {
+    const q = el('button', { class: 'q', text: '?', title: 'What does this do?' });
+    q.addEventListener('click', () => {
+      open = !open;
+      q.classList.toggle('on', open);
+      if (open) {
+        helpEl = el('div', { class: 'help' }, [
+          el('span', { text: help.what }),
+          help.feel ? el('em', { text: help.feel }) : null,
+        ]);
+        row.after(helpEl);
+      } else if (helpEl) { helpEl.remove(); helpEl = null; }
+    });
+    lab.append(q);
+  }
+  row.append(lab, control);
+  host.append(row);
+  return row;
+}
+
+function numInput(value, onCommit, step = 'any') {
+  const i = el('input', { type: 'number', step, value: value ?? '' });
+  i.addEventListener('change', () => {
+    const v = i.value === '' ? undefined : Number(i.value);
+    if (v !== undefined && Number.isNaN(v)) return;
+    onCommit(v);
+  });
+  return i;
+}
+
+function textInput(value, onCommit) {
+  const i = el('input', { type: 'text', value: value ?? '' });
+  i.addEventListener('change', () => onCommit(i.value));
+  return i;
+}
+
+function checkbox(value, onCommit) {
+  const i = el('input', { type: 'checkbox', style: 'width:auto' });
+  i.checked = !!value;
+  i.addEventListener('change', () => onCommit(i.checked));
+  return i;
+}
+
+function selectInput(value, options, onCommit) {
+  const sel = el('select');
+  for (const [v, label] of options) sel.append(el('option', { value: v, text: label }));
+  sel.value = value ?? '';
+  sel.addEventListener('change', () => onCommit(sel.value));
+  return sel;
+}
+
+/** A simulation slider: label, range, live value, and its own ? explanation. */
+function sliderRow(host, label, value, min, max, step, onInput, path) {
+  const help = path && explain(path);
+  const row = el('div', { class: 'sl' });
+  const lab = el('div', { class: 'lab' }, [el('span', { text: label })]);
+  let helpEl = null;
+  if (help) {
+    const q = el('button', { class: 'q', text: '?' });
+    q.addEventListener('click', () => {
+      q.classList.toggle('on');
+      if (helpEl) { helpEl.remove(); helpEl = null; return; }
+      helpEl = el('div', { class: 'help' }, [el('span', { text: help.what }), help.feel ? el('em', { text: help.feel }) : null]);
+      row.after(helpEl);
+    });
+    lab.append(q);
+  }
+  const out = el('div', { class: 'val', text: Number(value).toFixed(2) });
+  const range = el('input', { type: 'range', min, max, step, value });
+  range.addEventListener('input', () => { out.textContent = Number(range.value).toFixed(2); onInput(Number(range.value)); });
+  row.append(lab, range, out);
+  host.append(row);
+}
+
+function outRow(host, label, value, cls = '') {
+  host.append(el('div', { class: 'out-row' }, [
+    el('span', { html: label }),
+    el('b', { class: cls, html: String(value) }),
+  ]));
+}
+
+// ---------- Sector ----------
+function tabSector(host, s) {
+  if (!selected || !byId(selected)) {
+    zone(host, 'out', 'No sector selected', 'Click a hex on the map. Ctrl-click one to pretend the player holds it.');
+    return;
+  }
+  const sec = byId(selected);
+  const r = read(s, sec);
+  const { FACTIONS, CHAPTERS, MAP, NODES, OPS } = g.world;
+  const fac = r.faction ? FACTIONS[r.faction] : null;
+
+  // --- the game's own briefing card, so this reads like the thing being edited ---
+  const card = el('div', { class: 'zone out' });
+  card.append(el('h3', {}, [el('span', { text: 'As the player sees it' }), el('em', { text: 'computed' })]));
+  card.append(el('div', {
+    class: 'sheet open', style: 'position:static;transform:none;max-height:none',
+    html: briefing(s, sec, r),
+  }));
+  host.append(card);
+
+  // --- SETTINGS ---
+  const set = zone(host, 'set', 'Sector settings', 'Each change rewrites only that value in js/data/world.js. Comments and everything else stay as they are.');
+  field(set, 'id', textInput(sec.id, (v) => {
+    if (!v || v === sec.id) return;
+    if (byId(v)) return status(`id ${v} already exists`, 'bad');
+    const old = sec.id;
+    for (const other of g.world.SECTORS) {
+      if (other.links.includes(old)) setSector(other.id, 'links', other.links.map((l) => (l === old ? v : l)));
+    }
+    setSector(old, 'id', v);
+    if (scene.held.delete(old)) scene.held.add(v);
+    selected = v;
+    apply(`renamed ${old} → ${v}`);
+  }), null, { what: 'The key everything else refers to: links, MAP.home, TUTORIAL.target. Renaming it rewrites every link that names it.' });
+  field(set, 'name', textInput(sec.name, (v) => { setSector(sec.id, 'name', v); apply(); }), null,
+    { what: 'What the player sees on the map and in the briefing.' });
+  field(set, 'faction', selectInput(sec.faction || '', [['', '— none (home) —'], ...Object.entries(FACTIONS).map(([f, d]) => [f, d.name])],
+    (v) => { setSector(sec.id, 'faction', v || null); apply(); }), ['sector', 'faction']);
+  field(set, 'chapter', selectInput(String(sec.chapter), CHAPTERS.map((c) => [String(c.id), `${c.id} · ${c.title} (Core ${c.core})`]),
+    (v) => { setSector(sec.id, 'chapter', Number(v)); apply(); }), ['sector', 'chapter']);
+  field(set, 'defense', numInput(sec.defense, (v) => { setSector(sec.id, 'defense', v); apply(); }), ['sector', 'defense']);
+  field(set, 'core gate', numInput(sec.core, (v) => { setSector(sec.id, 'core', v); apply(); }), ['sector', 'core']);
+  field(set, 'capital', checkbox(sec.boss, (v) => { setSector(sec.id, 'boss', v || undefined); apply(); }), ['sector', 'boss']);
+  field(set, 'x', numInput(sec.x, (v) => { setSector(sec.id, 'x', v); apply(); }), ['sector', 'x']);
+  field(set, 'y', numInput(sec.y, (v) => { setSector(sec.id, 'y', v); apply(); }), ['sector', 'y']);
+
+  const bonusHost = el('div');
+  set.append(el('h3', { style: 'margin-top:14px', text: 'Permanent bonus' }));
+  field(set, 'what this is', el('span', { class: 'muted-note', text: 'additive, while held' }), ['sector', 'bonus']);
+  for (const k of [...g.econ.RESOURCE_KEYS, ...g.econ.FACTOR_KEYS]) {
+    const have = sec.bonus && sec.bonus[k] !== undefined ? sec.bonus[k] : '';
+    field(bonusHost, k, numInput(have, (v) => {
+      const next = { ...(sec.bonus || {}) };
+      if (v === undefined) delete next[k]; else next[k] = v;
+      setSector(sec.id, 'bonus', Object.keys(next).length ? next : undefined);
+      apply();
+    }, 0.01));
+  }
+  set.append(bonusHost);
+
+  set.append(el('h3', { style: 'margin-top:14px', text: 'Links' }));
+  const pills = el('div', { class: 'pillrow' });
+  for (const l of sec.links) {
+    const other = byId(l);
+    pills.append(el('button', {
+      class: `linkpill ${other ? '' : 'missing'}`, text: `${other ? other.name : `${l} — missing`} ✕`,
+      onclick: () => { toggleLink(sec.id, l); apply(); },
+    }));
+  }
+  set.append(pills);
+  field(set, 'add link', selectInput('', [['', '+ link to…'], ...g.world.SECTORS.filter((x) => x.id !== sec.id && !sec.links.includes(x.id)).map((x) => [x.id, x.name])],
+    (v) => { if (v) { toggleLink(sec.id, v); apply(); } }), ['sector', 'links']);
+
+  const lore = el('textarea', { rows: 4 });
+  lore.value = sec.lore || '';
+  lore.addEventListener('change', () => { setSector(sec.id, 'lore', lore.value || undefined); apply(); });
+  const loreRow = field(set, 'lore', lore, ['sector', 'lore']);
+  loreRow.classList.add('wide');
+
+  // --- SIMULATION ---
+  const sim = zone(host, 'sim', 'Pretend state for this sector', 'None of this is written anywhere. It only decides what the readouts above are measured against.');
+  const heldBox = checkbox(s.sectors.includes(sec.id), (v) => {
+    if (v) scene.held.add(sec.id); else scene.held.delete(sec.id);
+    drawAll();
+  });
+  field(sim, 'player holds it', heldBox, ['sim', 'held']);
+  sliderRow(sim, 'strength ×', scene.strength[sec.id] ?? 1, NODES.strengthMin, NODES.strengthMax, 0.05,
+    (v) => { scene.strength[sec.id] = v; drawAll(); }, ['sim', 'strength']);
+  sliderRow(sim, 'aggression', scene.aggr[sec.id] ?? 0, g.world.AGGR.min, g.world.AGGR.max, 0.05,
+    (v) => { scene.aggr[sec.id] = v; drawAll(); }, ['sim', 'aggression']);
+  field(sim, 'taken by', selectInput(scene.owner[sec.id] || '', [['', '— original owner —'], ...Object.entries(FACTIONS).map(([f, d]) => [f, `taken by ${d.short}`])],
+    (v) => { if (v) scene.owner[sec.id] = v; else delete scene.owner[sec.id]; drawAll(); }), ['sim', 'owner']);
+
+  // --- READOUT ---
+  const out = zone(host, 'out', 'What the game works out', `Every number below comes from js/sim/war.js at AI Core ${scene.core}.`);
+  outRow(out, 'status', r.status + (r.open ? '' : ' · sealed'));
+  outRow(out, 'opens at', `AI Core ${r.gate}${sec.core !== undefined ? ' (its own gate)' : ' (its chapter)'}`);
+  outRow(out, 'base defense', num(r.base) + (r.base !== sec.defense ? ` — rebuilt from ${num(sec.defense)}` : ''));
+  outRow(out, 'clan support', r.flank.approaches ? `${r.flank.approaches - r.flank.held}/${r.flank.approaches} standing · +${pct(r.flank.bonus)}` : 'none');
+  outRow(out, 'sector defense', num(r.defense), r.defense > r.power ? 'hot' : 'cool');
+  outRow(out, 'operation odds', r.mine ? '—' : pct(r.chance), r.chance < 0.5 ? 'hot' : 'cool');
+  outRow(out, 'operation cost', `${num(r.cost.money)} scrip · ${num(r.cost.energy)} energy`);
+  outRow(out, 'operation time', time(r.time));
+  outRow(out, 'capture loot', Object.entries(r.loot).map(([k, v]) => `${num(v)} ${k}`).join(' · '));
+  outRow(out, 'aggression', r.aggression.toFixed(2), r.aggression > 0.5 ? 'hot' : '');
+  if (r.assault !== undefined) {
+    outRow(out, 'its assaults', `~${num(r.assault)}`, r.overrun ? 'hot' : '');
+    outRow(out, 'warning before it lands', time(r.warn));
+    outRow(out, 'overruns at', `${num(Math.ceil(r.myDefense * NODES.overrunRatio))} (your Defense × ${NODES.overrunRatio})`, r.overrun ? 'hot' : 'cool');
+  }
+  void OPS; void MAP;
+}
+
+/** The game's briefing markup, rebuilt from the same helpers the map screen uses. */
+function briefing(s, sec, r) {
+  const { FACTIONS, NODES, MAP } = g.world;
+  const { costChips, bonusChips, tags, chanceClass } = g.common;
+  const fac = r.faction ? FACTIONS[r.faction] : null;
+  const head = `
+    <header class="brief-head" style="--fc:${fac ? fac.color : 'var(--hud)'}">
+      <span class="fac-ico">${icon(fac ? fac.icon : 'core')}</span>
+      <div><h3>${esc(sec.name)}</h3>
+      <small>${fac ? esc(fac.name) + (sec.boss ? ' · Capital' : '') : 'Your base'}</small></div>
+    </header>`;
+  if (r.mine) {
+    return `${head}
+      ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
+      ${sec.id !== MAP.home ? `<div class="rows"><div class="r"><span>${icon('alert')}Breaches</span><b class="good-t">0 / ${NODES.breachesToFall}</b></div></div>` : ''}
+      <blockquote class="lore">${esc(sec.lore || '')}</blockquote>`;
+  }
+  const stances = r.faction ? g.clans.stanceList(s, r.faction) : [];
+  const cls = chanceClass(r.chance);
+  return `${head}
+    <div class="duel">
+      <div><small>${icon('power')}Your power</small><b>${num(r.power)}</b></div>
+      <div class="odds-ring odds-${cls}"><b>${pct(r.chance)}</b><small>odds</small></div>
+      <div><small>${icon('defense')}Their defense</small><b>${num(r.defense)}</b></div>
+    </div>
+    <div class="oddsbar"><i class="bg-${cls}" style="width:${pct(r.chance)}"></i></div>
+    <div class="rows">
+      ${stances.length ? `<div class="r"><span>${icon(fac.icon)}${esc(fac.short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>` : ''}
+      ${r.flank.approaches ? `<div class="r"><span>${icon('defense')}Clan support</span><b class="${r.flank.bonus ? 'bad-t' : 'good-t'}">${r.flank.approaches - r.flank.held}/${r.flank.approaches} · ${r.flank.bonus ? `+${pct(r.flank.bonus)} defense` : 'no bonus'}</b></div>` : ''}
+      <div class="r"><span>${icon('clock')}Duration</span><b>${time(r.time)}</b></div>
+      ${Math.abs(r.strength - 1) > 0.005 ? `<div class="r"><span>${icon('trend')}Strength</span><b class="${r.strength > 1 ? 'bad-t' : 'good-t'}">×${r.strength.toFixed(2)}</b></div>` : ''}
+      <div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>
+      ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
+      ${r.assault !== undefined ? `<div class="r"><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(r.assault)}</b></div>` : ''}
+      ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${esc(fac.short)} raids</b></div>` : ''}
+    </div>
+    <div class="launch-row"><div class="costs">${costChips(r.cost)}</div></div>`;
+}
+
+// ---------- Clans ----------
+function tabClans(host, s) {
+  const { FACTIONS, CLANS } = g.world;
+  zone(host, 'out', 'Clan behaviour', 'A clan has four traits. Every stance whose ranges those traits sit inside holds at once, and their effects multiply. Traits here are simulation only; the ranges and effects they are read through are settings, on the Rules tab under CLANS.');
+
+  for (const [f, fac] of Object.entries(FACTIONS)) {
+    const ctx = g.clans.clanContext(s, f);
+    const prof = g.clans.clanProfile(s, f);
+    const active = new Set(prof.stances.map((x) => x.id));
+    const body = el('div', { class: 'dbody' });
+
+    const sim = zone(body, 'sim', 'Traits', 'Where this clan\'s head is right now. In play these move with every fight and drift back to the faction\'s mood.');
+    for (const t of ['fury', 'fear', 'order', 'greed']) {
+      sliderRow(sim, t, ctx[t], 0, 1, 0.01, (v) => {
+        scene.traits[f] = { ...(scene.traits[f] || {}), [t]: v };
+        drawAll();
+      }, [t]);
+    }
+    const bar = el('div', { class: 'pillrow' });
+    bar.append(el('button', { class: 'ed-btn', text: 'back to baseline mood', onclick: () => { delete scene.traits[f]; drawAll(); } }));
+    sim.append(bar);
+
+    sim.append(el('h3', { style: 'margin-top:12px', text: 'Apply what the war does' }));
+    sim.append(el('p', { class: 'why', text: 'Each button adds one CLANS.stir entry to the traits above, so you can walk into a stance the way play would.' }));
+    const stir = el('div', { class: 'pillrow' });
+    for (const [k, deltas] of Object.entries(CLANS.stir)) {
+      stir.append(el('button', {
+        class: 'ed-btn', text: k,
+        title: Object.entries(deltas).map(([t, d]) => `${t} ${d > 0 ? '+' : ''}${d}`).join(', '),
+        onclick: () => {
+          const next = { ...ctx };
+          for (const [t, d] of Object.entries(deltas)) next[t] = Math.min(1, Math.max(0, next[t] + d));
+          scene.traits[f] = { fury: next.fury, fear: next.fear, order: next.order, greed: next.greed };
+          drawAll();
+        },
+      }));
+    }
+    sim.append(stir);
+
+    const out = zone(body, 'out', 'What that makes them do', 'Read through the stance matrix by js/sim/clans.js.');
+    outRow(out, 'ground of theirs you hold', pct(ctx.held));
+    outRow(out, 'their capital', ctx.capital ? 'yours' : 'theirs');
+    outRow(out, 'awake', g.clans.clanAwake(s, f) ? 'yes' : `at AI Core ${(g.world.CHAPTERS.find((c) => c.faction === f) || {}).core ?? '—'}`);
+
+    const pills = el('div', { class: 'pillrow' });
+    for (const st of CLANS.stances) {
+      const on = active.has(st.id);
+      pills.append(el('span', {
+        class: `spill ${on ? 'on' : ''}`, html: `${icon(st.icon)}${esc(st.name)}`,
+        title: on ? `${st.desc}\nHolds now.` : `${st.desc}\n${whyNot(ctx, st)}`,
+      }));
+    }
+    out.append(pills);
+    for (const st of prof.stances) out.append(el('div', { class: 'find warn', text: st.line.replace('{faction}', fac.short) }));
+
+    out.append(el('h3', { style: 'margin-top:12px', text: 'Combined multipliers' }));
+    const MULT_WHAT = {
+      weight: 'how often an assault is rolled from this clan', retake: 'extra pull toward ground they lost to you',
+      strength: 'assault strength', tempo: 'how much faster assaults come', growth: 'how fast their sectors gain strength',
+      support: 'clan support between their sectors', raid: 'raid strength', attrition: 'what an assault costs them',
+    };
+    for (const [k, what] of Object.entries(MULT_WHAT)) {
+      outRow(out, `${k} <small style="color:var(--dim)">— ${what}</small>`, `×${prof[k].toFixed(2)}`, prof[k] > 1 ? 'hot' : prof[k] < 1 ? 'cool' : '');
+    }
+    outRow(out, 'plunder <small style="color:var(--dim)">— a breach takes stock, not ground</small>', prof.plunder ? 'yes' : 'no');
+
+    const front = g.war.borders(s, true).filter((b) => g.war.factionOf(s, b.from) === f);
+    const strongest = front.map((b) => ({ ...b, n: g.war.assaultStrength(s, b.from) })).sort((a, b) => b.n - a.n)[0];
+    out.append(el('h3', { style: 'margin-top:12px', text: 'On your border now' }));
+    outRow(out, 'borders they touch', String(front.length));
+    outRow(out, 'strongest assault', strongest ? `${num(strongest.n)} out of ${byId(strongest.from).name}` : '—');
+    outRow(out, 'smallest raid they ever send', num(fac.raidFloor));
+
+    host.append(el('details', { open: front.length ? '' : null }, [
+      el('summary', {}, [
+        el('span', { html: `${icon(fac.icon)} ${esc(fac.name)}` }),
+        el('small', { text: prof.stances.length ? prof.stances.map((x) => x.name).join(', ') : 'no stance' }),
+      ]),
+      body,
+    ]));
+  }
+}
+
+/** Which clause of a stance's `when` the clan currently misses. */
+function whyNot(ctx, st) {
+  for (const [k, [lo, hi = 1]] of Object.entries(st.when)) {
+    const v = ctx[k];
+    if (v < lo) return `Needs ${k} ≥ ${lo}; it is ${v.toFixed(2)}.`;
+    if (v > hi) return `Needs ${k} ≤ ${hi}; it is ${v.toFixed(2)}.`;
+  }
+  return 'Holds now.';
+}
+
+// ---------- Rules (settings) ----------
+const BLOCK_ORDER = ['MAP', 'OPS', 'WARN', 'NODES', 'RAIDS', 'AGGR', 'RALLY', 'CLANS', 'TUTORIAL', 'FACTIONS', 'CHAPTERS'];
+
+function tabWorld(host) {
+  zone(host, 'set', 'World rules', 'Every value here is a setting in js/data/world.js. Changing one splices that one value into the file; the comment beside it is not touched. Press ? on any row for what it actually does.');
+  for (const name of BLOCK_ORDER) {
+    const body = el('div', { class: 'dbody' });
+    if (BLOCKS[name]) body.append(el('p', { class: 'why', style: 'margin-bottom:10px', text: BLOCKS[name] }));
+    tree(body, g.world[name], [name]);
+    host.append(el('details', {}, [
+      el('summary', {}, [el('span', { text: name }), el('small', { text: BLOCKS[name] ? '' : '' })]),
+      body,
+    ]));
+  }
+  // The odds curve is the hardest number in the file to picture, so show it.
+  const demo = zone(host, 'out', 'What OPS.winSharpness means', `Odds = Power^k / (Power^k + Defense^k), k = ${g.world.OPS.winSharpness}.`);
+  for (const ratio of [0.5, 0.75, 1, 1.25, 1.5, 2]) {
+    const p = g.rng.odds(ratio, 1, g.world.OPS.winSharpness);
+    outRow(demo, `your Power is ${ratio}× their defense`, pct(p), p < 0.5 ? 'hot' : 'cool');
+  }
+}
+
+/** Recursive editor over a live config object; each leaf is addressed by its splice path. */
+function tree(host, obj, path) {
+  for (const [k, v] of Object.entries(obj)) {
+    const here = [...path, Array.isArray(obj) ? Number(k) : k];
+    const label = Array.isArray(obj) ? String(v.id || v.name || v.title || k) : k;
+
+    if (typeof v === 'boolean') {
+      field(host, label, checkbox(v, (x) => { setPath(here, x); apply(); }), here);
+    } else if (typeof v === 'number') {
+      field(host, label, numInput(v, (x) => { setPath(here, x); apply(); }), here);
+    } else if (typeof v === 'string') {
+      field(host, label, textInput(v, (x) => { setPath(here, x); apply(); }), here);
+    } else if (v === null) {
+      field(host, label, textInput('', (x) => { setPath(here, x || null); apply(); }), here);
+    } else if (Array.isArray(v) && v.every((x) => typeof x === 'number' || typeof x === 'string')) {
+      const numeric = v.every((x) => typeof x === 'number');
+      field(host, label, textInput(v.join(', '), (x) => {
+        const parts = x.split(',').map((t) => t.trim()).filter(Boolean);
+        setPath(here, numeric ? parts.map(Number) : parts);
+        apply();
+      }), here);
+    } else {
+      const body = el('div', { class: 'dbody' });
+      const help = explain(here);
+      if (help) body.append(el('p', { class: 'why', style: 'margin-bottom:8px', text: help.what }));
+      tree(body, v, here);
+      host.append(el('details', {}, [el('summary', {}, el('span', { text: label })), body]));
+    }
+  }
+}
+
+// ---------- Scenario (simulation) ----------
+function tabScene(host, s) {
+  const f = g.economy.factors(s);
+  const { ITEMS } = g.econ;
+
+  const sim = zone(host, 'sim', 'The player', 'A pretend save. Nothing here is written to any file — it only decides what the readouts are measured against.');
+  field(sim, 'AI Core level', numInput(scene.core, (v) => { scene.core = Math.max(1, v || 1); drawAll(); }, 1), ['sim', 'core']);
+  field(sim, 'an operation is away', checkbox(scene.troopsOut, (v) => { scene.troopsOut = v; drawAll(); }), ['sim', 'troopsOut']);
+  field(sim, 'opening directive stands', checkbox(scene.tutorial, (v) => { scene.tutorial = v; drawAll(); }), ['sim', 'tutorial']);
+
+  sim.append(el('h3', { style: 'margin-top:14px', text: 'Army' }));
+  sim.append(el('p', { class: 'why', text: 'Type a target and the editor fills the right unit tab. Power, Defense and Experts below are then whatever sim/economy.js factors() makes of those units — the same function the game calls.' }));
+  const targets = el('div', { class: 'pillrow' });
+  for (const [label, key, tabName] of [['Power', 'power', 'weapons'], ['Defense', 'defense', 'defenses'], ['Experts', 'experts', 'experts']]) {
+    const i = el('input', { type: 'number', placeholder: label, style: 'width:92px;background:#0d1317;color:var(--text);border:1px solid var(--line-2);border-radius:6px;padding:4px 7px;font:400 12px var(--font-num)' });
+    i.addEventListener('change', () => { solveFactor(key, tabName, Number(i.value) || 0); i.value = ''; drawAll(); });
+    targets.append(i);
+  }
+  targets.append(el('button', { class: 'ed-btn', text: 'clear units', onclick: () => { scene.items = {}; drawAll(); } }));
+  sim.append(targets);
+
+  const units = el('div', { class: 'dbody' });
+  for (const it of ITEMS.filter((x) => x.gives)) {
+    field(units, `${it.name} (${Object.entries(it.gives).map(([k, v]) => `${k} ${v}`).join(', ')})`,
+      numInput(scene.items[it.id] || 0, (v) => { scene.items[it.id] = Math.max(0, v || 0); drawAll(); }, 1));
+  }
+  sim.append(el('details', {}, [el('summary', {}, el('span', { text: 'Unit counts' })), units]));
+
+  sim.append(el('h3', { style: 'margin-top:14px', text: 'Territory' }));
+  const holds = el('div', { class: 'pillrow' });
+  holds.append(el('button', { class: 'ed-btn', text: 'hold nothing', onclick: () => { scene.held = new Set(); drawAll(); } }));
+  for (const c of g.world.CHAPTERS) {
+    holds.append(el('button', {
+      class: 'ed-btn', text: `hold through ch.${c.id}`,
+      onclick: () => {
+        scene.held = new Set(g.world.SECTORS.filter((x) => x.chapter <= c.id && x.faction).map((x) => x.id));
+        drawAll();
+      },
+    }));
+  }
+  holds.append(el('button', { class: 'ed-btn', text: 'reset strengths', onclick: () => { scene.strength = {}; scene.aggr = {}; scene.owner = {}; drawAll(); } }));
+  sim.append(holds);
+
+  const out = zone(host, 'out', 'What that player is worth', 'From sim/economy.js and sim/war.js.');
+  outRow(out, `${icon('power')}Power`, num(f.power));
+  outRow(out, `${icon('defense')}Defense`, num(f.defense));
+  outRow(out, `${icon('experts')}Experts`, num(f.experts));
+  outRow(out, `${icon('threat')}Threat`, num(g.economy.threat(s)));
+  outRow(out, 'sectors held', `${s.sectors.length - 1} / ${g.world.SECTORS.length - 1}`);
+  const raiders = g.war.activeRaiders(s);
+  outRow(out, 'clans that can raid you', raiders.length ? raiders.map((x) => g.world.FACTIONS[x].short).join(', ') : 'none yet');
+  if (raiders.length) {
+    const floor = Math.min(...raiders.map((x) => g.world.FACTIONS[x].raidFloor));
+    outRow(out, 'raid strength', num(Math.max(floor, g.economy.threat(s) * g.world.RAIDS.threatShare)));
+  }
+  outRow(out, 'borders under threat', String(g.war.borders(s, true).length));
+  outRow(out, 'overrun threshold', num(Math.ceil(f.defense * g.world.NODES.overrunRatio)));
+
+  // --- the whole map at once ---
+  const table = zone(host, 'out', 'Every sector at this scenario', 'Click a row to select it on the map. Click a heading to sort.');
+  const rows = g.world.SECTORS.map((sec) => read(s, sec));
+  const cols = [
+    ['sector', (r) => r.sec.name, (r) => r.sec.name],
+    ['clan', (r) => (r.faction ? g.world.FACTIONS[r.faction].short : '—'), (r) => r.faction || ''],
+    ['def', (r) => num(r.defense), (r) => r.defense],
+    ['odds', (r) => (r.mine ? '—' : pct(r.chance)), (r) => r.chance],
+    ['scrip', (r) => num(r.cost.money), (r) => r.cost.money],
+    ['time', (r) => time(r.time), (r) => r.time],
+    ['assault', (r) => (r.assault === undefined ? '—' : num(r.assault)), (r) => r.assault || 0],
+    ['aggr', (r) => r.aggression.toFixed(2), (r) => r.aggression],
+    ['state', (r) => r.status, (r) => r.status],
+  ];
+  const sortBy = tabScene.sortBy ?? 2;
+  const t = el('table', { class: 'ed' });
+  const head = el('tr');
+  cols.forEach(([label], i) => head.append(el('th', {
+    text: label + (i === sortBy ? ' ▾' : ''),
+    onclick: () => { tabScene.sortBy = i; drawPanel(); },
+  })));
+  t.append(el('thead', {}, head));
+  const body = el('tbody');
+  const key = cols[sortBy][2];
+  rows.sort((a, b) => {
+    const va = key(a); const vb = key(b);
+    return typeof va === 'string' ? va.localeCompare(vb) : vb - va;
+  });
+  for (const r of rows) {
+    const tr = el('tr', { class: r.id === selected ? 'sel' : '', onclick: () => select(r.id) });
+    cols.forEach(([, render]) => tr.append(el('td', { text: render(r) })));
+    body.append(tr);
+  }
+  t.append(body);
+  table.append(el('div', { class: 'ed-table-wrap' }, t));
+}
+
+/** Fill one factor's unit tab to roughly `target`, largest unit first. */
+function solveFactor(key, tabName, target) {
+  const items = g.econ.ITEMS.filter((it) => it.tab === tabName && it.gives && it.gives[key])
+    .sort((a, b) => b.gives[key] - a.gives[key]);
+  for (const it of items) scene.items[it.id] = 0;
+  let left = target;
+  for (const it of items) {
+    const n = Math.floor(left / it.gives[key]);
+    if (n > 0) { scene.items[it.id] = n; left -= n * it.gives[key]; }
+  }
+}
+
+// ---------- Check ----------
+function tabCheck(host, s) {
+  const { SECTORS, FACTIONS, CHAPTERS, MAP, TUTORIAL } = g.world;
+  const found = [];
+  const add = (kind, text) => found.push([kind, text]);
+  const ids = new Set();
+
+  for (const sec of SECTORS) {
+    if (ids.has(sec.id)) add('bad', `Two sectors share the id ${sec.id}. Only the first will ever be found.`);
+    ids.add(sec.id);
+  }
+  for (const sec of SECTORS) {
+    for (const l of sec.links) {
+      const other = SECTORS.find((x) => x.id === l);
+      if (!other) add('bad', `${sec.name} links to "${l}", which no sector has as its id.`);
+      else if (!other.links.includes(sec.id)) add('bad', `${sec.name} → ${other.name} is one-way. Links must name each other at both ends or the border does not exist for the sim.`);
+    }
+    if (!sec.links.length) add('bad', `${sec.name} has no links, so it can never be attacked or taken.`);
+    if (sec.faction && !FACTIONS[sec.faction]) add('bad', `${sec.name} belongs to faction "${sec.faction}", which is not in FACTIONS.`);
+    if (!CHAPTERS.some((c) => c.id === sec.chapter)) add('bad', `${sec.name} is in chapter ${sec.chapter}, which does not exist.`);
+    const ch = CHAPTERS.find((c) => c.id === sec.chapter);
+    if (sec.core !== undefined && ch && sec.core < ch.core) {
+      add('warn', `${sec.name} has its own gate at Core ${sec.core}, below its chapter's Core ${ch.core}. Its own gate wins, so it opens early and never leaks.`);
+    }
+    for (const k of Object.keys(sec.bonus || {})) {
+      if (![...g.econ.RESOURCE_KEYS, ...g.econ.FACTOR_KEYS].includes(k)) add('bad', `${sec.name} gives a bonus to "${k}", which is not a resource or a factor.`);
+    }
+  }
+
+  // Reachability: a sector nothing can walk to can never be reached or attacked.
+  const seen = new Set([MAP.home]);
+  const queue = [MAP.home];
+  while (queue.length) {
+    const id = queue.shift();
+    const cur = SECTORS.find((x) => x.id === id);
+    for (const l of cur?.links || []) {
+      if (!seen.has(l) && SECTORS.some((x) => x.id === l)) { seen.add(l); queue.push(l); }
+    }
+  }
+  for (const sec of SECTORS) if (!seen.has(sec.id)) add('bad', `${sec.name} cannot be walked to from ${MAP.home}. The player can never reach it.`);
+
+  for (let i = 0; i < SECTORS.length; i++) {
+    for (let j = i + 1; j < SECTORS.length; j++) {
+      const d = Math.hypot(SECTORS[i].x - SECTORS[j].x, SECTORS[i].y - SECTORS[j].y);
+      if (d < 235) add('warn', `${SECTORS[i].name} and ${SECTORS[j].name} are ${Math.round(d)} map units apart. tools/map-layout.mjs keeps 235, below which the hexes overlap on a phone.`);
+    }
+  }
+
+  for (const c of CHAPTERS) {
+    const own = SECTORS.filter((x) => x.faction === c.faction);
+    if (!own.length) add('bad', `Chapter ${c.id} belongs to ${c.faction}, which holds no sectors at all.`);
+    const caps = own.filter((x) => x.boss);
+    if (caps.length !== 1) add('bad', `${c.faction} has ${caps.length} capitals. Exactly one is needed: taking it is what ends the chapter and stops their raids.`);
+  }
+
+  for (const f of Object.keys(FACTIONS)) {
+    if (!SECTORS.some((x) => x.faction === f)) continue;
+    const touches = SECTORS.some((x) => x.faction === f && x.links.some((l) => {
+      const o = SECTORS.find((y) => y.id === l);
+      return o && o.faction !== f;
+    }));
+    if (!touches) add('warn', `${FACTIONS[f].short} borders no other faction, so the player can only reach them through their own ground.`);
+  }
+
+  if (!SECTORS.some((x) => x.id === TUTORIAL.target)) add('bad', `TUTORIAL.target is "${TUTORIAL.target}", which no sector has as its id. The opening directive will point at nothing.`);
+  if (!SECTORS.some((x) => x.id === MAP.home)) add('bad', `MAP.home is "${MAP.home}", which does not exist. The player has nowhere to start.`);
+
+  const z = zone(host, 'out', `${found.length} finding${found.length === 1 ? '' : 's'}`, 'Structural checks on the map as it stands, not on the scenario.');
+  if (!found.length) z.append(el('div', { class: 'find ok', text: 'The map is consistent: links pair up, every sector can be reached, each clan has one capital.' }));
+  for (const [kind, text] of found) z.append(el('div', { class: `find ${kind}`, text }));
+
+  const shape = zone(host, 'out', 'Chapter shape', 'What each chapter asks of the player at the Core level that opens it.');
+  const t = el('table', { class: 'ed' });
+  t.append(el('thead', {}, el('tr', {}, ['chapter', 'sectors', 'total def', 'capital', 'opens'].map((x) => el('th', { text: x })))));
+  const body = el('tbody');
+  for (const c of CHAPTERS) {
+    const own = SECTORS.filter((x) => x.faction === c.faction);
+    const cap = own.find((x) => x.boss);
+    body.append(el('tr', {}, [
+      el('td', { text: `${c.id} ${c.title}` }),
+      el('td', { text: String(own.length) }),
+      el('td', { text: num(own.reduce((a, x) => a + x.defense, 0)) }),
+      el('td', { text: cap ? num(cap.defense) : '—' }),
+      el('td', { text: `Core ${c.core}` }),
+    ]));
+  }
+  t.append(body);
+  shape.append(el('div', { class: 'ed-table-wrap' }, t));
+  void s;
+}
+
+// ---------- Save ----------
+function tabSave(host) {
+  const z = zone(host, 'set', dirty() ? 'Unsaved changes' : 'No changes', 'Only the characters of the values you changed are rewritten. Every comment, blank line and bit of hand formatting elsewhere in js/data/world.js is byte-for-byte what it was. The first write of a session leaves a .bak beside the file.');
+  const bar = el('div', { class: 'pillrow' });
+  bar.append(el('button', { class: 'ed-btn go', text: 'Write js/data/world.js', onclick: save }));
+  bar.append(el('button', { class: 'ed-btn danger', text: 'Revert everything', onclick: revert }));
+  bar.append(el('button', { class: 'ed-btn', text: 'Copy whole file', onclick: () => navigator.clipboard.writeText(src).then(() => status('copied', 'good')) }));
+  z.append(bar);
+  z.append(el('p', { class: 'muted-note', text: 'Nothing on the Scenario or Clans tabs is part of this. Those are simulation only.' }));
+  z.append(el('h3', { style: 'margin-top:14px', text: 'Exactly what will change' }));
+  z.append(diffView(disk, src));
+}
+
+/** Minimal line diff, enough to read what the splice did before writing it. */
+function diffView(a, b) {
+  const A = a.split('\n'); const B = b.split('\n');
+  const n = A.length; const m = B.length;
+  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const lines = [];
+  let i = 0; let j = 0;
+  while (i < n && j < m) {
+    if (A[i] === B[j]) { lines.push([' ', A[i], i + 1]); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { lines.push(['-', A[i], i + 1]); i++; }
+    else { lines.push(['+', B[j], j + 1]); j++; }
+  }
+  while (i < n) lines.push(['-', A[i], ++i]);
+  while (j < m) lines.push(['+', B[j], ++j]);
+
+  const keep = new Set();
+  lines.forEach(([mark], idx) => {
+    if (mark === ' ') return;
+    for (let k = Math.max(0, idx - 3); k <= Math.min(lines.length - 1, idx + 3); k++) keep.add(k);
+  });
+  const pre = el('pre', { class: 'diff' });
+  if (!keep.size) { pre.textContent = 'Nothing. The file on disk is what the editor is showing.'; return pre; }
+  let last = -1;
+  for (let k = 0; k < lines.length; k++) {
+    if (!keep.has(k)) continue;
+    if (last >= 0 && k > last + 1) pre.append(el('span', { class: 'at', text: `@@ line ${lines[k][2]}\n` }));
+    const [mark, text] = lines[k];
+    pre.append(el('span', { class: mark === '+' ? 'add' : mark === '-' ? 'del' : '', text: `${mark}${text}\n` }));
+    last = k;
+  }
+  return pre;
+}
+
+async function save() {
+  if (!dirty()) return status('nothing to write');
+  try {
+    const out = await postJSON('/api/write', { path: SRC, text: src });
+    disk = src;
+    status(`wrote ${SRC} · ${out.bytes} bytes · .bak kept`, 'good');
+    drawAll();
+  } catch (e) {
+    status(String(e.message || e), 'bad');
+  }
+}
+
+async function revert() {
+  if (dirty() && !confirm('Throw away every unsaved setting? The scenario is not affected.')) return;
+  // Through the queue, so an edit still being staged cannot land after the reset and put itself back.
+  queue = queue.then(() => postJSON('/api/reset'));
+  await queue;
+  src = disk;
+  await apply('reverted');
+}
+
+// ---------------------------------------------------------------------------
+// Toolbar
+// ---------------------------------------------------------------------------
+$('#btnLink').addEventListener('click', () => {
+  linkMode = !linkMode;
+  $('#btnLink').classList.toggle('on', linkMode);
+  $('#stage').classList.toggle('linking', linkMode);
+});
+$('#btnFit').addEventListener('click', fit);
+$('#btnSave').addEventListener('click', save);
+$('#btnRevert').addEventListener('click', revert);
+
+$('#btnAdd').addEventListener('click', () => {
+  const base = selected ? byId(selected) : { x: 0, y: 0, chapter: 1, faction: 'scav', defense: 10 };
+  let id = 'sector';
+  for (let i = 1; byId(id); i++) id = `sector${i}`;
+  addSector({
+    id, name: 'New Sector', faction: base.faction || 'scav', chapter: base.chapter,
+    x: Math.round(base.x + 280), y: Math.round(base.y + 80),
+    links: selected ? [selected] : [], defense: base.defense || 10, lore: '',
+  });
+  if (selected) setSector(selected, 'links', [...byId(selected).links, id]);
+  selected = id;
+  apply(`added ${id}`);
+});
+
+$('#btnDel').addEventListener('click', () => {
+  if (!selected) return;
+  if (selected === g.world.MAP.home) return status('the Nest cannot be removed', 'bad');
+  const sec = byId(selected);
+  if (!confirm(`Delete ${sec.name} and every link to it?`)) return;
+  const id = selected;
+  removeSector(id);
+  selected = null;
+  scene.held.delete(id);
+  apply(`deleted ${sec.name}`);
+});
+
+window.addEventListener('keydown', (ev) => {
+  if (ev.target.matches('input, textarea, select')) return;
+  if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); $('#btnDel').click(); }
+  if (ev.key === 'l') $('#btnLink').click();
+  if (ev.key === 'f') fit();
+});
+
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
+try {
+  await postJSON('/api/reset');
+  disk = await (await fetch(`/${SRC}`, { cache: 'no-store' })).text();
+  src = disk;
+  await reload();
+
+  const pick = $('#statPick');
+  for (const [k, v] of Object.entries(STATS)) pick.append(el('option', { value: k, text: v.label }));
+  pick.value = statKey;
+  pick.addEventListener('change', () => { statKey = pick.value; drawMap(); });
+
+  // A scenario that shows something on first open: the opening foothold.
+  scene.held = new Set([g.world.MAP.home, g.world.TUTORIAL.target]);
+  solveFactor('power', 'weapons', 400);
+  solveFactor('defense', 'defenses', 300);
+  selected = g.world.TUTORIAL.target;
+
+  drawTabs();
+  drawAll();
+  fit();
+  status(`${g.world.SECTORS.length} sectors · clean`, 'good');
+} catch (e) {
+  status(`boot failed: ${e.message}`, 'bad');
+  $('#panel').append(el('div', { class: 'find bad', text: 'Run `npm run editor` and open the URL it prints. This page needs that server for the game modules and for writing files.' }));
+  console.error(e);
+}
+</script>
+</body>
+</html>
