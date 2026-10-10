@@ -789,6 +789,18 @@ dialog.intro-modal .modal-body { position: relative; height: 100%; padding: 0; d
 @keyframes fly { from { transform: translateZ(-2200px) rotate(0deg); opacity: 0; } 25% { opacity: 1; } to { transform: translateZ(500px) rotate(26deg); opacity: 0; } }
 .intro[data-scene="shaft"] .shaft { opacity: 1; }
 
+/* ---- the board a beat happened on, when it is about a place ---- */
+.intro .map { display: grid; place-items: center; }
+/* The scene wants the whole board, not a corner of it: no side wash, just a soft frame. */
+.intro .map .map-bg { position: absolute; inset: 0; }
+.intro .map .map-bg svg { height: 100%; }
+.intro .map .map-bg::after { background: radial-gradient(ellipse 80% 65% at 50% 46%, transparent 40%, rgba(2, 4, 6, .8) 92%); }
+.intro.on-map .map { opacity: 1; }
+/* With the board up, the set behind it gets out of the way: the place is the subject now.
+   The extra class beats the per-scene rules further down, which would otherwise light these. */
+.intro.on-map .lay.orb, .intro.on-map .lay.city, .intro.on-map .lay.shaft,
+.intro.on-map .lay.people, .intro.on-map .lay.dust { opacity: 0; }
+
 /* ---- the core ---- */
 .intro .orb { display: grid; place-items: center; }
 .intro .orb > * { position: absolute; border-radius: 50%; }

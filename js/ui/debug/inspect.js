@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY } from '../../data.js';
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
@@ -150,6 +150,7 @@ function attack(s, key) {
       ['hold chance', () => pc(E.raidChance(s, find()))],
       ['your defense', () => Math.round(E.factors(s).defense)],
       ['from → target', () => (find().from ? `${find().from} → ${find().target}` : '-')],
+      ['would route to', () => (find().from ? E.raidTarget(s, find().from) + ` (${E.breaches(s, E.raidTarget(s, find().from))} breaches)` : '-')],
       ['overrun', () => `${E.overrunRisk(s, find())} (x${NODES.overrunRatio} defense)`],
       ['vengeance', () => !!find().vengeance],
     ],
@@ -242,6 +243,7 @@ function screen(s, id) {
       ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
       ['scripted', () => `${TUTORIAL.target} def ${E.sectorDefense(s, E.sectorById(TUTORIAL.target))} · retake ${['armed', 'inbound', 'done'][s.scripted.retake || 0]}`],
       ['frontier leaks', () => Object.keys(FACTIONS).map((f) => `${f}:${E.earlyTargets(s, f).filter((id) => E.sectorOpen(s, E.sectorById(id))).join('/') || '-'}`).join(' ')],
+      ['rally chance', () => Object.keys(FACTIONS).map((f) => { const p = E.clanProfile(s, f); return `${f}:${Math.min(0.95, RALLY.base * p.retake * p.weight).toFixed(2)}`; }).join(' ')],
       ['music mood', () => `${moodOf(s)} (bed ${ambientMood()}) · sfx ${Math.round(volume('sfx') * 100)}% music ${Math.round(volume('music') * 100)}% voice ${Math.round(volume('voice') * 100)}%`],
       ['speaks as', () => voiceName()],
       ['screen awake', () => (awakeHeld() ? 'held' : 'free')],
@@ -260,6 +262,12 @@ function screen(s, id) {
       ['cut: wipe', (g) => g.state.inbox.push({ kind: 'wipe', faction: 'scav' })],
       ['cut: fragment', (g) => g.state.inbox.push({ kind: 'memory', sector: 'rust' })],
       ['say a line', () => speak('All stations. This is the Nest. Hold what you have.')],
+      ['force a clan rally', (g) => {
+        // Pretend the last piece of theirs we took has just fallen, and see what they do about it.
+        const mine = g.state.sectors.map((id) => SECTORS.find((x) => x.id === id)).filter((x) => x && x.faction);
+        const sec = mine[mine.length - 1];
+        if (sec) E.rallyClan(g.state, sec.faction, sec.id);
+      }],
       ['skip scripted retake', (g) => { g.state.scripted.retake = 2; }],
     ],
   };

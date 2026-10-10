@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
   level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
@@ -242,6 +242,9 @@ export function advanceOp(s, dt) {
       say(s, 'clanWiped', { faction: FACTIONS[sec.faction].name }, 'rank');
       s.inbox.push({ kind: 'wipe', faction: sec.faction });
     }
+    if (sec.faction) {
+      report.rally = rallyClan(s, sec.faction, sec.id);
+    }
     if (sec.boss) {
       say(s, 'bossDown', { faction: FACTIONS[sec.faction].name }, 'rank');
       if (s.raid && s.raid.faction === sec.faction) {
@@ -313,6 +316,38 @@ export function attackSource(s, faction) {
   const w = (x) => 1 + aggression(s, x.id) - AGGR.min;
   let r = rand(s, 'source') * pool.reduce((a, x) => a + w(x), 0);
   return (pool.find((x) => (r -= w(x)) <= 0) || pool[pool.length - 1]).id;
+}
+
+/** Where a raid out of `from` actually lands: the nearest ground we hold on the way to the Nest,
+ *  and of those, the one they have already cracked. A clan marching on the Nest does not walk past
+ *  a half-breached outpost of ours to get there. */
+export function raidTarget(s, from) {
+  if (!from || !SECTOR_BY_ID[from]) {
+    return MAP.home;
+  }
+  const seen = new Set([from]);
+  let edge = [from];
+  while (edge.length) {
+    const next = [];
+    const held = [];
+    for (const id of edge) {
+      for (const l of SECTOR_BY_ID[id].links) {
+        if (seen.has(l)) {
+          continue;
+        }
+        seen.add(l);
+        (s.sectors.includes(l) ? held : next).push(l);
+      }
+    }
+    if (held.length) {
+      // Cracked first, then angriest, and the Nest last: they would rather take an outpost.
+      return held.sort((a, b) => breaches(s, b) - breaches(s, a)
+        || (a === MAP.home ? 1 : 0) - (b === MAP.home ? 1 : 0)
+        || aggression(s, b) - aggression(s, a) || (a < b ? -1 : 1))[0];
+    }
+    edge = next;
+  }
+  return MAP.home;
 }
 
 /** The two sectors an attack runs between, or null while it has no place on the map any more. */
@@ -399,9 +434,10 @@ function spawnRaid(s, delay) {
   const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
   const base = Math.max(floor, threat(s) * RAIDS.threatShare);
   const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid') * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
-  // Raids march on the Nest itself, from wherever that faction still holds ground.
-  s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge, from: attackSource(s, faction), target: MAP.home };
-  say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, strength, time: fmtShort(delay) }, 'bad');
+  // Raids march out of whatever that faction still holds, at the first of ours on the way in.
+  const from = attackSource(s, faction);
+  s.raid = { faction, strength, remaining: delay, total: delay, grudge: !!grudge, from, target: raidTarget(s, from) };
+  say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, target: SECTOR_BY_ID[s.raid.target].name, strength, time: fmtShort(delay) }, 'bad');
 }
 
 function fmtShort(sec) {
@@ -439,6 +475,10 @@ export function advanceRaids(s, dt, offline) {
       spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax, 'raid'));
     }
     return;
+  }
+  // Ground they were marching on can fall out from under them; they keep coming, further in.
+  if (!s.sectors.includes(s.raid.target)) {
+    s.raid.target = raidTarget(s, s.raid.from);
   }
   s.raid.remaining -= dt;
   if (s.raid.remaining > 1e-9) {
@@ -574,6 +614,46 @@ export function advanceAssaults(s, dt, offline) {
   if (offline) s.offlineRaids++;
 }
 
+/** Taking a sector can cost the clan more than the sector: if nobody next door could take it back
+ *  alone, they may strip up to RALLY.donors of their own to make one sector strong enough to try,
+ *  and that sector then wants it back more than anything. Their profile decides whether they do it
+ *  at all, and losing a capital is what really moves them (data/world.js). */
+export function rallyClan(s, faction, lostId) {
+  const lost = SECTOR_BY_ID[lostId];
+  const mine = SECTORS.filter((x) => x.faction === faction && !s.sectors.includes(x.id));
+  if (!lost || mine.length < 2) {
+    return null; // nothing left to move, or nothing to move it to
+  }
+  // Someone next door who could already assault it off us has no reason to ask anyone for help.
+  const near = mine.filter((x) => x.links.includes(lostId));
+  const need = factors(s).defense * RALLY.enough;
+  if (near.some((x) => assaultStrength(s, x.id) >= need)) {
+    return null;
+  }
+  const prof = clanProfile(s, faction);
+  const chance = Math.min(0.95, RALLY.base * prof.retake * prof.weight * (lost.boss ? RALLY.capital : 1));
+  if (rand(s, 'rally') >= chance) {
+    return null;
+  }
+  // Whoever is closest to it leads, and the strongest of the rest feed them.
+  const lead = (near.length ? near : mine).slice().sort((a, b) => nodeStrength(s, b.id) - nodeStrength(s, a.id))[0];
+  const donors = mine.filter((x) => x.id !== lead.id && nodeStrength(s, x.id) > NODES.strengthMin)
+    .sort((a, b) => nodeStrength(s, b.id) - nodeStrength(s, a.id)).slice(0, RALLY.donors);
+  if (!donors.length) {
+    return null;
+  }
+  let moved = 0;
+  for (const d of donors) {
+    const give = nodeStrength(s, d.id) * RALLY.take;
+    shiftStrength(s, d.id, -give);
+    moved += give;
+  }
+  shiftStrength(s, lead.id, moved * RALLY.keep);
+  node(s, lead.id).a = AGGR.max;
+  say(s, 'clanRally', { faction: FACTIONS[faction].short, n: donors.length, lead: lead.name, lost: lost.name }, 'bad');
+  return { lead: lead.id, donors: donors.map((x) => x.id), moved: Math.round(moved * RALLY.keep * 100) / 100 };
+}
+
 // A sector of yours falls to the attacker; its yields stop and it can be retaken.
 // They hold it as hard as they took it, and the whole front around it is emboldened.
 export function loseSector(s, id, faction, strength = 0) {
@@ -648,7 +728,7 @@ function resolveAttack(s, raid, offline) {
   } else {
     report.lost = takeStock(s, chance);
     s.stats.raidsLost++;
-    say(s, 'raidLost', { raid: name }, 'bad');
+    say(s, 'raidLost', { raid: name, target: SECTOR_BY_ID[raid.target].name }, 'bad');
     spawnAftermath(s, chance < EVENTS_CFG.routChance);
   }
   if (raid.grudge) {

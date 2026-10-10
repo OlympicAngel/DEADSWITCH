@@ -382,6 +382,19 @@ export const NODES = {
 
 // Aggression: how keen an enemy sector is to come for you. Hidden from the player; it only weights
 // which border the next assault comes from. Your own moves stir it and it cools off on its own.
+// When the player takes a sector, the clan may give up ground elsewhere to make one push at taking
+// it back: up to `donors` of their other sectors each send a share of their strength to one of
+// them, which then wants it back more than anything (js/sim/clans.js). They only do it when none of
+// the neighbours could manage it alone, and losing a capital is what really moves them.
+export const RALLY = {
+  base: 0.3, // chance before the clan's own profile is read
+  capital: 2.4, // x that chance when it was their capital that fell
+  donors: 3, // how many of their other sectors can send anything
+  take: 0.22, // share of a donor's strength that marches
+  keep: 0.8, // how much of it is still there when it arrives
+  enough: 1, // a neighbour whose assault already reaches this share of our Defense needs no help
+};
+
 export const AGGR = {
   min: -0.6,
   max: 1.5,

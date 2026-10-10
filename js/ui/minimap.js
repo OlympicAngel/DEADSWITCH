@@ -31,18 +31,23 @@ function node(s, sec, framed, label, zoom) {
 // The box is always as wide as its host, so the scale is fixed and the anchor never drifts.
 const WINDOW = { w: 1060, h: 1500 }; // map units behind a backdrop, a little wider than the theater shows
 const ANCHOR = { modal: { right: 270, top: 450 }, panel: { right: 250, top: 172 } }; // units to the focal sector
+const WIDE = 2.1; // a cut scene is the whole screen, so it shows more of the theater than a panel does
 
-/** @param {object} opts beam: [fromId, toId]; cls: which host it sits in, 'modal' or 'panel'. */
+/** @param {object} opts beam: [fromId, toId]; cls: which host it sits in: modal, panel or scene. */
 export function mapBackdrop(s, ids, { beam = null, cls = 'modal' } = {}) {
-  const anchor = ANCHOR[cls] || ANCHOR.modal;
+  const scene = cls === 'scene';
   const focus = ids.map((id) => E.sectorById(id)).filter(Boolean);
   if (!focus.length) {
     return '';
   }
-  // The first sector is the focal point; the rest of the map falls where it really is around it.
-  const x0 = focus[0].x + anchor.right - WINDOW.w;
+  // A panel or dialog puts the focal sector in the top right, where no text goes. A cut scene is
+  // the whole screen, so it centres it and pulls back to show the ground around it.
+  const w = WINDOW.w * (scene ? WIDE : 1);
+  const h = WINDOW.h * (scene ? WIDE : 1);
+  const anchor = scene ? { right: w / 2, top: h / 2 } : (ANCHOR[cls] || ANCHOR.modal);
+  const x0 = focus[0].x + anchor.right - w;
   const y0 = focus[0].y - anchor.top;
-  const near = (x) => x.x > x0 - 300 && x.x < x0 + WINDOW.w + 300 && x.y > y0 - 300 && x.y < y0 + WINDOW.h + 300;
+  const near = (x) => x.x > x0 - 300 && x.x < x0 + w + 300 && x.y > y0 - 300 && x.y < y0 + h + 300;
   const shown = new Map(shownSectors(s).filter(near).map((x) => [x.id, x]));
   for (const sec of focus) {
     shown.set(sec.id, sec);
@@ -65,7 +70,7 @@ export function mapBackdrop(s, ids, { beam = null, cls = 'modal' } = {}) {
     ? `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" class="mini-beam" style="--fc:${color}"/>${ring(to, nodeR(to) + 22, color)}`
     : '';
   // The top right corner is fixed whatever shape the dialog takes, so the sectors never drift under the text.
-  return `<div class="map-bg ${cls}" aria-hidden="true"><svg viewBox="${x0} ${y0} ${WINDOW.w} ${WINDOW.h}" preserveAspectRatio="xMaxYMin slice">
+  return `<div class="map-bg ${cls}" aria-hidden="true"><svg viewBox="${x0} ${y0} ${w} ${h}" preserveAspectRatio="${scene ? 'xMidYMid slice' : 'xMaxYMin slice'}">
     <g class="mini-links">${links.join('')}</g>${arrow}
     ${[...shown.values()].map((sec) => node(s, sec, focus.includes(sec), sec === focus[0], 1)).join('')}</svg></div>`;
 }

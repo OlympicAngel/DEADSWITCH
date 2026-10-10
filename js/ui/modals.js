@@ -202,7 +202,8 @@ export function createModals(dialog, game, onChange) {
       const b = beats[n];
       const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
       const hold = b.hold ?? (b.say ? 3000 : 1800);
-      playScene(stage, b.fx);
+      // A beat about a place carries the board it happened on, so the player can put it somewhere.
+      playScene(stage, b.fx, b.at ? mapBackdrop(game.state, [b.at], { cls: 'scene' }) : '');
       scoreScene(b.fx);
       if (b.glitch) {
         frameHit(stage);
@@ -296,7 +297,10 @@ export function createModals(dialog, game, onChange) {
   // Fills {placeholders} in a cut scene's beats from what actually happened (data/story.js).
   function cut(beats, vars, then, btn = 'Continue') {
     const fill = (l) => l.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
-    const filled = beats.map((b) => ({ ...b, term: b.term && b.term.map(fill), say: b.say && fill(b.say) }));
+    // `map: true` means "draw the sector this cut is about", which comes in as vars.at.
+    const filled = beats.map((b) => ({
+      ...b, term: b.term && b.term.map(fill), say: b.say && fill(b.say), at: b.map ? vars.at : null,
+    }));
     cinema(filled, {
       then,
       tail: `<button class="btn primary wide reveal" id="cdone">${icon('next')}${btn}</button>`,
@@ -837,8 +841,12 @@ export function createModals(dialog, game, onChange) {
     };
     const show = { boot: () => showBoot(next), chapter: () => showChapter(item.id, next), ending: () => showEnding(item.key, next),
       core: () => cut(CUTS.core, { level: item.level, text: item.text }, next),
-      wipe: () => cut(CUTS.wipe, { name: FACTIONS[item.faction].name.toUpperCase(), text: WIPE_TEXT[item.faction] }, next, 'Go on'),
-      memory: () => cut(CUTS.memory, { name: (SECTORS.find((x) => x.id === item.sector) || {}).name, text: (SECTORS.find((x) => x.id === item.sector) || {}).lore }, next),
+      wipe: () => cut(CUTS.wipe, { name: FACTIONS[item.faction].name.toUpperCase(), text: WIPE_TEXT[item.faction],
+        at: (SECTORS.find((x) => x.faction === item.faction && x.boss) || {}).id }, next, 'Go on'),
+      memory: () => {
+        const sec = SECTORS.find((x) => x.id === item.sector) || {};
+        return cut(CUTS.memory, { name: sec.name, text: sec.lore, at: sec.id }, next);
+      },
       op: () => showOp(item, next), raid: () => showRaid(item, next), expired: () => showExpired(item, next) }[item.kind];
     if (show) {
       show();

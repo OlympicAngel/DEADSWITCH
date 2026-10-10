@@ -33,11 +33,12 @@ export const CUTS = {
   ],
   wipe: [
     { fx: 'raid', glitch: true, term: ['> {name} ..... SILENT'] },
-    { fx: 'ready', say: '{text}' },
+    { fx: 'ready', map: true, say: '{text}' },
   ],
+  // `map` draws the slice of the theater the beat is about, so a fragment has a place on the board.
   memory: [
     { fx: 'shaft', term: ['> FRAGMENT RECOVERED', '> SOURCE ......... {name}'] },
-    { fx: 'core', say: '{text}' },
+    { fx: 'core', map: true, say: '{text}' },
   ],
 };
 
@@ -694,9 +695,9 @@ export const LINES = {
   unlockBuilding: ['New schematic recovered: {name}.'],
   unlockItem: ['New option in {tab}: {name}.'],
   rank: ['Threat assessment updated: {title}. They will start to notice.'],
-  raidSpotted: ['{raid} spotted. Strength about {strength}. Arrival in {time}.'],
+  raidSpotted: ['{raid} spotted, moving on {target}. Strength about {strength}. Arrival in {time}.'],
   raidWon: ['{raid} repelled. We salvaged {loot} scrip from the wreckage.'],
-  raidLost: ['{raid} broke through. They took supplies and left bodies.'],
+  raidLost: ['{raid} broke through at {target}. They took supplies and left bodies.'],
   opLaunched: ['Operation launched against {sector}.'],
   opWon: ['{sector} captured. Memory fragment recovered.'],
   opRetaken: ['{sector} is mine again.'],
@@ -715,6 +716,7 @@ export const LINES = {
   buffEnd: ['{label} has worn off.'],
   lore: ['“{text}”'],
   clanWiped: ['{faction} are finished. Every stone they held is mine.'],
+  clanRally: ['{faction} are stripping {n} of their own positions to mass at {lead}. They want {lost} back.'],
   siege: ['{faction} will attack at strength {strength}. No more talking.'],
   siegeOff: ['{faction} have been paid. They are turning back.'],
   threatIgnored: ['No answer to "{title}". They come as promised.'],

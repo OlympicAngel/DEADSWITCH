@@ -33,6 +33,7 @@ export function introStage() {
         <div class="lay city near">${CITY.map(block).join('')}</div>
         <div class="lay dust">${dust}</div>
         <div class="lay shaft">${rings}</div>
+        <div class="lay map" data-map></div>
         <div class="lay orb"><span class="halo"></span><span class="ring r1"></span><span class="ring r2"></span><span class="dot"></span><span class="sat"></span></div>
         <div class="lay people">${'<i></i>'.repeat(6)}</div>
         <div class="lay shards">${shards}</div>
@@ -77,8 +78,12 @@ const FROM = {
   ready: 'scale(1.5)',
 };
 
-/** Cuts to a scene: snaps the camera to its start, then lets it drift to the end of the shot. */
-export function playScene(root, id) {
+/** Cuts to a scene: snaps the camera to its start, then lets it drift to the end of the shot.
+ *  `map` is a drawn slice of the theater (js/ui/minimap.js) for a beat that is about a place. */
+export function playScene(root, id, map = '') {
+  const layer = root.querySelector('[data-map]');
+  layer.innerHTML = map;
+  root.classList.toggle('on-map', !!map);
   const cam = root.querySelector('.cam');
   const [to, ms] = SHOT[id] || SHOT.gate;
   root.dataset.scene = id;
