@@ -19,7 +19,7 @@ Browser idle/strategy game, static site on GitHub Pages. Read `README.md` and `d
 - Sound is synthesised, never a file: build it from `js/ui/audio.js` (one context, one reverb, an effects bus and a music bus the player sets in Settings) so a new cue is mixed with everything else. A cue goes in `js/ui/sfx.js`, music that answers the state in `js/ui/ambient.js`. A bus at zero must build nothing.
 - The AI speaks a cut scene's prose through `js/ui/voice.js`; terminal readouts stay silent. Anything new the platform offers (`js/host/`) must do nothing, quietly, where the browser has nothing: feature-check, try/catch, no message about it.
 - A moment big enough to stop the game for gets a cut scene: beats in `CUTS` (`js/data/story.js`), queued through the inbox, staged by `js/ui/intro.js`. Two or three beats, one breath a line.
-- Tests: only for rules that would break silently (catch-up, caps, pricing, save migration). Run `npm test` before pushing.
+- No unit tests: they cost more time than they save on a game this size. Run `npm run smoke` before pushing — it opens the page in a headless browser and fails on anything it throws.
 - After balance changes run `npm run balance` and sanity-check the milestone times.
 - Anything the player can see changing means bumping `VERSION` in `js/data/economy.js`; it is what they can quote when something breaks.
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).

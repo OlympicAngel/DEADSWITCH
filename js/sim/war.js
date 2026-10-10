@@ -19,11 +19,39 @@ export function chapterOpen(s, chapterId) {
 /** The AI Core level a sector needs: its own hard gate, or its chapter's (data/world.js). */
 export const sectorGate = (sec) => sec.core ?? chapterOf(sec.chapter).core;
 
+// What each clan's ground is worth on average, which is the standard it rebuilds anything it takes to.
+const CLAN_AVG = {};
+for (const f of new Set(SECTORS.map((x) => x.faction).filter(Boolean))) {
+  const own = SECTORS.filter((x) => x.faction === f);
+  CLAN_AVG[f] = own.reduce((a, x) => a + x.defense, 0) / own.length;
+}
+
+/** Who holds a sector now. The map says where a sector started; a clan that takes it off us when it
+ *  was never theirs keeps it, with its own colour, stances and raids. */
+export function factionOf(s, id) {
+  return (s.owner && s.owner[id]) || (SECTOR_BY_ID[id] ? SECTOR_BY_ID[id].faction : null);
+}
+
+/** Every sector a clan holds right now, captured ground included. */
+export const clanSectors = (s, faction) => SECTORS.filter((x) => factionOf(s, x.id) === faction);
+
+/** What a sector is worth under whoever holds it. Ground taken off another clan is rebuilt to that
+ *  clan's own standard (NODES.foreignShare of what they hold at home), never weaker than it was and
+ *  never more than NODES.foreignCap x, so a prize is harder without belonging to another chapter. */
+export function baseDefense(s, id) {
+  const sec = SECTOR_BY_ID[id];
+  const owner = s.owner && s.owner[id];
+  if (!owner || !CLAN_AVG[owner]) {
+    return sec.defense;
+  }
+  return Math.round(clamp(CLAN_AVG[owner] * NODES.foreignShare, sec.defense, sec.defense * NODES.foreignCap));
+}
+
 // The weakest sectors of a faction that border ground we hold, which is what leaks early.
 // Sorted by defense, then id, so the set only moves when the front does.
 export function earlyTargets(s, faction) {
   return SECTORS
-    .filter((x) => x.faction === faction && x.core === undefined
+    .filter((x) => factionOf(s, x.id) === faction && x.core === undefined
       && !s.sectors.includes(x.id) && x.links.some((l) => s.sectors.includes(l)))
     .sort((a, b) => a.defense - b.defense || (a.id < b.id ? -1 : 1))
     .slice(0, MAP.earlyOpen)
@@ -37,7 +65,7 @@ export function sectorOpen(s, sec) {
   if (core >= gate) {
     return true;
   }
-  return core >= gate - MAP.earlyLead && earlyTargets(s, sec.faction).includes(sec.id);
+  return core >= gate - MAP.earlyLead && earlyTargets(s, factionOf(s, sec.id)).includes(sec.id);
 }
 
 // ---------- operations ----------
@@ -91,8 +119,9 @@ export function advanceNodes(s, dt) {
   const grow = (NODES.growthPerHour * dt) / 3600;
   const profiles = clanProfiles(s);
   for (const sec of SECTORS) {
-    if (sec.faction && !s.sectors.includes(sec.id) && sectorOpen(s, sec) && nodeStrength(s, sec.id) < NODES.strengthMax) {
-      shiftStrength(s, sec.id, grow * profiles[sec.faction].growth);
+    const f = factionOf(s, sec.id);
+    if (f && !s.sectors.includes(sec.id) && sectorOpen(s, sec) && nodeStrength(s, sec.id) < NODES.strengthMax) {
+      shiftStrength(s, sec.id, grow * profiles[f].growth);
     }
   }
   const calm = (AGGR.calmPerHour * dt) / 3600;
@@ -118,7 +147,7 @@ function pressure(s, sec) {
 }
 
 export function shiftAggression(s, id, delta) {
-  if (!SECTOR_BY_ID[id] || !SECTOR_BY_ID[id].faction || s.sectors.includes(id)) return;
+  if (!factionOf(s, id) || s.sectors.includes(id)) return;
   const n = node(s, id);
   n.a = clamp((n.a || 0) + delta, AGGR.min, AGGR.max);
 }
@@ -128,9 +157,10 @@ export function stirAggression(s, id, spread) {
   const sec = SECTOR_BY_ID[id];
   if (!sec) return;
   if (spread.node) shiftAggression(s, id, spread.node);
-  if (spread.clan && sec.faction) {
-    for (const x of SECTORS) {
-      if (x.faction === sec.faction && x.id !== id) shiftAggression(s, x.id, spread.clan);
+  const f = factionOf(s, id);
+  if (spread.clan && f) {
+    for (const x of clanSectors(s, f)) {
+      if (x.id !== id) shiftAggression(s, x.id, spread.clan);
     }
   }
   if (spread.near) {
@@ -140,7 +170,7 @@ export function stirAggression(s, id, spread) {
 
 // Opening a sector's briefing tells it someone is looking. The first look counts most.
 export function inspectSector(s, id) {
-  if (!SECTOR_BY_ID[id] || !SECTOR_BY_ID[id].faction || s.sectors.includes(id)) return;
+  if (!factionOf(s, id) || s.sectors.includes(id)) return;
   const n = node(s, id);
   n.seen = (n.seen || 0) + 1;
   shiftAggression(s, id, AGGR.onInspect / n.seen);
@@ -150,12 +180,13 @@ export function inspectSector(s, id) {
 // every one of them is still theirs, falling linearly to 0 as you take them. Links to other factions
 // (or to your own sectors through another faction) give nothing; an outpost alone among strangers gets none.
 export function flank(s, sec) {
-  const clan = sec.faction ? sec.links.filter((l) => SECTOR_BY_ID[l].faction === sec.faction) : [];
+  const own = factionOf(s, sec.id);
+  const clan = own ? sec.links.filter((l) => factionOf(s, l) === own) : [];
   const held = clan.filter((l) => s.sectors.includes(l)).length;
   if (!clan.length) {
     return { approaches: 0, held: 0, bonus: 0 };
   }
-  const support = OPS.flankBonus * clanProfile(s, sec.faction).support;
+  const support = OPS.flankBonus * clanProfile(s, own).support;
   return { approaches: clan.length, held, bonus: support * ((clan.length - held) / clan.length) };
 }
 
@@ -165,7 +196,7 @@ export function sectorDefense(s, sec) {
   if (sec.id === TUTORIAL.target && s.directive >= TUTORIAL.directive && (s.scripted.retake || 0) < 2) {
     return TUTORIAL.defense;
   }
-  return Math.ceil(sec.defense * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
+  return Math.ceil(baseDefense(s, sec.id) * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
 }
 
 export function opChance(s, sec) {
@@ -224,9 +255,11 @@ export function advanceOp(s, dt) {
   takeLosses(s, report, report.win ? OPS.winLoss : OPS.unitLoss, power, defense);
   if (report.win) {
     report.theirLoss = defense;
-    stirClan(s, sec.faction, CLANS.stir[sec.boss ? 'capitalTaken' : 'sectorTaken']);
+    const held = factionOf(s, sec.id); // whoever took it off us last, not whoever drew the map
+    stirClan(s, held, CLANS.stir[sec.boss ? 'capitalTaken' : 'sectorTaken']);
     s.sectors.push(sec.id);
     delete s.nodes[sec.id];
+    delete s.owner[sec.id];
     // Loot and memories only the first time; a retaken sector just comes back.
     const first = !s.taken.includes(sec.id);
     const loot = first ? opLoot(sec) : {};
@@ -244,17 +277,17 @@ export function advanceOp(s, dt) {
       }
     }
     // Every stone a clan held is ours: that is the end of them, said once.
-    if (sec.faction && !SECTORS.some((x) => x.faction === sec.faction && !s.sectors.includes(x.id)) && !s.scripted['wipe:' + sec.faction]) {
-      s.scripted['wipe:' + sec.faction] = 1;
-      say(s, 'clanWiped', { faction: FACTIONS[sec.faction].name }, 'rank');
-      s.inbox.push({ kind: 'wipe', faction: sec.faction });
+    if (held && !clanSectors(s, held).some((x) => !s.sectors.includes(x.id)) && !s.scripted['wipe:' + held]) {
+      s.scripted['wipe:' + held] = 1;
+      say(s, 'clanWiped', { faction: FACTIONS[held].name }, 'rank');
+      s.inbox.push({ kind: 'wipe', faction: held });
     }
-    if (sec.faction) {
-      report.rally = rallyClan(s, sec.faction, sec.id);
+    if (held) {
+      report.rally = rallyClan(s, held, sec.id);
     }
     if (sec.boss) {
-      say(s, 'bossDown', { faction: FACTIONS[sec.faction].name }, 'rank');
-      if (s.raid && s.raid.faction === sec.faction) {
+      say(s, 'bossDown', { faction: FACTIONS[held].name }, 'rank');
+      if (s.raid && s.raid.faction === held) {
         s.raid = null;
         s.raidTimer = 60;
       }
@@ -267,7 +300,7 @@ export function advanceOp(s, dt) {
   } else {
     // A repelled operation emboldens the defenders, minus what repelling me cost them.
     report.theirLoss = Math.round(defense * NODES.opDefenderCut);
-    stirClan(s, sec.faction, CLANS.stir.opHeld);
+    stirClan(s, factionOf(s, sec.id), CLANS.stir.opHeld);
     shiftStrength(s, sec.id, NODES.opLossGain - NODES.opDefenderCut);
     report.strength = nodeStrength(s, sec.id);
     s.stats.opsLost++;
@@ -316,7 +349,7 @@ export function activeRaiders(s) {
 // Where an attack comes from: a sector of that faction, the frontier first so it is somewhere the
 // player can see, and the keenest of those. A faction with no ground left attacks from nowhere.
 export function attackSource(s, faction) {
-  const own = SECTORS.filter((x) => x.faction === faction && !s.sectors.includes(x.id));
+  const own = clanSectors(s, faction).filter((x) => !s.sectors.includes(x.id));
   const front = own.filter((x) => x.links.some((l) => s.sectors.includes(l)));
   const pool = front.length ? front : own;
   if (!pool.length) return null;
@@ -519,7 +552,7 @@ export function borders(s, withLocked = false) {
     if (id === MAP.home) continue;
     for (const l of SECTOR_BY_ID[id].links) {
       const from = SECTOR_BY_ID[l];
-      if (!from.faction || s.sectors.includes(l)) continue;
+      if (!factionOf(s, l) || s.sectors.includes(l)) continue;
       const locked = !sectorOpen(s, from);
       if (!locked || withLocked) out.push({ from: l, target: id, locked });
     }
@@ -529,7 +562,7 @@ export function borders(s, withLocked = false) {
 
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
-  const own = sec.defense * nodeStrength(s, fromId) * NODES.assaultShare * clanProfile(s, sec.faction).strength;
+  const own = baseDefense(s, fromId) * nodeStrength(s, fromId) * NODES.assaultShare * clanProfile(s, factionOf(s, fromId)).strength;
   return Math.ceil(sectorOpen(s, sec) ? own : Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
 }
 
@@ -564,13 +597,13 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
     const w = (b) => {
       const a = aggression(s, b.from);
       const from = SECTOR_BY_ID[b.from];
-      const prof = profiles[from.faction];
+      const prof = profiles[factionOf(s, b.from)];
       const away = Math.max(0, chapterOf(from.chapter).core - level(s, 'core') - 1);
       const base = b.locked
         ? (NODES.lockedWeight / (1 + away * NODES.lockedFalloff)) * (1 + a * NODES.lockedAggrGain)
         : 1 + a;
       // Ground of theirs that I hold pulls them back to it.
-      const back = SECTOR_BY_ID[b.target].faction === from.faction ? prof.retake : 1;
+      const back = SECTOR_BY_ID[b.target].faction === factionOf(s, b.from) ? prof.retake : 1;
       return Math.max(0, base) * prof.weight * back;
     };
     const total = pool.reduce((a, b) => a + w(b), 0);
@@ -585,7 +618,7 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
   const locked = !sectorOpen(s, from);
   const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   const t = delay === null ? warning(s, range(s, NODES.warningMin, NODES.warningMax, 'assault'), p.from) : delay;
-  s.assault = { faction: from.faction, strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
+  s.assault = { faction: factionOf(s, p.from), strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(t) }, 'bad');
   return s.assault;
 }
@@ -647,7 +680,7 @@ export function advanceAssaults(s, dt, offline) {
  *  at all, and losing a capital is what really moves them (data/world.js). */
 export function rallyClan(s, faction, lostId) {
   const lost = SECTOR_BY_ID[lostId];
-  const mine = SECTORS.filter((x) => x.faction === faction && !s.sectors.includes(x.id));
+  const mine = clanSectors(s, faction).filter((x) => !s.sectors.includes(x.id));
   if (!lost || mine.length < 2) {
     return null; // nothing left to move, or nothing to move it to
   }
@@ -685,7 +718,13 @@ export function rallyClan(s, faction, lostId) {
 // They hold it as hard as they took it, and the whole front around it is emboldened.
 export function loseSector(s, id, faction, strength = 0) {
   s.sectors = s.sectors.filter((x) => x !== id);
-  const held = strength ? clamp(strength / Math.max(1, SECTOR_BY_ID[id].defense), NODES.strengthMin, NODES.takenMax) : 1;
+  // Whoever walked in owns it now. If the map says it was someone else's, it is theirs anyway, and
+  // they rebuild it to their own standard (baseDefense), so a weak sector in strong hands is no
+  // longer a weak sector.
+  if (FACTIONS[faction] && SECTOR_BY_ID[id].faction !== faction) {
+    s.owner[id] = faction;
+  }
+  const held = strength ? clamp(strength / Math.max(1, baseDefense(s, id)), NODES.strengthMin, NODES.takenMax) : 1;
   s.nodes[id] = { m: held, marks: 0, a: 0, seen: 0 };
   if (id === TUTORIAL.target && s.scripted.retake === 1) {
     s.scripted.retake = 2; // the scripted loss landed: this sector is worth its real defense now

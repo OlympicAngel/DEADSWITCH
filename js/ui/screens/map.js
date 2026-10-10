@@ -267,7 +267,8 @@ function renderTheater(s, ui) {
   const fxAt = (p, R, cls, inner, style = '') => `<div class="${cls}" style="left:${L(p.x)}%;top:${T(p.y)}%;width:${(2 * R / W) * 100}%;margin:-${(R / W) * 100}% 0 0 -${(R / W) * 100}%;${style}"><svg viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${inner}</svg></div>`;
   const pulses = shown.filter((x) => E.sectorStatus(s, x) === 'target').map((x) => {
     const r = nodeR(x);
-    return fxAt(P(x), r + 8, 'fx-pulse', `<polygon class="pulse" points="${hex(r + 8)}"/>`, `--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}`);
+    const f = E.factionOf(s, x.id);
+    return fxAt(P(x), r + 8, 'fx-pulse', `<polygon class="pulse" points="${hex(r + 8)}"/>`, `--fc:${f ? FACTIONS[f].color : 'var(--hud)'}`);
   }).join('');
   // A dashed line whose dashes travel along it: the strip is rotated into place and its contents
   // slide by two dash periods per cycle, which looks the same as animating the dash offset.
@@ -285,9 +286,10 @@ function renderTheater(s, ui) {
     const p = P(x);
     const r = nodeR(x);
     const known = st !== 'far';
-    const color = x.faction ? FACTIONS[x.faction].color : 'var(--hud)';
+    const f = E.factionOf(s, x.id);
+    const color = f ? FACTIONS[f].color : 'var(--hud)';
     const label = known ? x.name : 'Unknown signal';
-    const ic = st === 'owned' ? (x.id === MAP.home ? 'core' : 'check') : st === 'locked' ? 'lock' : known ? FACTIONS[x.faction].icon : 'hex';
+    const ic = st === 'owned' ? (x.id === MAP.home ? 'core' : 'check') : st === 'locked' ? 'lock' : known ? FACTIONS[f].icon : 'hex';
     return `
       <g class="node st-${st} ${x.boss ? 'boss' : ''} ${ui.sector === x.id ? 'sel' : ''} ${s.op && s.op.sector === x.id ? 'attacking' : ''}" data-sector="${x.id}" transform="translate(${p.x},${p.y})" style="--fc:${color}" tabindex="0" role="button" aria-label="${esc(label)}">
         <polygon class="hex" points="${hex(r)}"/>
@@ -314,7 +316,7 @@ function renderTheater(s, ui) {
       <div class="map-fx under">${marches}${beams}${pulses}</div>
       <svg class="map" viewBox="${WORLD.x0} ${WORLD.y0} ${WORLD.w} ${WORLD.h}" role="img" aria-label="Wasteland map">
         <defs>${Object.entries(FACTIONS).map(([k, d]) => `<radialGradient id="terr-${k}"><stop offset="0" stop-color="${d.color}" stop-opacity=".16"/><stop offset="1" stop-color="${d.color}" stop-opacity="0"/></radialGradient>`).join('')}</defs>
-        ${territory(shown)}
+        ${territory(s, shown)}
         <g>${links.join('')}</g>
         <g>${nodes}</g>
         ${opTarget ? retTimer(P(opTarget), 'data-optimer') : ''}
@@ -339,7 +341,8 @@ function retTimer(p, attr) {
 
 // What this sector's clan is doing, as one icon pinned to its hex (sim/clans.js names them).
 function stancePin(s, x, r) {
-  const st = x.faction && E.stanceList(s, x.faction)[0];
+  const f = E.factionOf(s, x.id);
+  const st = f && E.stanceList(s, f)[0];
   if (!st) return '';
   return `<g class="stance-pin" transform="translate(${(r * 0.92).toFixed(0)},${(-r * 0.92).toFixed(0)})">
     <circle r="15"/><use href="#i-${st.icon}" x="-9" y="-9" width="18" height="18"/></g>`;
@@ -362,9 +365,10 @@ function strengthRow(s, sec) {
 
 // What this sector's clan is doing right now (sim/clans.js); nothing while it is holding its posture.
 function postureRow(s, sec) {
-  const stances = sec.faction ? E.stanceList(s, sec.faction) : [];
+  const f = E.factionOf(s, sec.id);
+  const stances = f ? E.stanceList(s, f) : [];
   if (!stances.length) return '';
-  return `<div class="r" data-clan="${sec.faction}" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[sec.faction].icon)}${esc(FACTIONS[sec.faction].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>`;
+  return `<div class="r" data-clan="${f}" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[f].icon)}${esc(FACTIONS[f].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>`;
 }
 
 // Clan support: linked sectors of the same faction that still stand.
@@ -372,17 +376,18 @@ function fortRow(s, sec) {
   const f = E.flank(s, sec);
   if (!f.approaches) return '';
   const left = f.approaches - f.held;
-  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while every linked ${esc(FACTIONS[sec.faction].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${left}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
+  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while every linked ${esc(FACTIONS[E.factionOf(s, sec.id)].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${left}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
 }
 
 // A faint glow of each faction's colour under its sectors (territories interlock).
-function territory(shown) {
-  return shown.filter((x) => x.faction).map((x) => `<circle cx="${x.x}" cy="${x.y}" r="190" fill="url(#terr-${x.faction})"/>`).join('');
+function territory(s, shown) {
+  return shown.map((x) => [x, E.factionOf(s, x.id)]).filter(([, f]) => f)
+    .map(([x, f]) => `<circle cx="${x.x}" cy="${x.y}" r="190" fill="url(#terr-${f})"/>`).join('');
 }
 
 function briefing(s, sec) {
   const st = E.sectorStatus(s, sec);
-  const f = sec.faction ? FACTIONS[sec.faction] : null;
+  const f = E.factionOf(s, sec.id) ? FACTIONS[E.factionOf(s, sec.id)] : null;
   const head = `
     <header class="brief-head" style="--fc:${f ? f.color : 'var(--hud)'}">
       <span class="fac-ico">${icon(st === 'far' ? 'hex' : f ? f.icon : 'core')}</span>

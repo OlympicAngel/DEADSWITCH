@@ -44,6 +44,8 @@ export function newState(seed = 1) {
     taken: [], // sectors ever captured (loot and memories pay once)
     // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours), a: aggression, seen: times inspected }
     nodes: {},
+    // sectors whose clan is no longer the one on the map: id -> the faction that took it off us
+    owner: {},
     // per faction: its four traits and the stances they currently add up to (see sim/clans.js)
     clans: {},
     op: null,
@@ -163,6 +165,11 @@ export function migrate(raw) {
   s.assault = a && sectorById(a.from) && sectorById(a.target) && FACTIONS[a.faction] && Number.isFinite(a.remaining) ? a : null;
   s.assaultTimer = Number.isFinite(raw.assaultTimer) ? raw.assaultTimer : null;
   s.assaultSeq = Number.isFinite(raw.assaultSeq) ? Math.max(0, Math.floor(raw.assaultSeq)) : 0;
+  // Captured ground keeps its new clan; a save from before that only knows the map's own factions.
+  s.owner = {};
+  for (const [id, f] of Object.entries((raw.owner && typeof raw.owner === 'object') ? raw.owner : {})) {
+    if (sectorById(id) && FACTIONS[f] && !s.sectors.includes(id)) s.owner[id] = f;
+  }
   // v2 kept one pending event id; v3 keeps a queue of instances with deadlines.
   if (typeof raw.event === 'string' && eventById(raw.event) && !Array.isArray(raw.events)) {
     const ev = eventById(raw.event);

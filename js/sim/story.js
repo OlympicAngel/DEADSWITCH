@@ -6,7 +6,7 @@ import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
   buildingStatus,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById } from './war.js';
+import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf } from './war.js';
 import { stirClan } from './clans.js';
 import { range, pick, rand } from './rng.js';
 
@@ -297,7 +297,7 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (choice.aggr && inst.params && inst.params.node) {
     stirAggression(s, inst.params.node, choice.aggr);
     const sec = sectorById(inst.params.node);
-    stirClan(s, sec.faction, { fury: ((choice.aggr.clan || 0) + (choice.aggr.node || 0)) * CLANS.interceptShare });
+    stirClan(s, factionOf(s, sec.id), { fury: ((choice.aggr.clan || 0) + (choice.aggr.node || 0)) * CLANS.interceptShare });
   }
   if (out.clearMarks && s.nodes[out.clearMarks]) {
     s.nodes[out.clearMarks].marks = 0;

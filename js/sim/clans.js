@@ -41,7 +41,11 @@ export function stirClan(s, faction, deltas, scale = 1) {
 /** Traits, plus the two facts about the map that the matrix reads like traits. */
 export function clanContext(s, faction) {
   const c = clan(s, faction);
-  const own = SECTORS_OF[faction] || [];
+  // What they hold now: their own ground, less anything another clan has taken off us since, plus
+  // whatever they have taken that was never on their map.
+  const owner = s.owner || {};
+  const own = (SECTORS_OF[faction] || []).filter((id) => !owner[id])
+    .concat(Object.keys(owner).filter((id) => owner[id] === faction));
   const cap = CAPITAL_OF[faction];
   return {
     fury: c.fury, fear: c.fear, order: c.order, greed: c.greed,

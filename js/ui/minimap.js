@@ -15,8 +15,9 @@ function node(s, sec, framed, label, zoom) {
   const st = E.sectorStatus(s, sec);
   const mine = st === 'owned';
   const r = nodeR(sec) * (framed ? zoom : zoom * 0.7);
-  const color = sec.faction ? FACTIONS[sec.faction].color : 'var(--hud)';
-  const ic = mine ? (sec.id === MAP.home ? 'core' : 'check') : st === 'far' ? 'hex' : FACTIONS[sec.faction].icon;
+  const f = E.factionOf(s, sec.id);
+  const color = f ? FACTIONS[f].color : 'var(--hud)';
+  const ic = mine ? (sec.id === MAP.home ? 'core' : 'check') : st === 'far' ? 'hex' : FACTIONS[f].icon;
   const name = st === 'far' ? 'Unknown' : sec.name;
   return `<g class="mini-node st-${st} ${framed ? 'framed' : 'dim'}" transform="translate(${sec.x},${sec.y})" style="--fc:${color}">
     <polygon class="hex" points="${hex(r)}"/>
@@ -65,7 +66,8 @@ export function mapBackdrop(s, ids, { beam = null, cls = 'modal' } = {}) {
   }
   const from = beam && E.sectorById(beam[0]);
   const to = beam && E.sectorById(beam[1]);
-  const color = from && from.faction ? FACTIONS[from.faction].color : 'var(--bad)';
+  const fromFac = from && E.factionOf(s, from.id);
+  const color = fromFac ? FACTIONS[fromFac].color : 'var(--bad)';
   const arrow = from && to
     ? `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" class="mini-beam" style="--fc:${color}"/>${ring(to, nodeR(to) + 22, color)}`
     : '';

@@ -25,11 +25,12 @@ function sector(s, id) {
   const mine = () => s.sectors.includes(id);
   const node = () => s.nodes[id] || {};
   return {
-    title: `${sec.name} · ${sec.faction ? FACTIONS[sec.faction].short : 'yours'}${sec.boss ? ' · capital' : ''}`,
+    title: `${sec.name} · ${E.factionOf(s, id) ? FACTIONS[E.factionOf(s, id)].short : 'yours'}${sec.boss ? ' · capital' : ''}`,
     rows: [
       ['id / chapter', () => `${sec.id} / ${sec.chapter}`],
       ['status', () => E.sectorStatus(s, sec) + (mine() ? ' (held)' : '')],
-      ['base defense', () => sec.defense],
+      ['held by', () => `${E.factionOf(s, id) || 'you'}${s.owner[id] ? ` (taken from ${sec.faction})` : ''}`],
+      ['base defense', () => `${E.baseDefense(s, id)}${s.owner[id] ? ` (map says ${sec.defense})` : ''}`],
       ['live defense', () => E.sectorDefense(s, sec)],
       ['strength ×', () => n2(E.nodeStrength(s, id))],
       ['clan support', () => `${n2(E.flank(s, sec).bonus)} (${E.flank(s, sec).held}/${E.flank(s, sec).approaches} taken)`],
@@ -37,7 +38,7 @@ function sector(s, id) {
       ['looks taken', () => node().seen || 0],
       ['breaches', () => `${E.breaches(s, id)} / ${NODES.breachesToFall}`],
       ['assault strength', () => E.assaultStrength(s, id)],
-      ['clan stance', () => (sec.faction ? E.stanceList(s, sec.faction).map((x) => x.id).join(' ') || 'none' : '-')],
+      ['clan stance', () => (E.factionOf(s, id) ? E.stanceList(s, E.factionOf(s, id)).map((x) => x.id).join(' ') || 'none' : '-')],
       ['op odds / cost', () => `${pc(E.opChance(s, sec))} · ${JSON.stringify(E.opCost(sec))}`],
       ['op time', () => secs(E.opTime(sec))],
       ['links', () => sec.links.join(' ')],
@@ -52,6 +53,12 @@ function sector(s, id) {
       ['aggr +0.5', (g) => E.shiftAggression(g.state, id, 0.5)],
       ['aggr −0.5', (g) => E.shiftAggression(g.state, id, -0.5)],
       ['clear breaches', (g) => { if (g.state.nodes[id]) g.state.nodes[id].marks = 0; }],
+      ['lose it to another clan', (g) => {
+        // Hands the sector to the next clan along, which is the only way it ever changes hands.
+        const now = E.factionOf(g.state, id);
+        const next = SECTORS.map((x) => x.faction).find((f) => f && f !== now);
+        if (next) E.loseSector(g.state, id, next, E.assaultStrength(g.state, id));
+      }],
       ['assault me', (g) => {
         const target = E.sectorById(id).links.find((l) => g.state.sectors.includes(l) && l !== MAP.home);
         if (target) E.spawnAssault(g.state, { from: id, target });
@@ -180,7 +187,7 @@ function clanOf(s, faction) {
   const c = () => E.clan(s, faction);
   const prof = () => E.clanProfile(s, faction);
   const ctx = () => E.clanContext(s, faction);
-  const own = SECTORS.filter((x) => x.faction === faction);
+  const own = E.clanSectors(s, faction);
   // Forces a stance: every trait it names is moved into range, and the map facts it needs are granted.
   const force = (st) => (g) => {
     const t = E.clan(g.state, faction);
@@ -270,7 +277,7 @@ function screen(s, id) {
         // Pretend the last piece of theirs we took has just fallen, and see what they do about it.
         const mine = g.state.sectors.map((id) => SECTORS.find((x) => x.id === id)).filter((x) => x && x.faction);
         const sec = mine[mine.length - 1];
-        if (sec) E.rallyClan(g.state, sec.faction, sec.id);
+        if (sec) E.rallyClan(g.state, E.factionOf(g.state, sec.id), sec.id);
       }],
       ['skip scripted retake', (g) => { g.state.scripted.retake = 2; }],
     ],
@@ -291,13 +298,13 @@ export function worldRows(s) {
     id: x.id,
     name: x.name,
     mine: s.sectors.includes(x.id),
-    faction: x.faction || '-',
-    def: x.faction && !s.sectors.includes(x.id) ? E.sectorDefense(s, x) : 0,
+    faction: E.factionOf(s, x.id) || '-',
+    def: E.factionOf(s, x.id) && !s.sectors.includes(x.id) ? E.sectorDefense(s, x) : 0,
     m: E.nodeStrength(s, x.id),
     aggr: E.aggression(s, x.id),
     stored: (s.nodes[x.id] && s.nodes[x.id].a) || 0,
     seen: (s.nodes[x.id] && s.nodes[x.id].seen) || 0,
     marks: E.breaches(s, x.id),
-    weight: x.faction && !s.sectors.includes(x.id) ? 1 + E.aggression(s, x.id) : 0,
+    weight: E.factionOf(s, x.id) && !s.sectors.includes(x.id) ? 1 + E.aggression(s, x.id) : 0,
   }));
 }

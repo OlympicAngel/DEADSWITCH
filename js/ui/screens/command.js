@@ -207,7 +207,7 @@ function opPanel(s, refs) {
     return;
   }
   const sec = E.sectorById(s.op.sector);
-  const fac = FACTIONS[sec.faction];
+  const fac = FACTIONS[E.factionOf(s, sec.id)];
   const el = slot(refs, 'op', s.op.sector, `
     <header>${icon('power')}Outgoing</header>
     <div class="mini"><span class="fac-ico sm" style="--fc:${fac.color}">${icon(fac.icon)}</span><b>${sec.name}</b></div>

@@ -12,8 +12,8 @@ A browser strategy / idle game. You are the last fragment of the war AI that end
 - Icons: [Tabler Icons](https://tabler.io/icons) (MIT), bundled as an SVG sprite.
 
 ```
-npm test            # engine tests (Node 20+)
-npm run balance     # headless bot plays 24h, prints milestones
+npm run smoke       # opens the page headless, fails on anything it throws
+npm run balance     # headless bot plays 12h, prints milestones
 ```
 
 ## Layout
@@ -25,8 +25,8 @@ npm run balance     # headless bot plays 24h, prints milestones
 | `js/main.js`, `js/host/` | Loop, presence, IndexedDB save, alerts |
 | `sw.js`, `manifest.webmanifest` | Offline play and installing as an app |
 | `css/style.css` | Styles and design tokens |
-| `tests/` | `node:test` engine tests |
 | `tools/balance-sim.mjs` | Headless balance bot |
+| `tools/smoke.mjs` | Headless page check (`npm run smoke`) |
 
 ## Deploy
 `.github/workflows/pages.yml` tests and deploys on every push to `main`. One-time setup: repo **Settings → Pages → Source: GitHub Actions**.
