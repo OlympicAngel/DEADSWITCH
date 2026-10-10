@@ -11,7 +11,7 @@ import { sfx, volume, setVolume } from './sfx.js';
 import { introStage, playScene, frameHit } from './intro.js';
 import { startScore, scoreScene, stopScore, swell } from './score.js';
 import { duckAmbient } from './ambient.js';
-import { say as speak, stopVoice, voiceName } from './voice.js';
+import { say as speak, sayLength, stopVoice, voiceName } from './voice.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
 import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
@@ -197,6 +197,7 @@ export function createModals(dialog, game, onChange) {
     function beat(n) {
       clearTimeout(wait);
       stopTyping(false);
+      stopVoice();
       at = n;
       const b = beats[n];
       const lines = [...(b.term || []), ...(b.say ? [b.say] : [])];
@@ -212,16 +213,26 @@ export function createModals(dialog, game, onChange) {
       tl.classList.add('in');
       tl.classList.remove('typed');
       tl.innerHTML = '';
-      speak(b.say); // the prose is the AI talking; the > lines are readouts, and stay silent
-      step(n, (lines.length ? typeDuration(lines) : 0) + hold);
-      const next = () => {
-        foot.classList.add('tap'); // the line is done: a tap now moves on instead of finishing it
+      let talking = false; // the beat does not move on while the AI is still saying this line
+      const go = () => {
+        foot.classList.add('tap'); // nothing is left to finish: a tap now cuts on
         if (n + 1 < beats.length) {
           wait = setTimeout(() => beat(n + 1), hold);
           return;
         }
         foot.hidden = true;
         reveal();
+      };
+      // The prose is the AI talking; the > lines are readouts, and stay silent.
+      talking = speak(b.say, () => { talking = false; go(); });
+      // Typing is paced to be read; speech takes as long as it takes. The segment fills over
+      // whichever is longer, and the beat ends on whichever finishes last.
+      const typed = lines.length ? typeDuration(lines) : 0;
+      step(n, Math.max(typed, sayLength(b.say) * 1000) + hold);
+      const next = () => {
+        if (!talking) {
+          go();
+        }
       };
       if (lines.length) {
         typeLines(tl, lines, next);
@@ -243,7 +254,7 @@ export function createModals(dialog, game, onChange) {
       fill.style.transition = `transform ${Math.round(ms)}ms linear`;
       fill.style.transform = 'scaleX(1)';
     }
-    dialog.querySelector('#bskip').onclick = () => { sfx.click(); beat(beats.length - 1); };
+    dialog.querySelector('#bskip').onclick = () => { sfx.click(); stopVoice(); beat(beats.length - 1); };
     // Tapping the picture finishes the line it is typing; tapping again cuts on.
     // pointerdown so this runs before the dialog's own click handler empties `typing`.
     dialog.addEventListener('pointerdown', (e) => {
@@ -254,6 +265,7 @@ export function createModals(dialog, game, onChange) {
         stopTyping(true);
       } else if (at + 1 < beats.length) {
         swell();
+        stopVoice();
         beat(at + 1);
       }
     });

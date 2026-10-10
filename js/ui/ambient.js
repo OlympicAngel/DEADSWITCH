@@ -1,28 +1,60 @@
-// The music under the game. It is not a loop: a mood is read off the state every second (what is
-// inbound, what is pending, how hard it would land, how deep into the story we are) and the bed
-// moves to it — a different chord, a brighter or darker filter, a faster pulse, a shimmer when the
-// stores are full. It runs on the music bus (js/ui/audio.js) and stops whenever the page does.
+// The music under the game. It is not a loop. A mood is read off the state every second (what is
+// inbound and how close, what is pending, what is being built, how full the stores are) and the bed
+// answers it, but within a mood nothing repeats for long either: the harmony walks a progression a
+// bar at a time, the rhythm steps through several patterns, and a mood that has held for a while
+// quietly thins out, because an alarm that never changes stops being an alarm. Runs on the music
+// bus (js/ui/audio.js), stops whenever the page does.
 import * as E from '../engine.js';
 import { RESOURCES } from '../data.js';
 import { audio, startPad, stopPad, padChord, voice, air, volume, ramp } from './audio.js';
 
-// Chords climb with the chapter, so the world gets grander as it opens up. Each mood picks a shape
-// over that root: how the bed sits, how often the pulse lands, and how bright it all is.
-const ROOTS = [55, 61.7, 65.4, 73.4]; // A, B, C, D, one per chapter
-const SHAPES = {
-  calm: { steps: [0, 7, 12], gain: 0.05, cut: 520, beat: 4, drive: 0.35 },
-  work: { steps: [0, 7, 12, 19], gain: 0.06, cut: 760, beat: 4, drive: 0.5 },
-  push: { steps: [0, 5, 12, 17], gain: 0.07, cut: 1000, beat: 2, drive: 0.6 },
-  alert: { steps: [0, 3, 10], gain: 0.07, cut: 900, beat: 2, drive: 0.75 },
-  danger: { steps: [0, 1, 6, 12], gain: 0.09, cut: 1500, beat: 1, drive: 1 },
-  crisis: { steps: [0, 6, 11], gain: 0.1, cut: 1900, beat: 1, drive: 1 },
-};
+const BAR = 16; // sixteen eighths: two bars of four, which is how long a pattern runs
 const STEP = 60 / 74 / 2; // an eighth at 74 BPM, the tempo the opening is scored at
 const LOOKAHEAD = 0.35;
+const FADE_AFTER = 45; // seconds in one mood before it starts stepping back
+const FADE_FLOOR = 0.45; // how far down it steps: a long siege sits at this much of its weight
+
+// Chords climb with the chapter, so the world grows as it opens up.
+const ROOTS = [55, 61.7, 65.4, 73.4]; // A, B, C, D
 const semitone = (root, n) => root * Math.pow(2, n / 12);
 
+// Each mood: a progression walked one chord a bar, patterns stepped through a bar at a time, and
+// how loud and bright it sits. In a pattern `K` is the low hit, `t` a tick, `o` an off-beat accent.
+const MOODS = {
+  calm: {
+    chords: [[0, 7, 12], [0, 5, 12], [-2, 7, 10], [0, 7, 14]],
+    bars: ['K.......t.......', 'K...........t...', 'K.......t...t...'],
+    gain: 0.035, cut: 480, hit: 0.055,
+  },
+  work: {
+    chords: [[0, 7, 12, 19], [0, 5, 12, 17], [3, 10, 15, 22], [0, 7, 12, 19]],
+    bars: ['K...t...K...t...', 'K...t...K..tt...', 'K..t.t..K...t..o'],
+    gain: 0.042, cut: 700, hit: 0.06,
+  },
+  push: {
+    chords: [[0, 5, 12, 17], [-2, 5, 10, 17], [0, 7, 12, 19], [-4, 3, 8, 15]],
+    bars: ['K..t.K..t...K.t.', 'K.t.K...t.K.t..o', 'K...K..t.t..K..t'],
+    gain: 0.05, cut: 900, hit: 0.062,
+  },
+  alert: {
+    chords: [[0, 3, 10], [0, 3, 8], [-1, 3, 10], [0, 2, 9]],
+    bars: ['K..o.t..K..o.t..', 'K.t..o..K.t..o.t', 'K..t..o.K.o..t..'],
+    gain: 0.05, cut: 1000, hit: 0.07,
+  },
+  danger: {
+    // Two notes a semitone apart under a tritone: it does not resolve, and it does not have to.
+    chords: [[0, 1, 6, 12], [0, 1, 6, 13], [-1, 1, 6, 12], [0, 1, 5, 12]],
+    bars: ['K.oK..t.K.oK.t.o', 'K.K..o.tK..oK.t.', 'Ko.K.t.oK.K..o.t'],
+    gain: 0.058, cut: 1300, hit: 0.075,
+  },
+  crisis: {
+    chords: [[0, 6, 11], [-1, 6, 11], [0, 6, 13], [1, 6, 11]],
+    bars: ['KoKo.t.oKo.tK.o.', 'K.KoKo.tK.oKo.t.', 'KoK.o.tKK.oK.ot.'],
+    gain: 0.062, cut: 1500, hit: 0.08,
+  },
+};
+
 let bed = null;
-let watch = null;
 
 /** What the state sounds like right now. The first match wins, worst first. Pure: the developer
  * panel reads it whether or not the music is playing. */
@@ -40,7 +72,16 @@ export function moodOf(s) {
   return s.op || s.build ? 'work' : 'calm';
 }
 
-/** Full stores and a running operation both shimmer: the bed answers what the player is doing. */
+/** 0 to 1: how close the nearest attack is, which tightens the rhythm as it comes in. */
+function tension(s) {
+  const atk = E.nextAttack(s);
+  if (!atk || !atk.total) {
+    return 0;
+  }
+  return Math.max(0, Math.min(1, 1 - atk.remaining / Math.min(atk.total, 600)));
+}
+
+/** Stores at the brim shimmer: the bed answers what the player has let pile up. */
 function sparkle(s) {
   const caps = E.caps(s);
   const full = Object.keys(RESOURCES).filter((r) => Number.isFinite(caps[r]) && s.res[r] >= caps[r] * 0.995).length;
@@ -49,26 +90,61 @@ function sparkle(s) {
 
 function read(s) {
   const id = moodOf(s);
-  const shape = SHAPES[id];
-  const root = ROOTS[Math.min(ROOTS.length - 1, Math.max(0, s.chapter - 1))];
-  return { id, shape, chord: shape.steps.map((n) => semitone(root, n)), shimmer: sparkle(s) };
+  return {
+    id,
+    mood: MOODS[id],
+    root: ROOTS[Math.min(ROOTS.length - 1, Math.max(0, s.chapter - 1))],
+    tension: tension(s),
+    shimmer: sparkle(s),
+  };
 }
 
-// The pulse: a heartbeat on the mood's beat and a tick between, both scaled by its drive.
+/** How much weight the bed has: it steps back the longer one mood holds, and leans in as an
+ *  attack closes. Without the first half, a long siege is just a loud loop. */
+function weight() {
+  const held = (bed.ctx.currentTime - bed.since) - FADE_AFTER;
+  const tired = held <= 0 ? 1 : Math.max(FADE_FLOOR, 1 - (held / 90) * (1 - FADE_FLOOR));
+  return tired * (0.8 + bed.now.tension * 0.35);
+}
+
+// One eighth note. The pattern says what lands; the mood says how hard.
 function pulse(n) {
-  const { shape, chord, shimmer } = bed.now;
-  if (n % shape.beat === 0) {
-    voice('music', chord[0] * 0.5, 0.45, { type: 'sine', vol: 0.11 * shape.drive, slide: -10, wet: 0.25 });
-    air('music', 0.1, { vol: 0.03 * shape.drive, freq: 170, q: 2, wet: 0.3 });
-  } else if (shimmer && n % 4 === 2) {
-    // Stores at the brim: a high note that only sounds while nothing can be stored.
-    voice('music', chord[chord.length - 1] * 4, 0.5, { type: 'sine', vol: 0.02 * shimmer, wet: 0.8 });
+  const { mood, root, shimmer } = bed.now;
+  const w = weight();
+  const slot = mood.bars[bed.bar % mood.bars.length][n % BAR];
+  const chord = bed.chord;
+  if (slot === 'K') {
+    voice('music', chord[0] * 0.5, 0.4, { type: 'sine', vol: mood.hit * w, slide: -8, wet: 0.22 });
+    air('music', 0.09, { vol: 0.02 * w, freq: 170, q: 2, wet: 0.3 });
+  } else if (slot === 't') {
+    air('music', 0.045, { vol: 0.016 * w, freq: 5600, q: 3.5, type: 'bandpass', wet: 0.45 });
+  } else if (slot === 'o') {
+    // The off-beat accent carries the harmony, so the rhythm says something as well as keeping time.
+    voice('music', chord[1 + (bed.bar % (chord.length - 1))], 0.3, { type: 'triangle', vol: 0.028 * w, wet: 0.6 });
   }
+  if (shimmer && n % BAR === 10) {
+    voice('music', chord[chord.length - 1] * 4, 0.5, { type: 'sine', vol: 0.014 * shimmer, wet: 0.8 });
+  }
+}
+
+/** Walks the progression on: a new chord and the next rhythm, every two bars. */
+function turn() {
+  const { mood, root } = bed.now;
+  bed.bar++;
+  bed.chord = mood.chords[bed.bar % mood.chords.length].map((n) => semitone(root, n));
+  padChord(bed.pad, bed.chord, {
+    gain: mood.gain * weight(),
+    cut: mood.cut * (0.75 + bed.now.tension * 0.5),
+    secs: STEP * BAR * 0.8,
+  });
 }
 
 function pump() {
   const { ctx } = bed;
   while (bed.next < ctx.currentTime + LOOKAHEAD) {
+    if (bed.step % BAR === 0) {
+      turn();
+    }
     pulse(bed.step);
     bed.step++;
     bed.next += STEP;
@@ -81,15 +157,15 @@ export function startAmbient(s) {
     return;
   }
   const b = audio();
-  if (!b) {
-    return;
-  }
-  const pad = startPad('music', 4, { wet: 0.55 });
+  const pad = b && startPad('music', 4, { wet: 0.55 });
   if (!pad) {
     return;
   }
-  bed = { ctx: b.ctx, pad, now: read(s), step: 0, next: b.ctx.currentTime + 0.1, timer: setInterval(pump, 90) };
-  apply(true);
+  const now = read(s);
+  bed = {
+    ctx: b.ctx, pad, now, bar: -1, chord: now.mood.chords[0].map((n) => semitone(now.root, n)),
+    step: 0, next: b.ctx.currentTime + 0.1, since: b.ctx.currentTime, timer: setInterval(pump, 90),
+  };
 }
 
 export function stopAmbient() {
@@ -101,7 +177,7 @@ export function stopAmbient() {
   bed = null;
 }
 
-/** Called every second with the live state: moves the bed when the mood has changed. */
+/** Called every second with the live state: turns the bed when the mood has changed. */
 export function ambientTick(s) {
   if (!bed) {
     return;
@@ -111,19 +187,14 @@ export function ambientTick(s) {
     return;
   }
   const next = read(s);
-  const changed = next.id !== bed.now.id || next.chord[0] !== bed.now.chord[0];
+  const turned = next.id !== bed.now.id || next.root !== bed.now.root;
   bed.now = next;
-  if (changed) {
-    apply(false);
-  }
-}
-
-function apply(first) {
-  const { shape, chord } = bed.now;
-  padChord(bed.pad, chord, { gain: shape.gain, cut: shape.cut, secs: first ? 2.5 : 1.6 });
-  if (!first) {
-    // A short breath across the change, so the mood turns instead of switching.
-    air('music', 0.7, { vol: 0.045, freq: 500, slide: shape.drive > 0.7 ? 3600 : -300, q: 2, type: 'bandpass', wet: 0.7 });
+  if (turned) {
+    bed.since = bed.ctx.currentTime; // a new mood is fresh again, however long the last one ran
+    bed.step = 0; // and starts its pattern from the top, on the beat
+    bed.bar = -1;
+    // A breath across the change, so the mood turns instead of switching.
+    air('music', 0.8, { vol: 0.035, freq: 500, slide: next.mood.hit > 0.07 ? 3400 : -300, q: 2, type: 'bandpass', wet: 0.7 });
   }
 }
 
@@ -132,9 +203,8 @@ export function duckAmbient(on) {
   if (!bed) {
     return;
   }
-  ramp(bed.pad.gain.gain, on ? bed.now.shape.gain * 0.15 : bed.now.shape.gain, bed.ctx.currentTime, 0.5);
-  bed.ducked = on;
+  ramp(bed.pad.gain.gain, on ? bed.now.mood.gain * 0.12 : bed.now.mood.gain * weight(), bed.ctx.currentTime, 0.5);
 }
 
-/** Whether anything is playing, for the developer panel. */
-export const ambientMood = () => (bed ? bed.now.id : 'off');
+/** What the bed is doing, for the developer panel. */
+export const ambientMood = () => (bed ? `${bed.now.id} bar ${bed.bar % bed.now.mood.bars.length} w${weight().toFixed(2)} t${bed.now.tension.toFixed(2)}` : 'off');
