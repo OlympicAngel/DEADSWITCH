@@ -366,16 +366,16 @@ export const RAIDS = {
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
   threatShare: 0.3, // raid strength tracks this share of your threat index...
-  spreadMin: 0.85, // ...times a random spread
-  spreadMax: 1.2,
+  spreadMin: 0.8, // ...times a random spread
+  spreadMax: 1.25,
   winSharpness: 4,
   lossMin: 0.2, // share of each stockpile lost on defeat, scaling with how badly you lost
   lossMax: 0.4,
-  unitLoss: { staff: { base: 0.1, cap: 0.5 }, defenses: { base: 0.08, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
-  winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.006, cap: 0.08 } }, // holding a close one still costs people
+  unitLoss: { staff: { base: 0.2, cap: 0.5 }, defenses: { base: 0.1, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
+  winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.01, cap: 0.02 } }, // holding a close one still costs people
   // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
   // of their sector's strength (NODES.defendWinCut / breachCut); raids have no sector, so it is reported only.
-  enemyLoss: { win: 0.1, loss: 0.3 },
+  enemyLoss: { win: 0.2, loss: 0.5 },
   loot: { money: [450, 0.43, 0.7] }, // fixed Scrip for a held attack, from its strength S: a x S^b + c x S
 };
 
@@ -399,7 +399,7 @@ export const TUTORIAL = {
 export const NODES = {
   strengthMin: 0.6,
   strengthMax: 3, // hard ceiling, passive growth included
-  growthPerHour: 0.02,
+  growthPerHour: 0.03,
   opLossGain: 0.16, // added when your operation against it fails (morale), before its own casualties
   opDefenderCut: 0.06, // removed at the same time: what repelling you cost the defenders
   defendWinCut: 0.05, // removed when its assault on you is held
@@ -410,32 +410,32 @@ export const NODES = {
   // standard: this share of what that clan holds at home on average, never below what the sector
   // was already worth and never more than foreignCap x it.
   foreignShare: 0.8,
-  foreignCap: 3,
+  foreignCap: 4,
   breachesToFall: 2,
   // An assault this many times your defense does not need a second visit: the sector falls on the
   // first breach. Shown as an overrun warning while it is inbound.
-  overrunRatio: 1.75,
+  overrunRatio: 1.5,
   startAtCore: 2,
   firstDelay: 420,
   intervalMin: 700, // between assaults (on top of raids)
   intervalMax: 1200,
-  warningMin: 240, // an assault is spotted this long before it lands
-  warningMax: 420,
-  assaultShare: 0.38, // assault strength = sector defense x this x spread x its clan's stance
+  warningMin: 140, // an assault is spotted this long before it lands
+  warningMax: 319,
+  assaultShare: 0.42, // assault strength = sector defense x this x spread x its clan's stance
   // Factions whose chapter is not open yet still attack from sectors that border yours, but rarely:
   // each such border weighs lockedWeight against 1 for an open one when an assault is rolled and their
   // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat).
   // They can breach and take a sector like anyone else; a sector you have held once can always be
   // retaken, open chapter or not.
-  lockedWeight: 0.3,
+  lockedWeight: 0.35,
   lockedAggrGain: 4, // a stirred locked border counts this much more per point of aggression
-  lockedFalloff: 0.4, // and weighs less the further its chapter still is from opening
+  lockedFalloff: 0.3, // and weighs less the further its chapter still is from opening
   // Open borders out-weigh sealed ones so heavily that a sealed clan could go hours without ever
   // attacking. Every this many assaults the roll is reserved for one, when one borders us at all.
   lockedEvery: 4,
-  lockedCap: 1.2,
+  lockedCap: 1.3,
   spreadMin: 0.85,
-  spreadMax: 1.15,
+  spreadMax: 1.25,
 };
 
 // Aggression: how keen an enemy sector is to come for you. Hidden from the player; it only weights
@@ -445,22 +445,22 @@ export const NODES = {
 // them, which then wants it back more than anything (js/sim/clans.js). They only do it when none of
 // the neighbours could manage it alone, and losing a capital is what really moves them.
 export const RALLY = {
-  base: 0.5, // chance before the clan's own profile is read
+  base: 0.6, // chance before the clan's own profile is read
   capital: 3, // x that chance when it was their capital that fell
   donors: 3, // how many of their other sectors can send anything
-  take: 0.5, // share of a donor's strength that marches
+  take: 0.75, // share of a donor's strength that marches
   keep: 1, // how much of it is still there when it arrives
-  enough: 1, // a neighbour whose assault already reaches this share of our Defense needs no help
+  enough: 1.1, // a neighbour whose assault already reaches this share of our Defense needs no help
 };
 
 export const AGGR = {
   min: -0.6,
-  max: 1.5,
+  max: 3,
   calmPerHour: 0.15, // drift back towards calm
   pressure: 0.75, // added as your Power catches up with its defense...
   pressureFrom: 0.7, // ...from this share of it, full once you match it
-  onOp: { node: 0.5, clan: 0.15, near: 0.1 }, // launching an operation against it
-  onInspect: 0.08, // opening its briefing; each look after the first counts for less
+  onOp: { node: 0.5, clan: 0.2, near: 0.1 }, // launching an operation against it
+  onInspect: 0.1, // opening its briefing; each look after the first counts for less
   onFall: { node: 0.3, clan: 0.4, near: 0.25 }, // a sector of mine falling emboldens the front around it
 };
 
