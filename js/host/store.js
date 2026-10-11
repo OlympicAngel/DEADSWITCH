@@ -187,6 +187,12 @@ export function setDue(items) {
   if (!broken) tx('readwrite', (st) => st.put(items, 'due'));
 }
 
+/** What the service worker would find waiting, for the alerts readout. */
+export async function getDue() {
+  const out = broken ? null : await tx('readonly', (st) => st.get('due'));
+  return Array.isArray(out) ? out : [];
+}
+
 export async function clear() {
   pending = null;
   clearTimeout(timer);

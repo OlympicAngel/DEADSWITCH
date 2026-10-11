@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.16.1';
+const CACHE = 'deadswitch-v1.17';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot; everything else is cached the first time it is asked for, so adding
 // a file to the game never means remembering to add it here.
@@ -17,7 +17,9 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys()
     .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== FONTS).map((k) => caches.delete(k))))
-    .then(() => self.clients.claim()));
+    .then(() => self.clients.claim())
+    // Whatever woke us is a chance to say what came due; fireDue says nothing if anyone is watching.
+    .then(() => fireDue()));
 });
 
 /** Serve what we have, then quietly replace it, so a reload always has the newest build. */

@@ -13,12 +13,14 @@
 import * as E from '../engine.js';
 import { num } from '../format.js';
 import { BALANCE, BY_ID, RAIDS, NODES, WARN } from '../data.js';
-import { setDue } from './store.js';
+import { setDue, getDue } from './store.js';
 
 const TAG = 'deadswitch-attack';
+const SYNC_TAG = 'deadswitch-check';
 const LEAD = 20; // seconds before it lands, so there is time to do something
 const AHEAD = 4; // how many unspawned attacks of each kind to queue from their timers
 const QUEUED = 8; // how many alerts to leave the worker for one absence
+const MIN_SYNC = 15 * 60 * 1000; // the shortest wake we ask for; the browser gives what it wants
 const KEY = 'deadswitch.notify'; // the player's answer to the permission question
 
 let timers = [];
@@ -47,6 +49,33 @@ export function notifyState() {
   };
 }
 
+// Whether the browser has actually granted background sync, which is the only thing that can wake a
+// closed page. It is not a prompt: Chrome decides from site engagement, and it can say no silently.
+// Until this has been read once, nothing here may claim an alert will arrive after the app is closed.
+let background = 'unknown';
+
+/** Reads the real state of every link in the chain. Async, because most of it has to be asked for. */
+export async function notifyDiagnosis() {
+  const n = notifyState();
+  const out = { ...n, worker: false, periodicSync: false, registered: false, permission2: 'unknown', due: 0 };
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration();
+    out.worker = !!reg;
+    out.periodicSync = !!(reg && reg.periodicSync);
+    if (reg && reg.periodicSync) {
+      out.registered = (await reg.periodicSync.getTags()).includes(SYNC_TAG);
+    }
+  } catch { /* nothing registered, or the browser refused to say */ }
+  try {
+    out.permission2 = (await navigator.permissions.query({ name: 'periodic-background-sync' })).state;
+  } catch {
+    out.permission2 = 'unsupported';
+  }
+  out.due = (await getDue()).length;
+  background = out.registered && out.permission2 === 'granted' ? 'yes' : 'no';
+  return out;
+}
+
 /** One line of fact about where alerts stand, for Settings and the developer panel. */
 export function notifyWhy() {
   const n = notifyState();
@@ -54,9 +83,10 @@ export function notifyWhy() {
   if (n.permission === 'denied') return 'Blocked for this site in browser settings.';
   if (!n.wanted) return 'Off.';
   if (n.permission !== 'granted') return 'Not granted yet.';
-  return n.background
-    ? 'Installed: alerts can arrive after the page is closed.'
-    : 'In a browser tab, alerts only arrive while the page is still open in the background.';
+  if (!n.installed) return 'In a browser tab, alerts only arrive while the page is still open in the background.';
+  if (background === 'yes') return 'Installed, background sync granted: the browser decides how often it wakes us.';
+  if (background === 'no') return 'Installed, but the browser has not granted background sync, so alerts only arrive while the app is still open in the background.';
+  return 'Installed. Checking whether the browser will wake us.';
 }
 
 /** Shows one now, to prove the whole path works end to end. */
@@ -163,14 +193,19 @@ export function scheduleAlerts(s) {
  *  browser decides whether to grant it and how often to fire, so this is asked for early and often
  *  rather than once on the way out. */
 export function askForBackground() {
-  navigator.serviceWorker?.ready
-    .then((reg) => reg.periodicSync?.register('deadswitch-check', { minInterval: 30 * 60 * 1000 }))
-    .catch(() => {});
-  // A one-shot sync fires the moment the device has a network again, which is a second chance at a
-  // late alert on a phone that was out of signal.
-  navigator.serviceWorker?.ready
-    .then((reg) => reg.sync?.register('deadswitch-check'))
-    .catch(() => {});
+  navigator.serviceWorker?.ready.then(async (reg) => {
+    try {
+      await reg.periodicSync?.register(SYNC_TAG, { minInterval: MIN_SYNC });
+    } catch {
+      // Chrome refuses when it has not granted the permission; notifyWhy says so rather than lying.
+    }
+    try {
+      // A one-shot sync fires the moment the device has a network again, which is a second chance at
+      // a late alert on a phone that was out of signal.
+      await reg.sync?.register(SYNC_TAG);
+    } catch { /* unsupported, or already registered */ }
+    notifyDiagnosis();
+  }).catch(() => {});
 }
 
 // Android has no home-screen widget for a web app, but it does have the icon badge: how many things

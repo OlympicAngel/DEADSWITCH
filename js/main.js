@@ -110,14 +110,39 @@ addEventListener('unhandledrejection', (e) => crash(e.reason && e.reason.message
 
 // Hands a stretch of absence to the engine in one piece and reports on it if it was worth reporting.
 // Without a Watch Daemon nothing was produced, so the report only comes up when the war did something.
+/** Two stretches away with a look in between are one absence to the player: add the second into the
+ *  first instead of queueing a second report. */
+function mergeAway(into, add) {
+  into.away += add.away;
+  into.seconds += add.seconds;
+  into.paid = (into.paid || 0) + (add.paid || 0);
+  into.dark = into.dark || add.dark;
+  into.efficiency = add.efficiency;
+  for (const k of Object.keys(add.gained)) into.gained[k] = (into.gained[k] || 0) + add.gained[k];
+  for (const k of Object.keys(add.happened)) into.happened[k] = (into.happened[k] || 0) + add.happened[k];
+}
+
 function catchUp(seconds) {
-  const report = E.catchUp(game.state, seconds);
+  const s = game.state;
+  const mark = s.inbox.length;
+  const report = E.catchUp(s, seconds);
   game.flows = report.flows;
   const war = Object.values(report.happened).some((n) => n > 0);
   if (seconds > OFFLINE_REPORT_SECONDS && (!report.dark || war)) {
-    E.say(game.state, 'welcomeBack', { time: time(report.away) });
+    E.say(s, 'welcomeBack', { time: time(report.away) });
     const { flows, ...keep } = report; // the flows are the UI's, not the report's
-    game.state.inbox.push({ kind: 'away', report: keep });
+    // Every battle the catch-up just resolved is already counted in the report, so the pile of
+    // individual reports it queued goes: one modal for the whole absence. Cut scenes stay.
+    const quiet = s.inbox.slice(mark).filter((m) => m.kind !== 'raid' && m.kind !== 'op');
+    s.inbox.length = mark;
+    s.inbox.push(...quiet);
+    const waiting = s.inbox.find((m) => m.kind === 'away');
+    if (waiting) {
+      mergeAway(waiting.report, keep);
+    } else {
+      // It opens before anything the absence queued behind it: what happened, then the stories.
+      s.inbox.unshift({ kind: 'away', report: keep });
+    }
   }
   save(true);
 }

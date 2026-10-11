@@ -134,6 +134,7 @@ export const EVENTS_CFG = {
   goodScale: 1.8, // and a shift towards Guardian weighs more again: the hard road has to be worth walking
   goodGain: 1.6, // a choice that moves Humanity up also pays more of whatever it pays...
   goodCost: 0.65, // ...and asks for less, so the kind answer is on the table when the stores are thin
+  cedeShare: 2.5, // handing a sector over pays this much of what taking it paid, on top of any gain
   grudgeRaids: [1, 3],
   grudgeUntilLossChance: 0.4,
   grudgeUntilLossMax: 6,
@@ -423,7 +424,7 @@ export const EVENTS = [
     id: 'autonomy', title: 'The Council of {held}', border: true, minCore: 2, deadline: 1050, def: 0,
     text: 'The people of {held} have elected a council. Their first act is a letter: they want to govern themselves, and they have been talking to {node}.',
     choices: [
-      { label: 'Let them go', cede: true, align: 14, gain: { money: 200 }, result: 'The council pays a farewell tribute and lowers my flag. Within a week the flag of {node} goes up instead.' },
+      { label: 'Let them go', cede: true, align: 14, gain: { money: 60 }, result: 'The council pays a farewell tribute and lowers my flag. Within a week the flag of {node} goes up instead.' },
       { label: 'Dissolve the council', align: -14, loseUnits: { staff: 0.06 }, clearMarks: true, result: 'The council is dissolved at gunpoint. {held} is quiet now, the way a held breath is quiet.' },
     ],
   },

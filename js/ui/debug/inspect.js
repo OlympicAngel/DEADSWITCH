@@ -6,7 +6,7 @@ import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTOR
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
-import { notifyWhy, notifyState, testAlert, upcoming } from '../../host/notify.js';
+import { notifyWhy, notifyState, notifyDiagnosis, testAlert, upcoming } from '../../host/notify.js';
 import { awakeHeld } from '../../host/awake.js';
 import { storageUse } from '../../host/store.js';
 
@@ -233,6 +233,10 @@ function clanOf(s, faction) {
 
 export const attackKey = (a) => (a.assault ? `assault:${a.from}` : a.siege ? `siege:${a.faction}` : `raid:${a.faction}`);
 
+// The alert chain has to be asked for, so it is read once and kept here for the rows to show.
+const diag = { at: null };
+notifyDiagnosis().then((d) => { diag.at = d; });
+
 // The screen itself: what the player is on, and the timers that decide what interrupts them.
 function screen(s, id) {
   return {
@@ -263,6 +267,7 @@ function screen(s, id) {
       ['speaks as', () => voiceName()],
       ['screen awake', () => (awakeHeld() ? 'held' : 'free')],
       ['alerts', () => `${notifyState().permission} \u00b7 ${notifyWhy()}`],
+      ['alert plumbing', () => (diag.at ? `worker ${diag.at.worker} \u00b7 periodicSync ${diag.at.periodicSync} \u00b7 registered ${diag.at.registered} \u00b7 permission ${diag.at.permission2} \u00b7 ${diag.at.due} due stored` : 'reading...')],
       ['alerts queued', () => { const u = upcoming(s); return u.length ? `${u.length} \u00b7 ${u.slice(0, 3).map((x) => `${Math.round(x.at / 60)}m ${x.title}`).join(' | ')}` : 'nothing in the window'; }],
       ['offline window', () => { const l = E.offlineLimits(s); const w = E.awaySeconds(s, Infinity); return `world ${(w / 3600).toFixed(1)}h \u00b7 paid ${(l.seconds / 3600).toFixed(1)}h at ${Math.round(l.efficiency * 100)}%${l.dark ? ' (no daemon)' : ''}`; }],
       ['offline budget', () => `${E.offlineAttacks(s)} attacks \u00b7 ${E.offlineOrders(s)} orders (used ${s.offlineRaids}/${s.offlineRaidCap} \u00b7 ${s.offlineEvents}/${s.offlineEventCap})`],
@@ -287,6 +292,7 @@ function screen(s, id) {
         gained: Object.fromEntries(Object.keys(g.state.res).map((r) => [r, 1234])), happened: { held: 2, breached: 1, taken: 0, lost: 1 } } })],
       ['say a line', () => speak('All stations. This is the Nest. Hold what you have.')],
       ['fire a test alert', () => testAlert()],
+      ['re-read alert plumbing', () => notifyDiagnosis().then((d) => { diag.at = d; })],
       ['order, as if away', (g) => { g.state.offlineEventCap = 9; g.state.offlineEvents = 0; E.advanceEvents(g.state, g.state.eventTimer + 1, true); g.state.offlineEventCap = 0; }],
       ['force a clan rally', (g) => {
         // Pretend the last piece of theirs we took has just fallen, and see what they do about it.

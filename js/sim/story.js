@@ -6,7 +6,7 @@ import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
   buildingStatus,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf } from './war.js';
+import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot } from './war.js';
 import { stirClan } from './clans.js';
 import { range, pick, rand } from './rng.js';
 
@@ -99,6 +99,12 @@ export function choiceOutcome(s, inst, choice) {
   const strength = choice.strength ? { id: p.node, delta: choice.strength } : null;
   const assault = choice.assault && p.node ? { from: p.node, target: p.held, delay: choice.assault } : null;
   const cede = choice.cede && p.held ? p.held : null;
+  // Handing ground over is a sale, and the price is what that ground is worth, not a flat tribute.
+  if (cede) {
+    for (const [r, v] of Object.entries(opLoot(sectorById(cede)))) {
+      gain[r] = (gain[r] || 0) + Math.ceil(v * EVENTS_CFG.cedeShare);
+    }
+  }
   return { cost, gain, lose, levels, units, callOff, align, grudge: choice.grudge || null, buff, strength, assault, cede, clearMarks: choice.clearMarks && p.held ? p.held : null };
 }
 
@@ -128,8 +134,11 @@ const hasUnits = (s, tab) => ITEMS.some((i) => i.tab === tab && owned(s, i.id) >
 // income the player does not have, no loss of stock or units they do not own, no grudge from a faction
 // that is not raiding, no raid delay before raids start. Otherwise another event fires instead.
 export function applicable(s, ev) {
-  if (ev.border && !borders(s, true).length) {
-    return false;
+  if (ev.border) {
+    const heals = ev.choices.some((c) => c.clearMarks);
+    if (!borders(s, true).some((b) => !heals || breaches(s, b.target) > 0)) {
+      return false;
+    }
   }
   if (ev.needsUnits && !ev.needsUnits.every((tab) => hasUnits(s, tab))) {
     return false;
@@ -175,7 +184,10 @@ function spawn(s, ev, front, big = false) {
   if (ev.border) {
     // A border between one of your sectors and an enemy one; the event is about those two. Clans whose
     // chapter is still sealed come up now and then: an order is one of the few things that wakes them.
-    const all = borders(s, true);
+    // An order that offers to seal breaches has to find a sector with breaches, or it is offering
+    // nothing and should not have been sent.
+    const heals = ev.choices.some((c) => c.clearMarks);
+    const all = borders(s, true).filter((b) => !heals || breaches(s, b.target) > 0);
     if (!all.length) return false;
     const open = all.filter((b) => !b.locked);
     const b = pick(s, open.length && rand(s, 'event') >= EVENTS_CFG.lockedBorderChance ? open : all, 'event');

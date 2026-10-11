@@ -14,7 +14,7 @@ import { duckAmbient } from './ambient.js';
 import { say as speak, sayLength, stopVoice, voiceName } from './voice.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
-import { notifyWanted, notifySupported, setNotify, notifyWhy } from '../host/notify.js';
+import { notifyWanted, notifySupported, setNotify, notifyWhy, notifyDiagnosis } from '../host/notify.js';
 
 export function createModals(dialog, game, onChange) {
   let onClose = null;
@@ -759,9 +759,12 @@ export function createModals(dialog, game, onChange) {
       // Permission can only be asked for on a tap, so this is the only place it is asked. The
       // button is held from here, not read off the event: awaiting the prompt ends the dispatch.
       const why = $('#mWhy');
+      // The background-sync answer has to be asked for, so the line fills in once it comes back.
+      notifyDiagnosis().then(() => { if (why) why.textContent = notifyWhy(); });
       notifyBtn.onclick = async () => {
         const on = await setNotify(!notifyWanted());
         notifyBtn.querySelector('span').textContent = on ? 'Alerts on' : 'Alerts off';
+        await notifyDiagnosis();
         if (why) why.textContent = notifyWhy();
         msg.textContent = on ? 'I will warn you about attacks while you are away.' : '';
       };
