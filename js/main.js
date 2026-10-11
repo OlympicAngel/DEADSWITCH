@@ -211,7 +211,16 @@ function startLoop() {
 const stopLoop = () => { looping = false; };
 
 async function boot() {
-  const saved = await store.read();
+  let saved = await store.read();
+  // A save whose stockpiles have stopped being numbers cannot be played out of. Before falling back
+  // to the starting values, try the session this one grew out of: that is what the restore button
+  // does, and nobody should have to find it.
+  if (saved && saved.state && !E.healthy(saved.state)) {
+    const back = await store.readBackup();
+    if (back && back.state && E.healthy(back.state)) {
+      saved = back;
+    }
+  }
   game.state = saved && saved.state ? E.migrate(saved.state) : E.newState(seed());
   store.keepBackup(saved); // the record that booted is known good; keep it for the rest of the session
   ui = createUI(document.getElementById('app'), game);

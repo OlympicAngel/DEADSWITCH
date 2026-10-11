@@ -333,6 +333,9 @@ export function pay(s, cost) {
 export function grant(s, gain, spill = true) {
   const c = caps(s);
   for (const [k, v] of Object.entries(gain)) {
+    if (!Number.isFinite(v)) {
+      continue; // a reward that is not a number is no reward; it must not take the stores with it
+    }
     s.res[k] = spill ? s.res[k] + v : Math.min(c[k], s.res[k] + v);
   }
 }
@@ -513,12 +516,19 @@ export function produce(s, dt, speed = 1) {
     }
     // Bonuses speed a converter up (input and output alike); they never improve its loss ratio.
     const m = mult[Object.keys(b.produces)[0]] * speed;
+    // Nothing moves at a standstill (the unpaid part of an absence runs at speed 0), and asking how
+    // much of nothing fits in a full store is 0/0: it used to answer NaN and poison the save.
+    if (!(m > 0) || !(dt > 0)) {
+      flows.eff[b.id] = 0;
+      continue;
+    }
     let eff = 1;
+    const share = (have, want) => (want > 0 ? Math.max(0, have) / want : 0);
     for (const [r, rate] of Object.entries(b.consumes)) {
-      eff = Math.min(eff, Math.max(0, s.res[r]) / (rate * lvl * m * dt));
+      eff = Math.min(eff, share(s.res[r], rate * lvl * m * dt));
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      eff = Math.min(eff, Math.max(0, c[r] - s.res[r]) / (rate * lvl * mult[r] * speed * dt));
+      eff = Math.min(eff, share(c[r] - s.res[r], rate * lvl * mult[r] * speed * dt));
     }
     eff = Math.max(0, Math.min(1, eff));
     for (const [r, rate] of Object.entries(b.consumes)) {
@@ -533,8 +543,13 @@ export function produce(s, dt, speed = 1) {
   }
 
   // Production stops at the brim, but a stock already over it (capture loot, what an order paid) is
-  // left alone: it drains as it is spent instead of evaporating on the next tick.
+  // left alone: it drains as it is spent instead of evaporating on the next tick. A number that has
+  // stopped being a number never reaches the save: the tick is rolled back for that resource.
   for (const r of RESOURCE_KEYS) {
+    if (!Number.isFinite(s.res[r])) {
+      s.res[r] = Number.isFinite(before[r]) ? before[r] : 0;
+      continue;
+    }
     s.res[r] = Math.max(0, s.res[r] > c[r] ? Math.max(c[r], before[r]) : s.res[r]);
   }
   return flows;

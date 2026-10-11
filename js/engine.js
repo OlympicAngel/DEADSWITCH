@@ -1,5 +1,5 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
-import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL } from './data.js';
+import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById, reached } from './sim/story.js';
@@ -93,13 +93,25 @@ export function newState(seed = 1) {
 }
 
 // Fills fields added after a save was written, so old saves keep loading.
+/** Whether a save can still be played: every stockpile is a finite number. A record that fails this
+ *  is poisoned rather than merely old, and the session before it is a better place to start. */
+export function healthy(raw) {
+  return !!raw && !!raw.res && RESOURCE_KEYS.every((r) => raw.res[r] === undefined || Number.isFinite(raw.res[r]));
+}
+
 export function migrate(raw) {
   const base = newState(raw && raw.rng ? raw.rng : 1);
   if (!raw || typeof raw !== 'object') {
     return base;
   }
   const s = { ...base, ...raw };
-  s.res = { ...base.res, ...raw.res };
+  // A stockpile that is not a finite number cannot be spent, shown or saved: a save carrying one
+  // (an old build divided by nothing while it was away) is healed here rather than needing the
+  // restore button. A negative stock is a bug too, and zero is the honest answer to both.
+  s.res = { ...base.res };
+  for (const [k, v] of Object.entries(raw.res || {})) {
+    if (k in s.res) s.res[k] = Number.isFinite(v) ? Math.max(0, v) : base.res[k];
+  }
   // Counts come from a file the player can edit, export and import, so none of them is trusted: a
   // level of "9e99" or NaN anywhere would spread through every price and bar on the screen.
   s.levels = whole(raw.levels);
