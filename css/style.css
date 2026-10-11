@@ -423,6 +423,65 @@ p {
   border-color: rgba(255, 176, 61, .55);
 }
 
+/* Over the brim: what a capture or an order paid, waiting to be spent. */
+.pill.over small {
+  color: var(--good);
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.pill.over {
+  border-color: rgba(110, 231, 183, .55);
+}
+
+.pill.over .pill-bar {
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 183, .5);
+}
+
+/* A clan's mood: four traits as filled pips, never as numbers. */
+.mood-row .moods {
+  display: flex;
+  gap: 10px;
+}
+
+.mood {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted);
+}
+
+.mood .i {
+  width: 13px;
+  height: 13px;
+}
+
+.pips {
+  display: flex;
+  gap: 2px;
+}
+
+.pips b {
+  width: 4px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--line);
+}
+
+.pips.s1 b:nth-child(-n+1),
+.pips.s2 b:nth-child(-n+2),
+.pips.s3 b:nth-child(-n+3),
+.pips.s4 b:nth-child(-n+4) {
+  background: var(--bad);
+}
+
+.st-buff {
+  margin-left: 6px;
+  color: var(--warn);
+  font-style: normal;
+  font-weight: 700;
+}
+
 .alert-strip {
   display: none;
   gap: 6px;

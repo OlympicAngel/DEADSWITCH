@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "python3 -m http.server 8000",
     "editor": "node tools/map-editor.mjs",
-    "balance": "node tools/balance-sim.mjs 12 3",
+    "balance": "node tools/balance-sim.mjs 12 5",
     "smoke": "node tools/smoke.mjs"
   },
   "engines": {

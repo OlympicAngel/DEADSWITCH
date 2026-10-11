@@ -363,12 +363,33 @@ function strengthRow(s, sec) {
   return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(sec.defense)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain)} for each operation it repels, −${pct(NODES.defendWinCut)} for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
 }
 
+// The four things a clan feels, drawn as filled pips rather than numbers: the player cannot read the
+// matrix, but they can watch a bar move after they take a sector and work out what moved it.
+const MOOD_ICON = { fury: 'power', fear: 'skull', order: 'barracks', greed: 'money' };
+const MOOD_WHAT = {
+  fury: 'How badly they want to hurt me.',
+  fear: 'What my Power has taught them.',
+  order: 'How well they still hold together.',
+  greed: 'What they want off me instead of my death.',
+};
+
+function moodRow(s, faction) {
+  const pips = E.clanMood(s, faction).map((m) => `
+    <span class="mood" data-tip="text" data-tip-text="${esc(MOOD_WHAT[m.key])}">
+      ${icon(MOOD_ICON[m.key])}<i class="pips s${m.step}"><b></b><b></b><b></b><b></b></i>
+    </span>`).join('');
+  return `<div class="r mood-row"><span>${icon(FACTIONS[faction].icon)}Mood</span><span class="moods">${pips}</span></div>`;
+}
+
 // What this sector's clan is doing right now (sim/clans.js); nothing while it is holding its posture.
 function postureRow(s, sec) {
   const f = E.factionOf(s, sec.id);
-  const stances = f ? E.stanceList(s, f) : [];
-  if (!stances.length) return '';
-  return `<div class="r" data-clan="${f}" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[f].icon)}${esc(FACTIONS[f].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}</b></div>`;
+  if (!f) return '';
+  const stances = E.stanceList(s, f);
+  // A stance that charges me something says so here, where the stance itself is named.
+  const held = stances.map((x) => (x.buff ? `<em class="st-buff">${bonusText({ [x.buff.key]: x.buff.amount })}</em>` : '')).join('');
+  const line = !stances.length ? '' : `<div class="r" data-clan="${f}" data-tip="text" data-tip-text="${esc(stances.map((x) => `${x.name}: ${x.desc}`).join(' '))}"><span>${icon(FACTIONS[f].icon)}${esc(FACTIONS[f].short)}</span><b class="bad-t">${esc(stances.map((x) => x.name).join(' · '))}${held}</b></div>`;
+  return moodRow(s, f) + line;
 }
 
 // Clan support: linked sectors of the same faction that still stand.

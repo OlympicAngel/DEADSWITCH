@@ -21,9 +21,11 @@ export const sectorGate = (sec) => sec.core ?? chapterOf(sec.chapter).core;
 
 // What each clan's ground is worth on average, which is the standard it rebuilds anything it takes to.
 const CLAN_AVG = {};
+const CLAN_MAX = {};
 for (const f of new Set(SECTORS.map((x) => x.faction).filter(Boolean))) {
   const own = SECTORS.filter((x) => x.faction === f);
   CLAN_AVG[f] = own.reduce((a, x) => a + x.defense, 0) / own.length;
+  CLAN_MAX[f] = Math.max(...own.map((x) => x.defense));
 }
 
 /** Who holds a sector now. The map says where a sector started; a clan that takes it off us when it
@@ -562,8 +564,19 @@ export function borders(s, withLocked = false) {
 
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
-  const own = baseDefense(s, fromId) * nodeStrength(s, fromId) * NODES.assaultShare * clanProfile(s, factionOf(s, fromId)).strength;
-  return Math.ceil(sectorOpen(s, sec) ? own : Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
+  const stance = clanProfile(s, factionOf(s, fromId)).strength;
+  const own = baseDefense(s, fromId) * nodeStrength(s, fromId) * NODES.assaultShare * stance;
+  if (!sectorOpen(s, sec)) {
+    // A clan whose chapter has not opened yet can only ever poke: it is capped near the raid strength
+    // the player is already facing, so a sector five Core levels ahead cannot delete them.
+    return Math.ceil(Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
+  }
+  // An open clan musters against what the player has become, not only what its own ground is worth.
+  // Where it musters from still counts: a backwater raises half of what the clan's best ground does.
+  const faction = factionOf(s, fromId);
+  const share = CLAN_MAX[faction] ? baseDefense(s, fromId) / CLAN_MAX[faction] : 1;
+  const reach = NODES.assaultFloorMin + (1 - NODES.assaultFloorMin) * Math.min(1, share);
+  return Math.ceil(Math.max(own, threat(s) * NODES.assaultFloorShare * stance * reach));
 }
 
 /** True when an inbound assault is strong enough to take its target on the first breach. */

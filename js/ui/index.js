@@ -471,10 +471,12 @@ export function createUI(root, game) {
       const p = pills[r];
       put(p.v, whole(s.res[r]));
       const capped = Number.isFinite(c[r]);
-      const full = capped && s.res[r] >= c[r] * 0.999;
+      const over = capped && s.res[r] > c[r] * 1.001; // loot and what an order paid sit above the brim
+      const full = capped && !over && s.res[r] >= c[r] * 0.999;
       const net = flows ? flows.prod[r] - flows.cons[r] : 0;
-      setW(p.fill, capped ? pct(s.res[r] / c[r]) : '100%');
-      put(p.rate, full ? 'FULL' : rate(net));
+      setW(p.fill, capped ? pct(Math.min(1, s.res[r] / c[r])) : '100%');
+      put(p.rate, over ? `OVER ${whole(s.res[r] - c[r])}` : full ? 'FULL' : rate(net));
+      p.el.classList.toggle('over', over);
       p.el.classList.toggle('full', full);
       p.el.classList.toggle('neg', net < -0.005);
     }

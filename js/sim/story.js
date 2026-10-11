@@ -71,11 +71,9 @@ export function choiceOutcome(s, inst, choice) {
   for (const [r, share] of Object.entries(choice.lose || {})) {
     lose[r] = Math.floor(s.res[r] * Math.min(0.9, share * EVENTS_CFG.loseScale * big));
   }
+  // What an order pays is paid in full: it overfills the stores rather than vanishing into them.
   const gain = scaled(s, choice.gain, EVENTS_CFG.gainScale * big * (good ? EVENTS_CFG.goodGain : 1));
   const c = caps(s);
-  for (const r of Object.keys(gain)) {
-    gain[r] = Math.min(gain[r], Math.floor(c[r]));
-  }
   const levels = (choice.loseLevel || []).map((k) => inst.params && inst.params[k]).filter((id) => id && level(s, id) > 0);
   const units = {};
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {

@@ -219,13 +219,16 @@ export function buildingCost(s, b) {
   const n = level(s, b.id);
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
-    out[k] = Math.ceil(v * econMult(b, k) * priceFactor(b.growth, n, k));
+    out[k] = Math.ceil(v * econMult(b, k) * (BALANCE.buildingPriceMult[k] || 1) * priceFactor(b.growth, n, k));
   }
   return out;
 }
 
 export function buildTime(s, b) {
-  const t = b.time * Math.pow(b.timeGrowth, level(s, b.id));
+  // Longer across the board, and a little longer again with each level, so a late build is something
+  // you plan around rather than watch (the same shape as the price climb, BALANCE.pricePower).
+  const n = level(s, b.id);
+  const t = b.time * BALANCE.buildTimeMult * Math.pow(b.timeGrowth, n) * Math.pow(n + 1, BALANCE.buildTimePower);
   // The opening runs fast: at AI Core 1 there is nothing to learn from watching a timer.
   return level(s, 'core') > 1 ? t : t / BALANCE.earlyBuildSpeed;
 }
@@ -324,10 +327,13 @@ export function pay(s, cost) {
   }
 }
 
-export function grant(s, gain) {
+/** Pays a reward in. Production stops at the stores' brim, but something earned never evaporates for
+ *  want of a shelf: capture loot and what an order pays overfill, and the overflow drains as it is
+ *  spent. `spill` false is for anything that should respect the cap. */
+export function grant(s, gain, spill = true) {
   const c = caps(s);
   for (const [k, v] of Object.entries(gain)) {
-    s.res[k] = Math.min(c[k], s.res[k] + v);
+    s.res[k] = spill ? s.res[k] + v : Math.min(c[k], s.res[k] + v);
   }
 }
 
@@ -480,6 +486,7 @@ export function produce(s, dt, speed = 1) {
     mult[r] = prodMultiplier(s, r, f);
   }
   const c = caps(s);
+  const before = { ...s.res }; // what was in the stores before this tick, overflow included
   const flows = { prod: { money: 0, energy: 0, pop: 0 }, cons: { money: 0, energy: 0, pop: 0 }, eff: {} };
 
   for (const b of BUILDINGS) {
@@ -525,8 +532,10 @@ export function produce(s, dt, speed = 1) {
     flows.eff[b.id] = eff;
   }
 
+  // Production stops at the brim, but a stock already over it (capture loot, what an order paid) is
+  // left alone: it drains as it is spent instead of evaporating on the next tick.
   for (const r of RESOURCE_KEYS) {
-    s.res[r] = Math.max(0, Math.min(c[r], s.res[r]));
+    s.res[r] = Math.max(0, s.res[r] > c[r] ? Math.max(c[r], before[r]) : s.res[r]);
   }
   return flows;
 }

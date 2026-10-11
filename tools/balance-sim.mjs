@@ -34,6 +34,74 @@ function shortOf(s, b) {
   return s.res[out] < need * 0.5 && Object.keys(b.consumes).every((r) => s.res[r] > need);
 }
 
+const SAFE_ODDS = 0.92; // a player reinforces until an inbound attack looks survivable
+const SHOP_EVERY = 10; // seconds of game time between shopping trips
+const PANIC_BUYS = 80; // how many units one panic can add before the player gives up on it
+const EXPERT_WORTH = 30; // one Expert lifts every rate, so it is worth far more than its point
+const CORE_SOON = 180; // seconds of income: closer than this to the next Core and the player saves
+const POP_WORTH = 12; // people are not free: price them against scrip (data/economy.js CONVERSION)
+
+/** Value per scrip of one more of this unit. `want` is what the player is shopping for. */
+function value(s, item, want) {
+  const g = item.gives || {};
+  // Experts are worth more than their one point: they lift everything the base makes.
+  const good = want === 'defense' ? (g.defense || 0)
+    : (g.power || 0) + (g.defense || 0) + (g.experts || 0) * EXPERT_WORTH;
+  if (!good) return 0;
+  const c = E.itemCost(s, item);
+  if (!E.canAfford(s, c) || E.exceedsCap(s, c).length) return 0;
+  return good / Math.max(1, (c.money || 0) + (c.energy || 0) + (c.pop || 0) * POP_WORTH);
+}
+
+/** The best buy on the shelf right now, or null when nothing is affordable. */
+function bestBuy(s, want) {
+  let best = null;
+  let top = 0;
+  for (const i of ITEMS) {
+    if (!E.itemUnlocked(s, i) || !i.gives) continue;
+    const v = value(s, i, want);
+    if (v > top) {
+      top = v;
+      best = i;
+    }
+  }
+  return best;
+}
+
+/** What to hold back for the next AI Core level. A player only saves when the Core is nearly in
+ *  reach (CORE_SOON of income away); the rest of the time, sitting on scrip buys nothing. */
+function coreReserve(s) {
+  const core = BUILDINGS.find((b) => b.id === 'core');
+  if (!['ready', 'storage', 'busy', 'gated'].includes(E.buildingStatus(s, core))) {
+    return {};
+  }
+  const cost = E.buildingCost(s, core);
+  const rates = E.netRates(s);
+  const near = Object.entries(cost).every(([r, need]) => s.res[r] + (rates[r] || 0) * CORE_SOON >= need);
+  return near ? cost : {};
+}
+
+// One shopping trip. Under a bad attack the player empties the account into Defense until the odds
+// look survivable; otherwise they spend whatever is over the next Core level on the best value going.
+function shop(s, atk) {
+  // The wall first, and only as far as it has to go.
+  for (let n = 0; atk && n < PANIC_BUYS && E.raidChance(s, atk) < SAFE_ODDS; n++) {
+    const buy = bestBuy(s, 'defense');
+    if (!buy) break;
+    E.buyItem(s, buy.id);
+  }
+  // Then whatever is still over the next Core level goes on the best value on the shelf.
+  const keep = coreReserve(s);
+  for (let n = 0; n < 12; n++) {
+    const buy = bestBuy(s, 'threat');
+    if (!buy) break;
+    const c = E.itemCost(s, buy);
+    // Never spend the Core out of reach: that is the one purchase that opens everything else.
+    if (Object.entries(keep).some(([r, need]) => s.res[r] - (c[r] || 0) < need)) break;
+    E.buyItem(s, buy.id);
+  }
+}
+
 function play(seed) {
   const s = E.newState(seed);
   s.name = 'bot';
@@ -56,12 +124,10 @@ function play(seed) {
     }
 
     const atk = E.nextAttack(s);
-    const scared = atk && E.raidChance(s, atk) < 0.85;
-    const items = ITEMS.filter((i) => E.itemUnlocked(s, i) && (!scared || i.tab === 'defenses' || i.tab === 'staff'))
-      .sort((a, b) => sum(E.itemCost(s, a)) - sum(E.itemCost(s, b)));
-    for (const i of items.slice(0, 3)) {
-      const c = E.itemCost(s, i);
-      if (E.canAfford(s, c) && (c.money || 0) < s.res.money * (scared ? 0.8 : 0.4)) E.buyItem(s, i.id);
+    const scared = atk && E.raidChance(s, atk) < SAFE_ODDS;
+    // Shopping, the way a player shops: not every second, and not the cheapest thing on the shelf.
+    if (t % SHOP_EVERY === 0) {
+      shop(s, atk);
     }
 
     // Troops leave the wall with the operation, so the bot does not launch into an attack it is
@@ -116,7 +182,7 @@ function play(seed) {
     mark('rank' + s.rank, t);
   }
   const f = E.factors(s);
-  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s, f), align: s.align, sectors: s.sectors.length - 1 };
+  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s, f), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels } };
 }
 
 const runs = [];
@@ -158,4 +224,5 @@ console.log(`  Operations won ${mean((r) => r.stats.opsWon).toFixed(1)}  lost ${
 console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  breached ${mean((r) => r.tally.assaultsBreached).toFixed(1)}  raids that cracked a wall ${mean((r) => r.tally.raidBreaches).toFixed(1)}  sectors lost ${mean((r) => r.tally.sectorsLost).toFixed(1)}`);
 console.log(`  Capture loot ${mean((r) => avg(r.tally.lootMin) || 0).toFixed(1)} min of Scrip income, held-attack salvage ${mean((r) => avg(r.tally.salvageMin) || 0).toFixed(1)} min`);
 console.log(`  Humanity from choices ${mean((r) => r.tally.align).toFixed(0)} over ${mean((r) => r.tally.picked).toFixed(0)} answers, ${mean((r) => r.tally.pricedOut).toFixed(0)} options unaffordable`);
+console.log('  levels ' + JSON.stringify(runs[0].levels));
 console.log(`  Events ${mean((r) => r.stats.events).toFixed(0)}  threats paid ${mean((r) => r.tally.tributes).toFixed(1)}  sieges taken ${mean((r) => r.tally.sieges).toFixed(1)}  grudges ${mean((r) => r.tally.grudges).toFixed(1)}  missed deadlines ${mean((r) => r.stats.expired || 0).toFixed(1)}`);

@@ -34,8 +34,18 @@ export function stirClan(s, faction, deltas, scale = 1) {
   if (!FACTIONS[faction] || !deltas) return;
   const c = clan(s, faction);
   for (const k of TRAITS) {
-    if (deltas[k]) c[k] = clamp01(c[k] + deltas[k] * scale);
+    if (deltas[k]) c[k] = clamp01(c[k] + deltas[k] * scale * CLANS.stirScale);
   }
+}
+
+// How a trait reads without a number: five steps from its own baseline, which is what the player can
+// actually act on (am I frightening them more than I was?).
+const BANDS = ['none', 'low', 'some', 'high', 'full'];
+
+/** Each trait as a word and a 0-4 step, for showing a clan's mood without showing the matrix. */
+export function clanMood(s, faction) {
+  const c = clan(s, faction);
+  return TRAITS.map((k) => ({ key: k, step: Math.min(4, Math.floor(c[k] * 5)), band: BANDS[Math.min(4, Math.floor(c[k] * 5))] }));
 }
 
 /** Traits, plus the two facts about the map that the matrix reads like traits. */

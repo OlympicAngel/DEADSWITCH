@@ -12,6 +12,7 @@
 // cancelled on the way back.
 import * as E from '../engine.js';
 import { num } from '../format.js';
+import { BALANCE, BY_ID } from '../data.js';
 import { setDue } from './store.js';
 
 const TAG = 'deadswitch-attack';
@@ -85,6 +86,11 @@ export function upcoming(s) {
   const order = s.events.length ? s.events.reduce((a, x) => (x.left < a.left ? x : a)) : null;
   if (order) {
     out.push({ at: order.left, title: 'An order is about to expire', body: 'No answer and I decide for you.' });
+  }
+  // A build long enough to walk away from is worth a word when it finishes; a short one is not.
+  if (s.build && s.build.total >= BALANCE.longBuild) {
+    const b = BY_ID[s.build.id];
+    out.push({ at: s.build.remaining + LEAD, title: `${b.name} is finished`, body: `Level ${E.level(s, b.id) + 1}. The builder is free.` });
   }
   // Time away stops at the offline limit, so nothing past it ever becomes due. The war runs in the
   // dark too, so this is worth doing before the Watch Daemon is up.

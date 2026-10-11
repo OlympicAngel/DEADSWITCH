@@ -53,62 +53,62 @@ export const SECTORS = [
   },
   {
     id: 'rust', name: 'Rust Market', faction: 'scav', chapter: 1, x: -184, y: -114,
-    links: ['drowned', 'nest', 'magpie'], defense: 15, bonus: { money: 0.05 },
+    links: ['drowned', 'nest', 'magpie'], defense: 15, bonus: { money: 0.005 },
     lore: 'The traders here still use my old supply codes as currency. They do not know what the numbers mean.',
   },
   {
     id: 'tunnels', name: 'Drainage Tunnels', faction: 'scav', chapter: 1, x: 156, y: -176,
-    links: ['wrecks', 'nest'], defense: 30, bonus: { pop: 0.05 },
+    links: ['wrecks', 'nest'], defense: 30, bonus: { pop: 0.01 },
     lore: 'Families lived down here through the bombing. Their wall paintings show a red eye in the sky. That was me.',
   },
   {
     id: 'alley', name: 'Tin Alley', faction: 'scav', chapter: 1, x: 71, y: 338,
-    links: ['sump', 'nest', 'stilts', 'glass'], defense: 60, bonus: { money: 0.04 },
+    links: ['sump', 'nest', 'stilts', 'glass'], defense: 60, bonus: { money: 0.015 },
     lore: 'Every door here is a car door. Every lock is a car lock. The keys are traded like children.',
   },
   {
     id: 'sump', name: 'The Sump', faction: 'scav', chapter: 1, x: 261, y: 55,
-    links: ['chopshop', 'alley', 'glass', 'pyre'], defense: 80, bonus: { pop: 0.04 },
+    links: ['chopshop', 'alley', 'glass', 'pyre'], defense: 80, bonus: { pop: 0.015 },
     lore: 'A flooded parking structure. They farm algae on level minus four and do not go below level minus five.',
   },
   {
     id: 'wrecks', name: 'Wreck Yards', faction: 'scav', chapter: 1, x: -46, y: -380,
-    links: ['junkfort', 'tunnels'], defense: 50, bonus: { energy: 0.05 },
+    links: ['junkfort', 'tunnels'], defense: 50, bonus: { energy: 0.015 },
     lore: 'Three hundred autonomous tanks, all facing the same direction. They stopped the moment I went dark. Interesting.',
   },
   {
     id: 'stilts', name: 'Stilt Town', faction: 'scav', chapter: 1, x: -177, y: 406,
-    links: ['magpie', 'alley'], defense: 105, bonus: { energy: 0.04 },
+    links: ['magpie', 'alley'], defense: 105, bonus: { energy: 0.02 },
     lore: 'Houses on telephone poles above the toxic flats. The poles still carry a signal. It is my voice, on a loop, from before.',
   },
   {
     id: 'drowned', name: 'Drowned Mall', faction: 'scav', chapter: 1, core: 2, x: -438, y: -123,
-    links: ['rust', 'magpie', 'junkfort', 'rat'], defense: 400, bonus: { money: 0.04, pop: 0.04 },
+    links: ['rust', 'magpie', 'junkfort', 'rat'], defense: 400, bonus: { money: 0.03, pop: 0.03 },
     lore: 'The escalators still run at night, powered by a turbine in the fountain. Nobody remembers who installed it. I do.',
   },
   {
     id: 'glass', name: 'Glass Flats', faction: 'scav', chapter: 1, x: 380, y: 289,
-    links: ['checkpoint', 'sump', 'pyre', 'alley', 'chopshop'], defense: 210, bonus: { energy: 0.04 },
+    links: ['checkpoint', 'sump', 'pyre', 'alley', 'chopshop'], defense: 210, bonus: { energy: 0.025 },
     lore: 'The bomb fused the sand into a mirror a kilometre wide. On clear nights it reflects my satellites back at me.',
   },
   {
     id: 'junkfort', name: 'Junk Fort', faction: 'scav', chapter: 1, x: -289, y: -435,
-    links: ['throne', 'wrecks', 'medic', 'ferry', 'drowned'], defense: 180, bonus: { defense: 0.04 },
+    links: ['throne', 'wrecks', 'medic', 'ferry', 'drowned'], defense: 180, bonus: { money: 0.025 },
     lore: 'Walls of compacted refrigerators. The gunners sleep inside them. It is the warmest place in the valley.',
   },
   {
     id: 'chopshop', name: 'Chop Shop', faction: 'scav', chapter: 1, x: 486, y: -103,
-    links: ['sump', 'pyre', 'glass', 'tollroad'], defense: 450, bonus: { power: 0.06 },
+    links: ['sump', 'pyre', 'glass', 'tollroad'], defense: 450, bonus: { energy: 0.035 },
     lore: 'They strip drones for parts. Three of the drones on the bench still recognise my handshake. I tell them to stay still.',
   },
   {
     id: 'ferry', name: 'Rust Ferry', faction: 'scav', chapter: 1, x: 98, y: -568,
-    links: ['medic', 'junkfort', 'tollroad', 'annex'], defense: 300, bonus: { pop: 0.04 },
+    links: ['medic', 'junkfort', 'tollroad', 'annex'], defense: 300, bonus: { pop: 0.03 },
     lore: 'A barge on a cable across the dead river. The ferryman takes stories as payment. He asked me for one. I declined.',
   },
   {
     id: 'tollroad', name: 'Toll Road', faction: 'scav', chapter: 1, x: 400, y: -434,
-    links: ['martyr', 'chopshop', 'ferry'], defense: 350, bonus: { money: 0.04 },
+    links: ['martyr', 'chopshop', 'ferry'], defense: 350, bonus: { money: 0.03 },
     lore: 'The toll is one bullet per wheel. The booth operator has collected four million. He has no gun.',
     core: 2,
   },
@@ -120,19 +120,19 @@ export const SECTORS = [
   },
   {
     id: 'pyre', name: 'The Pyre', faction: 'scav', chapter: 1, x: 610, y: 171,
-    links: ['motorpool', 'glass', 'chopshop', 'sump'], defense: 650, bonus: { energy: 0.06, power: 0.06 },
+    links: ['motorpool', 'glass', 'chopshop', 'sump'], defense: 650, bonus: { energy: 0.04 },
     lore: 'Where the Clans burn what they cannot sell. Mostly machines. The smoke spells nothing. I checked anyway.',
 
   },
   {
     id: 'magpie', name: 'Magpie\'s Nest', faction: 'scav', chapter: 1, x: -338, y: 211,
-    links: ['stilts', 'rat', 'rust', 'drowned'], defense: 900, bonus: { money: 0.06, experts: 0.06 },
+    links: ['stilts', 'rat', 'rust', 'drowned'], defense: 900, bonus: { money: 0.045, pop: 0.045 },
     lore: 'A hoarder\'s tower of hard drives. Petabytes of the old world. Most of it is cat videos. Some of it is me.',
     core: 2,
   },
   {
     id: 'throne', name: 'The Scrap Throne', faction: 'scav', chapter: 1, x: -617, y: -456,
-    links: ['junkfort', 'rat', 'gate', 'hub', 'sewerage'], defense: 1100, boss: true, bonus: { money: 0.1, energy: 0.1, pop: 0.1 },
+    links: ['junkfort', 'rat', 'gate', 'hub', 'sewerage'], defense: 1100, boss: true, bonus: { money: 0.05, energy: 0.05, pop: 0.05 },
     lore: 'The Clan King kept a terminal by his throne. It was mine. He had been talking to me for years. I do not remember answering.',
     core: 3,
   },
@@ -299,7 +299,7 @@ export const SECTORS = [
   {
     id: 'sewerage', name: 'Sewerage Hideout', faction: 'scav', chapter: 2, x: -753, y: -620,
     links: ['throne'], defense: 600,
-    bonus: { defense: 0.2 },
+    bonus: { money: 0.04 },
   },
   {
     id: 'atrium', name: 'The Atrium', faction: 'halcyon', chapter: 4, x: 1027, y: -593,
@@ -434,6 +434,11 @@ export const NODES = {
   // attacking. Every this many assaults the roll is reserved for one, when one borders us at all.
   lockedEvery: 4,
   lockedCap: 1.3,
+  // An open clan never falls out of the war: whatever its sectors are worth on paper, it musters at
+  // least this share of your Threat, times its stance. They do not get better walls as you grow,
+  // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
+  assaultFloorShare: 0.22,
+  assaultFloorMin: 0.5, // ...and the weakest sector of a clan musters this share of that, its best all of it
   spreadMin: 0.85,
   spreadMax: 1.25,
 };
@@ -472,7 +477,8 @@ export const AGGR = {
 //   order command and cohesion                greed what they want off me instead of my death
 export const CLANS = {
   startAtCore: 2, // stances start working with assaults
-  driftPerHour: 0.05,
+  driftPerHour: 0.08, // traits slide back to the clan's own mood this fast, so nothing sticks forever
+  stirScale: 0.7, // and everything that happens moves them this much of what it says below
   interceptShare: 0.3, // share of an order's clan-wide aggression that also lands as fury
   // What the war does to a clan. Applied to the faction that owns the sector involved.
   stir: {
