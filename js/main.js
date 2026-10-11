@@ -8,7 +8,7 @@ import { nextStep } from './ui/framerate.js';
 import { time } from './format.js';
 import * as store from './host/store.js';
 import { createPresence } from './host/presence.js';
-import { scheduleAlerts, cancelAlerts, setBadge, clearBadge, askForBackground } from './host/notify.js';
+import { scheduleAlerts, refreshAlerts, cancelAlerts, setBadge, clearBadge, askForBackground } from './host/notify.js';
 import { startAmbient, stopAmbient, ambientTick } from './ui/ambient.js';
 import { keepAwake, regainAwake, needsAwake } from './host/awake.js';
 
@@ -172,6 +172,9 @@ function advance() {
   if (sinceSave >= BALANCE.autosaveSeconds) {
     sinceSave = 0;
     save();
+    // The worker's alert list is kept current here rather than only on the way out: a write started
+    // as the page is closing often never lands, and then an absence has nothing to fire.
+    refreshAlerts(game.state);
   }
   // Once a second: the music reads the state, and the screen is held awake if there is a reason.
   sinceMood += real;

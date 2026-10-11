@@ -24,6 +24,7 @@ const MIN_SYNC = 15 * 60 * 1000; // the shortest wake we ask for; the browser gi
 const KEY = 'deadswitch.notify'; // the player's answer to the permission question
 
 let timers = [];
+let lastDue = ''; // the due list as last written, so an unchanged one is not written again
 
 export const notifyWanted = () => {
   try {
@@ -119,16 +120,16 @@ function promised(s, limit) {
     return out;
   }
   const soonest = (base) => base * WARN.share + WARN.floor;
-  // Raids: s.raidTimer counts down to the next spawn, then they keep coming on their own interval.
-  if (!s.raid && Number.isFinite(s.raidTimer)) {
-    for (let at = Math.max(0, s.raidTimer) + soonest(RAIDS.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
-      out.push({ at, title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
-      at += RAIDS.intervalMin;
-    }
+  // One already on the board does not stop the clock: the next one is timed from where that one
+  // lands. Bailing here was why a nine-hour absence queued a single alert and then went quiet.
+  const after = (live, timer, gap) => (live ? live.remaining + gap : Math.max(0, timer || 0)) + soonest(gap);
+  for (let at = after(s.raid, s.raidTimer, RAIDS.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
+    out.push({ at, title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
+    at += RAIDS.intervalMin;
   }
-  // Assaults: the same, off their own clock, and null until the first one is armed.
-  if (!s.assault && s.assaultTimer !== null && Number.isFinite(s.assaultTimer)) {
-    for (let at = Math.max(0, s.assaultTimer) + soonest(NODES.warningMin), n = 0; at <= limit && n < AHEAD; n++) {
+  // Assaults run off their own clock, which is null until the first one is armed.
+  if (s.assault || s.assaultTimer !== null) {
+    for (let at = after(s.assault, s.assaultTimer, NODES.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
       out.push({ at, title: 'A clan is moving on us', body: 'One of our sectors is about to be hit.' });
       at += NODES.intervalMin;
     }
@@ -169,23 +170,42 @@ async function show(title, body) {
 }
 
 /** Called when the player leaves. Schedules the next alert and leaves the due times for the worker. */
+/** Keeps the worker's due list current while the game is being played, so it is already in the
+ *  database whatever happens to the page. An IndexedDB write started as a page is closing often does
+ *  not land, which is how a whole absence ended up with nothing stored to fire. Cheap: it only
+ *  writes when the list has actually moved on. */
+export function refreshAlerts(s, timers_ = false) {
+  if (!notifyWanted() || typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+    if (lastDue) {
+      lastDue = '';
+      setDue([]);
+    }
+    return;
+  }
+  const next = upcoming(s).slice(0, QUEUED);
+  const due = next.map((n) => ({ title: n.title, body: n.body, at: Date.now() + (n.at - LEAD) * 1000 }));
+  if (timers_) {
+    for (const n of next) {
+      // A page kept alive in the background can do this properly.
+      timers.push(setTimeout(() => show(n.title, n.body), (n.at - LEAD) * 1000));
+    }
+  }
+  // Round the times before comparing, or every tick looks like a change and writes again.
+  const key = due.map((d) => `${d.title}@${Math.round(d.at / 30000)}`).join('|');
+  if (key === lastDue) {
+    return;
+  }
+  lastDue = key;
+  setDue(due);
+}
+
 export function scheduleAlerts(s) {
   // Only the page's own timers are dropped here: the due list is replaced in one write below, because
   // clearing it first and rewriting it second is two transactions racing a page that is closing.
   timers.forEach(clearTimeout);
   timers = [];
-  if (!notifyWanted() || Notification.permission !== 'granted') {
-    setDue([]);
-    return;
-  }
-  const next = upcoming(s).slice(0, QUEUED);
-  for (const n of next) {
-    const ms = (n.at - LEAD) * 1000;
-    // A page kept alive in the background can do this properly.
-    timers.push(setTimeout(() => show(n.title, n.body), ms));
-  }
-  // And leave the worker what it needs in case the page is gone by then.
-  setDue(next.map((n) => ({ title: n.title, body: n.body, at: Date.now() + (n.at - LEAD) * 1000 })));
+  lastDue = ''; // the way out always writes, however little the list moved
+  refreshAlerts(s, true);
   askForBackground();
 }
 
@@ -224,10 +244,11 @@ export function clearBadge() {
   } catch { /* nothing to clear */ }
 }
 
+/** Called on the way back in. The page's own timers go, but the worker's list is left alone: it
+ *  fires nothing while anyone is watching, and the next autosave brings it up to date anyway. */
 export function cancelAlerts() {
   timers.forEach(clearTimeout);
   timers = [];
-  setDue([]);
   navigator.serviceWorker?.ready
     .then((reg) => reg.getNotifications({ tag: TAG }).then((list) => list.forEach((n) => n.close())))
     .catch(() => {});

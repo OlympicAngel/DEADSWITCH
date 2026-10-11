@@ -267,7 +267,10 @@ function screen(s, id) {
       ['speaks as', () => voiceName()],
       ['screen awake', () => (awakeHeld() ? 'held' : 'free')],
       ['alerts', () => `${notifyState().permission} \u00b7 ${notifyWhy()}`],
-      ['alert plumbing', () => (diag.at ? `worker ${diag.at.worker} \u00b7 periodicSync ${diag.at.periodicSync} \u00b7 registered ${diag.at.registered} \u00b7 permission ${diag.at.permission2} \u00b7 ${diag.at.due} due stored` : 'reading...')],
+      ['can a closed app be woken', () => (diag.at
+        ? `worker ${diag.at.worker} \u00b7 periodicSync ${diag.at.periodicSync} \u00b7 our tag ${diag.at.registered} \u00b7 browser says ${diag.at.permission2}`
+        : 'reading...')],
+      ['waiting for the worker', () => (diag.at ? `${diag.at.due} alert${diag.at.due === 1 ? '' : 's'} stored` : 'reading...')],
       ['alerts queued', () => { const u = upcoming(s); return u.length ? `${u.length} \u00b7 ${u.slice(0, 3).map((x) => `${Math.round(x.at / 60)}m ${x.title}`).join(' | ')}` : 'nothing in the window'; }],
       ['offline window', () => { const l = E.offlineLimits(s); const w = E.awaySeconds(s, Infinity); return `world ${(w / 3600).toFixed(1)}h \u00b7 paid ${(l.seconds / 3600).toFixed(1)}h at ${Math.round(l.efficiency * 100)}%${l.dark ? ' (no daemon)' : ''}`; }],
       ['offline budget', () => `${E.offlineAttacks(s)} attacks \u00b7 ${E.offlineOrders(s)} orders (used ${s.offlineRaids}/${s.offlineRaidCap} \u00b7 ${s.offlineEvents}/${s.offlineEventCap})`],
