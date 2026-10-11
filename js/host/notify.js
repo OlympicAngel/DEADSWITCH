@@ -12,11 +12,13 @@
 // cancelled on the way back.
 import * as E from '../engine.js';
 import { num } from '../format.js';
-import { BALANCE, BY_ID } from '../data.js';
+import { BALANCE, BY_ID, RAIDS, NODES, WARN } from '../data.js';
 import { setDue } from './store.js';
 
 const TAG = 'deadswitch-attack';
 const LEAD = 20; // seconds before it lands, so there is time to do something
+const AHEAD = 4; // how many unspawned attacks of each kind to queue from their timers
+const QUEUED = 8; // how many alerts to leave the worker for one absence
 const KEY = 'deadswitch.notify'; // the player's answer to the permission question
 
 let timers = [];
@@ -76,6 +78,34 @@ export async function setNotify(on) {
   return granted;
 }
 
+// The next few attacks the engine's own timers already promise, in seconds from now. Only what is
+// already on the board was ever scheduled before, so leaving in a quiet minute queued nothing at all
+// and a whole absence passed in silence. A spawn timer plus the shortest warning that spawn can carry
+// is an early estimate on purpose: an alert that comes a minute early is useful, one that comes late
+// is not.
+function promised(s, limit) {
+  const out = [];
+  if (E.level(s, 'core') < RAIDS.startAtCore) {
+    return out;
+  }
+  const soonest = (base) => base * WARN.share + WARN.floor;
+  // Raids: s.raidTimer counts down to the next spawn, then they keep coming on their own interval.
+  if (!s.raid && Number.isFinite(s.raidTimer)) {
+    for (let at = Math.max(0, s.raidTimer) + soonest(RAIDS.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
+      out.push({ at, title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
+      at += RAIDS.intervalMin;
+    }
+  }
+  // Assaults: the same, off their own clock, and null until the first one is armed.
+  if (!s.assault && s.assaultTimer !== null && Number.isFinite(s.assaultTimer)) {
+    for (let at = Math.max(0, s.assaultTimer) + soonest(NODES.warningMin), n = 0; at <= limit && n < AHEAD; n++) {
+      out.push({ at, title: 'A clan is moving on us', body: 'One of our sectors is about to be hit.' });
+      at += NODES.intervalMin;
+    }
+  }
+  return out;
+}
+
 /** What is coming and when, in seconds from now. The engine knows; nothing here guesses. */
 export function upcoming(s) {
   const out = [];
@@ -95,6 +125,7 @@ export function upcoming(s) {
   // Time away stops at the offline limit, so nothing past it ever becomes due. The war runs in the
   // dark too, so this is worth doing before the Watch Daemon is up.
   const limit = E.awaySeconds(s, Infinity);
+  out.push(...promised(s, limit));
   return out.filter((x) => x.at > LEAD && x.at <= limit).sort((a, b) => a.at - b.at);
 }
 
@@ -109,11 +140,15 @@ async function show(title, body) {
 
 /** Called when the player leaves. Schedules the next alert and leaves the due times for the worker. */
 export function scheduleAlerts(s) {
-  cancelAlerts();
+  // Only the page's own timers are dropped here: the due list is replaced in one write below, because
+  // clearing it first and rewriting it second is two transactions racing a page that is closing.
+  timers.forEach(clearTimeout);
+  timers = [];
   if (!notifyWanted() || Notification.permission !== 'granted') {
+    setDue([]);
     return;
   }
-  const next = upcoming(s).slice(0, 2);
+  const next = upcoming(s).slice(0, QUEUED);
   for (const n of next) {
     const ms = (n.at - LEAD) * 1000;
     // A page kept alive in the background can do this properly.
@@ -121,8 +156,20 @@ export function scheduleAlerts(s) {
   }
   // And leave the worker what it needs in case the page is gone by then.
   setDue(next.map((n) => ({ title: n.title, body: n.body, at: Date.now() + (n.at - LEAD) * 1000 })));
+  askForBackground();
+}
+
+/** Asks for periodic background sync, which is the only thing that can wake a closed page. The
+ *  browser decides whether to grant it and how often to fire, so this is asked for early and often
+ *  rather than once on the way out. */
+export function askForBackground() {
   navigator.serviceWorker?.ready
     .then((reg) => reg.periodicSync?.register('deadswitch-check', { minInterval: 30 * 60 * 1000 }))
+    .catch(() => {});
+  // A one-shot sync fires the moment the device has a network again, which is a second chance at a
+  // late alert on a phone that was out of signal.
+  navigator.serviceWorker?.ready
+    .then((reg) => reg.sync?.register('deadswitch-check'))
     .catch(() => {});
 }
 

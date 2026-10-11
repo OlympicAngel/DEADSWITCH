@@ -8,7 +8,7 @@ import { nextStep } from './ui/framerate.js';
 import { time } from './format.js';
 import * as store from './host/store.js';
 import { createPresence } from './host/presence.js';
-import { scheduleAlerts, cancelAlerts, setBadge, clearBadge } from './host/notify.js';
+import { scheduleAlerts, cancelAlerts, setBadge, clearBadge, askForBackground } from './host/notify.js';
 import { startAmbient, stopAmbient, ambientTick } from './ui/ambient.js';
 import { keepAwake, regainAwake, needsAwake } from './host/awake.js';
 
@@ -198,9 +198,11 @@ async function boot() {
       stopLoop();
       stopAmbient();
       keepAwake(false);
+      // The alerts go in first: an IndexedDB write started while the page is closing may not land,
+      // and the one that matters least is the one the player can recover by coming back.
+      scheduleAlerts(game.state);
       save(true);
       store.flush();
-      scheduleAlerts(game.state);
       setBadge(game.state);
     },
     onReturn: (awayMs) => {
@@ -228,6 +230,8 @@ async function boot() {
   store.keepStorage(); // ask once that the save not be evicted to reclaim space
   // A browser only starts audio from a gesture, so the bed waits for the first tap of the session.
   addEventListener('pointerdown', () => startAmbient(game.state), { once: true });
+  // Chrome grants periodic background sync on its own schedule, so ask on the way in as well as out.
+  askForBackground();
   // Exposed for debugging from the browser console.
   window.deadswitch = game;
 }

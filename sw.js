@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.16';
+const CACHE = 'deadswitch-v1.16.1';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot; everything else is cached the first time it is asked for, so adding
 // a file to the game never means remembering to add it here.
@@ -79,18 +79,22 @@ function readDue() {
   });
 }
 
+const STALE = 8 * 60 * 60 * 1000; // the longest an absence counts for, so nothing older is worth saying
+
 async function fireDue() {
   // Someone watching the game does not need telling.
   const open = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   if (open.some((c) => c.visibilityState === 'visible')) return;
   const now = Date.now();
-  for (const item of await readDue()) {
-    if (item.at <= now && now - item.at < 30 * 60 * 1000) {
-      await self.registration.showNotification(item.title, {
-        body: item.body, tag: 'deadswitch-attack', renotify: true, icon: './icon.svg', badge: './icon.svg',
-      });
-      break; // one alert is a warning; several are a nuisance
-    }
+  // The browser decides when it wakes us, and it is usually long after the first thing came due, so
+  // take the most recent one that has passed rather than the oldest and drop the rest: one alert is a
+  // warning, several are a nuisance. A tight staleness window here meant a late wake said nothing.
+  const passed = (await readDue()).filter((x) => x.at <= now && now - x.at < STALE);
+  const item = passed[passed.length - 1];
+  if (item) {
+    await self.registration.showNotification(item.title, {
+      body: item.body, tag: 'deadswitch-attack', renotify: true, icon: './icon.svg', badge: './icon.svg',
+    });
   }
 }
 
