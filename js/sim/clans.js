@@ -68,6 +68,12 @@ const inRange = (v, [lo, hi = 1]) => v >= lo && v <= hi;
 
 /** Every stance whose cell of the matrix the clan currently sits in. */
 export function stanceList(s, faction) {
+  // A clan whose chapter has not opened has no posture towards us yet: it takes none of the matrix's
+  // multipliers and imposes none of its effects. Its traits still drift, so it has a mood waiting
+  // for the day it wakes up, but nothing it feels reaches the player until then.
+  if (!clanAwake(s, faction) || level(s, 'core') < CLANS.startAtCore) {
+    return [];
+  }
   const ctx = clanContext(s, faction);
   return CLANS.stances.filter((st) => Object.entries(st.when).every(([k, range]) => inRange(ctx[k], range)));
 }
@@ -109,7 +115,7 @@ export function advanceClans(s, dt) {
       const d = fac.mood[k] - c[k];
       c[k] = Math.abs(d) <= drift ? fac.mood[k] : c[k] + Math.sign(d) * drift;
     }
-    const now = stanceList(s, f).map((x) => x.id);
+    const now = stanceList(s, f).map((x) => x.id); // empty while the clan is still sealed
     const announce = clanAwake(s, f) && level(s, 'core') >= CLANS.startAtCore;
     for (const id of now) {
       if (!c.stances.includes(id) && announce) say(s, 'stance', { text: STANCE_BY_ID[id].line.replace('{faction}', fac.short) }, 'bad');

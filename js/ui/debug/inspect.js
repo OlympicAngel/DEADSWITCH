@@ -38,7 +38,7 @@ function sector(s, id) {
       ['aggression', () => `${n2(E.aggression(s, id))} (stored ${n2(node().a || 0)})`],
       ['looks taken', () => node().seen || 0],
       ['breaches', () => `${E.breaches(s, id)} / ${NODES.breachesToFall}`],
-      ['clan stance', () => (E.factionOf(s, id) ? E.stanceList(s, E.factionOf(s, id)).map((x) => x.id).join(' ') || 'none' : '-')],
+      ['clan stance', () => { const f = E.factionOf(s, id); if (!f) return '-'; return E.clanAwake(s, f) ? (E.stanceList(s, f).map((x) => x.id).join(' ') || 'none') : 'sealed: no stance, no buffs'; }],
       ['clan mood', () => (E.factionOf(s, id) ? E.clanMood(s, E.factionOf(s, id)).map((m) => `${m.key} ${m.band}`).join(' \u00b7 ') : '-')],
       ['attack stat', () => `${E.baseAttack(s, id)}${s.owner[id] ? ` (map says ${sec.attack})` : ''}`],
       ['assault strength', () => { const sec2 = SECTORS.find((x) => x.id === id); return `${E.assaultStrength(s, id)} (its own ${Math.ceil(E.baseAttack(s, id) * E.nodeStrength(s, id))} \u00b7 floor ${Math.ceil(E.threat(s) * NODES.assaultFloorShare)}${E.sectorOpen(s, sec2) ? '' : ' \u00b7 sealed cap'})`; }],
