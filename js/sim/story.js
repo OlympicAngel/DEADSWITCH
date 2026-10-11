@@ -63,11 +63,15 @@ export function fillText(inst, str) {
 
 // Concrete consequences of one choice, for both the UI preview and resolution.
 export function choiceOutcome(s, inst, choice) {
+  // An order that came in while nobody was listening asks for more and pays more. An answer that
+  // costs me Humanity is cheap by nature, so the one that buys it back is discounted and pays better.
+  const big = inst.big ? EVENTS_CFG.offlineScale : 1;
+  const good = choice.align > 0;
   const lose = {};
   for (const [r, share] of Object.entries(choice.lose || {})) {
-    lose[r] = Math.floor(s.res[r] * Math.min(0.9, share * EVENTS_CFG.loseScale));
+    lose[r] = Math.floor(s.res[r] * Math.min(0.9, share * EVENTS_CFG.loseScale * big));
   }
-  const gain = scaled(s, choice.gain, EVENTS_CFG.gainScale);
+  const gain = scaled(s, choice.gain, EVENTS_CFG.gainScale * big * (good ? EVENTS_CFG.goodGain : 1));
   const c = caps(s);
   for (const r of Object.keys(gain)) {
     gain[r] = Math.min(gain[r], Math.floor(c[r]));
@@ -75,18 +79,24 @@ export function choiceOutcome(s, inst, choice) {
   const levels = (choice.loseLevel || []).map((k) => inst.params && inst.params[k]).filter((id) => id && level(s, id) > 0);
   const units = {};
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
-    units[tab] = unitsLost(s, tab, share);
+    units[tab] = unitsLost(s, tab, share * big);
   }
   const callOff = choice.cancelSiege && s.sieges.some((x) => x.uid === inst.uid);
   // A price can never exceed storage, or the choice could not exist.
-  const cost = scaled(s, choice.cost, EVENTS_CFG.costScale);
+  const cost = scaled(s, choice.cost, EVENTS_CFG.costScale * big * (good ? EVENTS_CFG.goodCost : 1));
   for (const r of Object.keys(cost)) {
     cost[r] = Math.min(cost[r], Math.floor(c[r]));
   }
-  const align = choice.align ? Math.round(choice.align * EVENTS_CFG.alignScale) : 0;
+  // Humanity moves further in both directions out there, and further again towards Guardian:
+  // walking back from what the war makes of a machine has to be worth the walk.
+  const align = choice.align
+    ? Math.round(choice.align * EVENTS_CFG.alignScale * big * (choice.align > 0 ? EVENTS_CFG.goodScale : 1))
+    : 0;
   const p = inst.params || {};
-  // Buffs last a stretch rolled when the event fired (EVENTS_CFG.buffStretch).
-  const buff = choice.buff ? { ...choice.buff, duration: Math.round(choice.buff.duration * (p.buffStretch || 1)) } : null;
+  // Buffs last a stretch rolled when the event fired; a penalty outlives a bonus (EVENTS_CFG).
+  const buff = choice.buff
+    ? { ...choice.buff, duration: Math.round(choice.buff.duration * ((choice.buff.amount < 0 ? p.badStretch : p.buffStretch) || 1)) }
+    : null;
   // Effects on the sectors named in the event.
   const strength = choice.strength ? { id: p.node, delta: choice.strength } : null;
   const assault = choice.assault && p.node ? { from: p.node, target: p.held, delay: choice.assault } : null;
@@ -140,7 +150,12 @@ export function applicable(s, ev) {
 }
 
 // Creates a pending event instance; returns false when the event cannot take effect or its picks are impossible.
-function spawn(s, ev, front) {
+/** Some transmissions only reach a machine the wasteland already has an opinion about. */
+export function inBand(s, ev) {
+  return !ev.band || ev.band === alignmentLabel(s.align).toLowerCase();
+}
+
+function spawn(s, ev, front, big = false) {
   if (!applicable(s, ev)) {
     return false;
   }
@@ -170,7 +185,8 @@ function spawn(s, ev, front) {
     params.held = b.target;
   }
   params.buffStretch = range(s, EVENTS_CFG.buffStretch[0], EVENTS_CFG.buffStretch[1], 'event');
-  const inst = { uid: ++s.eventSeq, id: ev.id, left: ev.deadline, total: ev.deadline, params };
+  params.badStretch = range(s, EVENTS_CFG.badStretch[0], EVENTS_CFG.badStretch[1], 'event');
+  const inst = { uid: ++s.eventSeq, id: ev.id, left: ev.deadline, total: ev.deadline, params, big: big || undefined };
   if (front) {
     s.events.unshift(inst);
   } else {
@@ -226,7 +242,12 @@ export function advanceEvents(s, dt, offline, active = false) {
   // One dilemma at a time, but a threat is a standing bill rather than a question: leaving it unpaid
   // must not stop the rest of the war from talking to me.
   const waiting = s.events.some((x) => !EVENT_BY_ID[x.id].aftermath && !EVENT_BY_ID[x.id].threat);
-  if (offline || waiting) {
+  if (waiting) {
+    return;
+  }
+  // The wasteland calls while nobody is listening too, a few times at most (offlineOrders). What
+  // comes in out there asks for more and pays more, and if it runs out of time I answer it myself.
+  if (offline && s.offlineEvents >= s.offlineEventCap) {
     return;
   }
   s.eventTimer -= dt;
@@ -235,10 +256,14 @@ export function advanceEvents(s, dt, offline, active = false) {
   }
   s.eventTimer = range(s, EVENTS_CFG.intervalMin, EVENTS_CFG.intervalMax, 'event');
   const core = level(s, 'core');
-  const pool = EVENTS.filter((e) => !e.aftermath && (!e.urgent || active) && e.minCore <= core && !s.recentEvents.includes(e.id));
+  const pool = EVENTS.filter((e) => !e.aftermath && (!e.urgent || active) && e.minCore <= core
+    && !s.recentEvents.includes(e.id) && inBand(s, e));
   while (pool.length) {
     const ev = weighted(s, pool);
-    if (spawn(s, ev, false)) {
+    if (spawn(s, ev, false, offline)) {
+      if (offline) {
+        s.offlineEvents++;
+      }
       return;
     }
     pool.splice(pool.indexOf(ev), 1);

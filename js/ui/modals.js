@@ -14,7 +14,7 @@ import { duckAmbient } from './ambient.js';
 import { say as speak, sayLength, stopVoice, voiceName } from './voice.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
-import { notifyWanted, notifySupported, setNotify } from '../host/notify.js';
+import { notifyWanted, notifySupported, setNotify, notifyWhy } from '../host/notify.js';
 
 export function createModals(dialog, game, onChange) {
   let onClose = null;
@@ -505,7 +505,7 @@ export function createModals(dialog, game, onChange) {
       <div class="event ${ev.aftermath ? 'crisis' : ''} ${ev.urgent ? 'urgent' : ''} ${shot ? 'has-map' : ''}">
         ${shot}
         <div class="modal-head">
-          <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : ev.urgent ? 'alert' : 'message')}${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Incoming transmission'}</span>
+          <div class="ev-top"><span class="kicker">${icon(ev.aftermath ? 'fire' : ev.urgent ? 'alert' : 'message')}${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Incoming transmission'}${inst.big ? '<em class="while-away">while you were away</em>' : ''}</span>
             <span class="deadline" data-deadline></span></div>
           <div class="deadbar"><i data-deadbar></i></div>
           <h2>${esc(E.fillText(inst, ev.title))}</h2>
@@ -666,14 +666,21 @@ export function createModals(dialog, game, onChange) {
       ['fire', 'Attacks broke through', h.breached, 'bad-t'],
       ['power', 'Sectors taken', h.taken, 'good-t'],
       ['map', 'Sectors lost', h.lost, 'bad-t'],
+      ['message', 'Transmissions', h.orders, ''],
+      ['core', 'Answered in your place', h.decided, 'bad-t'],
     ].filter(([, , n]) => n > 0)
       .map(([ic, label, n, cls]) => `<div class="r"><span>${icon(ic)}${label}</span><b class="${cls}">${num(n)}</b></div>`).join('');
+    // Nothing was produced in the dark, so there is nothing to list: only what the war did, and what
+    // would have been running if the Watch Daemon were up.
     open(`
       <span class="kicker">${icon('clock')}Welcome back</span>
       <h2>While you were away</h2>
-      <p class="muted">Away ${time(report.away ?? report.seconds)}. Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.</p>
-      <div class="rows">${gains}</div>
+      <p class="muted">Away ${time(report.away ?? report.seconds)}. ${report.dark
+        ? `The war ran for ${time(report.seconds)}. Nothing was produced past the first ${time(BALANCE.offline.graceSeconds)}.`
+        : `Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.`}</p>
+      ${report.dark ? '' : `<div class="rows">${gains}</div>`}
       ${events ? `<div class="rows away-log">${events}</div>` : ''}
+      ${report.dark ? `<p class="muted away-tip">${icon('daemon')}The ${esc(BY_ID.daemon.name)} runs the base while you are gone.</p>` : ''}
       <button class="btn primary wide" data-close>Resume command</button>`, { then });
   }
 
@@ -720,6 +727,7 @@ export function createModals(dialog, game, onChange) {
         <button class="btn" id="mRestore">${icon('import')}<span>Restore last session</span></button>
         <button class="btn danger" id="mReset">${icon('trash')}<span>Wipe progress</span></button>
       </div>
+      ${notifySupported() ? `<p class="muted notify-why" id="mWhy">${esc(notifyWhy())}</p>` : ''}
       <button class="btn link" id="mDev">${icon('dev')}<span>Developer panel</span></button>
       <p class="muted build">DEADSWITCH ${VERSION}</p>
       <textarea id="mText" rows="4" placeholder="Save code" spellcheck="false" hidden></textarea>
@@ -750,9 +758,11 @@ export function createModals(dialog, game, onChange) {
     if (notifyBtn) {
       // Permission can only be asked for on a tap, so this is the only place it is asked. The
       // button is held from here, not read off the event: awaiting the prompt ends the dispatch.
+      const why = $('#mWhy');
       notifyBtn.onclick = async () => {
         const on = await setNotify(!notifyWanted());
         notifyBtn.querySelector('span').textContent = on ? 'Alerts on' : 'Alerts off';
+        if (why) why.textContent = notifyWhy();
         msg.textContent = on ? 'I will warn you about attacks while you are away.' : '';
       };
     }
@@ -847,6 +857,7 @@ export function createModals(dialog, game, onChange) {
         const sec = SECTORS.find((x) => x.id === item.sector) || {};
         return cut(CUTS.memory, { name: sec.name, text: sec.lore, at: sec.id }, next);
       },
+      away: () => showOffline(item.report, next),
       op: () => showOp(item, next), raid: () => showRaid(item, next), expired: () => showExpired(item, next) }[item.kind];
     if (show) {
       show();

@@ -30,6 +30,35 @@ export const notifyWanted = () => {
 
 export const notifySupported = () => typeof Notification !== 'undefined' && 'serviceWorker' in navigator;
 
+/** Why an alert may or may not arrive. Nothing here is a setting; it is what the platform allows.
+ *  A page that has been closed can only be woken by periodic background sync, which browsers grant
+ *  to installed apps, so a plain tab gets alerts only while it is still in the background. */
+export function notifyState() {
+  const installed = (matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  return {
+    supported: notifySupported(),
+    wanted: notifyWanted(),
+    permission: typeof Notification === 'undefined' ? 'unsupported' : Notification.permission,
+    installed,
+    background: installed && 'serviceWorker' in navigator && 'PeriodicSyncManager' in window,
+  };
+}
+
+/** One line of fact about where alerts stand, for Settings and the developer panel. */
+export function notifyWhy() {
+  const n = notifyState();
+  if (!n.supported) return 'This browser has no notifications.';
+  if (n.permission === 'denied') return 'Blocked for this site in browser settings.';
+  if (!n.wanted) return 'Off.';
+  if (n.permission !== 'granted') return 'Not granted yet.';
+  return n.background
+    ? 'Installed: alerts can arrive after the page is closed.'
+    : 'In a browser tab, alerts only arrive while the page is still open in the background.';
+}
+
+/** Shows one now, to prove the whole path works end to end. */
+export const testAlert = () => show('Test alert', 'If you can see this, alerts reach you.');
+
 /** Asks once, on a tap. Returns whether alerts are on afterwards. */
 export async function setNotify(on) {
   if (!on || !notifySupported()) {
@@ -57,9 +86,9 @@ export function upcoming(s) {
   if (order) {
     out.push({ at: order.left, title: 'An order is about to expire', body: 'No answer and I decide for you.' });
   }
-  // Time away stops at the offline limit, so nothing past it ever becomes due. Without a Watch
-  // Daemon that limit is the grace window, which leaves nothing to warn about.
-  const limit = E.offlineLimits(s).seconds;
+  // Time away stops at the offline limit, so nothing past it ever becomes due. The war runs in the
+  // dark too, so this is worth doing before the Watch Daemon is up.
+  const limit = E.awaySeconds(s, Infinity);
   return out.filter((x) => x.at > LEAD && x.at <= limit).sort((a, b) => a.at - b.at);
 }
 

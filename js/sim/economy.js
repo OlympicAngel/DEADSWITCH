@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION,
+  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -445,15 +445,31 @@ export function togglePause(s, id) {
 // How much time away counts and at what share of normal output, from Watch Daemon levels.
 export function offlineLimits(s, lvl = level(s, 'daemon')) {
   const o = BALANCE.offline;
-  // Nothing runs while nobody is watching until the Watch Daemon does: only the grace window counts.
+  // The Daemon decides how long the base keeps producing and at what share; without one, only the
+  // grace window produces anything. The world itself runs either way (awaySeconds).
   if (lvl < 1) {
-    return { seconds: o.graceSeconds, efficiency: 1, dark: true };
+    return { seconds: o.graceSeconds, efficiency: 0, dark: true };
   }
   const effSteps = Math.min(Math.floor(lvl / 2), Math.round((o.maxEfficiency - o.baseEfficiency) / o.efficiencyPerStep));
   return {
     seconds: (o.baseHours + o.hoursPerStep * (lvl - effSteps)) * 3600,
     efficiency: o.baseEfficiency + o.efficiencyPerStep * effSteps,
   };
+}
+
+/** How much of an absence the world runs for, Daemon or not. Production stops at offlineLimits. */
+export const awaySeconds = (s, seconds) => Math.max(0, Math.min(seconds, BALANCE.offline.warHours * 3600));
+
+/** How many attacks may land in one absence: half an attack an hour run, never more than maxAttacks. */
+export function offlineAttacks(s, ran = BALANCE.offline.warHours * 3600) {
+  const o = BALANCE.offline;
+  return Math.max(1, Math.min(o.maxAttacks, Math.round((ran / 3600) * o.attacksPerHour)));
+}
+
+/** How many orders may come in while nobody is at the console: one at two hours, two at five,
+ *  three from eight (`EVENTS_CFG.offlineTiers`). Short absences bring none at all. */
+export function offlineOrders(s, ran = BALANCE.offline.warHours * 3600) {
+  return EVENTS_CFG.offlineTiers.filter((hours) => ran >= hours * 3600).length;
 }
 
 // speed scales all production and conversion alike (offline time runs at reduced efficiency).

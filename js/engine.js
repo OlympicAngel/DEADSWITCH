@@ -1,6 +1,6 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL } from './data.js';
-import { produce, advanceBuild, unlockedKeys, say, offlineLimits, LOG_LIMIT } from './sim/economy.js';
+import { produce, advanceBuild, unlockedKeys, say, offlineLimits, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
@@ -58,6 +58,9 @@ export function newState(seed = 1) {
     raidTimer: 0,
     raidsStarted: false,
     offlineRaids: 0,
+    offlineRaidCap: 1, // how many attacks and orders this absence may bring (set by catchUp)
+    offlineEvents: 0,
+    offlineEventCap: 0,
     events: [],
     eventSeq: 0,
     eventTimer: EVENTS_CFG.firstDelay,
@@ -165,6 +168,10 @@ export function migrate(raw) {
   s.assault = a && sectorById(a.from) && sectorById(a.target) && FACTIONS[a.faction] && Number.isFinite(a.remaining) ? a : null;
   s.assaultTimer = Number.isFinite(raw.assaultTimer) ? raw.assaultTimer : null;
   s.assaultSeq = Number.isFinite(raw.assaultSeq) ? Math.max(0, Math.floor(raw.assaultSeq)) : 0;
+  // Budgets for one absence: derived, reset at the start of every catch-up, never carried over.
+  s.offlineRaidCap = 1;
+  s.offlineEvents = 0;
+  s.offlineEventCap = 0;
   // Captured ground keeps its new clan; a save from before that only knows the map's own factions.
   s.owner = {};
   for (const [id, f] of Object.entries((raw.owner && typeof raw.owner === 'object') ? raw.owner : {})) {
@@ -181,7 +188,8 @@ export function migrate(raw) {
   s.sectors = s.sectors.filter((id) => sectorById(id));
   // Saves from before retaking existed: everything held was captured once already.
   s.taken = Array.isArray(raw.taken) ? raw.taken.filter((id) => sectorById(id)) : s.sectors.filter((id) => id !== MAP.home);
-  s.inbox = s.inbox.filter((m) => m && m.kind && (m.kind !== 'op' || sectorById(m.sector)) && (m.kind !== 'raid' || FACTIONS[m.faction]));
+  s.inbox = s.inbox.filter((m) => m && m.kind && (m.kind !== 'op' || sectorById(m.sector)) && (m.kind !== 'raid' || FACTIONS[m.faction])
+    && (m.kind !== 'away' || (m.report && m.report.happened)));
   if (!raw.v || raw.v < 2) {
     // v1 saves predate chapters: announce whatever is already open, skip the boot intro.
     s.chapter = 0;
@@ -214,12 +222,15 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
   return flows;
 }
 
-// Runs a stretch of time away in bounded steps so timers land mid-way. Only offlineLimits(s).seconds
-// of an absence count, at offlineLimits(s).efficiency of normal output; its first graceSeconds count
-// in full. Without the Watch Daemon that limit is the grace window, so an absence barely counts. `already` is time already counted in this same absence (a background tab catches up in chunks).
+// Runs a stretch of time away in bounded steps so timers land mid-way. The world runs for
+// awaySeconds of it whatever the player built; production only runs for the first
+// offlineLimits(s).seconds of that, at offlineLimits(s).efficiency, and its first graceSeconds count
+// in full. `already` is time already counted in this same absence (a background tab catches up in
+// chunks).
 export function catchUp(s, seconds, already = 0) {
   const limits = offlineLimits(s);
-  const total = Math.max(0, Math.min(seconds, limits.seconds - already));
+  const total = Math.max(0, awaySeconds(s, seconds) - already);
+  const paid = Math.max(0, limits.seconds - already); // how much of it the base is still working for
   const grace = Math.max(0, Math.min(total, BALANCE.offline.graceSeconds - already));
   const before = { ...s.res };
   const was = { ...s.stats, sectors: s.sectors.length };
@@ -227,6 +238,9 @@ export function catchUp(s, seconds, already = 0) {
   let left = total;
   let flows = null;
   s.offlineRaids = 0;
+  s.offlineEvents = 0;
+  s.offlineRaidCap = offlineAttacks(s, total);
+  s.offlineEventCap = offlineOrders(s, total);
   while (left > EPS) {
     let dt = Math.min(stepSize, left);
     const done = total - left;
@@ -237,10 +251,12 @@ export function catchUp(s, seconds, already = 0) {
         dt = t.remaining;
       }
     }
-    flows = step(s, dt, true, false, done < grace ? 1 : limits.efficiency);
+    flows = step(s, dt, true, false, done < grace ? 1 : (done < paid ? limits.efficiency : 0));
     left -= dt;
   }
   s.offlineRaids = 0;
+  const orders = s.offlineEvents;
+  s.offlineEvents = 0;
   const gained = {};
   for (const r of Object.keys(s.res)) {
     gained[r] = s.res[r] - before[r];
@@ -251,6 +267,8 @@ export function catchUp(s, seconds, already = 0) {
     breached: s.stats.raidsLost - was.raidsLost,
     taken: s.stats.opsWon - was.opsWon,
     lost: Math.max(0, was.sectors - s.sectors.length),
+    orders,
+    decided: (s.stats.expired || 0) - (was.expired || 0),
   };
-  return { seconds: total, away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, flows };
+  return { seconds: total, paid: Math.min(total, paid), away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, flows };
 }

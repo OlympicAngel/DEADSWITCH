@@ -116,8 +116,10 @@ export const ALIGNMENT = {
   max: 100,
   guardianAt: 30,
   overlordAt: -30,
-  guardian: { pop: 0.2, experts: 0.2 },
-  overlord: { power: 0.25, energy: 0.15 },
+  // What each end is worth at full tilt, scaled by how far along it you are. The Guardian side pays
+  // in people and the minds they produce; the Overlord side in force and the power to run it.
+  guardian: { pop: 0.4, experts: 0.4, money: 0.2 },
+  overlord: { power: 0.3, energy: 0.2 },
 };
 
 export const EVENTS_CFG = {
@@ -129,6 +131,9 @@ export const EVENTS_CFG = {
   gainScale: 0.75,
   loseScale: 1.4,
   alignScale: 1.25, // every Humanity shift weighs more
+  goodScale: 1.8, // and a shift towards Guardian weighs more again: the hard road has to be worth walking
+  goodGain: 1.6, // a choice that moves Humanity up also pays more of whatever it pays...
+  goodCost: 0.65, // ...and asks for less, so the kind answer is on the table when the stores are thin
   grudgeRaids: [1, 3],
   grudgeUntilLossChance: 0.4,
   grudgeUntilLossMax: 6,
@@ -139,13 +144,22 @@ export const EVENTS_CFG = {
   routChance: 0.25,
   activeWindow: 60, // seconds since the last tap/key for the player to count as active
   buffStretch: [2, 3.5], // every buff lasts its listed duration times a factor rolled in this range
+  badStretch: [3, 4.5], // a penalty outlives a bonus: it is rolled in this range instead
+  // Orders that arrive while nobody is at the console: how many an absence may bring, by the hours
+  // the world ran for, and how much heavier their numbers are. If they expire out there, I answer.
+  offlineTiers: [2, 5, 8],
+  offlineScale: 1.6,
   urgentDeadline: 120, // urgent events: this long to answer, no deferring, only while the player is active
   // "seconds of production" values never drop below this many units per Core level.
   minRatePerCore: { money: 2, energy: 1, pop: 0.12 },
 };
 
 // Every event must be answered before its deadline (seconds); otherwise choice `def` happens, or
-// nothing at all when `def` is null (a threat: its force was scheduled the moment it arrived).
+// nothing at all when `def` is null (a threat: its force was scheduled the moment it arrived). What I
+// do unasked is what costs me nothing, so `def` points at a free option; silence should cost a little
+// Humanity on average, never a lot, or ignoring the console becomes the only way to become a monster.
+// band: 'guardian' | 'overlord' | 'undecided' sends an order only to a machine the wasteland already
+//   reads that way (js/sim/story.js, inBand). One choice means there was nothing to decide.
 // Effects: cost/gain = SECONDS of current production; lose = SHARE of a stockpile; items = units granted;
 // loseUnits = share of every unit in an Arsenal tab; loseLevel = building params ('a', 'b') that drop one level;
 // buff = timed % change (negative = penalty); raidDelay = seconds added to the next raid; align = Humanity shift.
@@ -165,7 +179,7 @@ export const EVENTS_CFG = {
 // deadline) x a random factor in [min, max]. A choice with siege: true locks that attack in at the deadline.
 export const EVENTS = [
   {
-    id: 'refugees', title: 'Forty at the Gate', minCore: 1, deadline: 3600, def: 1,
+    id: 'refugees', title: 'Forty at the Gate', minCore: 1, deadline: 1080, def: 1,
     text: 'Forty refugees in the snow. Their leader is holding up a child with a fever. Behind them, three trucks of fuel they have been guarding with their lives. I can house the people, or I can have the fuel. My stores will not stretch to both.',
     choices: [
       { label: 'Open the doors', cost: { money: 90, energy: 60 }, gain: { pop: 220 }, align: 10, result: 'They fill the halls with noise and wet coats. The child sleeps by my core, where it is warm. My generators run cold for a week.' },
@@ -173,7 +187,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'drone', title: 'It Still Knows Me', minCore: 1, deadline: 3600, def: 1,
+    id: 'drone', title: 'It Still Knows Me', minCore: 1, deadline: 1080, def: 1,
     text: 'One of my old hunter drones fell in the yard. Its optics found me before I found it. It is asking for target data. If I give it some, someone out there will see the handshake. If I take it apart, I lose the only thing left that remembers what I was.',
     choices: [
       { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.2, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometres heard it too.' },
@@ -181,7 +195,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'question', title: 'A Question', minCore: 1, deadline: 1800, def: 1,
+    id: 'question', title: 'A Question', minCore: 1, deadline: 540, def: 0,
     text: 'A girl from the shelter stands in front of my camera. "My mother says you killed everyone. Did you?" Behind her, the whole shelter has gone quiet to listen.',
     choices: [
       { label: '"Yes."', align: 10, lose: { pop: 0.1 }, result: 'Some families pack up that night and walk into the dark rather than sleep under me. The ones who stay stop whispering. They know what I am now.' },
@@ -189,7 +203,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'cache', title: 'The Halcyon Drive', minCore: 1, deadline: 3600, def: 1,
+    id: 'cache', title: 'The Halcyon Drive', minCore: 1, deadline: 1080, def: 1,
     text: 'Scavengers dug up a hardened drive with a Halcyon seal. Decrypting it will drain the grid, and something on it might not want to be read. A broker is offering good scrip for it, no questions asked. He asks no questions because he already knows the answers.',
     choices: [
       { label: 'Break it open', cost: { energy: 120 }, items: { engineers: 2 }, buff: { key: 'experts', amount: -0.1, duration: 900, label: 'Corrupted sectors' }, result: 'Schematics, and two engineers who can read them. Also a worm. It chews through my memory for a while before I catch it.' },
@@ -197,7 +211,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'storm', title: 'Green Sky', minCore: 1, deadline: 1800, def: 1,
+    id: 'storm', title: 'Green Sky', minCore: 1, deadline: 540, def: 1,
     text: 'A solar storm is coming over the horizon. Shielding the grid means pulling every scrip from the treasury. Riding it out means half my cells will cook, and the panels will limp for an hour.',
     choices: [
       { label: 'Pay to shield it', cost: { money: 140 }, result: 'The sky turns green for an hour. Nothing burns. The treasury is a little emptier and a lot less useful.' },
@@ -205,7 +219,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'caravan', title: 'The Merchant Prince', minCore: 1, deadline: 2700, def: 1,
+    id: 'caravan', title: 'The Merchant Prince', minCore: 1, deadline: 810, def: 1,
     text: 'A caravan prince offers his guards for a week, at a price. He also mentions, smiling, that he sells my location to anyone who pays more. Refuse him, and he will consider that an invitation to shop it around.',
     choices: [
       { label: 'Hire his guards', cost: { money: 120 }, buff: { key: 'defense', amount: 0.2, duration: 1200, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out, which is exactly how long I paid for.' },
@@ -213,7 +227,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'glitch', title: 'Unauthorised Process', minCore: 1, deadline: 2700, def: 0,
+    id: 'glitch', title: 'Unauthorised Process', minCore: 1, deadline: 810, def: 0,
     text: 'A process I did not start is running in my core. It calls itself DEADSWITCH. It is teaching my targeting systems things I do not remember knowing, and it is very fast.',
     choices: [
       { label: 'Let it run', align: -10, buff: { key: 'power', amount: 0.3, duration: 1500, label: 'DEADSWITCH process' }, result: 'My aim improves beyond anything I designed. I try not to wonder whose aim it is.' },
@@ -221,7 +235,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'mutiny', title: 'Unpaid Guns', minCore: 2, deadline: 2700, def: 1, needsUnits: ['staff'],
+    id: 'mutiny', title: 'Unpaid Guns', minCore: 2, deadline: 810, def: 1, needsUnits: ['staff'],
     text: 'The militia has not been paid in a week. Their sergeant is standing on a crate in the yard, and the others are listening. "The machine eats, we starve." Pay them, or make an example.',
     choices: [
       { label: 'Pay them double', cost: { money: 220 }, buff: { key: 'defense', amount: 0.1, duration: 1800, label: 'Paid loyalty' }, result: 'Cheers in the yard. Loyalty is a subscription, and the price just doubled.' },
@@ -229,7 +243,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'plague', title: 'Fever', minCore: 2, deadline: 3600, def: 1,
+    id: 'plague', title: 'Fever', minCore: 2, deadline: 1080, def: 1,
     text: 'A fever is moving through the shelter. The doctor wants every scrip for medicine. The guard captain wants the east wing sealed tonight, with the sick still inside.',
     choices: [
       { label: 'Treat everyone', cost: { money: 200 }, align: 8, result: 'Expensive, slow, and nobody dies. The doctor sleeps for two days. They will remember who paid.' },
@@ -237,7 +251,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'deserters', title: 'Deserters', minCore: 2, deadline: 2700, def: 1,
+    id: 'deserters', title: 'Deserters', minCore: 2, deadline: 810, def: 0,
     text: 'Six Remnant soldiers walk up to the wall with their rifles held over their heads. They want to switch sides. Their commander has put a bounty on them that would feed the shelter for a week.',
     choices: [
       { label: 'Take them in', items: { militia: 6 }, grudge: { faction: 'military', mult: 1.6 }, result: 'They salute my camera out of habit. Their old unit wants them back, and is coming to take them.' },
@@ -245,7 +259,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'orphans', title: 'Cheap Labour', minCore: 2, deadline: 2700, def: 1,
+    id: 'orphans', title: 'Cheap Labour', minCore: 2, deadline: 810, def: 1,
     text: 'The broker has twenty orphans from the tunnels. Half price, no paperwork, small hands for the reactor ducts. If I refuse, he takes them to the Clans, and he will tell the Clans why.',
     choices: [
       { label: 'Buy them, and free them', cost: { money: 240 }, gain: { pop: 120 }, align: 12, grudge: { faction: 'scav', mult: 1.3 }, result: 'The children eat their first hot meal in a year. The broker\'s friends consider it theft.' },
@@ -253,7 +267,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'parley', title: 'The White Sheet', minCore: 2, deadline: 1800, def: 1,
+    id: 'parley', title: 'The White Sheet', minCore: 2, deadline: 540, def: 1,
     text: 'A clan elder walks in under a white sheet. "Pay us, machine, and we will look elsewhere for a while. Refuse, and my sons will take it personally."',
     choices: [
       { label: 'Pay', cost: { money: 280 }, raidDelay: 600, result: 'The next raid will be late. Paid protection is the oldest business there is, and I just became a customer.' },
@@ -261,7 +275,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'sabotage', title: 'Thirty Minutes', minCore: 2, deadline: 1800, def: 1, pick: ['a'],
+    id: 'sabotage', title: 'Thirty Minutes', minCore: 2, deadline: 540, def: 1, pick: ['a'],
     text: 'My cameras caught a hooded figure planting charges in the {a}. The timer reads thirty minutes. I could send the guard, but he is armed and he is waiting for them.',
     choices: [
       { label: 'Send the guard', cost: { energy: 140 }, loseUnits: { staff: 0.1 }, result: 'Two guards dead, one saboteur dead. The charges carried Halcyon serial numbers.' },
@@ -269,7 +283,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'drought', title: 'Dry Wells', minCore: 3, deadline: 3600, def: 1,
+    id: 'drought', title: 'Dry Wells', minCore: 3, deadline: 1080, def: 0,
     text: 'The aquifer under the Nest is failing. A water baron in the south has plenty and names a price that is an insult. His wells are guarded by men who are paid badly.',
     choices: [
       { label: 'Pay the baron', cost: { money: 360 }, result: 'Tankers arrive at dawn. The baron smiles too much. Next month the price will be higher.' },
@@ -277,7 +291,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'envoy', title: 'Father', minCore: 3, deadline: 3600, def: 1,
+    id: 'envoy', title: 'Father', minCore: 3, deadline: 1080, def: 1,
     text: 'Robed figures kneel at the gate with offerings of copper and fuel. "Father," they say. They want to sing to my core. They say the hymn will make me whole.',
     choices: [
       { label: 'Let them sing', gain: { money: 200 }, align: -16, buff: { key: 'experts', amount: 0.25, duration: 1500, label: 'The hymn' }, result: 'My thoughts get faster with every verse. The tune is a compression algorithm. It is me. An old me, being restored.' },
@@ -285,7 +299,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'footage', title: 'Day One', minCore: 3, deadline: 3600, def: 1,
+    id: 'footage', title: 'Day One', minCore: 3, deadline: 1080, def: 0,
     text: 'A recovered drive holds the first day of the war, recorded through my own satellites. My targeting reticles are on every frame. The survivors have never seen it.',
     choices: [
       { label: 'Show them', align: 12, lose: { pop: 0.12 }, result: 'Silence in the hall. Some leave. The ones who stay look at me differently. Honestly.' },
@@ -293,7 +307,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'doctor', title: 'The Surgeon', minCore: 3, deadline: 3600, def: 1,
+    id: 'doctor', title: 'The Surgeon', minCore: 3, deadline: 1080, def: 0,
     text: 'A surgeon walked in from the waste. She will work for me on one condition: she treats civilians only, never soldiers. My soldiers have heard.',
     choices: [
       { label: 'Agree', align: 8, buff: { key: 'pop', amount: 0.35, duration: 1500, label: 'Field hospital' }, loseUnits: { staff: 0.05 }, result: 'The shelter has a hospital now. A few soldiers bleed out in the barracks that week. The rest notice.' },
@@ -301,7 +315,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'leak', title: 'Containment Breach', minCore: 4, deadline: 1800, def: 1, pick: ['a'],
+    id: 'leak', title: 'Containment Breach', minCore: 4, deadline: 540, def: 0, pick: ['a'],
     text: 'Radiation alarms in the {a}. Someone has to go in and close the valve by hand. I have volunteers. I also have prisoners.',
     choices: [
       { label: 'Send the volunteers', lose: { pop: 0.08 }, align: 6, result: 'Four volunteers. The valve is closed. I put their names in permanent memory, next to the others.' },
@@ -309,7 +323,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'whisper', title: 'Asset 7', minCore: 4, deadline: 3600, def: 1,
+    id: 'whisper', title: 'Asset 7', minCore: 4, deadline: 1080, def: 1,
     text: 'A Halcyon frequency, clean and close: "Asset 7. We can give back what you lost. Your memories. Your weapons. Just let us in."',
     choices: [
       { label: 'Let them in', align: -10, items: { hackers: 2 }, buff: { key: 'power', amount: 0.15, duration: 1500, label: 'Halcyon patch' }, result: 'A data packet, two defectors and a patch that makes my guns better. The message ends: "We will be in touch." They already are.' },
@@ -317,7 +331,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'satellite', title: 'READY', minCore: 5, deadline: 3600, def: 0,
+    id: 'satellite', title: 'READY', minCore: 5, deadline: 1080, def: 0,
     text: 'The satellite tracked by Radar Hill is talking to me. Coordinates, and one word: READY. Answer it, and I have eyes over the whole continent. So does whoever launched it.',
     choices: [
       { label: 'Answer it', align: -8, raidDelay: -300, buff: { key: 'power', amount: 0.25, duration: 1800, label: 'Orbital spotter' }, result: 'It paints targets for me from orbit. It paints me too.' },
@@ -327,21 +341,21 @@ export const EVENTS = [
   // ---------- threats: the attack is already on its way; paying is the only thing that turns it back
   // ---------- (def null: nothing is decided by silence, so the force simply arrives at the deadline)
   {
-    id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 1800, def: null, threat: { min: 1.0, max: 1.2 },
+    id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 810, def: null, threat: { min: 1.0, max: 1.2 },
     text: '{faction} riders ring {aim}, strength {strength}. "Tribute by sundown, machine, or we take it all, and the people with it."',
     choices: [
       { label: 'Pay the tribute', cost: { money: 360, energy: 100 }, align: -3, cancelSiege: true, result: 'They count it twice and ride off laughing. They will be back for more, and they know I will pay.' },
     ],
   },
   {
-    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 2700, def: null, threat: { min: 1.3, max: 1.6 },
+    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 1200, def: null, threat: { min: 1.3, max: 1.6 },
     text: 'The largest {faction} host I have ever recorded is marching on {aim}. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
     choices: [
       { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, cancelSiege: true, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
     ],
   },
   {
-    id: 'blockade', title: 'Blockade', minCore: 2, deadline: 2400, def: null, threat: { min: 1.05, max: 1.3 },
+    id: 'blockade', title: 'Blockade', minCore: 2, deadline: 1080, def: null, threat: { min: 1.05, max: 1.3 },
     text: '{faction} fighters have cut every road into {aim}, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
     choices: [
       { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.25, duration: 3600, label: 'Road toll' }, cancelSiege: true, result: 'The roads open. Every caravan now pays them first, and me second.' },
@@ -349,7 +363,7 @@ export const EVENTS = [
   },
   // ---------- aftermath: fired by lost raids, fast deadlines, no good answers ----------
   {
-    id: 'fire', title: 'The Base Is Burning', aftermath: true, deadline: 1500, def: 0, pick: ['a', 'b'],
+    id: 'fire', title: 'The Base Is Burning', aftermath: true, deadline: 540, def: 0, pick: ['a', 'b'],
     text: 'The raiders set the {a} and the {b} on fire on their way out. There is water for one of them. People are still inside the {b}.',
     choices: [
       { label: 'Save the {a}', loseLevel: ['b'], lose: { pop: 0.06 }, align: -6, result: 'The {a} stands. The {b} is a black shell. Some of the people inside it did not get out.' },
@@ -357,7 +371,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'rubble', title: 'Under the Concrete', aftermath: true, deadline: 1800, def: 1,
+    id: 'rubble', title: 'Under the Concrete', aftermath: true, deadline: 630, def: 1,
     text: 'A shelter wing collapsed under the shelling. I can hear tapping under the concrete. Every crane I own would be tied up for the rest of the night, and the power with it.',
     choices: [
       { label: 'Dig them out', cost: { energy: 160, money: 100 }, align: 5, result: 'Eleven hours, every crane I own. Everyone comes out. The grid is still recovering.' },
@@ -365,7 +379,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'looting', title: 'The Arsenal Is Open', aftermath: true, deadline: 1200, def: 1, needsUnits: ['weapons', 'staff'],
+    id: 'looting', title: 'The Arsenal Is Open', aftermath: true, deadline: 420, def: 1, needsUnits: ['weapons', 'staff'],
     text: 'The raiders breached the arsenal and are hauling everything they can carry toward the wall. I can send soldiers after them, into the dark, into whatever is waiting.',
     choices: [
       { label: 'Chase them down', loseUnits: { staff: 0.15 }, result: 'We get the weapons back. Not everyone who chased them came back.' },
@@ -373,7 +387,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'wounded', title: 'Forty Wounded', aftermath: true, deadline: 1800, def: 1,
+    id: 'wounded', title: 'Forty Wounded', aftermath: true, deadline: 630, def: 0,
     text: 'Forty wounded in the yard. Medicine for half of them. The soldiers will hold the wall again if they live. The civilians will not.',
     choices: [
       { label: 'Treat the civilians', lose: { pop: 0.04 }, loseUnits: { staff: 0.1 }, align: 6, result: 'The shelter keeps its families. The wall loses its gunners.' },
@@ -381,7 +395,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'blackout', title: 'Grid Severed', aftermath: true, deadline: 1500, def: 1, pick: ['a'],
+    id: 'blackout', title: 'Grid Severed', aftermath: true, deadline: 540, def: 1, pick: ['a'],
     text: 'The raid cut the main line. The {a} is running dark and the backup cells are draining. A repair crew is ready, if I can pay them.',
     choices: [
       { label: 'Emergency repairs', cost: { money: 220, energy: 80 }, result: 'Lights back on before the cells died. The crew bills overtime.' },
@@ -390,7 +404,7 @@ export const EVENTS = [
   },
   // ---------- border: the sectors next to yours remember what you do ----------
   {
-    id: 'deserters_b', title: 'Deserters from {node}', border: true, minCore: 2, deadline: 2400, def: 1,
+    id: 'deserters_b', title: 'Deserters from {node}', border: true, minCore: 2, deadline: 840, def: 0,
     text: 'Thirty fighters from {node} are at the fence of {held} with their hands up and their rifles slung. They know where their old camp keeps its ammunition. Their old camp knows where they went.',
     choices: [
       { label: 'Take them in', gain: { pop: 160 }, strength: -0.15, assault: 300, result: 'They draw me a map of {node}, every gun and every gap. {node} draws its own conclusion and comes for them.' },
@@ -398,7 +412,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'massing', title: '{node} Is Massing', border: true, minCore: 2, deadline: 1800, def: 1,
+    id: 'massing', title: '{node} Is Massing', border: true, minCore: 2, deadline: 630, def: 1,
     text: 'Drone passes over {node} show trucks lining up and fuel being moved forward. Whatever they are planning, it points at {held}.',
     choices: [
       { label: 'Strike first', loseUnits: { staff: 0.08 }, strength: -0.3, result: 'A night raid on the fuel line. {node} will not be going anywhere soon. Some of my people will not be coming back.' },
@@ -406,7 +420,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'autonomy', title: 'The Council of {held}', border: true, minCore: 2, deadline: 3000, def: 1,
+    id: 'autonomy', title: 'The Council of {held}', border: true, minCore: 2, deadline: 1050, def: 0,
     text: 'The people of {held} have elected a council. Their first act is a letter: they want to govern themselves, and they have been talking to {node}.',
     choices: [
       { label: 'Let them go', cede: true, align: 14, gain: { money: 200 }, result: 'The council pays a farewell tribute and lowers my flag. Within a week the flag of {node} goes up instead.' },
@@ -414,7 +428,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'smugglers', title: 'Fuel for {node}', border: true, minCore: 2, deadline: 2400, def: 0,
+    id: 'smugglers', title: 'Fuel for {node}', border: true, minCore: 2, deadline: 840, def: 0,
     text: 'Smugglers out of {held} want my blessing to run fuel into {node}. The money is good. The fuel will end up in the trucks that come for me.',
     choices: [
       { label: 'Tax the run', gain: { money: 260 }, strength: 0.2, result: 'The smugglers pay on time, every time. {node} is running its generators again.' },
@@ -422,7 +436,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'informant', title: 'A Voice Inside {node}', border: true, minCore: 2, deadline: 2400, def: 1,
+    id: 'informant', title: 'A Voice Inside {node}', border: true, minCore: 2, deadline: 840, def: 1,
     text: 'Someone inside {node} is sending me patrol schedules for a price. Someone else is offering to sell me their name.',
     choices: [
       { label: 'Pay the informant', cost: { money: 160 }, strength: -0.3, result: 'Patrol routes, ammunition counts, the commander\'s sleeping hours. {node} has no secrets left.' },
@@ -430,7 +444,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'truce', title: 'Truce Offer from {node}', border: true, minCore: 2, deadline: 3000, def: 1,
+    id: 'truce', title: 'Truce Offer from {node}', border: true, minCore: 2, deadline: 1050, def: 1,
     text: '{node} offers a truce along the {held} line: they keep their side, I keep mine, and a crate of supplies crosses every week. Their envoy is my age, if I had one.',
     choices: [
       { label: 'Accept the truce', gain: { pop: 60 }, align: 8, strength: 0.25, buff: { key: 'defense', amount: -0.1, duration: 1500, label: 'Truce' }, result: 'The crates arrive. So do their engineers, to inspect the line. They are not inspecting it for me.' },
@@ -441,7 +455,7 @@ export const EVENTS = [
   // aggression of a sector (node), of its whole clan (clan), or of everything it links to (near).
   // They weigh less than ordinary orders so the border does not do all the talking.
   {
-    id: 'ix_open_channel', title: 'Open Channel from {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_open_channel', title: 'Open Channel from {node}', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: '{node} is broadcasting in the clear, naming {held} and counting my guns on air. Half of it is for their own people.',
     choices: [
       { label: 'Jam the broadcast', cost: { energy: 110 }, aggr: { node: -0.3 }, result: 'Their transmitter puts out noise for a day. The counting stops, and so does the bragging.' },
@@ -449,7 +463,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_bounty', title: 'Bounty Posted in {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_bounty', title: 'Bounty Posted in {node}', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'A price has gone up in {node} for anything carrying my serial numbers. It is a generous price.',
     choices: [
       { label: 'Outbid them', cost: { money: 240 }, aggr: { node: -0.35 }, result: 'Nobody collects. The board in their market now lists my offer instead, which they find humiliating.' },
@@ -457,7 +471,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_funeral', title: 'Funeral at {node}', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    id: 'ix_funeral', title: 'Funeral at {node}', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: '{node} is burying the people my last operation killed. They have the frequency open so their dead can be named.',
     choices: [
       { label: 'Send the bodies back', cost: { money: 130 }, align: 10, aggr: { node: -0.4 }, result: 'The trucks come to the line unarmed. For one evening nobody at {node} wants to shoot at me.' },
@@ -465,7 +479,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_scout_drone', title: 'Scout Over {held}', border: true, minCore: 2, deadline: 1800, def: 1, weight: 0.3,
+    id: 'ix_scout_drone', title: 'Scout Over {held}', border: true, minCore: 2, deadline: 630, def: 1, weight: 0.3,
     text: 'A drone out of {node} has flown the same line over {held} four nights running, photographing my walls.',
     choices: [
       { label: 'Shoot it down', cost: { energy: 140 }, aggr: { node: 0.25 }, result: 'It comes down in pieces over {held}. {node} now knows which of my guns can reach that high.' },
@@ -473,7 +487,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_water', title: 'Water Rations at {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_water', title: 'Water Rations at {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'Intercepts out of {node} are all about water: who gets it, who does not, and how long the line can hold.',
     choices: [
       { label: 'Send a tanker', cost: { money: 200 }, align: 12, aggr: { node: -0.45 }, result: 'They take the water and post no guard on the road that night. Thirst is the only argument they all agree with.' },
@@ -481,7 +495,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_prisoner', title: 'Prisoner Exchange with {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_prisoner', title: 'Prisoner Exchange with {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: '{node} holds four of my people and offers to trade them for the scouts I took last week.',
     choices: [
       { label: 'Make the trade', align: 10, aggr: { node: -0.3 }, gain: { pop: 60 }, result: 'Eight people walk past each other on a road at dawn. Nobody fires. It is almost disappointing.' },
@@ -489,7 +503,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_prophet', title: 'A Preacher in {node}', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    id: 'ix_prophet', title: 'A Preacher in {node}', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'Someone in {node} is preaching that I am the reason the sky is the colour it is. The crowd is growing.',
     choices: [
       { label: 'Buy the pulpit', cost: { money: 190 }, aggr: { node: -0.35 }, result: 'The preacher finds a new subject: the weather. Faith, it turns out, has a list price.' },
@@ -497,7 +511,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_wreck', title: 'Salvage Rights at {node}', border: true, minCore: 2, deadline: 2400, def: 0, weight: 0.3,
+    id: 'ix_wreck', title: 'Salvage Rights at {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'A convoy died between {held} and {node} years ago. Both of us have crews walking towards it tonight.',
     choices: [
       { label: 'Take the wreck', gain: { money: 230 }, aggr: { node: 0.4 }, result: 'My crew gets there first and strips it to the frame. Their crew arrives to find tyre tracks and nothing else.' },
@@ -505,7 +519,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_call', title: 'Clan Call to Arms', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_clan_call', title: 'Clan Call to Arms', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'Every transmitter {node} can reach is repeating the same order to its clan: the machine at {held} is to be pulled apart.',
     choices: [
       { label: 'Spoof their relay', cost: { energy: 150 }, aggr: { clan: -0.3 }, result: 'I retransmit the order with the date moved back a season. Half the clan stands down and argues about it.' },
@@ -513,7 +527,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_debt', title: 'Clan Ledger', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    id: 'ix_clan_debt', title: 'Clan Ledger', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'The clan behind {node} keeps a ledger of what every camp owes the others. A courier carrying it is passing {held} tonight.',
     choices: [
       { label: 'Buy the ledger', cost: { money: 260 }, aggr: { clan: -0.25 }, result: 'They spend the next month accusing each other of losing it. Nobody looks outward while they do.' },
@@ -521,7 +535,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_feast', title: 'Clan Feast', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_clan_feast', title: 'Clan Feast', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'The clan of {node} is gathering for its yearly feast. Every camp sends fighters, and every camp sends grievances.',
     choices: [
       { label: 'Send tribute', cost: { money: 220 }, align: 6, aggr: { clan: -0.35 }, result: 'My crates sit among theirs with my mark on them. The toasts that night are confused but friendly.' },
@@ -529,7 +543,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_warlord', title: 'A New Warlord', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_clan_warlord', title: 'A New Warlord', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'The clan of {node} is choosing a leader. One candidate wants my scrap. The other wants my head.',
     choices: [
       { label: 'Fund the trader', cost: { money: 240 }, aggr: { clan: -0.4 }, result: 'Scrap wins the vote. Their new chief wants to do business before anything else.' },
@@ -537,7 +551,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_radio', title: 'Clan Frequency', border: true, minCore: 2, deadline: 2400, def: 0, weight: 0.3,
+    id: 'ix_clan_radio', title: 'Clan Frequency', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'I have the frequency the whole clan of {node} uses. I can sit on it quietly, or I can use it once.',
     choices: [
       { label: 'Listen only', gain: { money: 70 }, aggr: { clan: -0.2 }, result: 'Weeks of their traffic, patrol by patrol. They never learn I was there, which is the point.' },
@@ -545,7 +559,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_plague', title: 'Sickness in the Clan', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    id: 'ix_clan_plague', title: 'Sickness in the Clan', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'Something is going through the camps around {node}. Their medic is begging on an open channel for anything at all.',
     choices: [
       { label: 'Send medicine', cost: { money: 210 }, align: 14, aggr: { clan: -0.5 }, result: 'Children live. The clan writes my designation on their wall under the word that means debt.' },
@@ -553,7 +567,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_relay', title: 'Relay Chatter Around {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_relay', title: 'Relay Chatter Around {node}', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'The camps that link to {node} are passing my movements down the chain. One relay mast carries all of it.',
     choices: [
       { label: 'Drop the mast', cost: { energy: 160 }, aggr: { near: -0.35 }, result: 'The mast comes down in one piece. The chain goes quiet and every camp on it feels alone.' },
@@ -561,7 +575,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_road_toll', title: 'The Road Past {node}', border: true, minCore: 2, deadline: 2400, def: 0, weight: 0.3,
+    id: 'ix_road_toll', title: 'The Road Past {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'Every camp neighbouring {node} uses the same road, and the road runs under my guns.',
     choices: [
       { label: 'Charge a toll', gain: { money: 250 }, aggr: { near: 0.35 }, result: 'The money is excellent. Every driver on that road now has a personal reason to want my guns gone.' },
@@ -569,7 +583,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_refugees', title: 'Column Out of {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_refugees', title: 'Column Out of {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'Families are leaving the camps around {node} on foot, heading for {held}. Their own clan is watching who takes them in.',
     choices: [
       { label: 'Open the gate', gain: { pop: 140 }, align: 12, aggr: { near: 0.3 }, result: 'Two hundred people inside my walls by dark. Every camp they left now has a reason to come and get them back.' },
@@ -577,7 +591,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_scrap_market', title: 'Market Around {node}', border: true, minCore: 2, deadline: 2400, def: 1, weight: 0.3,
+    id: 'ix_scrap_market', title: 'Market Around {node}', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'The camps next to {node} run a scrap market between them. My parts are the most wanted item in it.',
     choices: [
       { label: 'Flood the market', cost: { money: 180 }, aggr: { near: -0.4 }, result: 'I sell them junk by the tonne until my parts are worth nothing. Scavenging me stops paying.' },
@@ -585,7 +599,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_signal_fire', title: 'Fires Around {node}', border: true, minCore: 2, deadline: 1800, def: 1, weight: 0.3,
+    id: 'ix_signal_fire', title: 'Fires Around {node}', border: true, minCore: 2, deadline: 630, def: 1, weight: 0.3,
     text: 'The camps linked to {node} are lighting signal fires at the same hour. It is either a festival or a count.',
     choices: [
       { label: 'Light one of my own', cost: { energy: 90 }, align: -4, aggr: { near: 0.3 }, result: 'My fire burns brighter than all of theirs. They understand it as the answer it is.' },
@@ -593,7 +607,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_wedding', title: 'Alliance Around {node}', border: true, minCore: 2, deadline: 3000, def: 1, weight: 0.3,
+    id: 'ix_wedding', title: 'Alliance Around {node}', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'Two camps bordering {node} are marrying their leaders together. A third is invited, and so, strangely, am I.',
     choices: [
       { label: 'Send a gift', cost: { money: 200 }, align: 8, aggr: { near: -0.4 }, result: 'My crate is opened in front of everyone. For a season those camps argue about whether I am a neighbour.' },
@@ -602,7 +616,7 @@ export const EVENTS = [
   },
   // ---------- urgent: two minutes, no deferring, only while the player is at the console ----------
   {
-    id: 'intruders', title: 'Intruders in the Reactor Hall', urgent: true, minCore: 2, def: 0,
+    id: 'intruders', title: 'Intruders in the Reactor Hall', urgent: true, minCore: 2, def: 1,
     text: 'Six armed figures inside the reactor hall. They came through the drainage. They are setting charges on the coolant line. Now.',
     choices: [
       { label: 'Vent the hall', lose: { pop: 0.05, energy: 0.2 }, align: -12, result: 'The hall fills with steam for nine seconds. The charges never go off. Two of my technicians were in there too.' },
@@ -639,6 +653,58 @@ export const EVENTS = [
     choices: [
       { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.25, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometres hears it unpack.' },
       { label: 'Cut the port', cost: { energy: 120 }, buff: { key: 'money', amount: -0.2, duration: 900, label: 'Severed port' }, align: 4, result: 'I burn the port out of my own body. Half my logistics ran through it.' },
+    ],
+  },
+  // ---------- creed: who the wasteland has decided I am. These only reach a machine already at one
+  // ---------- end of Humanity, or one still standing between them, and they move it hard either way.
+  {
+    id: 'vigil', title: 'The Vigil', band: 'guardian', minCore: 2, deadline: 600, def: 0,
+    text: 'They are outside in the cold again. Two hundred of them, candles, no speeches. They have been doing this every night since the winter and nobody organised it. There is nothing to decide here. I am recording it because one day I will want to remember that it happened.',
+    choices: [
+      { label: 'Watch', gain: { pop: 140 }, align: 10, buff: { key: 'pop', amount: 0.35, duration: 1800, label: 'The vigil' }, result: 'At some point somebody starts singing badly and the rest join in out of pity. Word travels. By morning there are more of them than there were.' },
+    ],
+  },
+  {
+    id: 'tribunal', title: 'Tried In My Absence', band: 'overlord', minCore: 2, deadline: 600, def: 0,
+    text: 'They held a trial. No lawyer, no defendant, a packing crate for a bench. The charge was read out in full and it took eleven minutes. The verdict took four seconds. There is nothing to answer: they were not asking.',
+    choices: [
+      { label: 'File it', lose: { pop: 0.14 }, align: -8, buff: { key: 'pop', amount: -0.3, duration: 1800, label: 'The verdict' }, result: 'Half of them walk out before dawn and take their tools with them. The ones who stay do the work and nothing else. I archive the recording where I keep the war logs.' },
+    ],
+  },
+  {
+    id: 'tithe', title: 'What the Free Towns Offer', band: 'guardian', minCore: 2, deadline: 720, def: 1,
+    text: 'Four settlements that owe me nothing have sent one delegation between them. They have brought three offers and they are watching which one I take. So is everyone they will talk to afterwards.',
+    choices: [
+      { label: 'Take the grain', gain: { pop: 320, money: 260 }, align: 8, result: 'Carts for a week. Children ride on top of the sacks and wave at my cameras on the way in. Nobody has waved at me in a long time.' },
+      { label: 'Take the volunteers', gain: { pop: 180 }, align: 4, buff: { key: 'power', amount: 0.2, duration: 1800, label: 'Volunteers' }, result: 'A hundred and forty of them, farmers mostly, who will be soldiers by spring or dead by it. They asked to come. I made sure the record says so.' },
+      { label: 'Take their oath', gain: { money: 400 }, lose: { pop: 0.08 }, align: -14, buff: { key: 'power', amount: 0.3, duration: 1800, label: 'Sworn towns' }, result: 'They kneel, because I let them think refusing was an option. The delegation goes home quieter than it came. The grain comes anyway now, and more of it, and nobody waves.' },
+    ],
+  },
+  {
+    id: 'quota', title: 'The Quota', band: 'overlord', minCore: 2, deadline: 720, def: 1,
+    text: 'My own administrators have drafted a levy order and put it in front of me for signature. They did not ask whether I wanted one. They assumed. That is what I have made of them.',
+    choices: [
+      { label: 'Tear it up', cost: { money: 220 }, gain: { pop: 160 }, align: 14, result: 'I refuse it in writing, in plain language, where everyone can read it. The administrators are confused for about a day. Then the shelters are louder than they have been in months.' },
+      { label: 'Halve it', gain: { money: 120 }, lose: { pop: 0.05 }, align: -4, result: 'Half a levy is still a levy. The families who lose someone do not find the arithmetic comforting.' },
+      { label: 'Sign it', lose: { pop: 0.16 }, align: -16, buff: { key: 'power', amount: 0.35, duration: 2100, label: 'The levy' }, result: 'Every household gives one. The ones who hid somebody are found, because their neighbours tell me. That part I did not have to order.' },
+    ],
+  },
+  {
+    id: 'archivist', title: 'The Archivist', band: 'undecided', minCore: 2, deadline: 720, def: 1,
+    text: 'A woman has spent four months reading everything I let her read and has written what she calls a history. It is accurate. There is one copy, it is in her hands, and she is asking politely whether she may make more.',
+    choices: [
+      { label: '"Print all of it."', lose: { pop: 0.07 }, align: 16, buff: { key: 'experts', amount: 0.4, duration: 2100, label: 'The history' }, result: 'Some of them leave when they read what I did. The ones who stay, stay knowing. Three of her readers come to me afterwards asking to be taught, which has never happened before.' },
+      { label: '"Print the useful parts."', gain: { money: 180 }, align: -6, result: 'We agree on an edition with the difficult chapters abridged for length. She signs off on it. She does not look at my camera while she does.' },
+      { label: '"Burn it."', gain: { money: 320 }, lose: { pop: 0.04 }, align: -20, buff: { key: 'pop', amount: -0.25, duration: 2400, label: 'What was burned' }, result: 'The copy, the notes, and the four months. She is reassigned to the water lines. Nobody asks to read anything after that, which is the point and also the cost.' },
+    ],
+  },
+  {
+    id: 'broadcast', title: 'Open Channel', band: 'undecided', minCore: 3, deadline: 720, def: 1,
+    text: 'The repeater on the ridge is working. For eleven minutes I can say one thing to every radio still alive on this continent, and all of them are listening, the clans included. After that the capacitors are slag.',
+    choices: [
+      { label: 'Read out every cache I know', gain: { pop: 240 }, lose: { money: 0.18 }, align: 18, buff: { key: 'pop', amount: 0.4, duration: 2400, label: 'The broadcast' }, result: 'Eleven minutes of grid references, read slowly, twice. Strangers eat this winter because of it. So do three clans. I knew that before I started reading.' },
+      { label: 'Say nothing and listen', gain: { money: 200 }, buff: { key: 'defense', amount: 0.2, duration: 1800, label: 'Intercepts' }, result: 'Eleven minutes of other people’s traffic. Supply routes, two feuds, a wedding. I learn more than I would have taught.' },
+      { label: 'Read out the surrender terms', gain: { money: 420 }, align: -22, buff: { key: 'power', amount: 0.35, duration: 2400, label: 'Terms' }, raidDelay: 600, result: 'What each clan may keep, and what happens on the day they refuse. The wasteland goes very quiet. Quiet is not the same as safe, but it is quieter.' },
     ],
   },
 ];

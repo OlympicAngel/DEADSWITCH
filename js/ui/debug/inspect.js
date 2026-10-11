@@ -2,10 +2,11 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN, EVENTS } from '../../data.js';
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
+import { notifyWhy, notifyState, testAlert, upcoming } from '../../host/notify.js';
 import { awakeHeld } from '../../host/awake.js';
 import { storageUse } from '../../host/store.js';
 
@@ -259,6 +260,11 @@ function screen(s, id) {
       ['music mood', () => `${moodOf(s)} (bed ${ambientMood()}) · sfx ${Math.round(volume('sfx') * 100)}% music ${Math.round(volume('music') * 100)}% voice ${Math.round(volume('voice') * 100)}%`],
       ['speaks as', () => voiceName()],
       ['screen awake', () => (awakeHeld() ? 'held' : 'free')],
+      ['alerts', () => `${notifyState().permission} \u00b7 ${notifyWhy()}`],
+      ['alerts due', () => upcoming(s).map((x) => `${Math.round(x.at)}s ${x.title}`).join(' | ') || 'nothing in the window'],
+      ['offline window', () => { const l = E.offlineLimits(s); const w = E.awaySeconds(s, Infinity); return `world ${(w / 3600).toFixed(1)}h \u00b7 paid ${(l.seconds / 3600).toFixed(1)}h at ${Math.round(l.efficiency * 100)}%${l.dark ? ' (no daemon)' : ''}`; }],
+      ['offline budget', () => `${E.offlineAttacks(s)} attacks \u00b7 ${E.offlineOrders(s)} orders (used ${s.offlineRaids}/${s.offlineRaidCap} \u00b7 ${s.offlineEvents}/${s.offlineEventCap})`],
+      ['humanity band', () => `${E.alignmentLabel(s.align)} (${Math.round(s.align)}) \u00b7 orders only for it: ${EVENTS.filter((e) => e.band && E.inBand(s, e)).map((e) => e.id).join(' ') || 'none'}`],
       ['storage', () => (store.kept ? 'persisted' : 'evictable') + ` · ${(store.used / 1048576).toFixed(1)}MB of ${(store.quota / 1048576).toFixed(0)}MB`],
       ['inbox', () => s.inbox.map((x) => x.kind).join(' ') || 'empty'],
       ['day seed / rolls', () => `${E.daySeed(s)} · ${Object.entries(s.rolls).map(([k, n]) => `${k}:${n}`).join(' ') || 'none'}`],
@@ -273,7 +279,13 @@ function screen(s, id) {
       ['cut: chapter', (g) => g.state.inbox.push({ kind: 'chapter', id: Math.min(4, g.state.chapter + 1) })],
       ['cut: wipe', (g) => g.state.inbox.push({ kind: 'wipe', faction: 'scav' })],
       ['cut: fragment', (g) => g.state.inbox.push({ kind: 'memory', sector: 'rust' })],
+      ['cut: away report', (g) => g.state.inbox.push({ kind: 'away', report: { away: 21600, seconds: E.awaySeconds(g.state, 21600),
+        paid: Math.min(21600, E.offlineLimits(g.state).seconds),
+        efficiency: E.offlineLimits(g.state).efficiency, dark: !!E.offlineLimits(g.state).dark,
+        gained: Object.fromEntries(Object.keys(g.state.res).map((r) => [r, 1234])), happened: { held: 2, breached: 1, taken: 0, lost: 1 } } })],
       ['say a line', () => speak('All stations. This is the Nest. Hold what you have.')],
+      ['fire a test alert', () => testAlert()],
+      ['order, as if away', (g) => { g.state.offlineEventCap = 9; g.state.offlineEvents = 0; E.advanceEvents(g.state, g.state.eventTimer + 1, true); g.state.offlineEventCap = 0; }],
       ['force a clan rally', (g) => {
         // Pretend the last piece of theirs we took has just fallen, and see what they do about it.
         const mine = g.state.sectors.map((id) => SECTORS.find((x) => x.id === id)).filter((x) => x && x.faction);

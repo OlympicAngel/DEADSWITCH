@@ -505,7 +505,7 @@ export function advanceRaids(s, dt, offline) {
   if (level(s, 'core') < RAIDS.startAtCore) {
     return;
   }
-  if (offline && s.offlineRaids >= 1) {
+  if (offline && s.offlineRaids >= s.offlineRaidCap) {
     return;
   }
   if (!s.raid) {
@@ -656,7 +656,7 @@ export function advanceAssaults(s, dt, offline) {
     s.assault = null; // the border it used no longer exists
   }
   if (!s.assault) {
-    if (offline && s.offlineRaids >= 1) return;
+    if (offline && s.offlineRaids >= s.offlineRaidCap) return;
     if (s.assaultTimer === null) s.assaultTimer = NODES.firstDelay;
     s.assaultTimer -= dt;
     if (s.assaultTimer <= 0) {
@@ -665,7 +665,7 @@ export function advanceAssaults(s, dt, offline) {
     }
     return;
   }
-  if (offline && s.offlineRaids >= 1) return;
+  if (offline && s.offlineRaids >= s.offlineRaidCap) return;
   s.assault.remaining -= dt;
   if (s.assault.remaining > 1e-9) return;
   const atk = s.assault;
