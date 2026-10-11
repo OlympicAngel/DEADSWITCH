@@ -216,7 +216,7 @@ export function sectorText(sec, indent = '  ') {
   const i2 = indent + '  ';
   const head = ['id', 'name', 'faction', 'chapter', 'x', 'y']
     .map((k) => `${k}: ${value(sec[k] ?? null)}`).join(', ');
-  const warParts = [`links: ${value(sec.links || [])}`, `defense: ${num(sec.defense || 0)}`];
+  const warParts = [`links: ${value(sec.links || [])}`, `defense: ${num(sec.defense || 0)}`, `attack: ${num(sec.attack || 0)}`];
   if (sec.core !== undefined) warParts.push(`core: ${num(sec.core)}`);
   if (sec.boss) warParts.push('boss: true');
   if (sec.bonus && Object.keys(sec.bonus).length) warParts.push(`bonus: ${value(sec.bonus)}`);

@@ -356,6 +356,17 @@ function defLabel(s, x, r) {
   return `<text class="def ${fort ? 'fort' : ''} ${drift ? (m > 1 ? 'up' : 'down') : ''}" dy="${-r - 10}">${num(E.sectorDefense(s, x))}${fort ? ' ▲' : ''}${drift}</text>`;
 }
 
+// What a sector sends out, against what it costs to take. Walls and barracks are not the same thing,
+// and the ratio is the whole point of the stat, so it is named here rather than left to be inferred.
+function attackRow(s, sec) {
+  const atk = E.baseAttack(s, sec.id);
+  const def = E.baseDefense(s, sec.id);
+  const ratio = atk / Math.max(1, def);
+  const kind = ratio >= 1.2 ? ['bad-t', 'Sends more than it holds'] : ratio >= 0.6 ? ['bad-t', 'Lightly held, heavily armed']
+    : ratio >= 0.35 ? ['', 'Front line'] : ['good-t', 'A wall with few behind it'];
+  return `<div class="r" data-tip="text" data-tip-text="${esc(kind[1])}. Defense is what it costs to take; attack is what it sends. They are not the same number."><span>${icon('power')}Its attack</span><b class="${kind[0]}">${num(atk)}<em class="atk-kind">${esc(kind[1])}</em></b></div>`;
+}
+
 // Current strength against the sector's base defense.
 function strengthRow(s, sec) {
   const m = E.nodeStrength(s, sec.id);
@@ -441,7 +452,8 @@ function briefing(s, sec) {
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
-      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="Typical strength of its assaults on your bordering sectors."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
+      ${attackRow(s, sec)}
+      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="What it actually sends at your bordering sectors: its attack, its strength drift and its clan's stance together."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
     </div>

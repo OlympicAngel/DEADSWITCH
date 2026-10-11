@@ -49,6 +49,10 @@ export const GLOSSARY = {
     what: 'Clan support. A sector gets up to this much extra defense while every linked sector of its own faction still stands, falling to zero as you take them.',
     feel: '0.75 means +75% defense at full support. It is what makes chewing into a heartland from the edge cheaper than diving at its middle.',
   },
+  'sector.attack': {
+    what: 'What this sector sends at you, as opposed to what it costs you to take it. The two are set separately on purpose.',
+    feel: 'Around 0.15x its defense for a wall with nobody behind it (a minefield, a vault), 0.42x for an ordinary front sector, 0.75x for a motor pool or a drone works, 0.9x for a capital. The Mirror sends nearly three times what it costs to take, which is the only reason it is frightening.',
+  },
   'OPS.costMoneyPerDefense': { what: 'Scrip an operation costs per point of the target\'s base defense, before BALANCE.priceMult.' },
   'OPS.costEnergyPerDefense': { what: 'Energy an operation costs per point of base defense, before BALANCE.priceMult.' },
   'OPS.timeBase': { what: 'Seconds every operation takes before defense is counted at all.' },

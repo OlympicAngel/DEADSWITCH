@@ -21,11 +21,13 @@ export const sectorGate = (sec) => sec.core ?? chapterOf(sec.chapter).core;
 
 // What each clan's ground is worth on average, which is the standard it rebuilds anything it takes to.
 const CLAN_AVG = {};
+const CLAN_ATK = {};
 const CLAN_MAX = {};
 for (const f of new Set(SECTORS.map((x) => x.faction).filter(Boolean))) {
   const own = SECTORS.filter((x) => x.faction === f);
   CLAN_AVG[f] = own.reduce((a, x) => a + x.defense, 0) / own.length;
-  CLAN_MAX[f] = Math.max(...own.map((x) => x.defense));
+  CLAN_ATK[f] = own.reduce((a, x) => a + x.attack, 0) / own.length;
+  CLAN_MAX[f] = Math.max(...own.map((x) => x.attack));
 }
 
 /** Who holds a sector now. The map says where a sector started; a clan that takes it off us when it
@@ -47,6 +49,17 @@ export function baseDefense(s, id) {
     return sec.defense;
   }
   return Math.round(clamp(CLAN_AVG[owner] * NODES.foreignShare, sec.defense, sec.defense * NODES.foreignCap));
+}
+
+/** What a sector throws at us, under whoever holds it. Ground taken off another clan is garrisoned
+ *  their way, on the same terms as its walls (baseDefense). */
+export function baseAttack(s, id) {
+  const sec = SECTOR_BY_ID[id];
+  const owner = s.owner && s.owner[id];
+  if (!owner || !CLAN_ATK[owner]) {
+    return sec.attack;
+  }
+  return Math.round(clamp(CLAN_ATK[owner] * NODES.foreignShare, sec.attack, sec.attack * NODES.foreignCap));
 }
 
 // The weakest sectors of a faction that border ground we hold, which is what leaks early.
@@ -565,7 +578,7 @@ export function borders(s, withLocked = false) {
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
   const stance = clanProfile(s, factionOf(s, fromId)).strength;
-  const own = baseDefense(s, fromId) * nodeStrength(s, fromId) * NODES.assaultShare * stance;
+  const own = baseAttack(s, fromId) * NODES.assaultMult * nodeStrength(s, fromId) * stance;
   if (!sectorOpen(s, sec)) {
     // A clan whose chapter has not opened yet can only ever poke: it is capped near the raid strength
     // the player is already facing, so a sector five Core levels ahead cannot delete them.
@@ -574,7 +587,7 @@ export function assaultStrength(s, fromId) {
   // An open clan musters against what the player has become, not only what its own ground is worth.
   // Where it musters from still counts: a backwater raises half of what the clan's best ground does.
   const faction = factionOf(s, fromId);
-  const share = CLAN_MAX[faction] ? baseDefense(s, fromId) / CLAN_MAX[faction] : 1;
+  const share = CLAN_MAX[faction] ? baseAttack(s, fromId) / CLAN_MAX[faction] : 1;
   const reach = NODES.assaultFloorMin + (1 - NODES.assaultFloorMin) * Math.min(1, share);
   return Math.ceil(Math.max(own, threat(s) * NODES.assaultFloorShare * stance * reach));
 }

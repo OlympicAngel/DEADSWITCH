@@ -107,6 +107,7 @@ function play(seed) {
   s.name = 'bot';
   const roll = dice(seed * 7919);
   const marks = {};
+  const snap = {}; // AI Defense the first second each Core level was reached
   const mark = (key, t) => {
     if (marks[key] === undefined) marks[key] = t;
   };
@@ -178,11 +179,13 @@ function play(seed) {
       if (m.kind === 'op' && m.win) mark('op:' + m.sector, t);
       if (m.kind === 'ending') mark('ending', t);
     }
-    mark('core' + E.level(s, 'core'), t);
+    const lvl = E.level(s, 'core');
+    if (snap['core' + lvl] === undefined) snap['core' + lvl] = Math.round(E.factors(s).defense);
+    mark('core' + lvl, t);
     mark('rank' + s.rank, t);
   }
   const f = E.factors(s);
-  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s, f), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels } };
+  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s, f), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels }, snap };
 }
 
 const runs = [];
@@ -225,4 +228,5 @@ console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  br
 console.log(`  Capture loot ${mean((r) => avg(r.tally.lootMin) || 0).toFixed(1)} min of Scrip income, held-attack salvage ${mean((r) => avg(r.tally.salvageMin) || 0).toFixed(1)} min`);
 console.log(`  Humanity from choices ${mean((r) => r.tally.align).toFixed(0)} over ${mean((r) => r.tally.picked).toFixed(0)} answers, ${mean((r) => r.tally.pricedOut).toFixed(0)} options unaffordable`);
 console.log('  levels ' + JSON.stringify(runs[0].levels));
+console.log('  defense at each Core ' + JSON.stringify(Object.fromEntries(Object.keys(runs[0].snap).map((k) => [k, Math.round(mean((r) => r.snap[k] || 0))]))));
 console.log(`  Events ${mean((r) => r.stats.events).toFixed(0)}  threats paid ${mean((r) => r.tally.tributes).toFixed(1)}  sieges taken ${mean((r) => r.tally.sieges).toFixed(1)}  grudges ${mean((r) => r.tally.grudges).toFixed(1)}  missed deadlines ${mean((r) => r.stats.expired || 0).toFixed(1)}`);

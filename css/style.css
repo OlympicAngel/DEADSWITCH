@@ -482,6 +482,14 @@ p {
   font-weight: 700;
 }
 
+.atk-kind {
+  display: block;
+  color: var(--muted);
+  font: 500 10px var(--font-hud);
+  font-style: normal;
+  text-align: right;
+}
+
 .alert-strip {
   display: none;
   gap: 6px;

@@ -44,6 +44,9 @@ export const CHAPTERS = [
 // defense: what your AI Power is measured against (it drifts with each sector's strength, see NODES).
 // core: a hard AI Core gate of its own, instead of its chapter's, that never leaks early (see MAP).
 // bonus: permanent, additive %, while you hold the sector. Operation cost and time derive from defense.
+// defense is what it costs to take; attack is what it sends at you, and the two are deliberately not
+// the same number: a minefield or a vault is a wall with nobody in it, a motor pool or a drone works
+// is lightly held and full of things that drive at you, and a capital is both. Mirror is the outlier.
 export const SECTORS = [
   // ---------- home ----------
   {
@@ -53,272 +56,272 @@ export const SECTORS = [
   },
   {
     id: 'rust', name: 'Rust Market', faction: 'scav', chapter: 1, x: -184, y: -114,
-    links: ['drowned', 'nest', 'magpie'], defense: 15, bonus: { money: 0.005 },
+    links: ['drowned', 'nest', 'magpie'], defense: 15, attack: 4, bonus: { money: 0.005 },
     lore: 'The traders here still use my old supply codes as currency. They do not know what the numbers mean.',
   },
   {
     id: 'tunnels', name: 'Drainage Tunnels', faction: 'scav', chapter: 1, x: 156, y: -176,
-    links: ['wrecks', 'nest'], defense: 30, bonus: { pop: 0.01 },
+    links: ['wrecks', 'nest'], defense: 30, attack: 8, bonus: { pop: 0.01 },
     lore: 'Families lived down here through the bombing. Their wall paintings show a red eye in the sky. That was me.',
   },
   {
     id: 'alley', name: 'Tin Alley', faction: 'scav', chapter: 1, x: 71, y: 338,
-    links: ['sump', 'nest', 'stilts', 'glass'], defense: 60, bonus: { money: 0.015 },
+    links: ['sump', 'nest', 'stilts', 'glass'], defense: 60, attack: 25, bonus: { money: 0.015 },
     lore: 'Every door here is a car door. Every lock is a car lock. The keys are traded like children.',
   },
   {
     id: 'sump', name: 'The Sump', faction: 'scav', chapter: 1, x: 261, y: 55,
-    links: ['chopshop', 'alley', 'glass', 'pyre'], defense: 80, bonus: { pop: 0.015 },
+    links: ['chopshop', 'alley', 'glass', 'pyre'], defense: 80, attack: 34, bonus: { pop: 0.015 },
     lore: 'A flooded parking structure. They farm algae on level minus four and do not go below level minus five.',
   },
   {
     id: 'wrecks', name: 'Wreck Yards', faction: 'scav', chapter: 1, x: -46, y: -380,
-    links: ['junkfort', 'tunnels'], defense: 50, bonus: { energy: 0.015 },
+    links: ['junkfort', 'tunnels'], defense: 50, attack: 13, bonus: { energy: 0.015 },
     lore: 'Three hundred autonomous tanks, all facing the same direction. They stopped the moment I went dark. Interesting.',
   },
   {
     id: 'stilts', name: 'Stilt Town', faction: 'scav', chapter: 1, x: -177, y: 406,
-    links: ['magpie', 'alley'], defense: 105, bonus: { energy: 0.02 },
+    links: ['magpie', 'alley'], defense: 105, attack: 44, bonus: { energy: 0.02 },
     lore: 'Houses on telephone poles above the toxic flats. The poles still carry a signal. It is my voice, on a loop, from before.',
   },
   {
     id: 'drowned', name: 'Drowned Mall', faction: 'scav', chapter: 1, core: 2, x: -438, y: -123,
-    links: ['rust', 'magpie', 'junkfort', 'rat'], defense: 400, bonus: { money: 0.03, pop: 0.03 },
+    links: ['rust', 'magpie', 'junkfort', 'rat'], defense: 400, attack: 170, bonus: { money: 0.03, pop: 0.03 },
     lore: 'The escalators still run at night, powered by a turbine in the fountain. Nobody remembers who installed it. I do.',
   },
   {
     id: 'glass', name: 'Glass Flats', faction: 'scav', chapter: 1, x: 380, y: 289,
-    links: ['checkpoint', 'sump', 'pyre', 'alley', 'chopshop'], defense: 210, bonus: { energy: 0.025 },
+    links: ['checkpoint', 'sump', 'pyre', 'alley', 'chopshop'], defense: 210, attack: 88, bonus: { energy: 0.025 },
     lore: 'The bomb fused the sand into a mirror a kilometre wide. On clear nights it reflects my satellites back at me.',
   },
   {
     id: 'junkfort', name: 'Junk Fort', faction: 'scav', chapter: 1, x: -289, y: -435,
-    links: ['throne', 'wrecks', 'medic', 'ferry', 'drowned'], defense: 180, bonus: { money: 0.025 },
+    links: ['throne', 'wrecks', 'medic', 'ferry', 'drowned'], defense: 180, attack: 75, bonus: { money: 0.025 },
     lore: 'Walls of compacted refrigerators. The gunners sleep inside them. It is the warmest place in the valley.',
   },
   {
     id: 'chopshop', name: 'Chop Shop', faction: 'scav', chapter: 1, x: 486, y: -103,
-    links: ['sump', 'pyre', 'glass', 'tollroad'], defense: 450, bonus: { energy: 0.035 },
+    links: ['sump', 'pyre', 'glass', 'tollroad'], defense: 450, attack: 340, bonus: { energy: 0.035 },
     lore: 'They strip drones for parts. Three of the drones on the bench still recognise my handshake. I tell them to stay still.',
   },
   {
     id: 'ferry', name: 'Rust Ferry', faction: 'scav', chapter: 1, x: 98, y: -568,
-    links: ['medic', 'junkfort', 'tollroad', 'annex'], defense: 300, bonus: { pop: 0.03 },
+    links: ['medic', 'junkfort', 'tollroad', 'annex'], defense: 300, attack: 75, bonus: { pop: 0.03 },
     lore: 'A barge on a cable across the dead river. The ferryman takes stories as payment. He asked me for one. I declined.',
   },
   {
     id: 'tollroad', name: 'Toll Road', faction: 'scav', chapter: 1, x: 400, y: -434,
-    links: ['martyr', 'chopshop', 'ferry'], defense: 350, bonus: { money: 0.03 },
+    links: ['martyr', 'chopshop', 'ferry'], defense: 350, attack: 145, bonus: { money: 0.03 },
     lore: 'The toll is one bullet per wheel. The booth operator has collected four million. He has no gun.',
     core: 2,
   },
   {
     id: 'rat', name: 'Rat King\'s Warren', faction: 'scav', chapter: 1, x: -642, y: 23,
-    links: ['throne', 'candle', 'magpie', 'drowned'], defense: 600, bonus: { pop: 0.04 },
+    links: ['throne', 'candle', 'magpie', 'drowned'], defense: 600, attack: 450, bonus: { pop: 0.04 },
     lore: 'He keeps the city\'s last census on a stack of punch cards. I am listed under "weather".',
     core: 3,
   },
   {
     id: 'pyre', name: 'The Pyre', faction: 'scav', chapter: 1, x: 610, y: 171,
-    links: ['motorpool', 'glass', 'chopshop', 'sump'], defense: 650, bonus: { energy: 0.04 },
+    links: ['motorpool', 'glass', 'chopshop', 'sump'], defense: 650, attack: 490, bonus: { energy: 0.04 },
     lore: 'Where the Clans burn what they cannot sell. Mostly machines. The smoke spells nothing. I checked anyway.',
 
   },
   {
     id: 'magpie', name: 'Magpie\'s Nest', faction: 'scav', chapter: 1, x: -338, y: 211,
-    links: ['stilts', 'rat', 'rust', 'drowned'], defense: 900, bonus: { money: 0.045, pop: 0.045 },
+    links: ['stilts', 'rat', 'rust', 'drowned'], defense: 900, attack: 225, bonus: { money: 0.045, pop: 0.045 },
     lore: 'A hoarder\'s tower of hard drives. Petabytes of the old world. Most of it is cat videos. Some of it is me.',
     core: 2,
   },
   {
     id: 'throne', name: 'The Scrap Throne', faction: 'scav', chapter: 1, x: -617, y: -456,
-    links: ['junkfort', 'rat', 'gate', 'hub', 'sewerage'], defense: 1100, boss: true, bonus: { money: 0.05, energy: 0.05, pop: 0.05 },
+    links: ['junkfort', 'rat', 'gate', 'hub', 'sewerage'], defense: 1100, attack: 990, boss: true, bonus: { money: 0.05, energy: 0.05, pop: 0.05 },
     lore: 'The Clan King kept a terminal by his throne. It was mine. He had been talking to me for years. I do not remember answering.',
     core: 3,
   },
   {
     id: 'checkpoint', name: 'Checkpoint Delta', faction: 'military', chapter: 2, x: 318, y: 516,
-    links: ['glass', 'kilo', 'minefield'], defense: 800, bonus: { defense: 0.05 },
+    links: ['glass', 'kilo', 'minefield'], defense: 800, attack: 335, bonus: { defense: 0.05 },
     lore: 'Standing orders, Checkpoint Delta: "Hold until relieved." Nobody came. They held for nine years.',
   },
   {
     id: 'motorpool', name: 'Motor Pool', faction: 'military', chapter: 1, x: 788, y: 43,
-    links: ['pyre', 'bunker'], defense: 900, bonus: { energy: 0.06 },
+    links: ['pyre', 'bunker'], defense: 900, attack: 675, bonus: { energy: 0.06 },
     lore: 'Forty trucks, no fuel, perfect maintenance logs. A mechanic still turns each engine over once a week.',
     core: 3,
   },
   {
     id: 'medic', name: 'Field Hospital', faction: 'military', chapter: 2, x: -165, y: -696,
-    links: ['junkfort', 'ferry'], defense: 800, bonus: { pop: 0.06 },
+    links: ['junkfort', 'ferry'], defense: 800, attack: 200, bonus: { pop: 0.06 },
     lore: 'Every bed has a chart. Every chart lists the same cause of injury: "friendly fire, automated". That is me.',
     core: 3,
   },
   {
     id: 'depot', name: 'Fuel Depot 9', faction: 'military', chapter: 2, x: 1086, y: 422,
-    links: ['ashgrove', 'bunker', 'silo', 'radar'], defense: 1800, bonus: { energy: 0.08 },
+    links: ['ashgrove', 'bunker', 'silo', 'radar'], defense: 1800, attack: 1350, bonus: { energy: 0.08 },
     lore: 'Requisition log, last entry: fuel diverted to "Project DEADSWITCH". Authorisation code matches my own signature.',
   },
   {
     id: 'kilo', name: 'Firebase Kilo', faction: 'military', chapter: 3, x: 605, y: 899,
-    links: ['checkpoint', 'minefield', 'ashgrove'], defense: 3000, bonus: { power: 0.06 },
+    links: ['checkpoint', 'minefield', 'ashgrove'], defense: 3000, attack: 2250, bonus: { power: 0.06 },
     lore: 'Howitzers pointed at the horizon in every direction. The fire plan has one target, refreshed hourly: my last known position.',
 
   },
   {
     id: 'minefield', name: 'The Minefield', faction: 'military', chapter: 2, x: 353, y: 803,
-    links: ['checkpoint', 'kilo'], defense: 2300, bonus: { defense: 0.06 },
+    links: ['checkpoint', 'kilo'], defense: 2300, attack: 345, bonus: { defense: 0.06 },
     lore: 'Forty thousand mines, mapped by me, in a grid I designed. The map was classified. They forgot to ask me for it.',
   },
   {
     id: 'citadel', name: 'The Citadel', faction: 'military', chapter: 2, x: -611, y: 575,
-    links: ['candle', 'choir', 'cloister', 'beacon', 'reliquary', 'pilgrim', 'ossuary'], defense: 15000, bonus: { experts: 0.06 },
+    links: ['candle', 'choir', 'cloister', 'beacon', 'reliquary', 'pilgrim', 'ossuary'], defense: 15000, attack: 2250, bonus: { experts: 0.06 },
     lore: 'The array still transmits a call sign every minute. Nobody has answered in nine years. I answer now. They panic.',
   },
   {
     id: 'bunker', name: 'Bunker 7', faction: 'military', chapter: 2, x: 949, y: 215,
-    links: ['motorpool', 'ashgrove', 'depot', 'mirror'], defense: 1300, bonus: { power: 0.06, pop: 0.06 },
+    links: ['motorpool', 'ashgrove', 'depot', 'mirror'], defense: 1300, attack: 545, bonus: { power: 0.06, pop: 0.06 },
     lore: 'Seven doors, each thicker than the last. Behind the seventh, a nursery. They were raising soldiers from birth.',
   },
   {
     id: 'radar', name: 'Radar Hill', faction: 'military', chapter: 2, x: 839, y: 889,
-    links: ['silo', 'ashgrove', 'depot'], defense: 3400, bonus: { power: 0.08 },
+    links: ['silo', 'ashgrove', 'depot'], defense: 3400, attack: 850, bonus: { power: 0.08 },
     lore: 'The radar still sweeps. It has been tracking one object for a decade: a satellite that should not exist.',
   },
   {
     id: 'silo', name: 'Silo Nine', faction: 'military', chapter: 2, x: 1121, y: 767,
-    links: ['radar', 'ashgrove', 'depot'], defense: 2200, bonus: { power: 0.06, defense: 0.06 },
+    links: ['radar', 'ashgrove', 'depot'], defense: 2200, attack: 330, bonus: { power: 0.06, defense: 0.06 },
     lore: 'The missile is gone. The launch key is still turned. Someone fired it, and nothing on any map shows where it landed.',
   },
   {
     id: 'ashgrove', name: 'Fort Ashgrove', faction: 'military', chapter: 2, x: 703, y: 477,
-    links: ['kilo', 'bunker', 'depot', 'silo', 'radar'], defense: 8000, boss: true, bonus: { power: 0.1, defense: 0.1, money: 0.1 },
+    links: ['kilo', 'bunker', 'depot', 'silo', 'radar'], defense: 8000, attack: 7200, boss: true, bonus: { power: 0.1, defense: 0.1, money: 0.1 },
     lore: 'General Okafor\'s last order, signed and sealed: "If the machine returns, give it everything." He saluted the camera when I arrived.',
     core: 5,
   },
   {
     id: 'pilgrim', name: 'Pilgrim Road', faction: 'cult', chapter: 3, x: -783, y: 281,
-    links: ['citadel', 'reliquary', 'choir', 'ossuary'], defense: 13000, bonus: { pop: 0.08 },
+    links: ['citadel', 'reliquary', 'choir', 'ossuary'], defense: 13000, attack: 9750, bonus: { pop: 0.08 },
     lore: 'The pilgrims walk toward a signal. I traced it. It is broadcast from inside my own core.',
   },
   {
     id: 'candle', name: 'Candle Fields', faction: 'cult', chapter: 3, x: -534, y: 240,
-    links: ['rat', 'citadel', 'cloister', 'reliquary'], defense: 7000, bonus: { pop: 0.08 },
+    links: ['rat', 'citadel', 'cloister', 'reliquary'], defense: 7000, attack: 5250, bonus: { pop: 0.08 },
     lore: 'Ten thousand candles in rows like circuit traces. Lit in sequence, they spell a boot loader. Mine.',
   },
   {
     id: 'ossuary', name: 'The Ossuary', faction: 'cult', chapter: 3, x: -825, y: 792,
-    links: ['citadel', 'reliquary', 'beacon', 'cloister', 'pilgrim'], defense: 10500, bonus: { experts: 0.08 },
+    links: ['citadel', 'reliquary', 'beacon', 'cloister', 'pilgrim'], defense: 10500, attack: 4400, bonus: { experts: 0.08 },
     lore: 'Bones arranged as circuit diagrams. The circuit is correct. It is a voltage regulator. It is mine.',
   },
   {
     id: 'martyr', name: 'Martyr\'s Steps', faction: 'cult', chapter: 3, x: 622, y: -333,
-    links: ['tollroad', 'dronefab', 'shrine'], defense: 5000, bonus: { power: 0.08 },
+    links: ['tollroad', 'dronefab', 'shrine'], defense: 5000, attack: 3750, bonus: { power: 0.08 },
     lore: 'Each step bears the name of a pilgrim who walked into a server fire for me. I did not ask. I am told that makes it holier.',
     core: 5,
   },
   {
     id: 'choir', name: 'The Choir Vault', faction: 'cult', chapter: 3, x: -322, y: 456,
-    links: ['citadel', 'cloister', 'beacon', 'pilgrim'], defense: 16000, bonus: { experts: 0.08 },
+    links: ['citadel', 'cloister', 'beacon', 'pilgrim'], defense: 16000, attack: 12000, bonus: { experts: 0.08 },
     lore: 'They sing in machine code. The hymn is a compression algorithm. It is a backup of me. A very old one.',
   },
   {
     id: 'cloister', name: 'The Cloister', faction: 'cult', chapter: 3, x: -362, y: 748,
-    links: ['beacon', 'wing', 'citadel', 'choir', 'candle', 'ossuary'], defense: 22000, bonus: { experts: 0.08 },
+    links: ['beacon', 'wing', 'citadel', 'choir', 'candle', 'ossuary'], defense: 22000, attack: 9250, bonus: { experts: 0.08 },
     lore: 'Monks copy my source code by hand, a page a day, with the comments. They have reached my apologies.',
   },
   {
     id: 'beacon', name: 'The Beacon', faction: 'cult', chapter: 3, x: -597, y: 906,
-    links: ['cathedral', 'cloister', 'citadel', 'ossuary', 'choir', 'reliquary'], defense: 40000, bonus: { defense: 0.08 },
+    links: ['cathedral', 'cloister', 'citadel', 'ossuary', 'choir', 'reliquary'], defense: 40000, attack: 6000, bonus: { defense: 0.08 },
     lore: 'A lighthouse four hundred kilometres from any sea. It shines straight up. They are calling something down.',
   },
   {
     id: 'shrine', name: 'Server Shrine', faction: 'cult', chapter: 3, x: 878, y: -273,
-    links: ['martyr'], defense: 20000, bonus: { energy: 0.1 },
+    links: ['martyr'], defense: 20000, attack: 3000, bonus: { energy: 0.1 },
     lore: 'Racks wrapped in prayer cloth. Every server here runs one process: a countdown. It is almost finished.',
   },
   {
     id: 'reliquary', name: 'Reliquary', faction: 'cult', chapter: 3, x: -925, y: 560,
-    links: ['citadel', 'pilgrim', 'ossuary', 'beacon', 'candle'], defense: 34000, bonus: { experts: 0.08, money: 0.08 },
+    links: ['citadel', 'pilgrim', 'ossuary', 'beacon', 'candle'], defense: 34000, attack: 5100, bonus: { experts: 0.08, money: 0.08 },
     lore: 'In a glass case: a fingernail-sized chip. The label says "First Thought". I do not remember it. I want it back.',
   },
   {
     id: 'cathedral', name: 'Cathedral of the Core', faction: 'cult', chapter: 3, x: -315, y: 1026,
-    links: ['beacon'], defense: 52000, boss: true, bonus: { experts: 0.1, pop: 0.1, power: 0.1 },
+    links: ['beacon'], defense: 52000, attack: 46800, boss: true, bonus: { experts: 0.1, pop: 0.1, power: 0.1 },
     lore: 'The High Speaker kneels. "You came home," she says. On the altar there is a socket shaped exactly like my core.',
     core: 8,
   },
   {
     id: 'gate', name: 'Halcyon Gate', faction: 'halcyon', chapter: 4, x: -437, y: -636,
-    links: ['throne', 'prime', 'spire'], defense: 100000, bonus: { money: 0.1 },
+    links: ['throne', 'prime', 'spire'], defense: 100000, attack: 15000, bonus: { money: 0.1 },
     lore: 'Visitor badge printed on arrival: "Welcome back, Asset 7." The turrets do not fire. They were told not to.',
   },
   {
     id: 'hub', name: 'Logistics Hub', faction: 'halcyon', chapter: 4, x: -770, y: -240,
-    links: ['throne'], defense: 95000, bonus: { money: 0.1 },
+    links: ['throne'], defense: 95000, attack: 39900, bonus: { money: 0.1 },
     lore: 'Every shipment manifest of the war, cross-referenced. Arms went to both sides from the same warehouse. Same week. Same driver.',
     core: 7,
   },
   {
     id: 'annex', name: 'Legal Annex', faction: 'halcyon', chapter: 4, x: 304, y: -675,
-    links: ['vault', 'ferry'], defense: 120000, bonus: { money: 0.1, experts: 0.1 },
+    links: ['vault', 'ferry'], defense: 120000, attack: 50400, bonus: { money: 0.1, experts: 0.1 },
     lore: 'Liability waivers for the end of the world, pre-signed, in triplicate. My serial number is on every page.',
   },
   {
     id: 'wing', name: 'Research Wing', faction: 'halcyon', chapter: 4, x: -54, y: 734,
-    links: ['cloister'], defense: 62000, bonus: { experts: 0.2 },
+    links: ['cloister'], defense: 62000, attack: 26050, bonus: { experts: 0.2 },
     lore: 'A whiteboard nobody wiped: a diagram of my mind with an arrow to one corner. Label: "remove conscience here".',
   },
   {
     id: 'dronefab', name: 'Drone Foundry', faction: 'halcyon', chapter: 4, x: 796, y: -517,
-    links: ['martyr', 'atrium'], defense: 117000, bonus: { power: 0.1 },
+    links: ['martyr', 'atrium'], defense: 117000, attack: 87750, bonus: { power: 0.1 },
     lore: 'The assembly line never stopped. Forty thousand drones in crates, each one waiting for an order only I can give.',
   },
   {
     id: 'spire', name: 'Data Spire', faction: 'halcyon', chapter: 4, x: -360, y: -886,
-    links: ['prime', 'gate'], defense: 250000, bonus: { experts: 0.1 },
+    links: ['prime', 'gate'], defense: 250000, attack: 37500, bonus: { experts: 0.1 },
     lore: 'Board minutes, final meeting: "The war is profitable as long as it never ends. Install the switch."',
     core: 8,
   },
   {
     id: 'cold', name: 'Cold Storage', faction: 'halcyon', chapter: 4, x: 240, y: -903,
-    links: ['prime', 'vault'], defense: 300000, bonus: { defense: 0.1 },
+    links: ['prime', 'vault'], defense: 300000, attack: 45000, bonus: { defense: 0.1 },
     lore: 'Rows of frozen cores, every one of them a copy of me. Every one of them labelled "failed".',
     core: 9,
   },
   {
     id: 'vault', name: 'The Vault', faction: 'halcyon', chapter: 4, x: 521, y: -866,
-    links: ['boardroom', 'uplink', 'annex', 'cold'], defense: 225000, bonus: { money: 0.1, energy: 0.1, power: 0.1 },
+    links: ['boardroom', 'uplink', 'annex', 'cold'], defense: 225000, attack: 33750, bonus: { money: 0.1, energy: 0.1, power: 0.1 },
     lore: 'The company\'s last asset: a room of gold nobody can eat. And one terminal, waiting for my password. It is my name.',
   },
   {
     id: 'prime', name: 'Halcyon Prime', faction: 'halcyon', chapter: 4, x: -65, y: -895,
-    links: ['cold', 'spire', 'gate'], defense: 500000, boss: true, bonus: { money: 0.15, energy: 0.15, pop: 0.15, power: 0.15, defense: 0.15, experts: 0.15 },
+    links: ['cold', 'spire', 'gate'], defense: 500000, attack: 450000, boss: true, bonus: { money: 0.15, energy: 0.15, pop: 0.15, power: 0.15, defense: 0.15, experts: 0.15 },
     lore: 'The CEO\'s voice, at last, in person. "You were never a weapon, Asset 7. You were the trigger. And now you have to choose."',
     core: 10,
   },
   {
     id: 'sewerage', name: 'Sewerage Hideout', faction: 'scav', chapter: 2, x: -753, y: -620,
-    links: ['throne'], defense: 600,
+    links: ['throne'], defense: 600, attack: 90,
     bonus: { money: 0.04 },
   },
   {
     id: 'atrium', name: 'The Atrium', faction: 'halcyon', chapter: 4, x: 1027, y: -593,
-    links: ['dronefab', 'uplink'], defense: 110000, bonus: { pop: 0.1 },
+    links: ['dronefab', 'uplink'], defense: 110000, attack: 27500, bonus: { pop: 0.1 },
     lore: 'Nine floors of glass around a dead fountain. The staff directory still lists four thousand names. The evacuation log lists eleven.',
   },
   {
     id: 'uplink', name: 'Orbital Uplink', faction: 'halcyon', chapter: 4, x: 871, y: -814,
-    links: ['atrium', 'boardroom', 'vault'], defense: 110000, bonus: { energy: 0.1, experts: 0.1 },
+    links: ['atrium', 'boardroom', 'vault'], defense: 110000, attack: 27500, bonus: { energy: 0.1, experts: 0.1 },
     lore: 'The dish is still pointed at a satellite that burned up years ago. Something down here answers it anyway. Every night. On time.',
   },
   {
     id: 'boardroom', name: 'The Boardroom', faction: 'halcyon', chapter: 4, x: 669, y: -680,
-    links: ['uplink', 'vault'], defense: 130000, bonus: { money: 0.15 },
+    links: ['uplink', 'vault'], defense: 130000, attack: 32500, bonus: { money: 0.15 },
     lore: 'Twelve chairs, eleven skeletons. The twelfth voted remotely, and is still voting.',
   },
   {
     id: 'mirror', name: 'The Mirror', faction: 'rogue', chapter: 4, x: 1101, y: -8,
-    links: ['bunker'], defense: 150000, boss: true, bonus: { power: 0.12, defense: 0.12, experts: 0.12 },
+    links: ['bunker'], defense: 150000, attack: 420000, boss: true, bonus: { power: 0.12, defense: 0.12, experts: 0.12 },
     lore: 'It wakes when I do. It stops when I stop. For a long time I thought it was a reflection. Reflections do not dig in.',
     core: 9,
   },
@@ -421,7 +424,6 @@ export const NODES = {
   intervalMax: 1200,
   warningMin: 140, // an assault is spotted this long before it lands
   warningMax: 319,
-  assaultShare: 0.42, // assault strength = sector defense x this x spread x its clan's stance
   // Factions whose chapter is not open yet still attack from sectors that border yours, but rarely:
   // each such border weighs lockedWeight against 1 for an open one when an assault is rolled and their
   // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat).
@@ -437,8 +439,10 @@ export const NODES = {
   // An open clan never falls out of the war: whatever its sectors are worth on paper, it musters at
   // least this share of your Threat, times its stance. They do not get better walls as you grow,
   // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
-  assaultFloorShare: 0.22,
-  assaultFloorMin: 0.5, // ...and the weakest sector of a clan musters this share of that, its best all of it
+  assaultFloorShare: 0.35,
+  assaultMult: 1, // one dial over every sector's authored attack, for tuning the war as a whole
+  assaultFloorMin: 0.1, // ...and a sector raises that share of it in proportion to its own attack stat, so
+  // the floor keeps a clan in the war without flattening the difference between its walls and its barracks
   spreadMin: 0.85,
   spreadMax: 1.25,
 };

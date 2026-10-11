@@ -302,6 +302,8 @@ let drag = null;
 const STATS = {
   defense: { label: 'Sector defense', kind: 'out', get: (r) => num(r.defense), hot: (r) => r.defense > r.power },
   base: { label: 'Base defense (setting)', kind: 'set', get: (r) => num(r.sec.defense) },
+  attack: { label: 'Attack (setting)', kind: 'set', get: (r) => num(r.sec.attack), hot: (r) => r.sec.attack > r.sec.defense * 0.6 },
+  teeth: { label: 'Attack over defense', kind: 'set', get: (r) => (r.sec.defense ? (r.sec.attack / r.sec.defense).toFixed(2) : ''), hot: (r) => r.sec.attack > r.sec.defense * 0.6 },
   odds: { label: 'Operation odds', kind: 'out', get: (r) => (r.mine ? '' : pct(r.chance)), hot: (r) => r.chance < 0.5, cool: (r) => r.chance >= 0.75 },
   cost: { label: 'Operation cost (scrip)', kind: 'out', get: (r) => num(r.cost.money) },
   optime: { label: 'Operation time', kind: 'out', get: (r) => time(r.time) },
@@ -708,6 +710,7 @@ function tabSector(host, s) {
   field(set, 'chapter', selectInput(String(sec.chapter), CHAPTERS.map((c) => [String(c.id), `${c.id} · ${c.title} (Core ${c.core})`]),
     (v) => { setSector(sec.id, 'chapter', Number(v)); apply(); }), ['sector', 'chapter']);
   field(set, 'defense', numInput(sec.defense, (v) => { setSector(sec.id, 'defense', v); apply(); }), ['sector', 'defense']);
+  field(set, 'attack', numInput(sec.attack, (v) => { setSector(sec.id, 'attack', v); apply(); }), ['sector', 'attack']);
   field(set, 'core gate', numInput(sec.core, (v) => { setSector(sec.id, 'core', v); apply(); }), ['sector', 'core']);
   field(set, 'capital', checkbox(sec.boss, (v) => { setSector(sec.id, 'boss', v || undefined); apply(); }), ['sector', 'boss']);
   field(set, 'x', numInput(sec.x, (v) => { setSector(sec.id, 'x', v); apply(); }), ['sector', 'x']);
