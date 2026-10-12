@@ -400,7 +400,7 @@ export const TUTORIAL = {
 };
 
 export const NODES = {
-  strengthMin: 0.6,
+  strengthMin: 0.8, // nothing is ever ground below this share of its base defense: the spiral costs them troops, not walls
   strengthMax: 3, // hard ceiling, passive growth included
   growthPerHour: 0.03,
   opLossGain: 0.16, // added when your operation against it fails (morale), before its own casualties
@@ -443,10 +443,11 @@ export const NODES = {
   assaultFloorShare: 0.35,
   assaultMult: 1, // one dial over every sector's authored attack, for tuning the war as a whole
   // A sector that keeps throwing itself at the same wall and keeps failing does not get weaker at
-  // it: it gets angrier and thinner. Each held assault adds pushPerLoss to what it sends (up to
-  // pushMax) while its own strength falls as before, so a stubborn neighbour becomes a harder attack
-  // and a softer target at the same time. A breach is what it wanted, so that resets the push, and
-  // so does anything that makes it think again: an order naming it, or being looked at too often.
+  // it: it gets angrier and a little thinner. Each held assault adds pushPerLoss to what it sends
+  // (up to pushMax) while its own strength falls to strengthMin at worst, so by the cap a stubborn
+  // neighbour is sending about 40% more at walls worth about 20% less: mostly a harder fight, and
+  // only a little bit of an opening. A breach is what it wanted, so that resets the push, and so
+  // does anything that makes it think again: an order naming it, or being looked at too often.
   // How much a sector's own strength carries into what it sends. Its walls and its troops are not
   // the same thing: a sector ground down by failed assaults is easier to take, not easier to survive.
   attackFromStrength: 0.35,
