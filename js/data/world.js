@@ -441,6 +441,20 @@ export const NODES = {
   // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
   assaultFloorShare: 0.35,
   assaultMult: 1, // one dial over every sector's authored attack, for tuning the war as a whole
+  // A sector that keeps throwing itself at the same wall and keeps failing does not get weaker at
+  // it: it gets angrier and thinner. Each held assault adds pushPerLoss to what it sends (up to
+  // pushMax) while its own strength falls as before, so a stubborn neighbour becomes a harder attack
+  // and a softer target at the same time. A breach is what it wanted, so that resets the push, and
+  // so does anything that makes it think again: an order naming it, or being looked at too often.
+  // How much a sector's own strength carries into what it sends. Its walls and its troops are not
+  // the same thing: a sector ground down by failed assaults is easier to take, not easier to survive.
+  attackFromStrength: 0.35,
+  pushPerLoss: 0.08,
+  pushMax: 1.5,
+  pushLooks: 3, // this many briefing looks and they change what they were doing
+  // ...and a sector that just attacked stands down for a while, so the same one cannot hold the
+  // whole front hostage while the rest of the map watches.
+  reattackGap: 900,
   assaultFloorMin: 0.1, // ...and a sector raises that share of it in proportion to its own attack stat, so
   // the floor keeps a clan in the war without flattening the difference between its walls and its barracks
   spreadMin: 0.85,
@@ -481,7 +495,7 @@ export const AGGR = {
 //   order command and cohesion                greed what they want off me instead of my death
 export const CLANS = {
   startAtCore: 2, // stances start working with assaults
-  driftPerHour: 0.08, // traits slide back to the clan's own mood this fast, so nothing sticks forever
+  driftPerHour: 0.035, // traits slide back to the clan's own mood this fast: slowly, so a night of war is still felt in the morning
   stirScale: 0.7, // and everything that happens moves them this much of what it says below
   interceptShare: 0.3, // share of an order's clan-wide aggression that also lands as fury
   // What the war does to a clan. Applied to the faction that owns the sector involved.

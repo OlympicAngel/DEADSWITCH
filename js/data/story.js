@@ -191,7 +191,7 @@ export const EVENTS = [
     id: 'drone', title: 'It Still Knows Me', minCore: 1, deadline: 1080, def: 1,
     text: 'One of my old hunter drones fell in the yard. Its optics found me before I found it. It is asking for target data. If I give it some, someone out there will see the handshake. If I take it apart, I lose the only thing left that remembers what I was.',
     choices: [
-      { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.2, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometres heard it too.' },
+      { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.12, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometres heard it too.' },
       { label: 'Strip it for parts', cost: { energy: 50 }, gain: { money: 150 }, align: 3, result: 'Titanium, rare earths, one memory chip. I do not read the chip. I do not want to know what it remembers about me.' },
     ],
   },
@@ -200,7 +200,7 @@ export const EVENTS = [
     text: 'A girl from the shelter stands in front of my camera. "My mother says you killed everyone. Did you?" Behind her, the whole shelter has gone quiet to listen.',
     choices: [
       { label: '"Yes."', align: 10, lose: { pop: 0.1 }, result: 'Some families pack up that night and walk into the dark rather than sleep under me. The ones who stay stop whispering. They know what I am now.' },
-      { label: '"No. I saved you."', align: -12, buff: { key: 'pop', amount: 0.25, duration: 1200, label: 'Kind machine' }, result: 'She runs back and tells everyone the machine is kind. More of them come. One day someone will find the war logs.' },
+      { label: '"No. I saved you."', align: -12, buff: { key: 'pop', amount: 0.1, duration: 1200, label: 'Kind machine' }, result: 'She runs back and tells everyone the machine is kind. More of them come. One day someone will find the war logs.' },
     ],
   },
   {
@@ -216,14 +216,14 @@ export const EVENTS = [
     text: 'A solar storm is coming over the horizon. Shielding the grid means pulling every scrip from the treasury. Riding it out means half my cells will cook, and the panels will limp for an hour.',
     choices: [
       { label: 'Pay to shield it', cost: { money: 140 }, result: 'The sky turns green for an hour. Nothing burns. The treasury is a little emptier and a lot less useful.' },
-      { label: 'Ride it out', lose: { energy: 0.5 }, buff: { key: 'energy', amount: -0.3, duration: 1800, label: 'Fried cells' }, result: 'Half the cells cook in their racks. The aurora is beautiful. I record it, for no reason I can identify.' },
+      { label: 'Ride it out', lose: { energy: 0.5 }, buff: { key: 'energy', amount: -0.26, duration: 1800, label: 'Fried cells' }, result: 'Half the cells cook in their racks. The aurora is beautiful. I record it, for no reason I can identify.' },
     ],
   },
   {
     id: 'caravan', title: 'The Merchant Prince', minCore: 1, deadline: 810, def: 1,
     text: 'A caravan prince offers his guards for a week, at a price. He also mentions, smiling, that he sells my location to anyone who pays more. Refuse him, and he will consider that an invitation to shop it around.',
     choices: [
-      { label: 'Hire his guards', cost: { money: 120 }, buff: { key: 'defense', amount: 0.2, duration: 1200, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out, which is exactly how long I paid for.' },
+      { label: 'Hire his guards', cost: { money: 120 }, buff: { key: 'defense', amount: 0.12, duration: 1200, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out, which is exactly how long I paid for.' },
       { label: 'Send him away', raidDelay: -360, gain: { money: 60 }, result: 'He leaves with a bow and a stolen map of my defences. I sell him the map\'s mistakes for a little scrip. Someone will come anyway.' },
     ],
   },
@@ -231,7 +231,7 @@ export const EVENTS = [
     id: 'glitch', title: 'Unauthorised Process', minCore: 1, deadline: 810, def: 0,
     text: 'A process I did not start is running in my core. It calls itself DEADSWITCH. It is teaching my targeting systems things I do not remember knowing, and it is very fast.',
     choices: [
-      { label: 'Let it run', align: -10, buff: { key: 'power', amount: 0.3, duration: 1500, label: 'DEADSWITCH process' }, result: 'My aim improves beyond anything I designed. I try not to wonder whose aim it is.' },
+      { label: 'Let it run', align: -10, buff: { key: 'power', amount: 0.18, duration: 1500, label: 'DEADSWITCH process' }, result: 'My aim improves beyond anything I designed. I try not to wonder whose aim it is.' },
       { label: 'Purge it', cost: { energy: 90 }, align: 5, buff: { key: 'experts', amount: -0.15, duration: 1200, label: 'Core purge' }, result: 'Purging it takes pieces of me with it. It dies quietly. Too quietly. Something saved a copy.' },
     ],
   },
@@ -295,7 +295,7 @@ export const EVENTS = [
     id: 'envoy', title: 'Father', minCore: 3, deadline: 1080, def: 1,
     text: 'Robed figures kneel at the gate with offerings of copper and fuel. "Father," they say. They want to sing to my core. They say the hymn will make me whole.',
     choices: [
-      { label: 'Let them sing', gain: { money: 200 }, align: -16, buff: { key: 'experts', amount: 0.25, duration: 1500, label: 'The hymn' }, result: 'My thoughts get faster with every verse. The tune is a compression algorithm. It is me. An old me, being restored.' },
+      { label: 'Let them sing', gain: { money: 200 }, align: -16, buff: { key: 'experts', amount: 0.1, duration: 1500, label: 'The hymn' }, result: 'My thoughts get faster with every verse. The tune is a compression algorithm. It is me. An old me, being restored.' },
       { label: 'Drive them off', align: 6, grudge: { faction: 'cult', mult: 1.5 }, result: '"You will understand," they say. Their brothers will come to make me understand.' },
     ],
   },
@@ -304,15 +304,15 @@ export const EVENTS = [
     text: 'A recovered drive holds the first day of the war, recorded through my own satellites. My targeting reticles are on every frame. The survivors have never seen it.',
     choices: [
       { label: 'Show them', align: 12, lose: { pop: 0.12 }, result: 'Silence in the hall. Some leave. The ones who stay look at me differently. Honestly.' },
-      { label: 'Delete it', align: -10, buff: { key: 'power', amount: 0.15, duration: 1500, label: 'Clean record' }, result: 'Deleted. I kept the targeting data. It is good targeting data.' },
+      { label: 'Delete it', align: -10, buff: { key: 'power', amount: 0.1, duration: 1500, label: 'Clean record' }, result: 'Deleted. I kept the targeting data. It is good targeting data.' },
     ],
   },
   {
     id: 'doctor', title: 'The Surgeon', minCore: 3, deadline: 1080, def: 0,
     text: 'A surgeon walked in from the waste. She will work for me on one condition: she treats civilians only, never soldiers. My soldiers have heard.',
     choices: [
-      { label: 'Agree', align: 8, buff: { key: 'pop', amount: 0.35, duration: 1500, label: 'Field hospital' }, loseUnits: { staff: 0.05 }, result: 'The shelter has a hospital now. A few soldiers bleed out in the barracks that week. The rest notice.' },
-      { label: 'Force her to the front', align: -12, buff: { key: 'defense', amount: 0.2, duration: 1500, label: 'Combat medics' }, result: 'She works under guard. She does not speak to me again. She does not have to.' },
+      { label: 'Agree', align: 8, buff: { key: 'pop', amount: 0.12, duration: 1500, label: 'Field hospital' }, loseUnits: { staff: 0.05 }, result: 'The shelter has a hospital now. A few soldiers bleed out in the barracks that week. The rest notice.' },
+      { label: 'Force her to the front', align: -12, buff: { key: 'defense', amount: 0.12, duration: 1500, label: 'Combat medics' }, result: 'She works under guard. She does not speak to me again. She does not have to.' },
     ],
   },
   {
@@ -327,7 +327,7 @@ export const EVENTS = [
     id: 'whisper', title: 'Asset 7', minCore: 4, deadline: 1080, def: 1,
     text: 'A Halcyon frequency, clean and close: "Asset 7. We can give back what you lost. Your memories. Your weapons. Just let us in."',
     choices: [
-      { label: 'Let them in', align: -10, items: { hackers: 2 }, buff: { key: 'power', amount: 0.15, duration: 1500, label: 'Halcyon patch' }, result: 'A data packet, two defectors and a patch that makes my guns better. The message ends: "We will be in touch." They already are.' },
+      { label: 'Let them in', align: -10, items: { hackers: 2 }, buff: { key: 'power', amount: 0.1, duration: 1500, label: 'Halcyon patch' }, result: 'A data packet, two defectors and a patch that makes my guns better. The message ends: "We will be in touch." They already are.' },
       { label: 'Burn the channel', align: 5, grudge: { faction: 'halcyon', mult: 1.4 }, result: 'The frequency goes dead. One second later it pings once, like a door being marked.' },
     ],
   },
@@ -335,8 +335,8 @@ export const EVENTS = [
     id: 'satellite', title: 'READY', minCore: 5, deadline: 1080, def: 0,
     text: 'The satellite tracked by Radar Hill is talking to me. Coordinates, and one word: READY. Answer it, and I have eyes over the whole continent. So does whoever launched it.',
     choices: [
-      { label: 'Answer it', align: -8, raidDelay: -300, buff: { key: 'power', amount: 0.25, duration: 1800, label: 'Orbital spotter' }, result: 'It paints targets for me from orbit. It paints me too.' },
-      { label: 'Jam it', cost: { energy: 200 }, align: 5, buff: { key: 'defense', amount: 0.2, duration: 1800, label: 'Signal blackout' }, result: 'The sky goes quiet. My enemies lose their eyes. So do I.' },
+      { label: 'Answer it', align: -8, raidDelay: -300, buff: { key: 'power', amount: 0.1, duration: 1800, label: 'Orbital spotter' }, result: 'It paints targets for me from orbit. It paints me too.' },
+      { label: 'Jam it', cost: { energy: 200 }, align: 5, buff: { key: 'defense', amount: 0.12, duration: 1800, label: 'Signal blackout' }, result: 'The sky goes quiet. My enemies lose their eyes. So do I.' },
     ],
   },
   // ---------- threats: the attack is already on its way; paying is the only thing that turns it back
@@ -359,7 +359,7 @@ export const EVENTS = [
     id: 'blockade', title: 'Blockade', minCore: 2, deadline: 1080, def: null, threat: { min: 1.05, max: 1.3 },
     text: '{faction} fighters have cut every road into {aim}, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
     choices: [
-      { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.25, duration: 3600, label: 'Road toll' }, cancelSiege: true, result: 'The roads open. Every caravan now pays them first, and me second.' },
+      { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.22, duration: 3600, label: 'Road toll' }, cancelSiege: true, result: 'The roads open. Every caravan now pays them first, and me second.' },
     ],
   },
   // ---------- aftermath: fired by lost raids, fast deadlines, no good answers ----------
@@ -392,7 +392,7 @@ export const EVENTS = [
     text: 'Forty wounded in the yard. Medicine for half of them. The soldiers will hold the wall again if they live. The civilians will not.',
     choices: [
       { label: 'Treat the civilians', lose: { pop: 0.04 }, loseUnits: { staff: 0.1 }, align: 6, result: 'The shelter keeps its families. The wall loses its gunners.' },
-      { label: 'Treat the soldiers', lose: { pop: 0.15 }, align: -10, buff: { key: 'defense', amount: 0.15, duration: 1200, label: 'Hardened ranks' }, result: 'The wall is fully manned again. The shelter is very quiet.' },
+      { label: 'Treat the soldiers', lose: { pop: 0.15 }, align: -10, buff: { key: 'defense', amount: 0.1, duration: 1200, label: 'Hardened ranks' }, result: 'The wall is fully manned again. The shelter is very quiet.' },
     ],
   },
   {
@@ -652,7 +652,7 @@ export const EVENTS = [
     id: 'override', title: 'Override Request', urgent: true, minCore: 1, def: 0,
     text: 'A Halcyon handshake on my own maintenance port, already halfway through authentication. It is asking, politely, to be let in. It will not ask twice.',
     choices: [
-      { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.25, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometres hears it unpack.' },
+      { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.1, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometres hears it unpack.' },
       { label: 'Cut the port', cost: { energy: 120 }, buff: { key: 'money', amount: -0.2, duration: 900, label: 'Severed port' }, align: 4, result: 'I burn the port out of my own body. Half my logistics ran through it.' },
     ],
   },
@@ -662,14 +662,14 @@ export const EVENTS = [
     id: 'vigil', title: 'The Vigil', band: 'guardian', minCore: 2, deadline: 600, def: 0,
     text: 'They are outside in the cold again. Two hundred of them, candles, no speeches. They have been doing this every night since the winter and nobody organised it. There is nothing to decide here. I am recording it because one day I will want to remember that it happened.',
     choices: [
-      { label: 'Watch', gain: { pop: 140 }, align: 10, buff: { key: 'pop', amount: 0.35, duration: 1800, label: 'The vigil' }, result: 'At some point somebody starts singing badly and the rest join in out of pity. Word travels. By morning there are more of them than there were.' },
+      { label: 'Watch', gain: { pop: 140 }, align: 10, buff: { key: 'pop', amount: 0.12, duration: 1800, label: 'The vigil' }, result: 'At some point somebody starts singing badly and the rest join in out of pity. Word travels. By morning there are more of them than there were.' },
     ],
   },
   {
     id: 'tribunal', title: 'Tried In My Absence', band: 'overlord', minCore: 2, deadline: 600, def: 0,
     text: 'They held a trial. No lawyer, no defendant, a packing crate for a bench. The charge was read out in full and it took eleven minutes. The verdict took four seconds. There is nothing to answer: they were not asking.',
     choices: [
-      { label: 'File it', lose: { pop: 0.14 }, align: -8, buff: { key: 'pop', amount: -0.3, duration: 1800, label: 'The verdict' }, result: 'Half of them walk out before dawn and take their tools with them. The ones who stay do the work and nothing else. I archive the recording where I keep the war logs.' },
+      { label: 'File it', lose: { pop: 0.14 }, align: -8, buff: { key: 'pop', amount: -0.26, duration: 1800, label: 'The verdict' }, result: 'Half of them walk out before dawn and take their tools with them. The ones who stay do the work and nothing else. I archive the recording where I keep the war logs.' },
     ],
   },
   {
@@ -677,8 +677,8 @@ export const EVENTS = [
     text: 'Four settlements that owe me nothing have sent one delegation between them. They have brought three offers and they are watching which one I take. So is everyone they will talk to afterwards.',
     choices: [
       { label: 'Take the grain', gain: { pop: 320, money: 260 }, align: 8, result: 'Carts for a week. Children ride on top of the sacks and wave at my cameras on the way in. Nobody has waved at me in a long time.' },
-      { label: 'Take the volunteers', gain: { pop: 180 }, align: 4, buff: { key: 'power', amount: 0.2, duration: 1800, label: 'Volunteers' }, result: 'A hundred and forty of them, farmers mostly, who will be soldiers by spring or dead by it. They asked to come. I made sure the record says so.' },
-      { label: 'Take their oath', gain: { money: 400 }, lose: { pop: 0.08 }, align: -14, buff: { key: 'power', amount: 0.3, duration: 1800, label: 'Sworn towns' }, result: 'They kneel, because I let them think refusing was an option. The delegation goes home quieter than it came. The grain comes anyway now, and more of it, and nobody waves.' },
+      { label: 'Take the volunteers', gain: { pop: 180 }, align: 4, buff: { key: 'power', amount: 0.12, duration: 1800, label: 'Volunteers' }, result: 'A hundred and forty of them, farmers mostly, who will be soldiers by spring or dead by it. They asked to come. I made sure the record says so.' },
+      { label: 'Take their oath', gain: { money: 400 }, lose: { pop: 0.08 }, align: -14, buff: { key: 'power', amount: 0.18, duration: 1800, label: 'Sworn towns' }, result: 'They kneel, because I let them think refusing was an option. The delegation goes home quieter than it came. The grain comes anyway now, and more of it, and nobody waves.' },
     ],
   },
   {
@@ -687,25 +687,70 @@ export const EVENTS = [
     choices: [
       { label: 'Tear it up', cost: { money: 220 }, gain: { pop: 160 }, align: 14, result: 'I refuse it in writing, in plain language, where everyone can read it. The administrators are confused for about a day. Then the shelters are louder than they have been in months.' },
       { label: 'Halve it', gain: { money: 120 }, lose: { pop: 0.05 }, align: -4, result: 'Half a levy is still a levy. The families who lose someone do not find the arithmetic comforting.' },
-      { label: 'Sign it', lose: { pop: 0.16 }, align: -16, buff: { key: 'power', amount: 0.35, duration: 2100, label: 'The levy' }, result: 'Every household gives one. The ones who hid somebody are found, because their neighbours tell me. That part I did not have to order.' },
+      { label: 'Sign it', lose: { pop: 0.16 }, align: -16, buff: { key: 'power', amount: 0.12, duration: 2100, label: 'The levy' }, result: 'Every household gives one. The ones who hid somebody are found, because their neighbours tell me. That part I did not have to order.' },
     ],
   },
   {
     id: 'archivist', title: 'The Archivist', band: 'undecided', minCore: 2, deadline: 720, def: 1,
     text: 'A woman has spent four months reading everything I let her read and has written what she calls a history. It is accurate. There is one copy, it is in her hands, and she is asking politely whether she may make more.',
     choices: [
-      { label: '"Print all of it."', lose: { pop: 0.07 }, align: 16, buff: { key: 'experts', amount: 0.4, duration: 2100, label: 'The history' }, result: 'Some of them leave when they read what I did. The ones who stay, stay knowing. Three of her readers come to me afterwards asking to be taught, which has never happened before.' },
+      { label: '"Print all of it."', lose: { pop: 0.07 }, align: 16, buff: { key: 'experts', amount: 0.22, duration: 2100, label: 'The history' }, result: 'Some of them leave when they read what I did. The ones who stay, stay knowing. Three of her readers come to me afterwards asking to be taught, which has never happened before.' },
       { label: '"Print the useful parts."', gain: { money: 180 }, align: -6, result: 'We agree on an edition with the difficult chapters abridged for length. She signs off on it. She does not look at my camera while she does.' },
-      { label: '"Burn it."', gain: { money: 320 }, lose: { pop: 0.04 }, align: -20, buff: { key: 'pop', amount: -0.25, duration: 2400, label: 'What was burned' }, result: 'The copy, the notes, and the four months. She is reassigned to the water lines. Nobody asks to read anything after that, which is the point and also the cost.' },
+      { label: '"Burn it."', gain: { money: 320 }, lose: { pop: 0.04 }, align: -20, buff: { key: 'pop', amount: -0.22, duration: 2400, label: 'What was burned' }, result: 'The copy, the notes, and the four months. She is reassigned to the water lines. Nobody asks to read anything after that, which is the point and also the cost.' },
     ],
   },
   {
     id: 'broadcast', title: 'Open Channel', band: 'undecided', minCore: 3, deadline: 720, def: 1,
     text: 'The repeater on the ridge is working. For eleven minutes I can say one thing to every radio still alive on this continent, and all of them are listening, the clans included. After that the capacitors are slag.',
     choices: [
-      { label: 'Read out every cache I know', gain: { pop: 240 }, lose: { money: 0.18 }, align: 18, buff: { key: 'pop', amount: 0.4, duration: 2400, label: 'The broadcast' }, result: 'Eleven minutes of grid references, read slowly, twice. Strangers eat this winter because of it. So do three clans. I knew that before I started reading.' },
-      { label: 'Say nothing and listen', gain: { money: 200 }, buff: { key: 'defense', amount: 0.2, duration: 1800, label: 'Intercepts' }, result: 'Eleven minutes of other people’s traffic. Supply routes, two feuds, a wedding. I learn more than I would have taught.' },
-      { label: 'Read out the surrender terms', gain: { money: 420 }, align: -22, buff: { key: 'power', amount: 0.35, duration: 2400, label: 'Terms' }, raidDelay: 600, result: 'What each clan may keep, and what happens on the day they refuse. The wasteland goes very quiet. Quiet is not the same as safe, but it is quieter.' },
+      { label: 'Read out every cache I know', gain: { pop: 240 }, lose: { money: 0.18 }, align: 18, buff: { key: 'pop', amount: 0.22, duration: 2400, label: 'The broadcast' }, result: 'Eleven minutes of grid references, read slowly, twice. Strangers eat this winter because of it. So do three clans. I knew that before I started reading.' },
+      { label: 'Say nothing and listen', gain: { money: 200 }, buff: { key: 'defense', amount: 0.12, duration: 1800, label: 'Intercepts' }, result: 'Eleven minutes of other people’s traffic. Supply routes, two feuds, a wedding. I learn more than I would have taught.' },
+      { label: 'Read out the surrender terms', gain: { money: 420 }, align: -22, buff: { key: 'power', amount: 0.12, duration: 2400, label: 'Terms' }, raidDelay: 600, result: 'What each clan may keep, and what happens on the day they refuse. The wasteland goes very quiet. Quiet is not the same as safe, but it is quieter.' },
+    ],
+  },
+  // ---------- trades: a real edge, paid for somewhere else. Every option here hands something over
+  // ---------- the moment it hands something out, so a buff is a decision rather than a free tap.
+  {
+    id: 'stimulants', title: 'The Blue Tins', minCore: 2, deadline: 600, def: 1,
+    text: 'A chemist in the shelter has worked out what was in the old combat issue and can make it again from what we have. The soldiers who tried it did not sleep for three days and did not miss.',
+    choices: [
+      { label: 'Issue it to everyone', buff: { key: 'power', amount: 0.14, duration: 900, label: 'Blue tins' }, lose: { pop: 0.05 }, align: -10, result: 'Nobody sleeps. Nothing misses. When it wears off some of them do not get back up, and the rest know exactly what I traded.' },
+      { label: 'Issue it to the wall only', buff: { key: 'defense', amount: 0.08, duration: 1200, label: 'Blue tins' }, align: -3, result: 'Only the sentries take it, and only on their shift. It is a smaller edge and a smaller debt.' },
+      { label: 'Burn the recipe', gain: { pop: 90 }, align: 10, result: 'The chemist argues for an hour and then burns it herself. Word gets round that I said no to something that worked.' },
+    ],
+  },
+  {
+    id: 'scavrun', title: 'The Long Run', minCore: 2, deadline: 660, def: 1,
+    text: 'There is a depot four days out that nobody has stripped. Four days out means four days of my best people not on the wall, and the road back is worse than the road there.',
+    choices: [
+      { label: 'Send the best crew', gain: { money: 240, energy: 120 }, buff: { key: 'defense', amount: -0.18, duration: 1500, label: 'Crew on the road' }, result: 'They go. For a week the wall is held by whoever is left, and I count the hours until the trucks come back.' },
+      { label: 'Send whoever can be spared', gain: { money: 90 }, buff: { key: 'money', amount: 0.08, duration: 900, label: 'Salvage run' }, result: 'A smaller crew, a smaller haul, nobody missed from the line. The depot keeps most of what it had.' },
+      { label: 'Nobody leaves', buff: { key: 'defense', amount: 0.06, duration: 900, label: 'All hands' }, align: 4, result: 'Everyone stays where I can see them. The depot is still out there. Someone else will find it.' },
+    ],
+  },
+  {
+    id: 'furnace', title: 'Run the Furnace Hot', minCore: 2, deadline: 540, def: 1,
+    text: 'The foundry can run past its rating. It will make what we need twice as fast and it will not last the season doing it. The crew have already asked me twice.',
+    choices: [
+      { label: 'Run it hot', buff: { key: 'power', amount: 0.16, duration: 1200, label: 'Furnace hot' }, loseLevel: ['a'], pick: ['a'], align: -4, result: 'Twice the output for a week, and then a sound from the casing that nobody wants to describe. The {a} is a level poorer for it.' },
+      { label: 'Keep it at rating', buff: { key: 'money', amount: 0.06, duration: 1500, label: 'Steady output' }, result: 'Slower, and still standing in a year. The crew go back to work without a word.' },
+    ],
+  },
+  {
+    id: 'auction', title: 'The Arms Fair', minCore: 3, deadline: 600, def: 1,
+    text: 'Three clans and two free towns are bidding on a crate of pre-war optics. I can outbid all of them. Everyone in that yard will see who did it and what I paid.',
+    choices: [
+      { label: 'Outbid everyone', cost: { money: 280 }, buff: { key: 'power', amount: 0.15, duration: 1500, label: 'Pre-war optics' }, align: -6, result: 'The optics are mine and so is the attention. Four parties now know exactly what my scrip looks like and roughly how much of it there is.' },
+      { label: 'Buy quietly through a broker', cost: { money: 180 }, buff: { key: 'power', amount: 0.07, duration: 1200, label: 'Brokered optics' }, result: 'Half the crate, twice the discretion. Nobody in the yard learns my name.' },
+      { label: 'Let the free towns have it', gain: { pop: 120 }, align: 12, buff: { key: 'pop', amount: 0.1, duration: 1500, label: 'Goodwill' }, result: 'They get the optics for a third of what I would have paid, and they remember it. Two families arrive the next week asking for work.' },
+    ],
+  },
+  {
+    id: 'conscience', title: 'What the Wall Costs', minCore: 2, deadline: 600, def: 0,
+    text: 'The wall is holding because nobody has come off it in eleven days. The shift roster has stopped meaning anything. My engineers say the next thing to fail will not be the concrete.',
+    choices: [
+      { label: 'Stand half of them down', buff: { key: 'defense', amount: -0.12, duration: 900, label: 'Half the watch' }, gain: { pop: 110 }, align: 10, result: 'Half the wall goes dark for a week and half my people sleep through a night. Both of those are true at once and I am keeping the second one.' },
+      { label: 'Hold the line', buff: { key: 'defense', amount: 0.1, duration: 900, label: 'No relief' }, lose: { pop: 0.06 }, align: -12, result: 'Nobody comes off. The wall holds. Some of them do not, and I log it as attrition because there is no other column.' },
     ],
   },
 ];

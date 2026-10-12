@@ -114,7 +114,7 @@ export function opLoot(sec) {
 
 // ---------- living sectors ----------
 
-const node = (s, id) => s.nodes[id] || (s.nodes[id] = { m: 1, marks: 0, a: 0, seen: 0 });
+const node = (s, id) => s.nodes[id] || (s.nodes[id] = { m: 1, marks: 0, a: 0, seen: 0, p: 1, last: 0 });
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 // Strength multiplier of a sector you do not hold (1 = its base defense).
@@ -127,6 +127,18 @@ export function shiftStrength(s, id, delta) {
   const n = node(s, id);
   n.m = Math.min(NODES.strengthMax, Math.max(NODES.strengthMin, n.m + delta));
 }
+
+/** How much harder than usual this sector is pushing: 1 until its attacks start failing. */
+export const nodePush = (s, id) => (s.nodes[id] ? s.nodes[id].p || 1 : 1);
+
+/** One more failure against the same wall. Nothing here touches its strength; that falls on its own. */
+export function shiftPush(s, id, delta) {
+  const n = node(s, id);
+  n.p = clamp((n.p || 1) + delta, 1, NODES.pushMax);
+}
+
+/** They got what they came for, or something made them think again: back to an ordinary posture. */
+export const resetPush = (s, id) => { if (s.nodes[id]) s.nodes[id].p = 1; };
 
 // Enemy sectors in open chapters slowly rebuild on their own, up to the hard ceiling, and every
 // sector's anger at you cools off while you leave it alone.
@@ -189,6 +201,10 @@ export function inspectSector(s, id) {
   const n = node(s, id);
   n.seen = (n.seen || 0) + 1;
   shiftAggression(s, id, AGGR.onInspect / n.seen);
+  // Being studied this closely changes what they were doing: the push they had built up is spent.
+  if (n.seen % NODES.pushLooks === 0) {
+    resetPush(s, id);
+  }
 }
 
 // Clan support: a sector is fortified by the sectors of its own faction it links to. +flankBonus while
@@ -578,7 +594,10 @@ export function borders(s, withLocked = false) {
 export function assaultStrength(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
   const stance = clanProfile(s, factionOf(s, fromId)).strength;
-  const own = baseAttack(s, fromId) * NODES.assaultMult * nodeStrength(s, fromId) * stance;
+  // Its walls barely carry into its troops (attackFromStrength), and every failure against us adds
+  // to the push, so a sector that keeps losing becomes a harder attack and a softer target at once.
+  const grit = 1 + (nodeStrength(s, fromId) - 1) * NODES.attackFromStrength;
+  const own = baseAttack(s, fromId) * NODES.assaultMult * grit * nodePush(s, fromId) * stance;
   if (!sectorOpen(s, sec)) {
     // A clan whose chapter has not opened yet can only ever poke: it is capped near the raid strength
     // the player is already facing, so a sector five Core levels ahead cannot delete them.
@@ -615,9 +634,13 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
     // An open border out-weighs a sealed one many times over, so on its own a sealed clan can watch
     // for hours and never come. Every lockedEvery-th assault is reserved for one that borders us.
     s.assaultSeq = (s.assaultSeq || 0) + 1;
-    const sealed = all.filter((b) => b.locked);
+    // Whoever attacked last stands down for a while: one angry neighbour must not hold the whole
+    // front while every other border waits its turn.
+    const rested = all.filter((b) => s.playTime - ((s.nodes[b.from] && s.nodes[b.from].last) || -Infinity) >= NODES.reattackGap);
+    const ready = rested.length ? rested : all;
+    const sealed = ready.filter((b) => b.locked);
     const theirTurn = sealed.length > 0 && s.assaultSeq % NODES.lockedEvery === 0;
-    const pool = theirTurn ? sealed : all;
+    const pool = theirTurn ? sealed : ready;
     // A locked clan comes rarely, rarer the further its chapter still is from opening, but stirring
     // one up (an order, an operation) counts for much more.
     const w = (b) => {
@@ -644,6 +667,7 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
   const locked = !sectorOpen(s, from);
   const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   const t = delay === null ? warning(s, range(s, NODES.warningMin, NODES.warningMax, 'assault'), p.from) : delay;
+  node(s, p.from).last = s.playTime; // they have had their turn
   s.stats.assaults = (s.stats.assaults || 0) + 1;
   if (locked) s.stats.sealedAssaults = (s.stats.sealedAssaults || 0) + 1;
   s.assault = { faction: factionOf(s, p.from), strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
@@ -787,7 +811,14 @@ function resolveAttack(s, raid, offline) {
   report.theirLoss = Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition);
   if (raid.assault) {
     shiftStrength(s, raid.from, -(report.win ? NODES.defendWinCut : NODES.breachCut) * prof.attrition);
+    // Failing against the same wall makes them throw more at it next time, not less.
+    if (report.win) {
+      shiftPush(s, raid.from, NODES.pushPerLoss);
+    } else {
+      resetPush(s, raid.from);
+    }
     report.strengthAfter = nodeStrength(s, raid.from);
+    report.pushAfter = nodePush(s, raid.from);
   }
   const outcome = raid.assault ? (report.win ? 'assaultHeld' : 'assaultBreach') : (report.win ? 'raidHeld' : 'raidBroke');
   stirClan(s, raid.faction, CLANS.stir[outcome]);

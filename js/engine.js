@@ -163,7 +163,10 @@ export function migrate(raw) {
   s.sieges = (Array.isArray(raw.sieges) ? raw.sieges : []).filter((x) => x && FACTIONS[x.faction] && Number.isFinite(x.remaining));
   s.nodes = {};
   for (const [id, n] of Object.entries(raw.nodes && typeof raw.nodes === 'object' ? raw.nodes : {})) {
-    if (sectorById(id) && n && Number.isFinite(n.m)) s.nodes[id] = { m: n.m, marks: Number(n.marks) || 0, a: Number(n.a) || 0, seen: Number(n.seen) || 0 };
+    if (sectorById(id) && n && Number.isFinite(n.m)) {
+      s.nodes[id] = { m: n.m, marks: Number(n.marks) || 0, a: Number(n.a) || 0, seen: Number(n.seen) || 0,
+        p: Number.isFinite(n.p) ? n.p : 1, last: Number(n.last) || 0 };
+    }
   }
   s.clans = {};
   for (const f of Object.keys(FACTIONS)) {

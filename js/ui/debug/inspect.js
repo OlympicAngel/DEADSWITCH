@@ -34,6 +34,8 @@ function sector(s, id) {
       ['base defense', () => `${E.baseDefense(s, id)}${s.owner[id] ? ` (map says ${sec.defense})` : ''}`],
       ['live defense', () => E.sectorDefense(s, sec)],
       ['strength ×', () => n2(E.nodeStrength(s, id))],
+      ['push ×', () => `${n2(E.nodePush(s, id))} of ${NODES.pushMax} · resets on a breach, an order, or every ${NODES.pushLooks} looks`],
+      ['stood down for', () => { const n = s.nodes[id]; const left = n ? NODES.reattackGap - (s.playTime - (n.last || 0)) : 0; return left > 0 ? secs(left) : 'ready to attack'; }],
       ['clan support', () => `${n2(E.flank(s, sec).bonus)} (${E.flank(s, sec).held}/${E.flank(s, sec).approaches} taken)`],
       ['aggression', () => `${n2(E.aggression(s, id))} (stored ${n2(node().a || 0)})`],
       ['looks taken', () => node().seen || 0],
