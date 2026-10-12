@@ -281,6 +281,7 @@ export function catchUp(s, seconds, already = 0) {
     lost: Math.max(0, was.sectors - s.sectors.length),
     orders,
     decided: (s.stats.expired || 0) - (was.expired || 0),
+    pending: s.events.length, // still unanswered, and about to open behind this report
   };
   return { seconds: total, paid: Math.min(total, paid), away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, flows };
 }

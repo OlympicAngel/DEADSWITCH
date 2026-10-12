@@ -219,14 +219,22 @@ function spawn(s, ev, front, big = false) {
 }
 
 // Called when a raid breaks through: the player has to choose what to lose.
-export function spawnAftermath(s, rout) {
+export function spawnAftermath(s, rout, offline = false) {
   let n = rout ? EVENTS_CFG.aftermathOnRout : EVENTS_CFG.aftermathOnDefeat;
+  // A crisis out of a breach is still an order arriving, so it spends the same budget as any other:
+  // without this a night of breaches queued a pile of them and they all opened the moment we got back.
+  if (offline) {
+    n = Math.min(n, s.offlineEventCap - s.offlineEvents);
+  }
   const pool = EVENTS.filter((e) => e.aftermath && !s.events.some((x) => x.id === e.id));
   while (n > 0 && pool.length) {
     const ev = pick(s, pool, 'event');
     pool.splice(pool.indexOf(ev), 1);
-    if (spawn(s, ev, true)) {
+    if (spawn(s, ev, true, offline)) {
       say(s, 'aftermath', { title: ev.title }, 'bad');
+      if (offline) {
+        s.offlineEvents++;
+      }
       n--;
     }
   }

@@ -668,6 +668,7 @@ export function createModals(dialog, game, onChange) {
       ['map', 'Sectors lost', h.lost, 'bad-t'],
       ['message', 'Transmissions', h.orders, ''],
       ['core', 'Answered in your place', h.decided, 'bad-t'],
+      ['message', 'Still waiting for you', h.pending, 'warn-t'],
     ].filter(([, , n]) => n > 0)
       .map(([ic, label, n, cls]) => `<div class="r"><span>${icon(ic)}${label}</span><b class="${cls}">${num(n)}</b></div>`).join('');
     // Nothing was produced in the dark, so there is nothing to list: only what the war did, and what

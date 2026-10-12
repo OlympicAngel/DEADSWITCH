@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.17.3';
+const CACHE = 'deadswitch-v1.18';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot; everything else is cached the first time it is asked for, so adding
 // a file to the game never means remembering to add it here.
@@ -19,7 +19,7 @@ self.addEventListener('activate', (e) => {
     .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== FONTS).map((k) => caches.delete(k))))
     .then(() => self.clients.claim())
     // Whatever woke us is a chance to say what came due; fireDue says nothing if anyone is watching.
-    .then(() => fireDue()));
+    .then(() => fireDue('activate')));
 });
 
 /** Serve what we have, then quietly replace it, so a reload always has the newest build. */
@@ -83,7 +83,37 @@ function readDue() {
 
 const STALE = 8 * 60 * 60 * 1000; // the longest an absence counts for, so nothing older is worth saying
 
-async function fireDue() {
+/** Leaves a note that the browser woke us, and why. Without it there is no way to tell a wake that
+ *  found nothing from a wake that never happened, which is the whole question with these alerts. */
+function markWake(why, fired) {
+  return new Promise((resolve) => {
+    let req;
+    try {
+      req = indexedDB.open('deadswitch', 1);
+    } catch {
+      resolve();
+      return;
+    }
+    req.onerror = () => resolve();
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('save')) {
+        resolve();
+        return;
+      }
+      const st = db.transaction('save', 'readwrite').objectStore('save');
+      const get = st.get('wake');
+      get.onsuccess = () => {
+        const was = get.result || { count: 0 };
+        st.put({ at: Date.now(), why, fired, count: (was.count || 0) + 1 }, 'wake');
+        resolve();
+      };
+      get.onerror = () => resolve();
+    };
+  });
+}
+
+async function fireDue(why) {
   // Someone watching the game does not need telling.
   const open = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   if (open.some((c) => c.visibilityState === 'visible')) return;
@@ -98,16 +128,17 @@ async function fireDue() {
       body: item.body, tag: 'deadswitch-attack', renotify: true, icon: './icon.svg', badge: './icon.svg',
     });
   }
+  await markWake(why, !!item);
 }
 
 self.addEventListener('periodicsync', (e) => {
-  if (e.tag === 'deadswitch-check') e.waitUntil(fireDue());
+  if (e.tag === 'deadswitch-check') e.waitUntil(fireDue('periodicsync'));
 });
 self.addEventListener('sync', (e) => {
-  if (e.tag === 'deadswitch-check') e.waitUntil(fireDue());
+  if (e.tag === 'deadswitch-check') e.waitUntil(fireDue('sync'));
 });
 // A server could send one of these; there is none, but the handler costs nothing and is ready.
-self.addEventListener('push', (e) => e.waitUntil(fireDue()));
+self.addEventListener('push', (e) => e.waitUntil(fireDue('push')));
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();

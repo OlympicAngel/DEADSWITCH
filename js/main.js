@@ -120,6 +120,7 @@ function mergeAway(into, add) {
   into.efficiency = add.efficiency;
   for (const k of Object.keys(add.gained)) into.gained[k] = (into.gained[k] || 0) + add.gained[k];
   for (const k of Object.keys(add.happened)) into.happened[k] = (into.happened[k] || 0) + add.happened[k];
+  into.happened.pending = add.happened.pending; // what is waiting now, not the two counts added up
 }
 
 function catchUp(seconds) {

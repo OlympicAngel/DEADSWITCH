@@ -271,6 +271,7 @@ function screen(s, id) {
         ? `worker ${diag.at.worker} \u00b7 periodicSync ${diag.at.periodicSync} \u00b7 our tag ${diag.at.registered} \u00b7 browser says ${diag.at.permission2}`
         : 'reading...')],
       ['waiting for the worker', () => (diag.at ? `${diag.at.due} alert${diag.at.due === 1 ? '' : 's'} stored` : 'reading...')],
+      ['browser last woke us', () => { if (!diag.at) return 'reading...'; const w = diag.at.wake; if (!w) return 'never: the browser has not run the worker in the background yet'; return `${secs((Date.now() - w.at) / 1000)} ago \u00b7 ${w.why} \u00b7 ${w.fired ? 'alert shown' : 'nothing was due'} \u00b7 ${w.count} in all`; }],
       ['alerts queued', () => { const u = upcoming(s); return u.length ? `${u.length} \u00b7 ${u.slice(0, 3).map((x) => `${Math.round(x.at / 60)}m ${x.title}`).join(' | ')}` : 'nothing in the window'; }],
       ['offline window', () => { const l = E.offlineLimits(s); const w = E.awaySeconds(s, Infinity); return `world ${(w / 3600).toFixed(1)}h \u00b7 paid ${(l.seconds / 3600).toFixed(1)}h at ${Math.round(l.efficiency * 100)}%${l.dark ? ' (no daemon)' : ''}`; }],
       ['offline budget', () => `${E.offlineAttacks(s)} attacks \u00b7 ${E.offlineOrders(s)} orders (used ${s.offlineRaids}/${s.offlineRaidCap} \u00b7 ${s.offlineEvents}/${s.offlineEventCap})`],

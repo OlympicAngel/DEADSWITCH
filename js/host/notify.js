@@ -13,7 +13,7 @@
 import * as E from '../engine.js';
 import { num } from '../format.js';
 import { BALANCE, BY_ID, RAIDS, NODES, WARN } from '../data.js';
-import { setDue, getDue } from './store.js';
+import { setDue, getDue, readWake } from './store.js';
 
 const TAG = 'deadswitch-attack';
 const SYNC_TAG = 'deadswitch-check';
@@ -73,6 +73,7 @@ export async function notifyDiagnosis() {
     out.permission2 = 'unsupported';
   }
   out.due = (await getDue()).length;
+  out.wake = await readWake();
   background = out.registered && out.permission2 === 'granted' ? 'yes' : 'no';
   return out;
 }

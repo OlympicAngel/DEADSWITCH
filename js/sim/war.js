@@ -833,7 +833,7 @@ function resolveAttack(s, raid, offline) {
         report.held = nodeStrength(s, raid.target);
       }
     }
-    spawnAftermath(s, chance < EVENTS_CFG.routChance);
+    spawnAftermath(s, chance < EVENTS_CFG.routChance, offline);
   }
   if (raid.grudge) {
     settleGrudge(s, raid, report.win);

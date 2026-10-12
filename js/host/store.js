@@ -187,6 +187,12 @@ export function setDue(items) {
   if (!broken) tx('readwrite', (st) => st.put(items, 'due'));
 }
 
+/** The note the service worker leaves each time the browser wakes it, for the alerts readout. */
+export async function readWake() {
+  const out = broken ? null : await tx('readonly', (st) => st.get('wake'));
+  return out && Number.isFinite(out.at) ? out : null;
+}
+
 /** What the service worker would find waiting, for the alerts readout. */
 export async function getDue() {
   const out = broken ? null : await tx('readonly', (st) => st.get('due'));
