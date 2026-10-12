@@ -12,14 +12,18 @@
 // cancelled on the way back.
 import * as E from '../engine.js';
 import { num } from '../format.js';
-import { BALANCE, BY_ID, RAIDS, NODES, WARN } from '../data.js';
+import { BALANCE, BY_ID, EVENTS_CFG, RAIDS, NODES, WARN } from '../data.js';
 import { setDue, getDue, readWake } from './store.js';
 
-const TAG = 'deadswitch-attack';
+// One tag per kind of news. A single shared tag was why only ever one alert was visible: every
+// notification replaced the one before it, so an order and a finished build landed on top of the
+// attack warning and vanished. Alerts of the same kind still replace each other, which is right.
+const TAG = 'deadswitch';
+const KINDS = ['attack', 'order', 'build'];
 const SYNC_TAG = 'deadswitch-check';
 const LEAD = 20; // seconds before it lands, so there is time to do something
 const AHEAD = 4; // how many unspawned attacks of each kind to queue from their timers
-const QUEUED = 8; // how many alerts to leave the worker for one absence
+const QUEUED = 12; // how many alerts to leave the worker for one absence, across all kinds
 const MIN_SYNC = 15 * 60 * 1000; // the shortest wake we ask for; the browser gives what it wants
 const KEY = 'deadswitch.notify'; // the player's answer to the permission question
 
@@ -125,15 +129,27 @@ function promised(s, limit) {
   // lands. Bailing here was why a nine-hour absence queued a single alert and then went quiet.
   const after = (live, timer, gap) => (live ? live.remaining + gap : Math.max(0, timer || 0)) + soonest(gap);
   for (let at = after(s.raid, s.raidTimer, RAIDS.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
-    out.push({ at, title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
+    out.push({ at, kind: 'attack', title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
     at += RAIDS.intervalMin;
   }
   // Assaults run off their own clock, which is null until the first one is armed.
   if (s.assault || s.assaultTimer !== null) {
     for (let at = after(s.assault, s.assaultTimer, NODES.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
-      out.push({ at, title: 'A clan is moving on us', body: 'One of our sectors is about to be hit.' });
+      out.push({ at, kind: 'attack', title: 'A clan is moving on us', body: 'One of our sectors is about to be hit.' });
       at += NODES.intervalMin;
     }
+  }
+  return out;
+}
+
+/** The orders an absence will bring, timed off the same clock the engine uses, and no more of them
+ *  than it will actually deliver while nobody is listening (`offlineOrders`). */
+function orders(s, limit) {
+  const out = [];
+  const most = E.offlineOrders(s, limit);
+  for (let at = Math.max(0, s.eventTimer || 0), n = 0; at <= limit && n < most; n++) {
+    out.push({ at, kind: 'order', title: 'A transmission is waiting', body: 'Someone is asking me for an answer. I will give one if you do not.' });
+    at += EVENTS_CFG.intervalMin;
   }
   return out;
 }
@@ -143,29 +159,29 @@ export function upcoming(s) {
   const out = [];
   const atk = E.attacks(s)[0];
   if (atk) {
-    out.push({ at: atk.remaining, title: `${E.attackName(atk)} inbound`, body: `Strength ${num(atk.strength)}. Hold chance ${Math.round(E.raidChance(s, atk) * 100)}%.` });
+    out.push({ at: atk.remaining, kind: 'attack', title: `${E.attackName(atk)} inbound`, body: `Strength ${num(atk.strength)}. Hold chance ${Math.round(E.raidChance(s, atk) * 100)}%.` });
   }
   const order = s.events.length ? s.events.reduce((a, x) => (x.left < a.left ? x : a)) : null;
   if (order) {
-    out.push({ at: order.left, title: 'An order is about to expire', body: 'No answer and I decide for you.' });
+    out.push({ at: order.left, kind: 'order', title: 'An order is about to expire', body: 'No answer and I decide for you.' });
   }
   // A build long enough to walk away from is worth a word when it finishes; a short one is not.
   if (s.build && s.build.total >= BALANCE.longBuild) {
     const b = BY_ID[s.build.id];
-    out.push({ at: s.build.remaining + LEAD, title: `${b.name} is finished`, body: `Level ${E.level(s, b.id) + 1}. The builder is free.` });
+    out.push({ at: s.build.remaining + LEAD, kind: 'build', title: `${b.name} is finished`, body: `Level ${E.level(s, b.id) + 1}. The builder is free.` });
   }
   // Time away stops at the offline limit, so nothing past it ever becomes due. The war runs in the
   // dark too, so this is worth doing before the Watch Daemon is up.
   const limit = E.awaySeconds(s, Infinity);
-  out.push(...promised(s, limit));
+  out.push(...promised(s, limit), ...orders(s, limit));
   return out.filter((x) => x.at > LEAD && x.at <= limit).sort((a, b) => a.at - b.at);
 }
 
-async function show(title, body) {
+async function show(title, body, kind = 'attack') {
   try {
     const reg = await navigator.serviceWorker.getRegistration();
     if (reg) {
-      await reg.showNotification(title, { body, tag: TAG, renotify: true, icon: './icon.svg', badge: './icon.svg' });
+      await reg.showNotification(title, { body, tag: `${TAG}-${kind}`, renotify: true, icon: './icon.svg', badge: './icon.svg' });
     }
   } catch { /* the browser said no; nothing to do about it */ }
 }
@@ -184,11 +200,11 @@ export function refreshAlerts(s, timers_ = false) {
     return;
   }
   const next = upcoming(s).slice(0, QUEUED);
-  const due = next.map((n) => ({ title: n.title, body: n.body, at: Date.now() + (n.at - LEAD) * 1000 }));
+  const due = next.map((n) => ({ kind: n.kind, title: n.title, body: n.body, at: Date.now() + (n.at - LEAD) * 1000 }));
   if (timers_) {
     for (const n of next) {
       // A page kept alive in the background can do this properly.
-      timers.push(setTimeout(() => show(n.title, n.body), (n.at - LEAD) * 1000));
+      timers.push(setTimeout(() => show(n.title, n.body, n.kind), (n.at - LEAD) * 1000));
     }
   }
   // Round the times before comparing, or every tick looks like a change and writes again.
@@ -251,6 +267,7 @@ export function cancelAlerts() {
   timers.forEach(clearTimeout);
   timers = [];
   navigator.serviceWorker?.ready
-    .then((reg) => reg.getNotifications({ tag: TAG }).then((list) => list.forEach((n) => n.close())))
+    .then((reg) => Promise.all(KINDS.map((k) => reg.getNotifications({ tag: `${TAG}-${k}` })
+      .then((list) => list.forEach((n) => n.close())))))
     .catch(() => {});
 }

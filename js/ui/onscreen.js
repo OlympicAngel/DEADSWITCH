@@ -17,6 +17,12 @@ export function measureVisible(root) {
   if (!watched.length) return revealed;
   const r = root.getBoundingClientRect();
   for (const el of watched) {
+    // A panel that has hidden itself has no box to measure. Marking it off-screen would stop it
+    // updating, and then nothing could ever un-hide it: it stays "visible" so it keeps deciding.
+    if (el.hidden) {
+      state.delete(el);
+      continue;
+    }
     const b = el.getBoundingClientRect();
     const on = b.bottom > r.top - MARGIN && b.top < r.bottom + MARGIN && b.height > 0;
     if (on && state.get(el) === false) revealed = true;

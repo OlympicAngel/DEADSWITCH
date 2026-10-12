@@ -3,7 +3,7 @@
 import { BUILDINGS, ITEMS, ITEM_BY_ID, NODES, RANKS, RESOURCE_KEYS, SECTORS } from '../data.js';
 import * as E from '../engine.js';
 import { esc, num, pct, rate, whole } from '../format.js';
-import { chanceClass, clock, factorTag } from './common.js';
+import { chanceClass, clock, factorTag, tags } from './common.js';
 import { createDebug } from './debug/panel.js';
 import { put, setAttr, setCls, setData, setW } from './dom.js';
 import { setFocus } from './focus.js';
@@ -706,6 +706,10 @@ export function createUI(root, game) {
         sfx.win();
         vibrate(30);
         toast(`${icon('check')}<b>Directive complete</b> ${esc(fx.text)}`, 'good');
+      } else if (fx.kind === 'daily') {
+        sfx.unlock();
+        vibrate(fx.all ? 30 : 15);
+        toast(`${icon('check')}<b>${fx.all ? 'Board cleared' : 'Order cleared'}</b> ${esc(fx.text)} ${tags(fx.reward, '+')}`, 'good');
       }
     }
   }

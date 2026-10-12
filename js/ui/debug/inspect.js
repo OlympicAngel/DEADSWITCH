@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN, EVENTS } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN, EVENTS, DAILY } from '../../data.js';
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
@@ -262,6 +262,9 @@ function screen(s, id) {
       ['sectors held', () => `${s.sectors.length - 1} · align ${Math.round(s.align)}`],
       ['event drain', () => JSON.stringify(E.eventDrain(s))],
       ['directive', () => (E.currentDirective(s) ? `${s.directive}: ${E.currentDirective(s).text}` : 'all done')],
+      ['daily board', () => `day ${s.daily.day} \u00b7 streak ${s.daily.streak} (best ${s.daily.best}) \u00b7 ${s.daily.paid ? 'bonus paid' : 'bonus open'}`],
+      ['daily orders', () => (s.daily.tasks.map((o) => { const [have, need] = E.dailyProgress(s, o); return `${o.id} ${have}/${need}${o.done ? ' \u2713' : ''}`; }).join(' \u00b7 ') || 'none dealt')],
+      ['daily pays', () => Object.entries(E.dailyReward(s)).map(([r, v]) => `${r} ${v}`).join(' ') + ` (x${(1 + Math.min(s.daily.streak, DAILY.streakMax) * DAILY.streakStep).toFixed(2)} for the run)`],
       ['events seen', () => s.recentEvents.join(' ') || '-'],
       ['clan stances', () => Object.keys(FACTIONS).map((f) => `${f}:${E.stanceList(s, f).length}`).join(' ')],
       ['lesson due', () => (E.lessonDue(s) ? E.lessonDue(s).id : '-') + ` (taught ${s.taught.length})`],
@@ -317,6 +320,9 @@ function screen(s, id) {
         g.state.op = g.state.op ? null : (t && { sector: t.id, remaining: 600, total: 600 });
       }],
       ['skip scripted retake', (g) => { g.state.scripted.retake = 2; }],
+      ['next day of orders', (g) => E.rollDaily(g.state, g.state.daily.day + 1)],
+      ['clear an order', (g) => { const o = g.state.daily.tasks.find((x) => !x.done); if (o) o.from = (g.state.stats[E.dailyTask(o.id).stat] || 0) - o.need; }],
+      ['streak +1', (g) => { g.state.daily.streak++; }],
     ],
   };
 }

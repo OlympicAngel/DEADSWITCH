@@ -14,6 +14,8 @@
 // - launches operations on the best ground it can hold, meets an attack early rather than leave it
 //   to land while the troops are away, and never marches out on a wall that cannot hold alone
 // - weighs every transmission answer, Humanity included, at what it is worth to this base
+// It does not play towards the daily board: the orders are cleared or not by how it plays anyway,
+// which is what they are for, and chasing them would measure the bot rather than the game.
 import { BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, SECTORS, RANKS, RESOURCE_KEYS, FACTOR_KEYS, CONVERSION, ALIGNMENT } from '../js/data.js';
 import * as E from '../js/engine.js';
 
@@ -422,10 +424,12 @@ function play(seed) {
   const mark = (key, t) => {
     if (marks[key] === undefined) marks[key] = t;
   };
-  const tally = { rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
+  const tally = { dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
   const ignored = new Set(); // threats the bot decided to take on the chin, counted once each
 
   for (let t = 0; t < HOURS * 3600; t++) {
+    // The engine has no clock, so the host deals the daily board; here a day of play is a day.
+    E.rollDaily(s, Math.floor(t / 86400) + 1);
     E.step(s, 1, false, true);
 
     const atk = E.nextAttack(s);
@@ -501,6 +505,7 @@ function play(seed) {
       if (m.kind === 'op' && m.win) mark('op:' + m.sector, t);
       if (m.kind === 'ending') mark('ending', t);
     }
+    tally.dailies = s.daily.tasks.filter((o) => o.done).length;
     const lvl = E.level(s, 'core');
     if (snap['core' + lvl] === undefined) snap['core' + lvl] = Math.round(E.factors(s).defense);
     mark('core' + lvl, t);
@@ -551,4 +556,5 @@ console.log(`  Capture loot ${mean((r) => avg(r.tally.lootMin) || 0).toFixed(1)}
 console.log(`  Humanity from choices ${mean((r) => r.tally.align).toFixed(0)} over ${mean((r) => r.tally.picked).toFixed(0)} answers, ${mean((r) => r.tally.pricedOut).toFixed(0)} options unaffordable`);
 console.log('  levels ' + JSON.stringify(runs[0].levels));
 console.log('  defense at each Core ' + JSON.stringify(Object.fromEntries(Object.keys(runs[0].snap).map((k) => [k, Math.round(mean((r) => r.snap[k] || 0))]))));
+console.log(`  Daily orders cleared ${mean((r) => r.tally.dailies).toFixed(1)} of the day's board`);
 console.log(`  Events ${mean((r) => r.stats.events).toFixed(0)}  threats paid ${mean((r) => r.tally.tributes).toFixed(1)}  sieges taken ${mean((r) => r.tally.sieges).toFixed(1)}  grudges ${mean((r) => r.tally.grudges).toFixed(1)}  missed deadlines ${mean((r) => r.stats.expired || 0).toFixed(1)}`);

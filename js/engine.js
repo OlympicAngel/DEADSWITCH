@@ -2,7 +2,7 @@
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
-import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, eventById, reached } from './sim/story.js';
+import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, checkDaily, dailyTask, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
 
 export * from './sim/economy.js';
@@ -71,6 +71,9 @@ export function newState(seed = 1) {
     chapter: 0,
     ending: null,
     stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0 },
+    // Daily orders. `day` is the calendar day the host last handed in (js/main.js); 0 means the
+    // board has never been dealt, which is what rollDaily looks for on a first run.
+    daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false },
     taught: [], // lessons already given (data/lessons.js)
     scripted: {}, // one-off scripted moments that have already played (js/sim/war.js)
     inbox: [{ kind: 'boot' }],
@@ -128,6 +131,16 @@ export function migrate(raw) {
   s.sectors = Array.isArray(raw.sectors) ? raw.sectors : base.sectors;
   s.buffs = Array.isArray(raw.buffs) ? raw.buffs : [];
   s.recentEvents = Array.isArray(raw.recentEvents) ? raw.recentEvents : [];
+  // Daily orders: anything the save is missing is dealt again on the first tick of the day.
+  const d = (raw.daily && typeof raw.daily === 'object') ? raw.daily : {};
+  s.daily = {
+    day: Number(d.day) || 0,
+    streak: Math.max(0, Number(d.streak) || 0),
+    best: Math.max(0, Number(d.best) || 0),
+    paid: !!d.paid,
+    tasks: (Array.isArray(d.tasks) ? d.tasks : []).filter((o) => o && dailyTask(o.id) && Number.isFinite(o.need))
+      .map((o) => ({ id: o.id, need: o.need, from: Number(o.from) || 0, done: !!o.done })),
+  };
   s.log = Array.isArray(raw.log) ? raw.log.slice(-LOG_LIMIT) : base.log;
   s.seen = Array.isArray(raw.seen) ? raw.seen : unlockedKeys(s);
   s.inbox = Array.isArray(raw.inbox) ? raw.inbox : [];
@@ -230,6 +243,7 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
   advanceBuffs(s, dt);
   checkChapters(s);
   checkDirectives(s);
+  checkDaily(s);
   if (s.inbox.length > INBOX_LIMIT) {
     s.inbox.splice(0, s.inbox.length - INBOX_LIMIT);
   }

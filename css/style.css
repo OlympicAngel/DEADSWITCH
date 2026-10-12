@@ -2125,6 +2125,71 @@ button:focus-visible,
   gap: 6px;
 }
 
+/* Today's orders: one row each, the bar under it, ticked and faded once it is cleared. */
+.dailies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.daily {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+/* Its own track, not the panel-wide .timebar, which is pinned to the panel's bottom edge. */
+.daily .d-bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  margin-top: 2px;
+  background: rgba(255, 255, 255, .05);
+}
+
+.daily .d-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--warn);
+  transition: width .25s linear;
+}
+
+.daily.done .d-bar i {
+  background: var(--good);
+}
+
+.daily b {
+  display: block;
+  font: 600 13.5px var(--font-hud);
+}
+
+.daily .t {
+  font: 12px var(--font-num);
+  color: var(--muted);
+}
+
+.daily .d-ico {
+  display: inline-flex;
+  color: var(--hud-2);
+}
+
+.daily.done {
+  opacity: .55;
+}
+
+.daily.done .d-ico {
+  color: var(--good);
+}
+
+.panel > header .streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: var(--good);
+}
+
 .buffs {
   display: flex;
   flex-wrap: wrap;

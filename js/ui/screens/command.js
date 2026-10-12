@@ -4,7 +4,7 @@ import {
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
-import { icon, labeled } from '../icons.js';
+import { icon, labeled, ICON_LABELS } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
 import { put, putHtml, setCls, setData, setW, setAttr, setStyle } from '../dom.js';
 import { onScreen } from '../onscreen.js';
@@ -76,6 +76,7 @@ export function renderCommand() {
         <section class="panel half" data-panel="build"></section>
         <section class="panel" data-panel="events"></section>
         <section class="panel" data-panel="directive"></section>
+        <section class="panel" data-panel="daily"></section>
         <section class="panel" data-panel="effects"></section>
         <section class="panel feed" data-panel="feed"></section>
       </div>
@@ -135,6 +136,7 @@ export function updateCommand(s, ui, refs) {
   if (on('build')) buildPanel(s, refs);
   if (on('events')) eventsPanel(s, refs);
   if (on('directive')) directivePanel(s, refs);
+  if (on('daily')) dailyPanel(s, refs);
   if (on('effects')) effectsPanel(s, refs);
   if (on('feed')) feedPanel(s, refs);
 }
@@ -303,6 +305,31 @@ function directivePanel(s, refs) {
   const [have, need] = E.directiveProgress(s, d);
   put(el.querySelector('[data-p]'), need > 1 ? `${num(Math.min(have, need))} / ${num(need)}` : '');
   setW(el.querySelector('[data-b]'), pct(Math.min(1, have / need)));
+}
+
+/** A reward in words, for a tooltip, where the icon tags of `tags()` cannot go. */
+const rewardText = (r) => Object.entries(r).filter(([, v]) => v).map(([k, v]) => `${num(v)} ${ICON_LABELS[k] || k}`).join(' and ');
+
+// Today's orders: what the board is asking for, how far each one has got, and what the run of days
+// is worth. Rebuilt when the board changes, patched every frame while it is being played towards.
+function dailyPanel(s, refs) {
+  const list = s.daily.tasks;
+  const el = slot(refs, 'daily', s.daily.day + ':' + s.daily.streak + ':' + list.map((o) => o.id + o.need + o.done).join(','), !list.length ? '' : `
+    <header>${icon('clock')}Today's orders${s.daily.streak ? `<span class="streak">${icon('spark')}${s.daily.streak} day${s.daily.streak === 1 ? '' : 's'} running</span>` : ''}</header>
+    <div class="dailies">${list.map((o, i) => {
+    const t = E.dailyTask(o.id);
+    return `<div class="daily${o.done ? ' done' : ''}" data-tip="text" data-tip-text="Pays ${esc(rewardText(E.dailyReward(s, t.weight)))}. Clearing every order on the board pays again on top.">
+        <span class="d-ico">${icon(o.done ? 'check' : t.icon)}</span>
+        <div><b>${esc(t.text.replace('{n}', num(o.need)))}</b><span class="t" data-d="${i}"></span></div>
+        <div class="d-bar"><i data-db="${i}"></i></div>
+      </div>`;
+  }).join('')}</div>`);
+  el.hidden = !list.length;
+  list.forEach((o, i) => {
+    const [have, need] = E.dailyProgress(s, o);
+    put(el.querySelector(`[data-d="${i}"]`), `${num(Math.min(have, need))} / ${num(need)}`);
+    setW(el.querySelector(`[data-db="${i}"]`), pct(Math.min(1, have / need)));
+  });
 }
 
 function effectsPanel(s, refs) {

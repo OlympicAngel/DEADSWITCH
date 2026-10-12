@@ -785,6 +785,35 @@ for (const e of EVENTS) {
 
 // Ordered milestones that introduce each system once. They state a goal, never a strategy.
 // cond types: level, item, factor, sector, raidsWon, threat.
+// ---------- daily orders ----------
+// A short list that turns over every calendar day. The engine has no clock, so the host says which
+// day it is; the list itself is a pure hash of the save's seed and that day, so it is the same list
+// on every device and closing the app cannot reroll it. Each one counts something that happened
+// since the day began, so they are played towards rather than bought, and they pay in seconds of
+// production like an order does, which keeps them worth clearing at Core 8 as well as Core 2.
+export const DAILY = {
+  count: 2, // orders a day holds...
+  countAtCore: 5, // ...and from this AI Core level, one more
+  seconds: 150, // seconds of production one order of weight 1 pays
+  streakStep: 0.12, // every day cleared in a row pays this much more again...
+  streakMax: 7, // ...up to this many days
+  bonusShare: 1.5, // clearing the whole day pays this much of one order on top
+  grace: 1, // a day missed entirely ends the run; a gap of this many days does not
+};
+
+// stat: what in `s.stats` it counts, measured from where that counter stood at the start of the day.
+// n: the range it may ask for, rolled with the day. weight: what it pays, against DAILY.seconds.
+// req: a gate, so nothing asks for a system the player has not got yet.
+export const DAILY_TASKS = [
+  { id: 'hold', icon: 'defense', text: 'Hold {n} attacks', stat: 'raidsWon', n: [2, 4], weight: 1.1, req: { core: 2 } },
+  { id: 'take', icon: 'map', text: 'Capture {n} sectors', stat: 'opsWon', n: [1, 2], weight: 1.7 },
+  { id: 'answer', icon: 'message', text: 'Answer {n} transmissions', stat: 'events', n: [2, 4], weight: 1 },
+  { id: 'build', icon: 'build', text: 'Finish {n} builds', stat: 'builds', n: [2, 4], weight: 1 },
+  { id: 'recruit', icon: 'militia', text: 'Add {n} units to the arsenal', stat: 'bought', n: [12, 30], weight: 0.9 },
+  { id: 'rush', icon: 'clock', text: 'Meet {n} attacks early', stat: 'rushed', n: [1, 2], weight: 1.3, req: { core: 2 } },
+  { id: 'break', icon: 'power', text: 'Break {n} assaults on our ground', stat: 'assaultsHeld', n: [1, 3], weight: 1.4, req: { core: 3 } },
+];
+
 export const DIRECTIVES = [
   { text: 'Upgrade the Scrap Yard', cond: { level: 'scrapyard', n: 2 }, reward: { money: 90 } },
   { text: 'Build a Battery Bank', cond: { level: 'battery', n: 1 }, reward: { energy: 75 } },
@@ -851,6 +880,8 @@ export const LINES = {
   bossDown: ['{faction} capital has fallen. Their raids stop here. Their survivors will not.'],
   chapter: ['{kicker}: {title}.'],
   directive: ['Directive complete: {text}.'],
+  daily: ['Daily order cleared: {text}.'],
+  dailyAll: ['Every order on today\u2019s board is cleared. That is {n} days running.'],
   event: ['{title}: {result}'],
   buffEnd: ['{label} has worn off.'],
   lore: ['“{text}”'],

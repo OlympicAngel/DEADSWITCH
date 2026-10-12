@@ -1,6 +1,6 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS,
+  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, DAILY, DAILY_TASKS, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS,
 } from '../data.js';
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
@@ -8,7 +8,7 @@ import {
 } from './economy.js';
 import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush } from './war.js';
 import { stirClan } from './clans.js';
-import { range, pick, rand } from './rng.js';
+import { range, pick, rand, mix } from './rng.js';
 
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
 export const eventById = (id) => EVENT_BY_ID[id];
@@ -455,6 +455,78 @@ export function checkDirectives(s) {
   s.fx.push({ kind: 'directive', text: d.text, reward: d.reward });
 }
 
+// ---------- daily orders ----------
+// The engine has no clock, so the host hands in the calendar day (js/main.js). Everything below is
+// pure: the same seed and the same day give the same orders, on any device and however many times
+// the app is closed and opened.
+
+/** The orders standing for one day: a pure hash of the save's seed and that day. */
+export function dailyFor(s, day) {
+  const open = DAILY_TASKS.filter((t) => !t.req || Object.entries(t.req).every(([id, n]) => level(s, id) >= n));
+  const want = Math.min(open.length, DAILY.count + (level(s, 'core') >= DAILY.countAtCore ? 1 : 0));
+  const left = open.slice();
+  const out = [];
+  for (let i = 0; i < want; i++) {
+    const t = left.splice(mix(s.rng, day, i) % left.length, 1)[0];
+    const [lo, hi] = t.n;
+    out.push({ id: t.id, need: lo + (mix(s.rng, day, i, 7) % (hi - lo + 1)), from: s.stats[t.stat] || 0, done: false });
+  }
+  return out;
+}
+
+export const dailyTask = (id) => DAILY_TASKS.find((t) => t.id === id);
+
+/** How far one order has got, counted from where its stat stood when the day started. */
+export function dailyProgress(s, o) {
+  const t = dailyTask(o.id);
+  return [Math.max(0, (s.stats[t.stat] || 0) - o.from), o.need];
+}
+
+/** What one order pays: seconds of production, so it is worth clearing at Core 8 as at Core 2. */
+export function dailyReward(s, weight = 1) {
+  const mult = weight * (1 + Math.min(s.daily.streak, DAILY.streakMax) * DAILY.streakStep);
+  return { money: eventValue(s, 'money', DAILY.seconds * mult), energy: eventValue(s, 'energy', DAILY.seconds * mult * 0.4) };
+}
+
+/** Turns the day over when the host says it has. A day skipped entirely ends the streak. */
+export function rollDaily(s, day) {
+  if (!Number.isFinite(day) || s.daily.day === day) {
+    return false;
+  }
+  const gap = day - s.daily.day;
+  const cleared = s.daily.tasks.length && s.daily.tasks.every((o) => o.done);
+  s.daily.streak = s.daily.day && cleared && gap <= DAILY.grace + 1 ? s.daily.streak + 1 : 0;
+  s.daily.best = Math.max(s.daily.best || 0, s.daily.streak);
+  s.daily.day = day;
+  s.daily.tasks = dailyFor(s, day);
+  s.daily.paid = false;
+  return true;
+}
+
+/** Pays out whatever finished since the last look. Called every tick; it does nothing most of them. */
+export function checkDaily(s) {
+  for (const o of s.daily.tasks) {
+    const [have, need] = dailyProgress(s, o);
+    if (o.done || have < need) {
+      continue;
+    }
+    o.done = true;
+    const task = dailyTask(o.id);
+    const reward = dailyReward(s, task.weight);
+    grant(s, reward);
+    say(s, 'daily', { text: task.text.replace('{n}', o.need) }, 'good');
+    s.fx.push({ kind: 'daily', text: task.text.replace('{n}', o.need), reward });
+  }
+  // The day itself pays once, on top, when every order on it is cleared.
+  if (!s.daily.paid && s.daily.tasks.length && s.daily.tasks.every((o) => o.done)) {
+    s.daily.paid = true;
+    const reward = dailyReward(s, DAILY.bonusShare);
+    grant(s, reward);
+    say(s, 'dailyAll', { n: s.daily.streak + 1 }, 'good');
+    s.fx.push({ kind: 'daily', text: 'Every order cleared', reward, all: true });
+  }
+}
+
 // ---------- lessons ----------
 
 /** Whether the state has reached what a lesson (or a step) is waiting for. */
@@ -466,6 +538,7 @@ export function reached(s, cond) {
   if (cond.items && !Object.entries(cond.items).every(([id, n]) => owned(s, id) >= n)) return false;
   if (cond.sectors && s.sectors.length - 1 < cond.sectors) return false;
   if (cond.events && s.events.length < cond.events) return false;
+  if (cond.daily && s.daily.tasks.length < cond.daily) return false;
   if (cond.coreReady && buildingStatus(s, BY_ID.core) !== 'ready') return false;
   if (cond.scripted && !Object.entries(cond.scripted).every(([k, n]) => (s.scripted[k] || 0) >= n)) return false;
   return true;

@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.21';
+const CACHE = 'deadswitch-v1.22';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot; everything else is cached the first time it is asked for, so adding
 // a file to the game never means remembering to add it here.
@@ -81,6 +81,29 @@ function readDue() {
   });
 }
 
+/** What is left to say. Anything already said is dropped, or the next wake repeats it. */
+function writeDue(list) {
+  return new Promise((resolve) => {
+    let req;
+    try {
+      req = indexedDB.open('deadswitch', 1);
+    } catch {
+      resolve();
+      return;
+    }
+    req.onerror = () => resolve();
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('save')) {
+        resolve();
+        return;
+      }
+      db.transaction('save', 'readwrite').objectStore('save').put(list, 'due');
+      resolve();
+    };
+  });
+}
+
 const STALE = 8 * 60 * 60 * 1000; // the longest an absence counts for, so nothing older is worth saying
 
 /** Leaves a note that the browser woke us, and why. Without it there is no way to tell a wake that
@@ -118,17 +141,24 @@ async function fireDue(why) {
   const open = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   if (open.some((c) => c.visibilityState === 'visible')) return;
   const now = Date.now();
-  // The browser decides when it wakes us, and it is usually long after the first thing came due, so
-  // take the most recent one that has passed rather than the oldest and drop the rest: one alert is a
-  // warning, several are a nuisance. A tight staleness window here meant a late wake said nothing.
-  const passed = (await readDue()).filter((x) => x.at <= now && now - x.at < STALE);
-  const item = passed[passed.length - 1];
-  if (item) {
+  const all = await readDue();
+  // The browser decides when it wakes us, and it is usually long after the first thing came due.
+  // Per kind of news, the most recent one that has passed is the only one worth saying: three stale
+  // raid warnings are a nuisance, but a raid, an order and a finished build are three things the
+  // commander wants to know, and each gets its own tag so it does not bury the others.
+  const latest = new Map();
+  for (const x of all) {
+    if (x.at <= now && now - x.at < STALE) latest.set(x.kind || 'attack', x);
+  }
+  for (const [kind, item] of latest) {
     await self.registration.showNotification(item.title, {
-      body: item.body, tag: 'deadswitch-attack', renotify: true, icon: './icon.svg', badge: './icon.svg',
+      body: item.body, tag: `deadswitch-${kind}`, renotify: true, icon: './icon.svg', badge: './icon.svg',
     });
   }
-  await markWake(why, !!item);
+  // What has been said is spent: without this the next wake repeats it and the one still to come
+  // never gets a turn.
+  if (latest.size) await writeDue(all.filter((x) => x.at > now));
+  await markWake(why, latest.size);
 }
 
 self.addEventListener('periodicsync', (e) => {

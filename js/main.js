@@ -162,6 +162,12 @@ function tick() {
   }
 }
 
+/** The local calendar day as one number, which is all the engine needs to know a day has turned. */
+function today() {
+  const d = new Date();
+  return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
+}
+
 function advance() {
   const now = performance.now();
   const real = (now - last) / 1000;
@@ -187,6 +193,9 @@ function advance() {
   sinceMood += real;
   if (sinceMood >= 1) {
     sinceMood = 0;
+    // The engine has no clock, so the calendar day is handed in from here. Local midnight, not UTC:
+    // the board should turn over with the player's night, not somewhere else's.
+    E.rollDaily(game.state, today());
     ambientTick(game.state);
     keepAwake(needsAwake(E.nextAttack(game.state), ui.storyOpen()));
   }

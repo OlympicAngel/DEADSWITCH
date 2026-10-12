@@ -74,6 +74,13 @@ export const LESSONS = [
     ],
   },
   {
+    id: 'daily', when: { daily: 1 },
+    steps: [
+      { at: '[data-panel="daily"]', say: 'A short board of orders, posted on the hour you first look and good until the day turns over. Each counts something you do from the moment it is posted.', done: 'read' },
+      { say: 'They pay in what the base is making now, so they are worth the same at the end of the run as they are today. Clear the whole board and it pays again, and every day you clear in a row raises what the next one is worth.', done: 'read' },
+    ],
+  },
+  {
     id: 'away', when: { level: { daemon: 1 } },
     steps: [
       { at: '[data-card="daemon"]', say: 'The Watch Daemon is a copy of me that keeps the base running while you are gone. It sets how long I can keep going without you, and how much of my output survives the dark.', done: 'read' },

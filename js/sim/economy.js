@@ -375,6 +375,7 @@ export function buyItem(s, id, count = 1) {
   }
   pay(s, cost);
   s.items[id] = owned(s, id) + count;
+  s.stats.bought = (s.stats.bought || 0) + count;
   checkRank(s);
   return true;
 }
@@ -567,6 +568,7 @@ export function advanceBuild(s, dt) {
   const b = BY_ID[s.build.id];
   s.build = null;
   s.levels[b.id] = level(s, b.id) + 1;
+  s.stats.builds = (s.stats.builds || 0) + 1;
   if (b.id === 'core') {
     say(s, 'coreUp', { level: s.levels.core }, 'core');
     // Rebuilding the Core gives a piece of what it was back (data/story.js), which is worth stopping

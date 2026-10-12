@@ -872,6 +872,7 @@ function resolveAttack(s, raid, offline) {
     grant(s, loot);
     report.loot = loot;
     s.stats.raidsWon++;
+    if (raid.assault) s.stats.assaultsHeld = (s.stats.assaultsHeld || 0) + 1;
     say(s, 'raidWon', { raid: name, loot: loot.money }, 'good');
   } else if (raid.assault) {
     s.stats.raidsLost++;
