@@ -600,7 +600,7 @@ export function overrunRisk(s, atk) {
 // How fast assaults come: the keenest clan on my borders sets the pace for all of them.
 function assaultTempo(s) {
   const profiles = clanProfiles(s);
-  return borders(s, true).reduce((m, b) => Math.max(m, profiles[SECTOR_BY_ID[b.from].faction].tempo), 1);
+  return borders(s, true).reduce((m, b) => Math.max(m, profiles[factionOf(s, b.from)].tempo), 1);
 }
 
 // Launches an assault along one border (rolled by weight unless given); returns it or null.
@@ -644,6 +644,8 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
   const locked = !sectorOpen(s, from);
   const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   const t = delay === null ? warning(s, range(s, NODES.warningMin, NODES.warningMax, 'assault'), p.from) : delay;
+  s.stats.assaults = (s.stats.assaults || 0) + 1;
+  if (locked) s.stats.sealedAssaults = (s.stats.sealedAssaults || 0) + 1;
   s.assault = { faction: factionOf(s, p.from), strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(t) }, 'bad');
   return s.assault;
