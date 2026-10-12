@@ -167,11 +167,13 @@ function attack(s, key) {
       ['overrun', () => `${E.overrunRisk(s, find())} (x${NODES.overrunRatio} defense)`],
       ['cracks a wall', () => (find().assault ? 'n/a (assaults always do)'
         : `${find().strength >= E.factors(s).defense * RAIDS.breachRatio} (x${RAIDS.breachRatio} defense)`)],
+      ['if met early', () => { const p = E.rushPrice(s, find()); if (!p) return 'too close to call in'; return `${p.strength} (+${Math.round((p.strength / find().strength - 1) * 100)}%) \u00b7 skips ${secs(p.seconds)}`; }],
       ['vengeance', () => !!find().vengeance],
     ],
     json: () => find(),
     actions: [
       ['land now', (g) => { const x = find(); if (x) x.remaining = 0.001; }],
+      ['meet it early', (g) => { E.rushAttack(g.state, find()); }],
       ['×2 strength', (g) => { const x = find(); if (x) x.strength *= 2; }],
       ['÷2 strength', (g) => { const x = find(); if (x) x.strength /= 2; }],
       ['cancel', (g) => {

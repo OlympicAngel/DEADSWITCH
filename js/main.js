@@ -47,6 +47,12 @@ game.act = {
     save(true);
     return res;
   },
+  /** Calls the nearest inbound attack in now; it arrives heavier for the forced march. */
+  rush: () => {
+    const hit = E.rushAttack(game.state);
+    if (hit) save(true);
+    return hit;
+  },
   toggle: (id) => E.togglePause(game.state, id),
   setName: (name) => {
     game.state.name = String(name).trim().slice(0, 16);

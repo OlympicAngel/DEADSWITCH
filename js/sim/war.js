@@ -169,7 +169,7 @@ export function aggression(s, id) {
 
 // A sector watches you gain on it: nothing while you are far below its defense, full tension once you match it.
 function pressure(s, sec) {
-  const ratio = factors(s).power / Math.max(1, sectorDefense(s, sec));
+  const ratio = opPower(s) / Math.max(1, sectorDefense(s, sec));
   return AGGR.pressure * clamp((ratio - AGGR.pressureFrom) / (1 - AGGR.pressureFrom), 0, 1);
 }
 
@@ -230,8 +230,12 @@ export function sectorDefense(s, sec) {
   return Math.ceil(baseDefense(s, sec.id) * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
 }
 
+/** What we actually hit a sector with. Threat never sees this multiplier, so a stronger offensive
+ *  does not call down a heavier war on the Nest. */
+export const opPower = (s, f = factors(s)) => f.power * OPS.powerMult;
+
 export function opChance(s, sec) {
-  return odds(factors(s).power, sectorDefense(s, sec), OPS.winSharpness);
+  return odds(opPower(s), sectorDefense(s, sec), OPS.winSharpness);
 }
 
 // owned | locked (chapter) | hidden (not adjacent) | target (attackable)
@@ -277,7 +281,7 @@ export function advanceOp(s, dt) {
   }
   const sec = SECTOR_BY_ID[s.op.sector];
   s.op = null;
-  const power = factors(s).power;
+  const power = opPower(s);
   const defense = sectorDefense(s, sec);
   const chance = odds(power, defense, OPS.winSharpness);
   const roll = rand(s, 'op');
@@ -489,6 +493,29 @@ export function advanceSieges(s, dt, offline) {
       resolveAttack(s, sg, offline);
     }
   }
+}
+
+/** What calling an attack in early would do to it: the share of its warning not yet spent comes
+ *  back as strength. Pure, so the panel can show the price before the player pays it. */
+export function rushPrice(s, atk) {
+  if (!atk || !atk.total || atk.remaining <= NODES.rushFloor) {
+    return null;
+  }
+  const skipped = (atk.remaining - NODES.rushFloor) / atk.total;
+  return { strength: Math.ceil(atk.strength * (1 + skipped * NODES.rushCost)), skipped, seconds: atk.remaining - NODES.rushFloor };
+}
+
+/** Calls an inbound attack in now. They come at a run, and arrive heavier for it. */
+export function rushAttack(s, atk = nextAttack(s)) {
+  const price = rushPrice(s, atk);
+  if (!price) {
+    return null;
+  }
+  atk.strength = price.strength;
+  atk.remaining = NODES.rushFloor;
+  s.stats.rushed = (s.stats.rushed || 0) + 1;
+  say(s, 'rushed', { raid: attackName(atk), strength: price.strength }, 'bad');
+  return atk;
 }
 
 export function raidChance(s, raid = s.raid) {

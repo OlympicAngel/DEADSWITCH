@@ -340,6 +340,10 @@ export const MAP = {
 
 export const OPS = {
   winSharpness: 4, // chance = P^k / (P^k + D^k)
+  // What AI Power is worth on the attack, as opposed to what the wasteland reads off it. Operations
+  // multiply Power by this; Threat does not, so taking ground harder does not make the raids that
+  // come for you any heavier. Pressure on an enemy sector reads the same number we attack with.
+  powerMult: 2,
   flankBonus: 0.75, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,
@@ -442,6 +446,11 @@ export const NODES = {
   // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
   assaultFloorShare: 0.35,
   assaultMult: 1, // one dial over every sector's authored attack, for tuning the war as a whole
+  // Meeting an attack early: the player can call one in rather than wait it out. They arrive at a
+  // forced march, so whatever share of the warning is skipped is added back as strength x rushCost.
+  // Rushing a comfortable hold is free in everything but risk; rushing a close one is the mistake.
+  rushCost: 0.5,
+  rushFloor: 20, // seconds still left on the clock, so the panel can be read before it lands
   // A sector that keeps throwing itself at the same wall and keeps failing does not get weaker at
   // it: it gets angrier and a little thinner. Each held assault adds pushPerLoss to what it sends
   // (up to pushMax) while its own strength falls to strengthMin at worst, so by the cap a stubborn

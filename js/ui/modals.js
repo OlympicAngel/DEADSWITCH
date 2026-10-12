@@ -1,12 +1,14 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
   RESOURCES, FACTIONS, BOOT, CUTS, WIPE_TEXT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES, RANKS,
+  RESOURCE_KEYS, FACTORS,
 } from '../data.js';
 import * as E from '../engine.js';
-import { num, time, pct, esc } from '../format.js';
+import { num, time, pct, rate, esc } from '../format.js';
 import { icon, labeled } from './icons.js';
 import { tags, bonusText, bonusChips, chanceClass, clock, factorTag } from './common.js';
 import { mapBackdrop } from './minimap.js';
+import { DOMAINS } from './layout.js';
 import { sfx, volume, setVolume } from './sfx.js';
 import { introStage, playScene, frameHit } from './intro.js';
 import { startScore, scoreScene, stopScore, swell } from './score.js';
@@ -569,6 +571,10 @@ export function createModals(dialog, game, onChange) {
       if (res.out.levels.length) {
         shake();
         vibrate(80);
+        sfx.ruin();
+      } else if (res.toll) {
+        sfx.fall();
+        vibrate(50);
       }
       open(`
         <div class="event ${ev.aftermath ? 'crisis' : ''}">
@@ -576,9 +582,52 @@ export function createModals(dialog, game, onChange) {
           <h2>${esc(res.label)}</h2>
           <p class="ev-text result">${esc(res.result)}</p>
           <div class="outcome"><span class="kicker">Outcome</span><div class="fx-line">${preview(res.out, res.choice, inst)}</div></div>
+          ${toll(res)}
           <button class="btn primary wide" data-close>Continue</button>
         </div>`, { cls: 'event-modal' + (ev.aftermath ? ' crisis' : '') });
     }));
+  }
+
+  // Where the player goes to put a loss right, and what the loss should look like going.
+  const MEND = {
+    staff: ['military:troops', 'Recruit'],
+    weapons: ['military:offense', 'Rearm'],
+    defenses: ['military:defense', 'Rebuild'],
+    experts: ['research:experts', 'Hire'],
+  };
+
+  /** The bill for a decision: what the base is worth now against what it was worth a second ago.
+   *  Counts, not percentages, because what was taken is already listed above it. */
+  function toll(res) {
+    const t = res.toll;
+    const out = res.out || {};
+    if (!t) {
+      return '';
+    }
+    const rows = [];
+    for (const k of ['power', 'defense', 'experts']) {
+      if (t[k]) rows.push(`<span class="tag t-bad">${icon(k)}−${num(Math.round(t[k]))} ${FACTORS[k].name}</span>`);
+    }
+    for (const r of RESOURCE_KEYS) {
+      // rate() writes its own sign, and this column is all losses.
+      if (t[r]) rows.push(`<span class="tag t-bad">${icon(r)}${rate(-t[r])} ${RESOURCES[r].short}</span>`);
+    }
+    if (!rows.length) {
+      return '';
+    }
+    // One button, pointed at whatever the biggest hole is: the levels first, then the emptiest tab.
+    const lost = Object.entries(out.units || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1])[0];
+    const lvl = (out.levels || [])[0];
+    const where = lvl && (DOMAINS.economy.tabs.find((x) => (x.kinds || []).includes(BY_ID[lvl].kind)) || {}).id;
+    const go = lvl ? [`economy:${where || 'production'}`, `Rebuild ${BY_ID[lvl].name}`, lvl]
+      : lost && MEND[lost[0]] ? [MEND[lost[0]][0], `${MEND[lost[0]][1]} ${SHOP_TABS.find((x) => x.id === lost[0]).name.toLowerCase()}`, null]
+        : null;
+    return `
+      <div class="toll ${lvl ? 'burn' : 'thin'}">
+        <span class="kicker">${icon('skull')}What it cost</span>
+        <div class="fx-line">${rows.join('')}</div>
+        ${go ? `<button class="btn danger small wide" data-go="${go[0]}"${go[2] ? ` data-focus-card="${go[2]}"` : ''}>${icon('trend')}${esc(go[1])}</button>` : ''}
+      </div>`;
   }
 
   // What the decision actually changed; older saved reports carry no outcome data.
@@ -588,7 +637,7 @@ export function createModals(dialog, game, onChange) {
     if (!ch || !m.out) {
       return '';
     }
-    return `<div class="outcome"><span class="kicker">Outcome</span><div class="fx-line">${preview(m.out, ch)}</div></div>`;
+    return `<div class="outcome"><span class="kicker">Outcome</span><div class="fx-line">${preview(m.out, ch)}</div></div>${toll(m)}`;
   }
 
   function showExpired(m, then) {

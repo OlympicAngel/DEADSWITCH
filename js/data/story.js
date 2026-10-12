@@ -808,6 +808,7 @@ export const LINES = {
   unlockBuilding: ['New schematic recovered: {name}.'],
   unlockItem: ['New option in {tab}: {name}.'],
   rank: ['Threat assessment updated: {title}. They will start to notice.'],
+  rushed: ['We go to meet {raid}. They will arrive at a run, and at strength {strength}.'],
   raidSpotted: ['{raid} spotted, moving on {target}. Strength about {strength}. Arrival in {time}.'],
   raidWon: ['{raid} repelled. We salvaged {loot} scrip from the wreckage.'],
   raidLost: ['{raid} broke through at {target}. They took supplies and left bodies.'],

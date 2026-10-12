@@ -165,6 +165,17 @@ export function createUI(root, game) {
       const [screen, inner] = t.dataset.go.split(':');
       sfx.click();
       go(screen, inner);
+      // A report that names what was lost can hand the player straight to the thing that rebuilds it.
+      const want = t.dataset.focusCard;
+      if (want) {
+        setTimeout(() => {
+          const card = view.querySelector(`[data-card="${want}"]`);
+          if (card) {
+            card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            flash(card);
+          }
+        }, 60);
+      }
       return;
     }
     if (t.dataset.inner) {
@@ -243,6 +254,21 @@ export function createUI(root, game) {
           sfx.click();
           vibrate(15);
           flash(t, 'pop');
+        }
+        break;
+      // Meeting an attack early is one tap to arm and one to commit: it cannot be done by accident.
+      case 'rush':
+        if (t.dataset.arm !== '1') {
+          t.dataset.arm = '1';
+          sfx.click();
+          setTimeout(() => { t.dataset.arm = '0'; }, 4000);
+          break;
+        }
+        t.dataset.arm = '0';
+        if (game.act.rush()) {
+          sfx.alarm();
+          vibrate(60);
+          shake();
         }
         break;
       case 'fl-open':

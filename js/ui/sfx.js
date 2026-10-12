@@ -33,6 +33,12 @@ export const sfx = {
     });
     thud(55, 0.9, { vol: 0.06, slide: -10 });
   },
+  /** Something of ours burned down: a low collapse under a long band of fire. */
+  ruin: () => {
+    voice(SFX, 180, 1.1, { type: 'sawtooth', vol: 0.05, slide: -150, wet: 0.6 });
+    air(SFX, 1.2, { vol: 0.05, freq: 900, slide: -700, q: 0.8, type: 'bandpass', wet: 0.55 });
+    thud(A.low * 0.5, 1.4, { vol: 0.07, slide: -14 });
+  },
   /** An attack landed and we held it. */
   win: () => { seq([A.root, A.m3, A.p5, A.oct], 0.1, { dur: 0.35, vol: 0.055, wet: 0.45 }); thud(A.low, 1, { slide: -20 }); },
   /** An attack landed and we did not. */

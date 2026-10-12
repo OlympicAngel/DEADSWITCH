@@ -170,10 +170,26 @@ function raidPanel(s, refs) {
       <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense${E.troopsOut(s) ? ' <em class="away-tag">troops out</em>' : ''}</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
       <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b>${num(raid.strength)}</b></div>
     </div>
-    <div class="inc-foot"><span class="hold" data-hold></span><button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
+    <div class="inc-foot"><span class="hold" data-hold></span>
+      <button class="btn ghost small" data-act="rush" data-arm="0"><span data-rush></span></button>
+      <button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
     <div class="timebar"><i data-tbar></i></div>`);
   const p = E.raidChance(s, raid);
   const def = E.factors(s).defense;
+  // Meeting them early: what it would cost, so the choice is made with the number in view.
+  const rush = el.querySelector('[data-rush]');
+  if (rush) {
+    const price = E.rushPrice(s, raid);
+    const btn = rush.closest('[data-act="rush"]');
+    btn.hidden = !price;
+    if (price) {
+      const after = E.raidChance(s, { ...raid, strength: price.strength });
+      putHtml(rush, btn.dataset.arm === '1'
+        ? `${icon('alert')}Tap again · ${pct(after)} hold`
+        : `${icon('clock')}Meet them now <em>+${pct(price.strength / raid.strength - 1)} strength</em>`);
+      btn.classList.toggle('danger', btn.dataset.arm === '1');
+    }
+  }
   const max = Math.max(def, raid.strength, 1);
   setData(el, 'level', p < 0.5 ? 'danger' : 'warn');
   el.classList.toggle('imminent', raid.remaining < 60);

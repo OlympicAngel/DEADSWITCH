@@ -1,6 +1,6 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS,
+  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS,
 } from '../data.js';
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
@@ -299,6 +299,20 @@ function weighted(s, pool) {
   return pool[pool.length - 1];
 }
 
+/** The difference a decision made to what the base is and what it makes. Only losses are listed:
+ *  this is the bill, and it is what the player will want to go and put right. */
+function toll(s, was) {
+  const now = { ...rawFactors(s), ...Object.fromEntries(RESOURCE_KEYS.map((r) => [r, grossRate(s, r)])) };
+  const out = {};
+  for (const k of Object.keys(was)) {
+    const gone = was[k] - now[k];
+    if (gone > (FACTOR_KEYS.includes(k) ? 0.5 : 0.005)) {
+      out[k] = gone;
+    }
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 export function resolveEvent(s, uid, index, expired = false) {
   const inst = s.events.find((x) => x.uid === uid);
   const ev = inst && EVENT_BY_ID[inst.id];
@@ -307,6 +321,9 @@ export function resolveEvent(s, uid, index, expired = false) {
     return null;
   }
   const out = choiceOutcome(s, inst, choice);
+  // What the base was worth before the decision, so the report can say what it actually cost rather
+  // than only what was taken: a building level is a rate, troops are Power and Defense.
+  const was = { ...rawFactors(s), ...Object.fromEntries(RESOURCE_KEYS.map((r) => [r, grossRate(s, r)])) };
   for (const [r, v] of Object.entries(out.cost)) {
     s.res[r] = Math.max(0, s.res[r] - v);
   }
@@ -367,10 +384,10 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (expired) {
     s.stats.expired = (s.stats.expired || 0) + 1;
     say(s, 'eventExpired', { title: fillText(inst, ev.title), label }, 'bad');
-    s.inbox.push({ kind: 'expired', id: ev.id, choice: index, title: fillText(inst, ev.title), label, result, out });
+    s.inbox.push({ kind: 'expired', id: ev.id, choice: index, title: fillText(inst, ev.title), label, result, out, toll: toll(s, was) });
   }
   say(s, 'event', { title: fillText(inst, ev.title), result }, 'story');
-  return { ev, inst, choice, out, label, result };
+  return { ev, inst, choice, out, label, result, toll: toll(s, was) };
 }
 
 export function alignmentLabel(a) {
