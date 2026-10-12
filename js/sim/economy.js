@@ -219,7 +219,8 @@ export function buildingCost(s, b) {
   const n = level(s, b.id);
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
-    out[k] = Math.ceil(v * econMult(b, k) * (BALANCE.buildingPriceMult[k] || 1) * priceFactor(b.growth, n, k));
+    out[k] = Math.ceil(v * econMult(b, k) * (BALANCE.buildingPriceMult[k] || 1)
+      * (b.id === 'core' ? BALANCE.corePriceMult[k] || 1 : 1) * priceFactor(b.growth, n, k));
   }
   return out;
 }

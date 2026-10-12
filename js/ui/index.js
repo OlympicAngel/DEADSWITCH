@@ -1,6 +1,6 @@
 // App shell: top bar, alert strip, screen router, bottom navigation and the frame loop.
 // Screens rebuild only on structural change; numbers and timers are patched in place every frame.
-import { BUILDINGS, ITEMS, ITEM_BY_ID, RANKS, RESOURCE_KEYS, SECTORS } from '../data.js';
+import { BUILDINGS, ITEMS, ITEM_BY_ID, NODES, RANKS, RESOURCE_KEYS, SECTORS } from '../data.js';
 import * as E from '../engine.js';
 import { esc, num, pct, rate, whole } from '../format.js';
 import { chanceClass, clock, factorTag } from './common.js';
@@ -239,6 +239,46 @@ export function createUI(root, game) {
     render();
   }, { passive: true });
 
+  // Holding the armed button walks the attack in, NODES.rushTicks steps a second: the panel shakes
+  // and the phone buzzes for each one, and letting go leaves it wherever the hold got to.
+  let holding = null;
+  function endHold() {
+    if (!holding) {
+      return;
+    }
+    clearInterval(holding.timer);
+    holding.btn.classList.remove('holding');
+    holding.btn.dataset.arm = '0';
+    holding = null;
+    render();
+  }
+  root.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest('[data-act="rush"][data-arm="1"]');
+    if (!btn || holding) {
+      return;
+    }
+    btn.classList.add('holding');
+    holding = { btn, timer: setInterval(() => {
+      const hit = game.act.rush();
+      if (!hit) {
+        endHold();
+        return;
+      }
+      sfx.march(hit.rush);
+      vibrate(12);
+      flash(btn, 'jolt');
+      if (hit.rush >= 1) {
+        sfx.alarm();
+        vibrate(60);
+        shake();
+        endHold();
+      }
+    }, 1000 / NODES.rushTicks) };
+  });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) {
+    root.addEventListener(ev, endHold);
+  }
+
   root.addEventListener('keydown', (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && (e.target.dataset.sector || e.target.dataset.req)) {
       e.preventDefault();
@@ -256,19 +296,13 @@ export function createUI(root, game) {
           flash(t, 'pop');
         }
         break;
-      // Meeting an attack early is one tap to arm and one to commit: it cannot be done by accident.
+      // Meeting an attack early is one tap to arm, then a hold: it cannot be done by accident, and
+      // how far it goes is how long the hold lasts (the hold itself is wired below).
       case 'rush':
         if (t.dataset.arm !== '1') {
           t.dataset.arm = '1';
           sfx.click();
-          setTimeout(() => { t.dataset.arm = '0'; }, 4000);
-          break;
-        }
-        t.dataset.arm = '0';
-        if (game.act.rush()) {
-          sfx.alarm();
-          vibrate(60);
-          shake();
+          setTimeout(() => { if (!holding) t.dataset.arm = '0'; }, 5000);
         }
         break;
       case 'fl-open':
@@ -585,8 +619,11 @@ export function createUI(root, game) {
     if (!atk) {
       ui.imminent = false;
     }
-    const key = E.attacks(s).map((a) => a.faction + a.strength).join(',');
-    const newest = E.attacks(s).find((a) => !(ui.raidKey || '').split(',').includes(a.faction + a.strength));
+    // One attack, one signature: strength is not part of it, because holding an attack in changes
+    // its strength every step and each step would otherwise read as a fresh attack.
+    const sig = (a) => a.faction + (a.from || '') + Math.round(a.total) + (a.assault ? 'a' : a.siege ? 's' : 'r');
+    const key = E.attacks(s).map(sig).join(',');
+    const newest = E.attacks(s).find((a) => !(ui.raidKey || '').split(',').includes(sig(a)));
     if (newest && ui.raidKey !== null) {
       sfx.alarm();
       vibrate([150, 80, 150, 80, 300]);

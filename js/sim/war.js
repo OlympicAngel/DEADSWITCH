@@ -495,27 +495,43 @@ export function advanceSieges(s, dt, offline) {
   }
 }
 
-/** What calling an attack in early would do to it: the share of its warning not yet spent comes
- *  back as strength. Pure, so the panel can show the price before the player pays it. */
+/** The share of the premium paid by this far into a hold: steep at the start, flat by the end. */
+export const rushEase = (f) => 1 - Math.pow(1 - Math.max(0, Math.min(1, f)), 2.2);
+
+/** What the whole march still costs from here, held in full. Pure, so the panel can show the bill. */
 export function rushPrice(s, atk) {
   if (!atk || !atk.total || atk.remaining <= NODES.rushFloor) {
     return null;
   }
-  const skipped = (atk.remaining - NODES.rushFloor) / atk.total;
-  return { strength: Math.ceil(atk.strength * (1 + skipped * NODES.rushCost)), skipped, seconds: atk.remaining - NODES.rushFloor };
+  const seconds = atk.remaining - NODES.rushFloor;
+  const held = atk.rush || 0;
+  const pay = atk.rushPay ?? atk.strength * NODES.rushCost * (seconds / atk.total);
+  return { strength: Math.ceil((atk.rushBase ?? atk.strength) + pay), skipped: seconds / atk.total, seconds, held };
 }
 
-/** Calls an inbound attack in now. They come at a run, and arrive heavier for it. */
-export function rushAttack(s, atk = nextAttack(s)) {
-  const price = rushPrice(s, atk);
-  if (!price) {
+/** One step of holding an attack in: the clock comes down evenly, the strength it gains does not. */
+export function rushStep(s, atk = nextAttack(s), step = 1 / (NODES.rushHold * NODES.rushTicks)) {
+  if (!atk || !atk.total || atk.remaining <= NODES.rushFloor || (atk.rush || 0) >= 1) {
     return null;
   }
-  atk.strength = price.strength;
-  atk.remaining = NODES.rushFloor;
-  s.stats.rushed = (s.stats.rushed || 0) + 1;
-  say(s, 'rushed', { raid: attackName(atk), strength: price.strength }, 'bad');
+  const was = atk.rush || 0;
+  if (!was) {
+    // The whole bill is fixed when the hold starts, so a long march cannot be shaved a tap at a time.
+    atk.rushBase = atk.strength;
+    atk.rushPay = atk.strength * NODES.rushCost * ((atk.remaining - NODES.rushFloor) / atk.total);
+    s.stats.rushed = (s.stats.rushed || 0) + 1;
+    say(s, 'rushed', { raid: attackName(atk) }, 'bad');
+  }
+  const now = Math.min(1, was + step);
+  atk.strength = Math.ceil(atk.rushBase + atk.rushPay * rushEase(now));
+  atk.remaining = Math.max(NODES.rushFloor, atk.remaining - (atk.remaining - NODES.rushFloor) * ((now - was) / (1 - was)));
+  atk.rush = now;
   return atk;
+}
+
+/** Holds an attack all the way in, in one go. */
+export function rushAttack(s, atk = nextAttack(s)) {
+  return rushStep(s, atk, 1);
 }
 
 export function raidChance(s, raid = s.raid) {

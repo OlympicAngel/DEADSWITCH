@@ -168,12 +168,14 @@ function attack(s, key) {
       ['cracks a wall', () => (find().assault ? 'n/a (assaults always do)'
         : `${find().strength >= E.factors(s).defense * RAIDS.breachRatio} (x${RAIDS.breachRatio} defense)`)],
       ['if met early', () => { const p = E.rushPrice(s, find()); if (!p) return 'too close to call in'; return `${p.strength} (+${Math.round((p.strength / find().strength - 1) * 100)}%) \u00b7 skips ${secs(p.seconds)}`; }],
+      ['march held', () => `${Math.round((find().rush || 0) * 100)}% of ${NODES.rushHold}s \u00b7 bill ${Math.round(find().rushPay || 0)}`],
       ['vengeance', () => !!find().vengeance],
     ],
     json: () => find(),
     actions: [
       ['land now', (g) => { const x = find(); if (x) x.remaining = 0.001; }],
       ['meet it early', (g) => { E.rushAttack(g.state, find()); }],
+      ['hold one step', (g) => { E.rushStep(g.state, find()); }],
       ['×2 strength', (g) => { const x = find(); if (x) x.strength *= 2; }],
       ['÷2 strength', (g) => { const x = find(); if (x) x.strength /= 2; }],
       ['cancel', (g) => {

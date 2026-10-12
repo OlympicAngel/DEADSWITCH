@@ -158,7 +158,7 @@ function raidPanel(s, refs) {
   const sub = raid.assault
     ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches`
     : place ? `${fac.name} · out of ${esc(E.sectorById(place[0]).name)}` : fac.name;
-  const el = slot(refs, 'raid', raid.faction + raid.strength + (place || []).join() + E.troopsOut(s) + (raid.assault ? E.breaches(s, raid.target) : ''), `
+  const el = slot(refs, 'raid', raid.faction + (place || []).join() + E.troopsOut(s) + (raid.assault ? E.breaches(s, raid.target) : ''), `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     ${place ? mapBackdrop(s, [place[1], place[0]], { beam: place, cls: 'panel' }) : ''}
     <div class="inc-main">
@@ -168,26 +168,29 @@ function raidPanel(s, refs) {
     </div>
     <div class="bars">
       <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense${E.troopsOut(s) ? ' <em class="away-tag">troops out</em>' : ''}</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
-      <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b>${num(raid.strength)}</b></div>
+      <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
     </div>
     <div class="inc-foot"><span class="hold" data-hold></span>
-      <button class="btn ghost small" data-act="rush" data-arm="0"><span data-rush></span></button>
+      <button class="btn ghost tiny" data-act="rush" data-arm="0"><i data-rushfill></i><span data-rush></span></button>
       <button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
     <div class="timebar"><i data-tbar></i></div>`);
   const p = E.raidChance(s, raid);
   const def = E.factors(s).defense;
-  // Meeting them early: what it would cost, so the choice is made with the number in view.
+  // Meeting them early: the bill for holding it all the way in, so the choice is made with the
+  // number in view, and once armed the fill shows how much of that bill the hold has paid.
   const rush = el.querySelector('[data-rush]');
   if (rush) {
     const price = E.rushPrice(s, raid);
     const btn = rush.closest('[data-act="rush"]');
     btn.hidden = !price;
     if (price) {
+      const armed = btn.dataset.arm === '1';
       const after = E.raidChance(s, { ...raid, strength: price.strength });
-      putHtml(rush, btn.dataset.arm === '1'
-        ? `${icon('alert')}Tap again · ${pct(after)} hold`
-        : `${icon('clock')}Meet them now <em>+${pct(price.strength / raid.strength - 1)} strength</em>`);
-      btn.classList.toggle('danger', btn.dataset.arm === '1');
+      putHtml(rush, armed
+        ? `${icon('alert')}Hold · ${pct(after)}`
+        : `${icon('clock')}Meet now <em>+${pct(price.strength / raid.strength - 1)} strength</em>`);
+      btn.classList.toggle('danger', armed);
+      setW(el.querySelector('[data-rushfill]'), pct(price.held));
     }
   }
   const max = Math.max(def, raid.strength, 1);
@@ -198,6 +201,7 @@ function raidPanel(s, refs) {
   setW(el.querySelector('[data-dbar]'), pct(def / max));
   setW(el.querySelector('[data-sbar]'), pct(raid.strength / max));
   put(el.querySelector('[data-dval]'), num(def));
+  put(el.querySelector('[data-sval]'), num(raid.strength));
   const hold = el.querySelector('[data-hold]');
   putHtml(hold, `Hold chance <b>${pct(p)}</b>`);
   setCls(hold, 'hold chance-' + chanceClass(p));

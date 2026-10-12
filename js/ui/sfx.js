@@ -68,6 +68,8 @@ export const sfx = {
   /** Something opened up that was not there before. */
   unlock: () => { seq([A.p5, A.m7, A.high, A.high * 1.5], 0.07, { dur: 0.45, vol: 0.045, wet: 0.7 }); },
   /** A choice was taken, for good or ill. */
+  /** One step of a forced march: a dry knock that climbs as the hold goes on. */
+  march: (f = 0) => { blip(A.root * (1 + f), 0.035, { type: 'square', vol: 0.028, wet: 0.08 }); thud(A.low, 0.09, { vol: 0.045 }); },
   choose: (good = true) => {
     if (good) {
       blip(A.p5, 0.14, { vol: 0.05, wet: 0.4 });

@@ -445,12 +445,17 @@ export const NODES = {
   // least this share of your Threat, times its stance. They do not get better walls as you grow,
   // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
   assaultFloorShare: 0.35,
-  assaultMult: 1, // one dial over every sector's authored attack, for tuning the war as a whole
-  // Meeting an attack early: the player can call one in rather than wait it out. They arrive at a
-  // forced march, so whatever share of the warning is skipped is added back as strength x rushCost.
-  // Rushing a comfortable hold is free in everything but risk; rushing a close one is the mistake.
+  assaultMult: 1.2, // one dial over every sector's authored attack, for tuning the war as a whole
+  // Meeting an attack early: the player holds the panel and the attack comes in while they hold.
+  // The clock comes down evenly over rushHold seconds, sampled rushTicks times a second, but the
+  // strength it gains does not: most of the bill is paid in the first second, so shaving a little
+  // off the timer costs nearly as much as calling it all the way in. Hold it out and the premium is
+  // the whole skipped share x rushCost. Nothing is spent but risk; rushing a close fight is the
+  // mistake. Let go whenever: the attack stays wherever the hold left it.
   rushCost: 0.5,
   rushFloor: 20, // seconds still left on the clock, so the panel can be read before it lands
+  rushHold: 5, // seconds of holding that brings an attack all the way in
+  rushTicks: 5, // steps a second while it is held
   // A sector that keeps throwing itself at the same wall and keeps failing does not get weaker at
   // it: it gets angrier and a little thinner. Each held assault adds pushPerLoss to what it sends
   // (up to pushMax) while its own strength falls to strengthMin at worst, so by the cap a stubborn
@@ -468,8 +473,8 @@ export const NODES = {
   reattackGap: 900,
   assaultFloorMin: 0.1, // ...and a sector raises that share of it in proportion to its own attack stat, so
   // the floor keeps a clan in the war without flattening the difference between its walls and its barracks
-  spreadMin: 0.85,
-  spreadMax: 1.25,
+  spreadMin: 0.8,
+  spreadMax: 1.4,
 };
 
 // Aggression: how keen an enemy sector is to come for you. Hidden from the player; it only weights
@@ -506,17 +511,17 @@ export const AGGR = {
 //   order command and cohesion                greed what they want off me instead of my death
 export const CLANS = {
   startAtCore: 2, // stances start working with assaults
-  driftPerHour: 0.035, // traits slide back to the clan's own mood this fast: slowly, so a night of war is still felt in the morning
-  stirScale: 0.7, // and everything that happens moves them this much of what it says below
+  driftPerHour: 0.03, // traits slide back to the clan's own mood this fast: slowly, so a night of war is still felt in the morning
+  stirScale: 0.85, // and everything that happens moves them this much of what it says below
   interceptShare: 0.3, // share of an order's clan-wide aggression that also lands as fury
   // What the war does to a clan. Applied to the faction that owns the sector involved.
   stir: {
-    sectorTaken: { fury: 0.18, fear: 0.15, order: -0.06 }, // I took one of theirs
-    capitalTaken: { fury: 0.7, fear: 0.3, order: -0.25 }, // I took their capital
+    sectorTaken: { fury: 0.24, fear: 0.15, order: -0.06 }, // I took one of theirs
+    capitalTaken: { fury: 0.85, fear: 0.3, order: -0.25 }, // I took their capital
     assaultHeld: { fury: 0.06, fear: 0.1, order: -0.05 }, // their assault broke on my wall
     assaultBreach: { fury: 0.2, order: 0.2, greed: 0.3 }, // their assault got through
     sectorSeized: { fury: -0.15, order: 0.15, greed: 0.1, fear: -0.1 }, // they took one of mine
-    opHeld: { fury: 0.05, fear: -0.15, order: 0.15 }, // my operation against them failed
+    opHeld: { fury: 0.09, fear: -0.18, order: 0.15 }, // my operation against them failed
     raidHeld: { fury: 0.05, fear: 0.08, order: -0.04 },
     raidBroke: { fury: -0.05, order: 0.05, greed: 0.07 },
   },

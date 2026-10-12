@@ -47,9 +47,9 @@ game.act = {
     save(true);
     return res;
   },
-  /** Calls the nearest inbound attack in now; it arrives heavier for the forced march. */
+  /** One step of holding the nearest inbound attack in; it arrives heavier for the forced march. */
   rush: () => {
-    const hit = E.rushAttack(game.state);
+    const hit = E.rushStep(game.state, E.nextAttack(game.state));
     if (hit) save(true);
     return hit;
   },

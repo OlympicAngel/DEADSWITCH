@@ -1392,6 +1392,12 @@ p {
   font-size: 11.5px;
 }
 
+.btn.tiny {
+  padding: 5px 8px;
+  font-size: 10px;
+  gap: 4px;
+}
+
 .btn.wide {
   width: 100%;
   margin-top: 14px;
@@ -6700,6 +6706,39 @@ dialog.report:has(.battle.def.loss) {
 @keyframes arm-pulse {
   from { opacity: .72; }
   to { opacity: 1; }
+}
+
+/* How much of the march the hold has paid for, drawn behind the label. */
+.inc-foot [data-act="rush"] i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: #fff;
+  opacity: .28;
+  pointer-events: none;
+}
+
+.inc-foot [data-act="rush"] span {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* While it is held, the button jolts on every step the march takes. */
+.inc-foot [data-act="rush"].holding {
+  animation: none;
+}
+
+.inc-foot [data-act="rush"].jolt {
+  animation: rush-jolt .2s steps(3);
+}
+
+@keyframes rush-jolt {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2px, 1px); }
+  66% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
 }
 
 /* The bill for a decision, and what the loss looked like going. Both animations run once. */

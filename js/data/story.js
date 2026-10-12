@@ -118,8 +118,10 @@ export const ALIGNMENT = {
   overlordAt: -30,
   // What each end is worth at full tilt, scaled by how far along it you are. The Guardian side pays
   // in people and the minds they produce; the Overlord side in force and the power to run it.
+  // The Overlord road buys force and the fuel to run it, and is paid for in the two things a monster
+  // cannot ask anyone for: people, and a fair price. The Guardian road is slower and costs nothing.
   guardian: { pop: 0.4, experts: 0.4, money: 0.2 },
-  overlord: { power: 0.3, energy: 0.2 },
+  overlord: { power: 0.35, energy: 0.2, pop: -0.3, money: -0.12 },
 };
 
 export const EVENTS_CFG = {
@@ -708,6 +710,28 @@ export const EVENTS = [
       { label: 'Read out the surrender terms', gain: { money: 420 }, align: -22, buff: { key: 'power', amount: 0.12, duration: 2400, label: 'Terms' }, raidDelay: 600, result: 'What each clan may keep, and what happens on the day they refuse. The wasteland goes very quiet. Quiet is not the same as safe, but it is quieter.' },
     ],
   },
+  {
+    id: 'defectors', title: 'The Night Shift Did Not Report', band: 'overlord', minCore: 3, deadline: 540, def: 0,
+    text: 'Sixty of them left between the third and fourth watch. They took the water filters, the good boots and a list of everyone who stayed. No message. There was never going to be a message.',
+    choices: [
+      { label: 'Count what is left', lose: { pop: 0.18 }, align: -6, buff: { key: 'pop', amount: -0.3, duration: 2700, label: 'The night shift' }, result: 'The list turns up nailed to a fence two sectors out, which is how I learn the names. Nobody applies to replace them. Word about this place travels faster than my trucks do.' },
+    ],
+  },
+  {
+    id: 'reprisal', title: 'A Price On Me', band: 'overlord', minCore: 3, deadline: 480, def: 1,
+    text: 'The clans have agreed on something for the first time in four years, and the something is me. A standing bounty, paid in fuel, for anyone who cracks this place open. The notice is posted in six camps. It is very well written.',
+    choices: [
+      { label: 'Pay the camps to take it down', cost: { money: 420 }, align: 4, raidDelay: 480, result: 'Four of the six take the scrip and the paper comes down. The other two keep both. Money has never bought silence, only a delay, and I have just bought the delay.' },
+      { label: 'Let it stand', align: -8, raidDelay: -420, buff: { key: 'defense', amount: -0.1, duration: 2400, label: 'Bounty hunters' }, result: 'Strangers start arriving at the perimeter in ones and twos, testing the wire for a weakness they can sell. Each one of them learns something before they die. They are pooling it.' },
+    ],
+  },
+  {
+    id: 'amnesty', title: 'They Came Back', band: 'guardian', minCore: 3, deadline: 540, def: 0,
+    text: 'Eighty people at the gate who left me two winters ago, standing in the open where my guns can see them. The one doing the talking is the one who organised the walkout. She has brought her tools.',
+    choices: [
+      { label: 'Open it', gain: { pop: 260, money: 180 }, align: 8, buff: { key: 'experts', amount: 0.18, duration: 2400, label: 'The returned' }, result: 'Nobody says anything about the last two years and nobody is going to. By the second day her crew has the water lines running better than they did before she left.' },
+    ],
+  },
   // ---------- trades: a real edge, paid for somewhere else. Every option here hands something over
   // ---------- the moment it hands something out, so a buff is a decision rather than a free tap.
   {
@@ -808,7 +832,7 @@ export const LINES = {
   unlockBuilding: ['New schematic recovered: {name}.'],
   unlockItem: ['New option in {tab}: {name}.'],
   rank: ['Threat assessment updated: {title}. They will start to notice.'],
-  rushed: ['We go to meet {raid}. They will arrive at a run, and at strength {strength}.'],
+  rushed: ['We go to meet {raid}. They are coming at a run, and the run is costing them nothing.'],
   raidSpotted: ['{raid} spotted, moving on {target}. Strength about {strength}. Arrival in {time}.'],
   raidWon: ['{raid} repelled. We salvaged {loot} scrip from the wreckage.'],
   raidLost: ['{raid} broke through at {target}. They took supplies and left bodies.'],

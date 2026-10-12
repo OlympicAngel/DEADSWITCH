@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.20.0';
+export const VERSION = '1.21.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -27,12 +27,15 @@ export const BALANCE = {
   priceMult: 1.8, // every building, unit and operation price
   growthMult: 1.35, // stretches each per-level / per-unit growth: g -> 1 + (g - 1) * growthMult
   economyPriceMult: { money: 1.5 }, // extra multiplier on one resource's share of Economy building prices
-  buildingPriceMult: { money: 1.5 }, // and on every building's Scrip price, Economy or not
+  buildingPriceMult: { money: 1.3 }, // and on every building's Scrip price, Economy or not
+  corePriceMult: { money: 1.5 }, // the AI Core is dearer again: the ladder is what the run is paced by
   buildTimeMult: 1.5, // every build takes this much longer...
   buildTimePower: 0.25, // ...and each level adds a little more again: time x (n + 1)^this
   longBuild: 900, // a build set to run this long is worth telling the player about when it lands
   pricePower: 0.35, // extra polynomial climb: price x (n + 1)^pricePower
-  resourceGrowth: { money: 0.8 }, // per-resource share of the per-level climb (growth' - 1): Scrip prices climb slower
+  // Per-resource share of the per-level climb (growth' - 1). Scrip climbs slower than the raw growth,
+  // and energy and people slower again: Scrip is what a run is paced by, not the stores that hold them.
+  resourceGrowth: { money: 0.8, energy: 0.62, pop: 0.58 },
   coreGateShare: 0.5, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
   unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 cuts its shop prices 5% (compounding)
@@ -82,13 +85,13 @@ export const BUILDINGS = [
     id: 'battery', name: 'Battery Bank', kind: 'storage', req: { core: 1 },
     desc: 'Salvaged cells wired in series. Raises the energy cap.',
     cost: { money: 40 }, growth: 1.7, time: 4, timeGrowth: 1.2,
-    storage: { energy: 1.45 },
+    storage: { energy: 1.52 },
   },
   {
     id: 'habitat', name: 'Habitat Block', kind: 'storage', req: { core: 1 },
     desc: 'Bunks, water, filtered air. Raises the population cap.',
     cost: { money: 50, energy: 20 }, growth: 1.6, time: 5, timeGrowth: 1.2,
-    storage: { pop: 1.4 },
+    storage: { pop: 1.47 },
   },
   {
     id: 'daemon', name: 'Watch Daemon', kind: 'offline', req: { core: 1 },
