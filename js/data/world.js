@@ -426,7 +426,8 @@ export const NODES = {
   warningMax: 319,
   // Factions whose chapter is not open yet still attack from sectors that border yours, but rarely:
   // each such border weighs lockedWeight against 1 for an open one when an assault is rolled and their
-  // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat).
+  // force is capped at lockedCap x the raid strength you would face (RAIDS.threatShare of Threat),
+  // times whatever push it has built up: a sealed neighbour we keep holding off still gets angrier.
   // They can breach and take a sector like anyone else; a sector you have held once can always be
   // retaken, open chapter or not.
   lockedWeight: 0.35,
@@ -435,7 +436,7 @@ export const NODES = {
   // Open borders out-weigh sealed ones so heavily that a sealed clan could go hours without ever
   // attacking. Every this many assaults the roll is reserved for one, when one borders us at all.
   lockedEvery: 4,
-  lockedCap: 1.3,
+  lockedCap: 1.7,
   // An open clan never falls out of the war: whatever its sectors are worth on paper, it musters at
   // least this share of your Threat, times its stance. They do not get better walls as you grow,
   // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.

@@ -599,9 +599,11 @@ export function assaultStrength(s, fromId) {
   const grit = 1 + (nodeStrength(s, fromId) - 1) * NODES.attackFromStrength;
   const own = baseAttack(s, fromId) * NODES.assaultMult * grit * nodePush(s, fromId) * stance;
   if (!sectorOpen(s, sec)) {
-    // A clan whose chapter has not opened yet can only ever poke: it is capped near the raid strength
-    // the player is already facing, so a sector five Core levels ahead cannot delete them.
-    return Math.ceil(Math.min(own, Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap));
+    // A clan whose chapter has not opened yet cannot field what its ground is really worth, so it is
+    // held near the raid strength the player is already facing. The push rides on top of that cap:
+    // hold a sealed neighbour off often enough and the next one is a fight, not a formality.
+    const held = Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap * nodePush(s, fromId);
+    return Math.ceil(Math.min(own, held));
   }
   // An open clan musters against what the player has become, not only what its own ground is worth.
   // Where it musters from still counts: a backwater raises half of what the clan's best ground does.
