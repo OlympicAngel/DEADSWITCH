@@ -758,6 +758,18 @@ export function createModals(dialog, game, onChange) {
     dialog.querySelector('#cReload').onclick = () => location.reload();
   }
 
+  /** The run was opened somewhere else, and that window is the one playing it now. */
+  function showRetired() {
+    open(`
+      <span class="kicker">${icon('alert')}Elsewhere</span>
+      <h2>I am running in another window</h2>
+      <p class="muted">This one has stopped so the two cannot overwrite each other.</p>
+      <div class="menu-actions">
+        <button class="btn primary" id="rHere">${icon('play')}<span>Play here</span></button>
+      </div>`, { cls: 'locked' });
+    dialog.querySelector('#rHere').onclick = () => location.reload();
+  }
+
   function openMenu() {
     open(`
       <span class="kicker">${icon('settings')}System</span>
@@ -912,13 +924,20 @@ export function createModals(dialog, game, onChange) {
       },
       away: () => showOffline(item.report, next),
       op: () => showOp(item, next), raid: () => showRaid(item, next), expired: () => showExpired(item, next) }[item.kind];
-    if (show) {
+    if (!show) {
+      next();
+      return true;
+    }
+    try {
       show();
-    } else {
+    } catch {
+      // One item a dialog cannot draw (a save from another build, a hand-edited one) must not stop the
+      // queue, or the same fault would open on every boot.
+      if (dialog.open) close();
       next();
     }
     return true;
   }
 
-  return { open, close, pump, showEvent, showOffline, showArchive, showCrash, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
+  return { open, close, pump, showEvent, showOffline, showArchive, showCrash, showRetired, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
 }

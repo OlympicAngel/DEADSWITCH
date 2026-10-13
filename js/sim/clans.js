@@ -84,9 +84,12 @@ export function clanProfile(s, faction) {
   for (const st of stanceList(s, faction)) {
     out.stances.push(st);
     for (const k of MULTS) {
-      if (st[k]) out[k] *= st[k];
+      if (st[k] !== undefined) out[k] *= st[k];
     }
     if (st.plunder) out.plunder = true;
+  }
+  for (const [k, [lo, hi]] of Object.entries(CLANS.profileBounds)) {
+    out[k] = Math.min(hi, Math.max(lo, out[k]));
   }
   return out;
 }

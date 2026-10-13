@@ -21,11 +21,15 @@ const game = { state: null, flows: null, act: {}, dev: { speed: 1 } };
 let ui = null;
 let presence = null;
 let last = 0;
+let lastWall = 0;
 let sinceSave = 0;
 let sinceMood = 0;
 let looping = false;
 
-const save = (now = false) => store.write(game.state, now);
+// Retired: this run was opened in another tab or window, which is the one playing it now. This tab
+// stops writing, or coming back to it would roll the other one's progress back.
+let retired = false;
+const save = (now = false) => { if (game.state && !retired && !crashed) store.write(game.state, now); };
 const commit = (ok) => {
   if (ok) {
     save(true);
@@ -66,6 +70,7 @@ game.act = {
       if (!data || !data.state || !data.state.levels) {
         return false;
       }
+      store.keepBackup({ state: game.state, savedAt: Date.now() }); // Restore can undo an import
       game.state = E.migrate(data.state);
       ui.reset();
       save(true);
@@ -75,6 +80,7 @@ game.act = {
     }
   },
   reset: () => {
+    store.keepBackup({ state: game.state, savedAt: Date.now() }); // Restore can undo a wipe
     game.state = E.newState(seed());
     ui.reset();
     save(true);
@@ -97,6 +103,9 @@ game.act = {
 };
 
 // One thrown error used to stop the loop and leave a frozen screen with no way to get the save out.
+// The state is not written on the way down: a step that threw half way through left it half changed,
+// and the last good write is a few seconds old at most. A write still waiting is dropped for the same
+// reason, since it holds the same object.
 let crashed = false;
 function crash(detail) {
   if (crashed) {
@@ -104,15 +113,27 @@ function crash(detail) {
   }
   crashed = true;
   stopLoop();
-  try {
-    store.write(game.state, true);
-  } catch { /* the save is as safe as it is going to get */ }
+  store.drop();
   if (ui) {
     ui.crash(detail);
+  } else {
+    // Boot itself failed, so there is no interface to put the fault in. Plain DOM, nothing imported.
+    const app = document.getElementById('app');
+    if (app) {
+      app.innerHTML = '<div style="padding:24px;font:15px/1.5 system-ui;color:#cfd8d4"><h2>Something in me stopped working</h2>'
+        + '<p>The save on this device has not been touched. Reloading usually fixes it.</p>'
+        + '<p style="opacity:.7"></p><button style="padding:10px 18px">Reload</button></div>';
+      app.querySelector('p:nth-of-type(2)').textContent = String(detail || 'unknown fault').slice(0, 300);
+      app.querySelector('button').onclick = () => location.reload();
+    }
   }
 }
-addEventListener('error', (e) => crash(e.message));
-addEventListener('unhandledrejection', (e) => crash(e.reason && e.reason.message));
+// Only what the game's own files throw stops it: an extension or a cross-origin script failing on
+// the same page says nothing about the run.
+const ours = (where) => typeof where === 'string' && where.startsWith(location.origin);
+addEventListener('error', (e) => ours(e.filename) && crash(e.message));
+addEventListener('unhandledrejection', (e) => ours(String((e.reason && e.reason.stack) || '')
+  .match(/https?:\/\/[^\s)]+/)?.[0]) && crash(e.reason.message));
 
 // Hands a stretch of absence to the engine in one piece and reports on it if it was worth reporting.
 // Without a Watch Daemon nothing was produced, so the report only comes up when the war did something.
@@ -170,11 +191,17 @@ function today() {
 
 function advance() {
   const now = performance.now();
-  const real = (now - last) / 1000;
+  const wall = Date.now();
+  // The monotonic clock stops with the machine on some platforms (a laptop lid closed on a visible
+  // tab), so the wall clock is asked too and the longer of the two is the time that passed.
+  const real = Math.max((now - last) / 1000, lastWall ? Math.min((wall - lastWall) / 1000, BALANCE.offline.warHours * 3600) : 0);
   last = now;
+  lastWall = wall;
   if (real > MAX_LIVE_STEP && game.dev.speed > 0) {
     // On screen, but nothing ran for seconds: the device was asleep. That is time away.
     catchUp(real * game.dev.speed);
+    last = performance.now(); // the catch-up's own run time is not another absence
+    lastWall = Date.now();
   } else {
     const dt = real * game.dev.speed;
     if (dt > 0) {
@@ -215,11 +242,12 @@ function loop() {
 }
 
 function startLoop() {
-  if (looping) {
+  if (looping || crashed || retired) {
     return;
   }
   looping = true;
   last = performance.now();
+  lastWall = Date.now();
   due = last;
   setTimeout(loop, 0);
 }
@@ -227,7 +255,43 @@ function startLoop() {
 const stopLoop = () => { looping = false; };
 
 async function boot() {
+  try {
+    await start();
+  } catch (err) {
+    crash(err && err.message);
+  }
+}
+
+/** Whoever opens the run last plays it: an older tab hears the newcomer and steps aside. */
+function claimRun() {
+  if (typeof BroadcastChannel !== 'function') {
+    return;
+  }
+  try {
+    const ch = new BroadcastChannel('deadswitch');
+    ch.onmessage = (e) => {
+      if (e.data !== 'mine' || retired) return;
+      save(true);
+      store.flush();
+      retired = true;
+      stopLoop();
+      if (ui) ui.retire();
+    };
+    ch.postMessage('mine');
+  } catch { /* no channel: one tab is the usual case anyway */ }
+}
+
+async function start() {
+  claimRun();
   let saved = await store.read();
+  if (saved && saved.failed) {
+    // The database is there but would not answer. Starting fresh here would write a new run over the
+    // real one the moment it saved, so stop instead and let a reload try again.
+    throw new Error('The save could not be read just now.');
+  }
+  if (saved && !saved.state) {
+    saved = await store.readBackup() || null;
+  }
   // A save whose stockpiles have stopped being numbers cannot be played out of. Before falling back
   // to the starting values, try the session this one grew out of: that is what the restore button
   // does, and nobody should have to find it.
@@ -238,7 +302,9 @@ async function boot() {
     }
   }
   game.state = saved && saved.state ? E.migrate(saved.state) : E.newState(seed());
-  store.keepBackup(saved); // the record that booted is known good; keep it for the rest of the session
+  if (saved && saved.state && E.healthy(saved.state)) {
+    store.keepBackup(saved); // the record that booted is known good; keep it for the rest of the session
+  }
   ui = createUI(document.getElementById('app'), game);
   // How long they were gone: whichever is later, the moment the page went away or the last write.
   const seen = Math.max(store.lastSeen(), (saved && saved.savedAt) || 0);
@@ -249,16 +315,23 @@ async function boot() {
   presence = createPresence({
     onLeave: () => {
       stopLoop();
-      stopAmbient();
-      keepAwake(false);
-      // The alerts go in first: an IndexedDB write started while the page is closing may not land,
-      // and the one that matters least is the one the player can recover by coming back.
-      scheduleAlerts(game.state);
+      if (crashed || retired) {
+        return;
+      }
+      // The save goes first: nothing after it is allowed to stand between the run and the disk.
       save(true);
       store.flush();
-      setBadge(game.state);
+      try {
+        stopAmbient();
+        keepAwake(false);
+        scheduleAlerts(game.state);
+        setBadge(game.state);
+      } catch { /* alerts are a courtesy; the save already went */ }
     },
     onReturn: (awayMs) => {
+      if (crashed || retired) {
+        return;
+      }
       cancelAlerts();
       clearBadge();
       if (awayMs / 1000 > AWAY_FLOOR) {

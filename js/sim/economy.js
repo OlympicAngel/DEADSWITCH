@@ -25,7 +25,8 @@ export function caps(s) {
 }
 
 export function maxLevel(s, b) {
-  return b.maxLevel || level(s, 'core') * BALANCE.levelCapPerCoreLevel;
+  const cap = level(s, 'core') * BALANCE.levelCapPerCoreLevel;
+  return b.kind === 'core' ? b.maxLevel : Math.min(b.maxLevel || cap, cap);
 }
 
 // Sum of tech bonuses for a resource or factor key (additive).
@@ -55,7 +56,7 @@ export function sectorBonus(s, key) {
 }
 
 export function alignBonus(s, key) {
-  const a = s.align;
+  const a = Math.max(ALIGNMENT.min, Math.min(ALIGNMENT.max, s.align));
   if (a > 0 && ALIGNMENT.guardian[key]) {
     return (ALIGNMENT.guardian[key] * a) / ALIGNMENT.max;
   }
@@ -92,7 +93,7 @@ export function troopDefense(s) {
       d += item.gives.defense * owned(s, item.id);
     }
   }
-  return Math.floor(d * (1 + bonusTotal(s, 'defense')));
+  return Math.max(0, Math.floor(d * (1 + bonusTotal(s, 'defense'))));
 }
 
 /** True while an operation has the troops: they cannot be on the road and on the wall at once. */
@@ -117,7 +118,7 @@ export function factors(s) {
   const raw = rawFactors(s);
   const out = {};
   for (const k of FACTOR_KEYS) {
-    out[k] = Math.floor(raw[k] * (1 + bonusTotal(s, k)));
+    out[k] = Math.max(0, Math.floor(raw[k] * (1 + bonusTotal(s, k))));
   }
   return out;
 }
@@ -137,17 +138,20 @@ export function rankIndex(t) {
 }
 
 // Production multiplier for one resource.
+// Penalties stack, but never past a tenth of the base rate: a producer that ran backwards would eat
+// the stores it exists to fill.
 export function prodMultiplier(s, res, f = factors(s)) {
-  return 1 + f.experts * BALANCE.expertProductionBonus + bonusTotal(s, res);
+  return Math.max(0.1, 1 + f.experts * BALANCE.expertProductionBonus + bonusTotal(s, res));
 }
 
 // Theoretical gross output per second at full converter efficiency (used to scale event rewards).
+// A paused converter still counts: switching one off right before answering must not make the bill smaller.
 export function grossRate(s, r) {
   const mult = prodMultiplier(s, r);
   let total = 0;
   for (const b of BUILDINGS) {
     const lvl = level(s, b.id);
-    if (lvl && b.produces && b.produces[r] && !(b.kind === 'converter' && s.paused[b.id])) {
+    if (lvl && b.produces && b.produces[r]) {
       total += b.produces[r] * lvl * mult;
     }
   }
@@ -357,8 +361,11 @@ export function cancelBuild(s) {
   if (!s.build) {
     return false;
   }
+  // The refund goes back into the stores it came from, up to the brim, or a cancel taken after the
+  // store refilled would bank the price above its cap. A stock already over the brim keeps its overflow.
+  const c = caps(s);
   for (const [k, v] of Object.entries(s.build.cost)) {
-    s.res[k] += v;
+    if (Number.isFinite(v)) s.res[k] = Math.max(s.res[k], Math.min(c[k], s.res[k] + v));
   }
   s.build = null;
   return true;
@@ -366,7 +373,7 @@ export function cancelBuild(s) {
 
 export function buyItem(s, id, count = 1) {
   const item = ITEM_BY_ID[id];
-  if (!item || !itemUnlocked(s, item) || count < 1) {
+  if (!item || !itemUnlocked(s, item) || !Number.isInteger(count) || count < 1 || count > MAX_BULK) {
     return false;
   }
   const cost = itemCost(s, item, count);
@@ -552,7 +559,9 @@ export function produce(s, dt, speed = 1) {
       s.res[r] = Number.isFinite(before[r]) ? before[r] : 0;
       continue;
     }
-    s.res[r] = Math.max(0, s.res[r] > c[r] ? Math.max(c[r], before[r]) : s.res[r]);
+    // Over the brim, this tick may only take away: what converters burned from the overflow is gone,
+    // what producers added to it is not kept.
+    s.res[r] = Math.max(0, s.res[r] > c[r] ? Math.min(s.res[r], Math.max(c[r], before[r])) : s.res[r]);
   }
   return flows;
 }
@@ -567,6 +576,9 @@ export function advanceBuild(s, dt) {
   }
   const b = BY_ID[s.build.id];
   s.build = null;
+  if (level(s, b.id) >= maxLevel(s, b)) {
+    return; // only a hand-edited save gets here
+  }
   s.levels[b.id] = level(s, b.id) + 1;
   s.stats.builds = (s.stats.builds || 0) + 1;
   if (b.id === 'core') {

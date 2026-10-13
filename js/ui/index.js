@@ -731,6 +731,7 @@ export function createUI(root, game) {
     render,
     go: (screen) => go(screen),
     crash: (detail) => modals.showCrash(detail),
+    retire: () => modals.showRetired(),
     showOffline: (report) => modals.showOffline(report),
     queuePendingEvents: () => game.state.events.forEach((x) => ui.unseen.add(x.uid)),
     /** True while a cut scene or a report is holding the screen, so the host can keep it awake. */

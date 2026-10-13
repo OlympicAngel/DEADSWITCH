@@ -753,10 +753,10 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'furnace', title: 'Run the Furnace Hot', minCore: 2, deadline: 540, def: 1,
+    id: 'furnace', title: 'Run the Furnace Hot', minCore: 2, deadline: 540, def: 1, pick: ['a'],
     text: 'The foundry can run past its rating. It will make what we need twice as fast and it will not last the season doing it. The crew have already asked me twice.',
     choices: [
-      { label: 'Run it hot', buff: { key: 'power', amount: 0.16, duration: 1200, label: 'Furnace hot' }, loseLevel: ['a'], pick: ['a'], align: -4, result: 'Twice the output for a week, and then a sound from the casing that nobody wants to describe. The {a} is a level poorer for it.' },
+      { label: 'Run it hot', buff: { key: 'power', amount: 0.16, duration: 1200, label: 'Furnace hot' }, loseLevel: ['a'], align: -4, result: 'Twice the output for a week, and then a sound from the casing that nobody wants to describe. The {a} is a level poorer for it.' },
       { label: 'Keep it at rating', buff: { key: 'money', amount: 0.06, duration: 1500, label: 'Steady output' }, result: 'Slower, and still standing in a year. The crew go back to work without a word.' },
     ],
   },
@@ -834,7 +834,7 @@ export const DIRECTIVES = [
   { text: 'Take the Cathedral of the Core', cond: { sector: 'cathedral' }, reward: { money: 300000, energy: 100000 } },
   { text: 'Upgrade the AI Core to Lv 8', cond: { level: 'core', n: 8 }, reward: { money: 500000 } },
   { text: 'Breach Halcyon Prime', cond: { sector: 'prime' }, reward: { money: 3000000, energy: 1000000 } },
-  { text: 'Reach the rank DEADSWITCH', cond: { threat: 1000000 }, reward: { money: 10000000 } },
+  { text: 'Reach the rank DEADSWITCH', cond: { threat: 2000000 }, reward: { money: 10000000 } },
 ]
 
 // What comes back as the Core is rebuilt: one memory per level, in the order they surface. The last
@@ -876,6 +876,7 @@ export const LINES = {
   stance: ['{text}'],
   stanceEnd: ['The {faction} are done with {stance}.'],
   sectorLost: ['{sector} has fallen to the {faction}.'],
+  opCut: ['The road to {sector} is gone. The operation turned back with what it took out.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
   bossDown: ['{faction} capital has fallen. Their raids stop here. Their survivors will not.'],
   chapter: ['{kicker}: {title}.'],

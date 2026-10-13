@@ -180,7 +180,6 @@ export const GLOSSARY = {
   'AGGR.onOp.node': { what: 'Added to the sector you attacked.' },
   'AGGR.onOp.clan': { what: 'Added to every other sector that clan holds.' },
   'AGGR.onOp.near': { what: 'Added to the sectors the target links to.' },
-  'AGGR.onInspect': { what: 'Added when the player opens that sector\'s briefing. Each look after the first counts for less (divided by how many times it has been seen).' },
   'AGGR.onFall': { what: 'Aggression added when a sector of YOURS falls: the front around it is emboldened.' },
   'AGGR.onFall.node': { what: 'Added to the sector that took it.' },
   'AGGR.onFall.clan': { what: 'Added across that clan.' },

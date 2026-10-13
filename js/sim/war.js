@@ -195,16 +195,12 @@ export function stirAggression(s, id, spread) {
   }
 }
 
-// Opening a sector's briefing tells it someone is looking. The first look counts most.
+// Opening a sector's briefing is counted (the developer panel shows it) and changes nothing: reading
+// the map has to be safe, or the careful player is the one punished.
 export function inspectSector(s, id) {
   if (!factionOf(s, id) || s.sectors.includes(id)) return;
   const n = node(s, id);
   n.seen = (n.seen || 0) + 1;
-  shiftAggression(s, id, AGGR.onInspect / n.seen);
-  // Being studied this closely changes what they were doing: the push they had built up is spent.
-  if (n.seen % NODES.pushLooks === 0) {
-    resetPush(s, id);
-  }
 }
 
 // Clan support: a sector is fortified by the sectors of its own faction it links to. +flankBonus while
@@ -291,7 +287,9 @@ export function advanceOp(s, dt) {
   if (report.win) {
     report.theirLoss = defense;
     const held = factionOf(s, sec.id); // whoever took it off us last, not whoever drew the map
-    stirClan(s, held, CLANS.stir[sec.boss ? 'capitalTaken' : 'sectorTaken']);
+    // A capital is its own clan's: taking it back off whoever seized it is that clan's fall, not theirs.
+    const capitalOf = sec.boss ? sec.faction : null;
+    stirClan(s, held, CLANS.stir[capitalOf && held === capitalOf ? 'capitalTaken' : 'sectorTaken']);
     s.sectors.push(sec.id);
     delete s.nodes[sec.id];
     delete s.owner[sec.id];
@@ -320,9 +318,9 @@ export function advanceOp(s, dt) {
     if (held) {
       report.rally = rallyClan(s, held, sec.id);
     }
-    if (sec.boss) {
-      say(s, 'bossDown', { faction: FACTIONS[held].name }, 'rank');
-      if (s.raid && s.raid.faction === held) {
+    if (capitalOf) {
+      say(s, 'bossDown', { faction: FACTIONS[capitalOf].name }, 'rank');
+      if (s.raid && s.raid.faction === capitalOf) {
         s.raid = null;
         s.raidTimer = 60;
       }
@@ -375,7 +373,9 @@ export function activeRaiders(s) {
       list.push(c.faction);
     }
   }
-  if (s.ending) {
+  // Rival Cores come after the ending, until their own capital falls like any other.
+  const mirror = SECTORS.find((x) => x.faction === 'rogue' && x.boss);
+  if (s.ending && !(mirror && s.sectors.includes(mirror.id))) {
     list.push('rogue');
   }
   return list;
@@ -461,6 +461,9 @@ export function addGrudge(s, g) {
   }
   if (s.raid && !s.raid.grudge && s.raid.faction === g.faction) {
     s.raid.strength = Math.ceil(s.raid.strength * g.mult);
+    // A hold already under way rebuilds its strength from these, so they carry the grudge too.
+    if (s.raid.rushBase !== undefined) s.raid.rushBase = Math.ceil(s.raid.rushBase * g.mult);
+    if (s.raid.rushPay !== undefined) s.raid.rushPay *= g.mult;
     s.raid.grudge = true;
   }
   return { untilLoss, left };
@@ -487,10 +490,23 @@ export function startSiege(s, faction, strength, delay, uid = 0) {
 
 export function advanceSieges(s, dt, offline) {
   for (const sg of s.sieges.slice()) {
+    // A siege is an attack like any other, so an absence that has had its share of them holds it at
+    // the gate until someone is back.
+    if (offline && s.offlineRaids >= s.offlineRaidCap) {
+      continue;
+    }
+    if (s.sectors.includes(sg.from)) {
+      // The ground it marched out of is ours now: it comes from wherever they still hold.
+      sg.from = attackSource(s, sg.faction);
+      sg.target = raidTarget(s, sg.from);
+    } else if (!s.sectors.includes(sg.target)) {
+      sg.target = raidTarget(s, sg.from);
+    }
     sg.remaining -= dt;
     if (sg.remaining <= 1e-9) {
       s.sieges = s.sieges.filter((x) => x !== sg);
       resolveAttack(s, sg, offline);
+      if (offline) s.offlineRaids++;
     }
   }
 }
@@ -594,8 +610,12 @@ export function advanceRaids(s, dt, offline) {
     }
     return;
   }
-  // Ground they were marching on can fall out from under them; they keep coming, further in.
-  if (!s.sectors.includes(s.raid.target)) {
+  // Ground they were marching on can fall out from under them; they keep coming, further in. And if
+  // we took the ground they marched out of, they come from what they still hold.
+  if (s.sectors.includes(s.raid.from)) {
+    s.raid.from = attackSource(s, s.raid.faction);
+    s.raid.target = raidTarget(s, s.raid.from);
+  } else if (!s.sectors.includes(s.raid.target)) {
     s.raid.target = raidTarget(s, s.raid.from);
   }
   s.raid.remaining -= dt;
@@ -788,7 +808,7 @@ export function rallyClan(s, faction, lostId) {
     return null;
   }
   const prof = clanProfile(s, faction);
-  const chance = Math.min(0.95, RALLY.base * prof.retake * prof.weight * (lost.boss ? RALLY.capital : 1));
+  const chance = Math.min(0.95, RALLY.base * prof.retake * (lost.boss ? RALLY.capital : 1));
   if (rand(s, 'rally') >= chance) {
     return null;
   }
@@ -801,9 +821,10 @@ export function rallyClan(s, faction, lostId) {
   }
   let moved = 0;
   for (const d of donors) {
-    const give = nodeStrength(s, d.id) * RALLY.take;
-    shiftStrength(s, d.id, -give);
-    moved += give;
+    // What actually left: a donor is never stripped below the floor, and what it kept did not march.
+    const had = nodeStrength(s, d.id);
+    shiftStrength(s, d.id, -had * RALLY.take);
+    moved += had - nodeStrength(s, d.id);
   }
   shiftStrength(s, lead.id, moved * RALLY.keep);
   node(s, lead.id).a = AGGR.max;
@@ -828,8 +849,15 @@ export function loseSector(s, id, faction, strength = 0) {
   }
   stirClan(s, faction, CLANS.stir.sectorSeized);
   stirAggression(s, id, AGGR.onFall);
-  if (s.op && s.op.sector === id) s.op = null;
   say(s, 'sectorLost', { sector: SECTOR_BY_ID[id].name, faction: FACTIONS[faction].name }, 'bad');
+  // An operation marches out of ground we hold. With that ground gone it has nowhere to come from:
+  // it turns back and what it cost comes back with it, rather than landing a sector cut off from us.
+  const op = s.op && SECTOR_BY_ID[s.op.sector];
+  if (op && !op.links.some((l) => s.sectors.includes(l))) {
+    s.op = null;
+    grant(s, opCost(op), false);
+    say(s, 'opCut', { sector: op.name }, 'bad');
+  }
 }
 
 // Stockpiles taken when something breaks through: a bigger share the worse the odds were.
@@ -853,7 +881,7 @@ function resolveAttack(s, raid, offline) {
   Object.assign(report, { assault: !!raid.assault, from: raid.from, target: raid.target });
   // Both sides bleed. Holding the line still costs people, and their dead stay dead.
   takeLosses(s, report, report.win ? RAIDS.winLoss : RAIDS.unitLoss, defense, raid.strength);
-  report.theirLoss = Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition);
+  report.theirLoss = Math.min(raid.strength, Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition));
   if (raid.assault) {
     shiftStrength(s, raid.from, -(report.win ? NODES.defendWinCut : NODES.breachCut) * prof.attrition);
     // Failing against the same wall makes them throw more at it next time, not less.
@@ -873,10 +901,17 @@ function resolveAttack(s, raid, offline) {
     report.loot = loot;
     s.stats.raidsWon++;
     if (raid.assault) s.stats.assaultsHeld = (s.stats.assaultsHeld || 0) + 1;
+    // Holding a cracked sector is how it gets patched: one breach mended for every attack it turns back.
+    const mend = s.nodes[raid.target];
+    if (mend && mend.marks > 0 && s.sectors.includes(raid.target)) {
+      mend.marks--;
+      report.mended = true;
+    }
     say(s, 'raidWon', { raid: name, loot: loot.money }, 'good');
   } else if (raid.assault) {
     s.stats.raidsLost++;
-    if (prof.plunder) {
+    // The scripted retake has to take the ground, whatever mood the clan is in, or the lesson after it never comes.
+    if (prof.plunder && !(s.scripted.retake === 1 && raid.target === TUTORIAL.target)) {
       // Plunderers want the stores, not the ground: they empty what they can carry and leave the walls.
       report.lost = takeStock(s, chance, NODES.plunderShare);
       report.plundered = true;

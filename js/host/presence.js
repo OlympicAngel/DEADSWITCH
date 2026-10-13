@@ -14,7 +14,8 @@ const ACTIVE_WINDOW = 60000; // ms since the last touch for the player to count 
  */
 export function createPresence({ onLeave, onReturn }) {
   let here = document.visibilityState === 'visible';
-  let leftAt = 0;
+  // A page that opens hidden (a restored or background tab) has been away since it booted.
+  let leftAt = here ? 0 : Date.now();
   let touchedAt = -Infinity;
 
   function leave() {
@@ -35,7 +36,7 @@ export function createPresence({ onLeave, onReturn }) {
   document.addEventListener('visibilitychange', () => (document.visibilityState === 'visible' ? arrive() : leave()));
   addEventListener('pagehide', leave);
   addEventListener('freeze', leave);
-  addEventListener('resume', arrive);
+  addEventListener('resume', () => document.visibilityState === 'visible' && arrive());
   addEventListener('pageshow', () => document.visibilityState === 'visible' && arrive());
   // A blurred desktop window is still visible, so it keeps playing; it just stops counting as watched.
   addEventListener('blur', () => { touchedAt = -Infinity; });

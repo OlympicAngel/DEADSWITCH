@@ -50,7 +50,6 @@ export const BALANCE = {
   // attacksPerHour x the hours counted is how many attacks may land, up to maxAttacks.
   offline: { graceSeconds: 120, warHours: 8, attacksPerHour: 0.5, maxAttacks: 4,
     baseHours: 0, hoursPerStep: 1, baseEfficiency: 0.5, efficiencyPerStep: 0.05, maxEfficiency: 0.8 },
-  buildQueueSlots: 1,
 };
 
 // kind: 'core' | 'producer' | 'converter' | 'storage' | 'offline' | 'unlocker'
@@ -96,7 +95,7 @@ export const BUILDINGS = [
   {
     id: 'daemon', name: 'Watch Daemon', kind: 'offline', req: { core: 1 },
     desc: 'A copy of me that runs the base while you are away. Raises the offline time limit and offline output.',
-    cost: { money: 150, energy: 60 }, growth: 3, time: 15, timeGrowth: 2,
+    cost: { money: 150, energy: 60 }, growth: 3, time: 15, timeGrowth: 2, maxLevel: 14, // 8h at 80%: the world stops at warHours
   },
   // --- Converters ---
   {

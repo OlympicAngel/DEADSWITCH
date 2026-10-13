@@ -16,6 +16,7 @@ let broken = false; // IndexedDB refused us: use localStorage for everything
 let pending = null; // the newest state waiting to be written
 let timer = 0;
 let lastWrite = 0;
+let spilled = false; // a write fell back to localStorage this session; clear it once IndexedDB takes one again
 
 function open() {
   if (db || broken) {
@@ -107,17 +108,28 @@ export async function storageUse() {
   }
 }
 
+// A missing record reads as undefined and a failed read as null, and the difference matters: a run
+// that could not be read must never be mistaken for no run at all, or the fresh one overwrites it.
 export async function read() {
-  const rec = await tx('readonly', (st) => st.get(KEY));
-  if (rec) {
-    return rec;
+  let rec = await tx('readonly', (st) => st.get(KEY));
+  if (rec === null && !broken) {
+    rec = await tx('readonly', (st) => st.get(KEY)); // a dropped connection usually answers twice
   }
+  const failed = rec === null && !broken;
   const old = local.read();
-  if (old && !broken) {
-    await tx('readwrite', (st) => st.put(old, KEY));
-    local.clear(); // one source of truth from here on
+  // localStorage holds either a pre-IndexedDB save or what a session wrote after IndexedDB refused a
+  // write. Either way the newer record is the run.
+  if (old && old.state && (!rec || (old.savedAt || 0) > (rec.savedAt || 0))) {
+    if (!broken && !failed) {
+      const ok = await tx('readwrite', (st) => st.put(old, KEY));
+      if (ok !== null) local.clear(); // one source of truth from here on, once the copy has landed
+    }
+    return old;
   }
-  return old;
+  if (failed) {
+    return { failed: true };
+  }
+  return rec || null;
 }
 
 /** The last moment the player was known to be here, however the page went away. */
@@ -167,12 +179,23 @@ export function flush() {
     return;
   }
   tx('readwrite', (st) => st.put(rec, KEY)).then((ok) => {
-    // IndexedDB gave up (quota, private mode): keep the save alive in localStorage instead.
+    // IndexedDB gave up on this one (quota, a dropped connection): keep it alive in localStorage.
+    // The next write tries IndexedDB again, and read() takes whichever of the two is newer.
     if (ok === null && !broken) {
-      broken = true;
+      spilled = true;
       local.write(rec);
+    } else if (ok !== null && spilled) {
+      spilled = false;
+      local.clear();
     }
   });
+}
+
+/** Forgets a write that has not gone out yet: the state it holds is not one to keep. */
+export function drop() {
+  pending = null;
+  clearTimeout(timer);
+  timer = 0;
 }
 
 /** Keeps the record this session started from, so a save that goes bad is not the end of the run. */

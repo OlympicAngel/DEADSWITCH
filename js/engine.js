@@ -1,6 +1,6 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
-import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS } from './data.js';
-import { produce, advanceBuild, unlockedKeys, say, offlineLimits, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT } from './sim/economy.js';
+import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS, ALIGNMENT, BUILDINGS, ENDINGS } from './data.js';
+import { produce, advanceBuild, unlockedKeys, say, offlineLimits, maxLevel, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, checkDaily, dailyTask, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
@@ -13,9 +13,10 @@ export { odds, rand, peek, daySeed } from './sim/rng.js';
 
 export const SAVE_VERSION = 3;
 // Loose numbers an imported or corrupted save could carry, with the range each one has to sit in.
-const NUMBERS = [['align', -1e3, 1e3], ['playTime', 0, 1e12], ['directive', 0, 1e3], ['chapter', 0, 1e3],
+const NUMBERS = [['align', ALIGNMENT.min, ALIGNMENT.max], ['playTime', 0, 1e12], ['directive', 0, 1e3], ['chapter', 0, 1e3],
   ['rank', 0, 1e3], ['lineSeq', 0, 1e9], ['eventSeq', 0, 1e9], ['raidTimer', 0, 1e9], ['offlineRaids', 0, 1e6]];
 const MAX_LEVEL = 1e4; // nothing in the game reaches this; anything past it is a corrupt save
+const MAX_STOCK = 1e18; // likewise for a stockpile
 
 /** A map of counts with every value forced to a sane whole number. */
 function whole(obj) {
@@ -95,6 +96,21 @@ export function newState(seed = 1) {
   return s;
 }
 
+const isCounts = (o) => !!o && typeof o === 'object' && Object.values(o).every((v) => Number.isFinite(v));
+/** Whether a queued story beat or report still refers to things that exist. */
+function inboxItemOk(m) {
+  if (!m || typeof m.kind !== 'string') return false;
+  if (m.faction !== undefined && !FACTIONS[m.faction]) return false;
+  if (m.sector !== undefined && !sectorById(m.sector)) return false;
+  if (m.kind === 'op' && !sectorById(m.sector)) return false;
+  if (m.kind === 'raid' && !FACTIONS[m.faction]) return false;
+  if (m.kind === 'wipe' && !FACTIONS[m.faction]) return false;
+  if (m.kind === 'expired' && !eventById(m.id)) return false;
+  if (m.kind === 'ending' && !ENDINGS[m.key]) return false;
+  if (m.kind === 'away') return !!m.report && isCounts(m.report.happened) && isCounts(m.report.gained);
+  return true;
+}
+
 // Fills fields added after a save was written, so old saves keep loading.
 /** Whether a save can still be played: every stockpile is a finite number. A record that fails this
  *  is poisoned rather than merely old, and the session before it is a better place to start. */
@@ -113,11 +129,18 @@ export function migrate(raw) {
   // restore button. A negative stock is a bug too, and zero is the honest answer to both.
   s.res = { ...base.res };
   for (const [k, v] of Object.entries(raw.res || {})) {
-    if (k in s.res) s.res[k] = Number.isFinite(v) ? Math.max(0, v) : base.res[k];
+    if (k in s.res) s.res[k] = Number.isFinite(v) ? Math.min(MAX_STOCK, Math.max(0, v)) : base.res[k];
   }
   // Counts come from a file the player can edit, export and import, so none of them is trusted: a
   // level of "9e99" or NaN anywhere would spread through every price and bar on the screen.
   s.levels = whole(raw.levels);
+  // A save with no Core is not a run anyone could have played to: start its buildings where a run does.
+  if (!s.levels.core) {
+    s.levels = { ...BALANCE.startLevels, ...s.levels, core: BALANCE.startLevels.core || 1 };
+  }
+  for (const b of BUILDINGS) {
+    if (s.levels[b.id]) s.levels[b.id] = Math.min(s.levels[b.id], maxLevel(s, b));
+  }
   s.items = whole(raw.items);
   s.paused = {};
   for (const [k, v] of Object.entries(raw.paused || {})) {
@@ -129,7 +152,8 @@ export function migrate(raw) {
   }
   s.stats = { ...base.stats, ...raw.stats };
   s.sectors = Array.isArray(raw.sectors) ? raw.sectors : base.sectors;
-  s.buffs = Array.isArray(raw.buffs) ? raw.buffs : [];
+  s.buffs = (Array.isArray(raw.buffs) ? raw.buffs : []).filter((b) => b && typeof b.key === 'string'
+    && Number.isFinite(b.amount) && Number.isFinite(b.remaining));
   s.recentEvents = Array.isArray(raw.recentEvents) ? raw.recentEvents : [];
   // Daily orders: anything the save is missing is dealt again on the first tick of the day.
   const d = (raw.daily && typeof raw.daily === 'object') ? raw.daily : {};
@@ -149,7 +173,10 @@ export function migrate(raw) {
   for (const k of Object.keys(s.res)) {
     s.res[k] = Number.isFinite(Number(s.res[k])) ? Math.max(0, Number(s.res[k])) : base.res[k];
   }
-  if (s.build && !BY_ID[s.build.id]) {
+  // A build in progress carries its own price (refunded on cancel) and clock: both have to be numbers.
+  const bd = s.build;
+  if (bd && !(BY_ID[bd.id] && Number.isFinite(bd.remaining) && Number.isFinite(bd.total) && bd.cost && typeof bd.cost === 'object'
+    && Object.values(bd.cost).every((v) => Number.isFinite(v) && v >= 0))) {
     s.build = null;
   }
   if (s.op && !sectorById(s.op.sector)) {
@@ -216,8 +243,7 @@ export function migrate(raw) {
   s.sectors = s.sectors.filter((id) => sectorById(id));
   // Saves from before retaking existed: everything held was captured once already.
   s.taken = Array.isArray(raw.taken) ? raw.taken.filter((id) => sectorById(id)) : s.sectors.filter((id) => id !== MAP.home);
-  s.inbox = s.inbox.filter((m) => m && m.kind && (m.kind !== 'op' || sectorById(m.sector)) && (m.kind !== 'raid' || FACTIONS[m.faction])
-    && (m.kind !== 'away' || (m.report && m.report.happened)));
+  s.inbox = s.inbox.filter(inboxItemOk);
   if (!raw.v || raw.v < 2) {
     // v1 saves predate chapters: announce whatever is already open, skip the boot intro.
     s.chapter = 0;
@@ -257,13 +283,17 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
 // in full. `already` is time already counted in this same absence (a background tab catches up in
 // chunks).
 export function catchUp(s, seconds, already = 0) {
+  seconds = Number.isFinite(seconds) ? seconds : 0;
   const limits = offlineLimits(s);
   const total = Math.max(0, awaySeconds(s, seconds) - already);
   const paid = Math.max(0, limits.seconds - already); // how much of it the base is still working for
   const grace = Math.max(0, Math.min(total, BALANCE.offline.graceSeconds - already));
   const before = { ...s.res };
   const was = { ...s.stats, sectors: s.sectors.length };
-  const stepSize = Math.max(1, total / 20000);
+  // Production is linear between timers and every timer that changes it is landed on exactly, so a
+  // few thousand steps carry an 8h absence as faithfully as twenty thousand did, in a fraction of the
+  // time the page sits frozen on the way back.
+  const stepSize = Math.max(2, total / 3000);
   let left = total;
   let flows = null;
   s.offlineRaids = 0;
@@ -274,6 +304,7 @@ export function catchUp(s, seconds, already = 0) {
     let dt = Math.min(stepSize, left);
     const done = total - left;
     if (done < grace) dt = Math.min(dt, grace - done);
+    else if (done < paid) dt = Math.min(dt, paid - done);
     // Land exactly on timer completions so new levels and captures count for the rest of the stretch.
     for (const t of [s.build, s.op, ...s.sieges]) {
       if (t && t.remaining > EPS && t.remaining < dt) {
@@ -300,5 +331,7 @@ export function catchUp(s, seconds, already = 0) {
     decided: (s.stats.expired || 0) - (was.expired || 0),
     pending: s.events.length, // still unanswered, and about to open behind this report
   };
+  // The last step of a long absence usually ran at speed 0; what the screen wants is the base running now.
+  flows = produce({ ...s, res: { ...s.res } }, 1);
   return { seconds: total, paid: Math.min(total, paid), away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, flows };
 }

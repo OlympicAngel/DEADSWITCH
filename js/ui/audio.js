@@ -49,7 +49,7 @@ export function setVolume(id, v) {
 export function audio() {
   if (bus) {
     if (bus.ctx.state === 'suspended') {
-      bus.ctx.resume();
+      bus.ctx.resume().catch(() => {});
     }
     return bus;
   }

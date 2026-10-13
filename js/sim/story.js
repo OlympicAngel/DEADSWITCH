@@ -196,16 +196,24 @@ function spawn(s, ev, front, big = false) {
   }
   params.buffStretch = range(s, EVENTS_CFG.buffStretch[0], EVENTS_CFG.buffStretch[1], 'event');
   params.badStretch = range(s, EVENTS_CFG.badStretch[0], EVENTS_CFG.badStretch[1], 'event');
+  if (s.events.length >= EVENTS_CFG.maxPending) {
+    // A full queue only makes room for a breach's crisis, and never by dropping a standing bill:
+    // a threat whose order vanished could no longer be paid off.
+    const drop = front && s.events.slice().reverse().find((x) => !EVENT_BY_ID[x.id].threat);
+    if (!drop) {
+      return false;
+    }
+    s.events = s.events.filter((x) => x !== drop);
+  }
   const inst = { uid: ++s.eventSeq, id: ev.id, left: ev.deadline, total: ev.deadline, params, big: big || undefined };
   if (front) {
     s.events.unshift(inst);
   } else {
     s.events.push(inst);
   }
-  s.events.length = Math.min(s.events.length, EVENTS_CFG.maxPending);
   // A threat's force is on its way from the moment it is announced: it shows among the inbound
-  // attacks with its own countdown, and only paying turns it back. (Not if the queue dropped it.)
-  if (ev.threat && s.events.includes(inst)) {
+  // attacks with its own countdown, and only paying turns it back.
+  if (ev.threat) {
     // The force picks its target now, so the announcement can name the place it is walking to.
     inst.params.aim = startSiege(s, inst.params.faction, inst.params.strength, ev.deadline, inst.uid).target;
     say(s, 'siege', { faction: FACTIONS[inst.params.faction].name, target: sectorById(inst.params.aim).name, strength: inst.params.strength }, 'bad');
@@ -243,6 +251,9 @@ export function spawnAftermath(s, rout, offline = false) {
 // Deadlines always run; new story events only arrive while the player is here.
 // Urgent events need the player at the console (active), never offline.
 export function advanceEvents(s, dt, offline, active = false) {
+  // A threat is a bill for an attack still on the road. Once that attack has landed (met early or on
+  // time) there is nothing left to pay for, so the order goes with it.
+  s.events = s.events.filter((x) => !EVENT_BY_ID[x.id].threat || s.sieges.some((g) => g.uid === x.uid));
   for (const inst of s.events.slice()) {
     inst.left -= dt;
     if (inst.left <= 0) {
@@ -363,7 +374,7 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (out.clearMarks && s.nodes[out.clearMarks]) {
     s.nodes[out.clearMarks].marks = 0;
   }
-  if (out.assault && !s.sectors.includes(out.assault.from) && s.sectors.includes(out.assault.target)) {
+  if (out.assault && !s.assault && !s.sectors.includes(out.assault.from) && s.sectors.includes(out.assault.target)) {
     spawnAssault(s, { from: out.assault.from, target: out.assault.target }, out.assault.delay);
   }
   if (out.cede && s.sectors.includes(out.cede)) {
@@ -494,8 +505,13 @@ export function rollDaily(s, day) {
     return false;
   }
   const gap = day - s.daily.day;
+  // A day or two backwards is a flight west or a clock nudged by hand: the board stays as it is, or
+  // it could be dealt and paid again. A clock that was years ahead and got put right deals afresh.
+  if (gap < 0 && gap >= -2) {
+    return false;
+  }
   const cleared = s.daily.tasks.length && s.daily.tasks.every((o) => o.done);
-  s.daily.streak = s.daily.day && cleared && gap <= DAILY.grace + 1 ? s.daily.streak + 1 : 0;
+  s.daily.streak = s.daily.day && cleared && gap > 0 && gap <= DAILY.grace + 1 ? s.daily.streak + 1 : 0;
   s.daily.best = Math.max(s.daily.best || 0, s.daily.streak);
   s.daily.day = day;
   s.daily.tasks = dailyFor(s, day);
