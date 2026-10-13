@@ -251,7 +251,7 @@ export function sectorStatus(s, sec) {
 }
 
 export function canLaunch(s, sec) {
-  return !s.op && sectorStatus(s, sec) === 'target' && canAfford(s, opCost(sec)) && !Object.keys(opCost(sec)).some((k) => opCost(sec)[k] > caps(s)[k]);
+  return !s.op && factors(s).power > 0 && sectorStatus(s, sec) === 'target' && canAfford(s, opCost(sec)) && !Object.keys(opCost(sec)).some((k) => opCost(sec)[k] > caps(s)[k]);
 }
 
 export function launchOp(s, id) {

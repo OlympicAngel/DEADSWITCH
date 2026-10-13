@@ -41,6 +41,7 @@ export function newState(seed = 1) {
     items: {},
     paused: {},
     build: null,
+    queue: [], // building ids waiting behind the build under way (BALANCE.buildQueue)
     sectors: [MAP.home],
     taken: [], // sectors ever captured (loot and memories pay once)
     // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours), a: aggression, seen: times inspected }
@@ -173,6 +174,7 @@ export function migrate(raw) {
   for (const k of Object.keys(s.res)) {
     s.res[k] = Number.isFinite(Number(s.res[k])) ? Math.max(0, Number(s.res[k])) : base.res[k];
   }
+  s.queue = (Array.isArray(raw.queue) ? raw.queue : []).filter((id) => typeof id === 'string' && BY_ID[id]).slice(0, 8);
   // A build in progress carries its own price (refunded on cancel) and clock: both have to be numbers.
   const bd = s.build;
   if (bd && !(BY_ID[bd.id] && Number.isFinite(bd.remaining) && Number.isFinite(bd.total) && bd.cost && typeof bd.cost === 'object'

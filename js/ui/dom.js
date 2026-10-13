@@ -4,7 +4,10 @@ export function put(el, value) {
   const v = String(value);
   if (el.__t !== v) {
     el.__t = v;
-    el.textContent = v;
+    // Changing a text node's data is a text change; replacing the node is a layout change.
+    const t = el.firstChild;
+    if (t && t === el.lastChild && t.nodeType === 3) t.data = v;
+    else el.textContent = v;
   }
 }
 
@@ -34,6 +37,10 @@ export function setAttr(el, name, value) {
 export function setData(el, key, value) {
   const v = String(value);
   if (el.dataset[key] !== v) el.dataset[key] = v;
+}
+
+export function setHidden(el, hidden) {
+  if (el.hidden !== !!hidden) el.hidden = !!hidden;
 }
 
 export function setStyle(el, prop, value) {

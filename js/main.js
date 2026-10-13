@@ -43,6 +43,7 @@ const decode = (str) => JSON.parse(decodeURIComponent(escape(atob(str))));
 game.act = {
   build: (id) => commit(E.startBuild(game.state, id)),
   cancel: () => commit(E.cancelBuild(game.state)),
+  dequeue: (i) => commit(E.dequeue(game.state, i)),
   buy: (id, n) => E.buyItem(game.state, id, n),
   launch: (id) => commit(E.launchOp(game.state, id)),
   inspect: (id) => E.inspectSector(game.state, id),

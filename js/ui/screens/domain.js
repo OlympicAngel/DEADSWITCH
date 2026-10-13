@@ -247,7 +247,7 @@ export function buyCount(s, ui, item) {
   return ui.buyMode === 'max' ? Math.max(1, E.maxAffordable(s, item)) : ui.buyMode;
 }
 
-const LABELS = { storage: 'Need storage', busy: 'Builder busy', building: 'Building', maxed: 'Max', gated: 'Locked' };
+const LABELS = { storage: 'Need storage', busy: 'Queue full', building: 'Building', maxed: 'Max', gated: 'Locked', queue: 'Queue' };
 
 export function updateDomain(s, ui, refs, flows) {
   const tabs = DOMAINS[ui.screen].tabs;
@@ -277,10 +277,13 @@ export function updateDomain(s, ui, refs, flows) {
     if (c.btn) {
       setChips(s, c.chips, E.buildingCost(s, c.b));
       const lvl = E.level(s, c.b.id);
-      c.btn.disabled = st !== 'ready' && st !== 'storage';
+      c.btn.disabled = st !== 'ready' && st !== 'storage' && st !== 'queue';
       setStorageLink(s, c.btn, st === 'storage' ? E.buildingCost(s, c.b) : null, 'build');
       put(c.label, LABELS[st] || (lvl ? 'Upgrade' : 'Unlock'));
-      put(c.sub, st === 'building' ? clock(s.build.remaining) : st === 'ready' || st === 'poor' ? time(E.buildTime(s, c.b)) : '');
+      const waiting = E.queued(s, c.b.id);
+      put(c.sub, st === 'building' ? clock(s.build.remaining)
+        : waiting ? `${waiting} queued`
+          : st === 'ready' || st === 'poor' || st === 'queue' ? time(E.buildTime(s, c.b)) : '');
     }
     if (c.eff && flows) {
       const eff = flows.eff[c.b.id] ?? 0;

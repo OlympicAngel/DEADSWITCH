@@ -557,6 +557,7 @@ export function reached(s, cond) {
   if (cond.daily && s.daily.tasks.length < cond.daily) return false;
   if (cond.coreReady && buildingStatus(s, BY_ID.core) !== 'ready') return false;
   if (cond.scripted && !Object.entries(cond.scripted).every(([k, n]) => (s.scripted[k] || 0) >= n)) return false;
+  if (cond.directive !== undefined && s.directive !== cond.directive) return false;
   return true;
 }
 

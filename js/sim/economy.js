@@ -311,7 +311,10 @@ export function buildingStatus(s, b) {
     return 'gated';
   }
   if (s.build) {
-    return s.build.id === b.id ? 'building' : 'busy';
+    if (s.build.id === b.id) return 'building';
+    // Room behind the builder, and a level left for it once what is already queued has gone up.
+    const ahead = queued(s, b.id) + (s.build.id === b.id ? 1 : 0);
+    return s.queue.length < queueSlots(s) && level(s, b.id) + ahead < maxLevel(s, b) ? 'queue' : 'busy';
   }
   const cost = buildingCost(s, b);
   if (exceedsCap(s, cost).length) {
@@ -345,8 +348,18 @@ export function grant(s, gain, spill = true) {
   }
 }
 
+/** How many builds may wait behind the one under way. */
+export const queueSlots = (s) => BALANCE.buildQueue.slots + (level(s, 'core') >= BALANCE.buildQueue.moreAtCore ? BALANCE.buildQueue.more : 0);
+/** How many levels of one building are waiting in the queue. */
+export const queued = (s, id) => (s.queue || []).filter((x) => x === id).length;
+
+/** Starts a build, or queues it behind the one under way: 'queued' says which happened. */
 export function startBuild(s, id) {
   const b = BY_ID[id];
+  if (b && buildingStatus(s, b) === 'queue') {
+    s.queue.push(id);
+    return 'queued';
+  }
   if (!b || buildingStatus(s, b) !== 'ready') {
     return false;
   }
@@ -355,6 +368,30 @@ export function startBuild(s, id) {
   const total = buildTime(s, b);
   s.build = { id, remaining: total, total, cost };
   return true;
+}
+
+/** Takes a waiting build out of the queue. Nothing was paid for it yet, so nothing comes back. */
+export function dequeue(s, i) {
+  if (!(i >= 0 && i < s.queue.length)) return false;
+  s.queue.splice(i, 1);
+  return true;
+}
+
+// The first waiting build the stores can pay for starts; one that can never go up (maxed, or its
+// requirement lost) leaves the queue. The rest wait their turn without holding the others up.
+function startQueued(s) {
+  for (let i = 0; i < s.queue.length && !s.build;) {
+    const b = BY_ID[s.queue[i]];
+    const st = b ? buildingStatus(s, b) : 'gone';
+    if (st === 'ready') {
+      s.queue.splice(i, 1);
+      startBuild(s, b.id);
+    } else if (st === 'maxed' || st === 'locked' || st === 'gone') {
+      s.queue.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
 }
 
 export function cancelBuild(s) {
@@ -568,6 +605,7 @@ export function produce(s, dt, speed = 1) {
 
 export function advanceBuild(s, dt) {
   if (!s.build) {
+    startQueued(s);
     return;
   }
   s.build.remaining -= dt;
@@ -595,6 +633,7 @@ export function advanceBuild(s, dt) {
   }
   s.fx.push({ kind: 'built', id: b.id });
   announceUnlocks(s);
+  startQueued(s);
 }
 
 // ---------- log ----------

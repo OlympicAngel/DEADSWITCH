@@ -5,6 +5,7 @@
 export const AMBIENT_FPS = 30;
 
 const period = AMBIENT_FPS ? 1000 / AMBIENT_FPS : 0;
+const SLOW_LOOP_MS = 4000; // endless loops at least this long step at a third of the rate
 // The shared clock ticks halfway between two display frames, so every part of the browser agrees on
 // which frame a step belongs to. Measured from the display's frame times at start.
 let offset = 0;
@@ -16,9 +17,12 @@ function quantize(anim, finite = false) {
   const t = anim.effect.getTiming();
   if ((!finite && t.iterations !== Infinity) || anim.__stepped) return;
   anim.__stepped = true;
-  // Whole steps only (a 250 ms glide becomes 8 steps, 267 ms), so every step lands on the clock.
-  const steps = Math.max(2, Math.round(Number(t.duration) / period));
-  anim.effect.updateTiming({ easing: `steps(${steps})`, duration: steps * period });
+  // Whole steps only (a 250 ms glide becomes 8 steps, 267 ms), so every step lands on the clock. A
+  // slow endless loop (a spin of several seconds) moves a fraction of a pixel per step at full rate,
+  // so it steps on every third tick instead: the screen is not redrawn for nothing anyone can see.
+  const slow = !finite && Number(t.duration) >= SLOW_LOOP_MS ? 3 : 1;
+  const steps = Math.max(2, Math.round(Number(t.duration) / (period * slow)));
+  anim.effect.updateTiming({ easing: `steps(${steps})`, duration: steps * period * slow });
   if (anim.startTime != null) anim.startTime = align(anim.startTime);
 }
 

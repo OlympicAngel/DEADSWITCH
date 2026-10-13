@@ -664,16 +664,16 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 8px;
+  gap: 5px;
+  padding: 9px 6px;
   cursor: pointer;
   white-space: nowrap;
   background: rgba(255, 107, 61, .04);
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--muted);
-  font: 600 13px var(--font-hud);
-  letter-spacing: .06em;
+  font: 600 12px var(--font-hud);
+  letter-spacing: .03em;
   text-transform: uppercase;
 }
 
@@ -1441,6 +1441,7 @@ button:focus-visible,
   width: 100%;
   height: var(--dial);
   cursor: pointer;
+  contain: paint; /* its spinning layers repainted the whole scroller every step without this */
 }
 
 .reactor-svg {
@@ -2042,6 +2043,31 @@ button:focus-visible,
   gap: 6px;
   font-size: 13.5px;
   min-width: 0;
+}
+
+.mini [data-act='cancel-build'] {
+  margin-left: auto;
+}
+
+.build-queue {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.build-queue li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.build-queue li span {
+  flex: 1;
 }
 
 .mini b {
@@ -4763,6 +4789,7 @@ dialog.intro-modal .callsign:not(.in) {
 .battle .note,
 .battle>.btn {
   opacity: 0;
+  visibility: hidden; /* not tappable before it can be seen: a double tap skipped whole reports */
   animation: fadeIn .4s 1.9s forwards;
 }
 
@@ -4779,7 +4806,12 @@ dialog.intro-modal .callsign:not(.in) {
 @keyframes fadeIn {
   to {
     opacity: 1;
+    visibility: visible;
   }
+}
+
+dialog.arming .modal-body button {
+  pointer-events: none;
 }
 
 /* Centred in the space below the top bar, so resources stay visible. */

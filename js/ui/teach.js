@@ -5,7 +5,7 @@
 import * as E from '../engine.js';
 import { icon } from './icons.js';
 import { esc } from '../format.js';
-import { setStyle, put } from './dom.js';
+import { setStyle, put, setHidden } from './dom.js';
 
 const PAD = 8; // px of room around the target
 const CARD_GAP = 14;
@@ -13,7 +13,7 @@ const CARD_GAP = 14;
 export function createTutor(root, game, onChange) {
   const el = document.createElement('div');
   el.className = 'teach';
-  el.hidden = true;
+  setHidden(el, true);
   el.innerHTML = `
     <i class="teach-mask" data-m="t"></i><i class="teach-mask" data-m="b"></i>
     <i class="teach-mask" data-m="l"></i><i class="teach-mask" data-m="r"></i>
@@ -54,7 +54,7 @@ export function createTutor(root, game, onChange) {
       game.act.save();
     }
     lesson = null;
-    el.hidden = true;
+    setHidden(el, true);
     onChange();
   }
 
@@ -150,14 +150,14 @@ export function createTutor(root, game, onChange) {
       if (!lesson) {
         const due = s.taught ? E.lessonDue(s) : null;
         if (!due) {
-          el.hidden = true;
+          setHidden(el, true);
           return;
         }
         start(due);
       }
       // A dialog is its own lesson; stand back until it is closed.
       if (covered) {
-        el.hidden = true;
+        setHidden(el, true);
         return;
       }
       const cur = step();
@@ -165,7 +165,7 @@ export function createTutor(root, game, onChange) {
         advance();
         if (!lesson) return;
       }
-      el.hidden = false;
+      setHidden(el, false);
       const now = step();
       if (shown !== lesson.id + at) {
         shown = lesson.id + at;

@@ -5,6 +5,7 @@
 //
 // when   {} from the first second; { level: { core: 2 } } at a building level; { sectors: n },
 //        { events: n }, { items: { militia: 1 } }, { coreReady: true }: the state has to get there.
+//        { directive: n } while that directive is the live one.
 // steps  at   a selector to point at; the tutor scrolls it to the middle and cuts a hole for it
 //        say  the line
 //        done 'tap' the target, 'read' a Continue button, or a condition in the `when` shape
@@ -36,7 +37,17 @@ export const LESSONS = [
       { at: '[data-item="militia"]', say: 'Recruit some militia.', done: { items: { militia: 1 } } },
       { at: '[data-nav="command"]', say: 'Now look at what that did to me.', done: 'tap' },
       { at: '.reactor', say: 'Power takes ground. Defense holds it. Experts lift everything we produce. Threat is all three together, and it is what the wasteland sees when it looks at us.', done: 'read' },
-      { at: '.sat.tl', say: 'Tap any of the four hexes and I will take you to it.', done: 'read' },
+      { at: '.sat.tl', say: 'Each hex leads to where its number is made.', done: 'read' },
+    ],
+  },
+  {
+    // Before the first operation, not after it: the briefing is a lot to read for the first time.
+    id: 'strike', when: { directive: 4 },
+    steps: [
+      { at: '[data-nav="map"]', say: 'Ground next to ours can be taken.', done: 'tap' },
+      { at: '.node.st-target', say: 'A sector we can reach. Tap it.', done: 'tap' },
+      { at: '.duel', say: 'Our strike power against what holds it, and the odds that gives. The roll comes when the operation lands.', done: 'read' },
+      { at: '.launch', say: 'Launch sends it. It costs what is on the chips, and it takes the troops with it until it lands.', done: 'read' },
     ],
   },
   {
@@ -74,10 +85,11 @@ export const LESSONS = [
     ],
   },
   {
-    id: 'daily', when: { daily: 1 },
+    // Not in the first minute: the opening has enough to say. It waits for the first ground taken.
+    id: 'daily', when: { daily: 1, sectors: 1 },
     steps: [
-      { at: '[data-panel="daily"]', say: 'A short board of orders, posted on the hour you first look and good until the day turns over. Each counts something you do from the moment it is posted.', done: 'read' },
-      { say: 'They pay in what the base is making now, so they are worth the same at the end of the run as they are today. Clear the whole board and it pays again, and every day you clear in a row raises what the next one is worth.', done: 'read' },
+      { at: '[data-panel="daily"]', say: 'A short board of orders. It turns over at midnight. Each counts what you do from the moment it is posted.', done: 'read' },
+      { say: 'They pay in what the base makes now. Clear the whole board and it pays again. Every day cleared in a row raises the next day\'s pay.', done: 'read' },
     ],
   },
   {

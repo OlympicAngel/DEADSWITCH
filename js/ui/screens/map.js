@@ -462,7 +462,7 @@ function briefing(s, sec) {
   const running = s.op && s.op.sector === sec.id;
   return `${head}
     <div class="duel">
-      <div data-tip="factor:power"><small>${icon('power')}Your power</small><b data-power></b></div>
+      <div data-tip="text" data-tip-text="Power ×${OPS.powerMult} while attacking."><small>${icon('power')}Strike power</small><b data-power></b></div>
       <div class="odds-ring"><b data-chance></b><small>odds</small></div>
       <div><small>${icon('defense')}Their defense</small><b>${num(E.sectorDefense(s, sec))}</b></div>
     </div>
@@ -516,11 +516,13 @@ export function updateMapScreen(s, ui, refs) {
   }
   const sec = E.sectorById(ui.sector);
   const p = E.opChance(s, sec);
-  put(refs.power, num(f.power));
+  // The power an operation actually strikes with, which is what the odds and the report both use.
+  const power = E.opPower(s, f);
+  put(refs.power, num(power));
   put(refs.chance, pct(p));
   if (refs.loss) {
     const d = E.sectorDefense(s, sec);
-    put(refs.loss, `−${pct(E.lossShare(OPS.unitLoss.staff, f.power, d))} troops · −${pct(E.lossShare(OPS.unitLoss.weapons, f.power, d))} weapons`);
+    put(refs.loss, `−${pct(E.lossShare(OPS.unitLoss.staff, power, d))} troops · −${pct(E.lossShare(OPS.unitLoss.weapons, power, d))} weapons`);
   }
   setCls(refs.chance.parentElement, 'odds-ring odds-' + chanceClass(p));
   setW(refs.odds, pct(p));
@@ -531,7 +533,7 @@ export function updateMapScreen(s, ui, refs) {
   if (refs.btn) {
     const running = s.op && s.op.sector === sec.id;
     refs.btn.disabled = !E.canLaunch(s, sec);
-    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : `Launch · ${pct(p)}`);
+    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : `Launch · ${pct(p)}`);
     refs.btn.classList.toggle('risky', p < 0.5);
   }
   if (refs.opbar && s.op) {

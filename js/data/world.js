@@ -399,7 +399,7 @@ export const RAIDS = {
 export const TUTORIAL = {
   target: 'rust',
   directive: 4, // index of "Capture Rust Market" in DIRECTIVES
-  defense: 8, // what it is worth while that directive stands
+  defense: 3, // what it is worth while that directive stands: three militia (the directive before) take it at 94%
   retakeCore: 2, // the Core level that brings them back for it
   retakeDelay: 150, // seconds of visible warning before the assault lands
   retakeMargin: 1.25, // x the overrun threshold, so the first breach takes it

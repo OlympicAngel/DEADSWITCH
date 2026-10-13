@@ -5,7 +5,7 @@ import * as E from '../engine.js';
 import { esc, num, pct, rate, whole } from '../format.js';
 import { chanceClass, clock, factorTag, tags } from './common.js';
 import { createDebug } from './debug/panel.js';
-import { put, setAttr, setCls, setData, setW } from './dom.js';
+import { put, setAttr, setCls, setData, setHidden, setW } from './dom.js';
 import { setFocus } from './focus.js';
 import { stepAmbientLoops } from './framerate.js';
 import {
@@ -293,6 +293,22 @@ export function createUI(root, game) {
           flash(t, 'pop');
         }
         break;
+      case 'dequeue':
+        if (game.act.dequeue(Number(t.dataset.i))) sfx.click();
+        break;
+      // A cancel throws away the time already built, so it takes a second tap, after a beat.
+      case 'cancel-build': {
+        const since = performance.now() - Number(t.dataset.armed || 0);
+        if (t.dataset.armed && since > 600 && since < 4000) {
+          if (game.act.cancel()) sfx.click();
+        } else if (!t.dataset.armed || since >= 4000) {
+          t.dataset.armed = String(performance.now());
+          put(t.querySelector('span'), 'Tap again: refund 100%');
+          sfx.click();
+          setTimeout(() => { delete t.dataset.armed; put(t.querySelector('span'), 'Cancel'); }, 4000);
+        }
+        break;
+      }
       // Meeting an attack early is one tap to arm, then a hold: it cannot be done by accident, and
       // how far it goes is how long the hold lasts (the hold itself is wired below).
       case 'rush':
@@ -641,7 +657,7 @@ export function createUI(root, game) {
 
   function badge(id, text, cls) {
     const b = navBtns[id].querySelector('.nav-badge');
-    b.hidden = !text;
+    setHidden(b, !text);
     put(b, text === true ? '' : text || '');
     setCls(b, 'nav-badge ' + (cls || ''));
   }
@@ -660,13 +676,12 @@ export function createUI(root, game) {
     const atk = E.nextAttack(s);
     const danger = atk && E.raidChance(s, atk) < WARN.safeHold;
     badge('command', s.events.length || (danger ? '!' : ''), 'red');
-    badge('military', danger ? '!' : '', 'red');
     // Dot = something here can be built or upgraded now; the same dot marks the inner tab and the card.
+    // Military shows one or the other, written once a tick: two writes flipped its class every tick.
+    if (danger) badge('military', '!', 'red');
+    else badge('military', domainReady(s, 'military') ? true : '', 'dot');
     badge('economy', domainReady(s, 'economy') ? true : '', 'dot');
-    if (!danger) {
-      badge('military', domainReady(s, 'military') ? true : '', 'dot');
-    }
-    const target = !s.op && SECTORS.some((x) => E.sectorStatus(s, x) === 'target' && E.opChance(s, x) >= 0.8 && E.canLaunch(s, x));
+    const target = !s.op && SECTORS.some((x) => E.sectorStatus(s, x) === 'target' && E.opChance(s, x) >= WARN.safeHold && E.canLaunch(s, x));
     badge('map', target ? true : '', 'dot');
     badge('research', domainReady(s, 'research') ? true : '', 'dot');
   }

@@ -23,6 +23,29 @@ export function createModals(dialog, game, onChange) {
   let typing = null;
   let finished = true;
   let ticker = null;
+  let cinemaOff = null; // the running cut scene's tap listener, removed when it ends
+  let armTimer = 0;
+  const ARM_MS = 600;
+
+  /** Two taps for what cannot be undone: the second only counts after a beat and before the offer lapses. */
+  function twoTaps(btn, ask, idle, run) {
+    let armedAt = 0;
+    let lapse = 0;
+    btn.onclick = () => {
+      const since = performance.now() - armedAt;
+      if (armedAt && since > 700) {
+        clearTimeout(lapse);
+        armedAt = 0;
+        btn.querySelector('span').textContent = idle;
+        run();
+        return;
+      }
+      if (armedAt) return; // too quick to be a second thought
+      armedAt = performance.now();
+      btn.querySelector('span').textContent = ask;
+      lapse = setTimeout(() => { armedAt = 0; btn.querySelector('span').textContent = idle; }, 5000);
+    };
+  }
 
   // Runs once per modal. The native 'close' event is async, so by the time it fires a follow-up
   // modal may already be open; in that case it belongs to the old modal and is ignored.
@@ -73,6 +96,11 @@ export function createModals(dialog, game, onChange) {
     finished = false;
     dialog.innerHTML = `<div class="modal-body">${html}</div>`;
     dialog.className = cls;
+    // A dialog that opens under a thumb already on its way down must not take that tap as an answer:
+    // its buttons wake a moment after it appears.
+    dialog.classList.add('arming');
+    clearTimeout(armTimer);
+    armTimer = setTimeout(() => dialog.classList.remove('arming'), ARM_MS);
     onClose = then;
     if (!dialog.open) {
       dialog.showModal();
@@ -259,7 +287,13 @@ export function createModals(dialog, game, onChange) {
     }
     dialog.querySelector('#bskip').onclick = () => { sfx.click(); stopVoice(); beat(beats.length - 1); };
     // Tapping the picture finishes the line it is typing; tapping again cuts on.
-    // pointerdown so this runs before the dialog's own click handler empties `typing`.
+    // pointerdown so this runs before the dialog's own click handler empties `typing`. The dialog
+    // outlives every cut scene, so each one takes its listener away with it when it closes: left
+    // behind, they stacked, and from the second scene on one tap skipped a whole beat.
+    if (cinemaOff) cinemaOff.abort();
+    cinemaOff = new AbortController();
+    const off = cinemaOff;
+    dialog.addEventListener('close', () => off.abort(), { once: true, signal: off.signal });
     dialog.addEventListener('pointerdown', (e) => {
       if (!dialog.classList.contains('intro-modal') || at < 0 || e.target.closest('button')) {
         return;
@@ -271,9 +305,9 @@ export function createModals(dialog, game, onChange) {
         stopVoice();
         beat(at + 1);
       }
-    });
+    }, { signal: off.signal });
     if (!gate) {
-      startScore(beats[0].fx);
+      startScore(); // the first beat plays its own cue; giving it here as well played it twice
       beat(0);
       return;
     }
@@ -551,7 +585,7 @@ export function createModals(dialog, game, onChange) {
       }
       const dl = dialog.querySelector('[data-deadline]');
       dl.innerHTML = `${labeled('hourglass')}${clock(live.left)}`;
-      dl.classList.toggle('urgent', live.left < 600);
+      dl.classList.toggle('urgent', live.left < Math.max(60, live.total * 0.2));
       dialog.querySelector('[data-deadbar]').style.width = pct(live.left / live.total);
       dialog.querySelectorAll('[data-choice]').forEach((b) => {
         b.disabled = !E.canChoose(game.state, live, ev.choices[Number(b.dataset.choice)]);
@@ -864,34 +898,17 @@ export function createModals(dialog, game, onChange) {
       game.act.forgetLessons();
       close();
     };
-    let restoreArmed = false;
-    const restoreBtn = $('#mRestore');
-    restoreBtn.onclick = async () => {
-      if (!restoreArmed) {
-        restoreArmed = true;
-        restoreBtn.querySelector('span').textContent = 'Tap again to roll back';
-        msg.textContent = 'This replaces the run with the one this session started from.';
-        return;
-      }
+    twoTaps($('#mRestore'), 'Tap again to roll back', 'Restore last session', async () => {
       msg.textContent = (await game.act.restore()) ? 'Rolled back.' : 'Nothing to roll back to.';
-      restoreArmed = false;
-      restoreBtn.querySelector('span').textContent = 'Restore last session';
-    };
+    });
     $('#mDev').onclick = () => {
       game.dev.panel.toggle();
       close();
     };
-    let armed = false;
-    const resetBtn = $('#mReset');
-    resetBtn.onclick = () => {
-      if (!armed) {
-        armed = true;
-        resetBtn.querySelector('span').textContent = 'Tap again to wipe';
-        return;
-      }
+    twoTaps($('#mReset'), 'Tap again to wipe', 'Wipe progress', () => {
       game.act.reset();
       close();
-    };
+    });
   }
 
   // Shows the next queued story beat or report, one at a time. Items leave the inbox once seen.

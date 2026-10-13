@@ -9,6 +9,7 @@ import { tags, clock, chanceClass, bonusText } from '../common.js';
 import { put, putHtml, setCls, setData, setW, setAttr, setStyle } from '../dom.js';
 import { onScreen } from '../onscreen.js';
 import { mapBackdrop } from '../minimap.js';
+import { DOMAINS, readyCount } from '../layout.js';
 
 const R = 160; // reactor centre in its 320 viewBox
 
@@ -248,20 +249,35 @@ function opPanel(s, refs) {
   setW(el.querySelector('[data-b]'), pct(1 - s.op.remaining / s.op.total));
 }
 
+/** The builds waiting behind the builder, each with a way out of the line. */
+function queueList(s) {
+  if (!s.queue.length) return '';
+  return `<ol class="build-queue">${s.queue.map((id, i) => `<li>${icon(id)}<span>${BY_ID[id].name}</span>
+    <button class="icon-btn small" data-act="dequeue" data-i="${i}" aria-label="Remove ${BY_ID[id].name} from the queue">${icon('close')}</button></li>`).join('')}</ol>`;
+}
+
 function buildPanel(s, refs) {
+  const line = s.queue.join();
   if (!s.build) {
-    slot(refs, 'build', 'idle', `
+    // Where something can be built right now: the button goes straight there.
+    const ready = Object.entries(DOMAINS).flatMap(([d, x]) => x.tabs.map((t) => [d, t, readyCount(s, t)])).filter(([, , n]) => n > 0);
+    const n = ready.reduce((a, [, , k]) => a + k, 0);
+    const go = ready.length ? `${ready[0][0]}:${ready[0][1].id}` : 'economy';
+    slot(refs, 'build', `idle${n}${go}|${line}`, `
       <header>${icon('economy')}Construction</header>
-      <p class="idle warn-t">Builder idle</p>
-      <button class="btn ghost small" data-go="economy">${icon('up')}Build</button>`);
+      <p class="idle warn-t">Builder idle${n ? ` · ${n} ready` : ''}${s.queue.length ? ' · queue waiting on the stores' : ''}</p>
+      ${queueList(s)}
+      <button class="btn ghost small" data-go="${go}">${icon('up')}Build</button>`);
     return;
   }
   const b = BY_ID[s.build.id];
-  const el = slot(refs, 'build', s.build.id, `
-    <header>${icon('economy')}Construction</header>
-    <div class="mini">${icon(b.id)}<b>${b.name}</b></div>
-    <div class="mini-stats"><span>Lv ${E.level(s, b.id)} → ${E.level(s, b.id) + 1}</span><span data-t></span></div>
-    <div class="timebar"><i data-b></i></div>`);
+  const el = slot(refs, 'build', `${s.build.id}|${line}`, `
+    <header>${icon('economy')}Construction<span class="count-badge" data-tip="text" data-tip-text="Builds waiting: ${s.queue.length} of ${E.queueSlots(s)}.">${s.queue.length}/${E.queueSlots(s)}</span></header>
+    <div class="mini">${icon(b.id)}<b>${b.name}</b>
+      <button class="btn ghost tiny" data-act="cancel-build"><span>Cancel</span></button></div>
+    <div class="mini-stats"><span data-tip="text" data-tip-text="Level now and the level this build reaches.">Lv ${E.level(s, b.id)} → ${E.level(s, b.id) + 1}</span><span data-t></span></div>
+    <div class="timebar"><i data-b></i></div>
+    ${queueList(s)}`);
   putHtml(el.querySelector('[data-t]'), `${labeled('clock')}${clock(s.build.remaining)}`);
   setW(el.querySelector('[data-b]'), pct(1 - s.build.remaining / s.build.total));
 }

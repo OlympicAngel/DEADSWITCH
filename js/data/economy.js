@@ -50,6 +50,9 @@ export const BALANCE = {
   // attacksPerHour x the hours counted is how many attacks may land, up to maxAttacks.
   offline: { graceSeconds: 120, warHours: 8, attacksPerHour: 0.5, maxAttacks: 4,
     baseHours: 0, hoursPerStep: 1, baseEfficiency: 0.5, efficiencyPerStep: 0.05, maxEfficiency: 0.8 },
+  // Builds waiting behind the one under way. Each is paid for when it starts, not when it is queued,
+  // and starts the moment the builder is free and the stores can pay (away or not).
+  buildQueue: { slots: 2, more: 2, moreAtCore: 5 },
 };
 
 // kind: 'core' | 'producer' | 'converter' | 'storage' | 'offline' | 'unlocker'

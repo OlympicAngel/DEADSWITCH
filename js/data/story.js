@@ -806,7 +806,7 @@ export const DAILY = {
 // req: a gate, so nothing asks for a system the player has not got yet.
 export const DAILY_TASKS = [
   { id: 'hold', icon: 'defense', text: 'Hold {n} attacks', stat: 'raidsWon', n: [2, 4], weight: 1.1, req: { core: 2 } },
-  { id: 'take', icon: 'map', text: 'Capture {n} sectors', stat: 'opsWon', n: [1, 2], weight: 1.7 },
+  { id: 'take', icon: 'map', text: 'Capture {n} sectors', stat: 'opsWon', n: [1, 2], weight: 1.7, req: { barracks: 1 } },
   { id: 'answer', icon: 'message', text: 'Answer {n} transmissions', stat: 'events', n: [2, 4], weight: 1 },
   { id: 'build', icon: 'build', text: 'Finish {n} builds', stat: 'builds', n: [2, 4], weight: 1 },
   { id: 'recruit', icon: 'militia', text: 'Add {n} units to the arsenal', stat: 'bought', n: [12, 30], weight: 0.9 },
@@ -818,7 +818,7 @@ export const DIRECTIVES = [
   { text: 'Upgrade the Scrap Yard', cond: { level: 'scrapyard', n: 2 }, reward: { money: 90 } },
   { text: 'Build a Battery Bank', cond: { level: 'battery', n: 1 }, reward: { energy: 75 } },
   { text: 'Build the Barracks', cond: { level: 'barracks', n: 1 }, reward: { money: 120 } },
-  { text: 'Recruit Militia', cond: { item: 'militia', n: 1 }, reward: { pop: 15 } },
+  { text: 'Recruit 3 Militia', cond: { item: 'militia', n: 3 }, reward: { pop: 15 } },
   { text: 'Capture Rust Market', cond: { sector: 'rust' }, reward: { money: 225 } },
   { text: 'Upgrade the AI Core to Lv 2', cond: { level: 'core', n: 2 }, reward: { money: 300, energy: 120 } },
   { text: 'Build Fortification Works', cond: { level: 'works', n: 1 }, reward: { money: 300 } },
