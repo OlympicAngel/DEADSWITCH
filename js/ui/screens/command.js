@@ -1,6 +1,6 @@
 // Command: the war room. Threat reactor in the middle, live feeds for every front around it.
 import {
-  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS,
+  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS, WARN,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
@@ -190,13 +190,13 @@ function raidPanel(s, refs) {
       const after = E.raidChance(s, { ...raid, strength: price.strength });
       putHtml(rush, armed
         ? `${icon('alert')}Hold · ${pct(after)}`
-        : `${icon('clock')}Meet now <em>+${pct(price.strength / raid.strength - 1)} strength</em>`);
+        : `${icon('clock')}Meet now <em>raid +${pct(price.strength / raid.strength - 1)}</em>`);
       btn.classList.toggle('danger', armed);
       setW(el.querySelector('[data-rushfill]'), pct(price.held));
     }
   }
   const max = Math.max(def, raid.strength, 1);
-  setData(el, 'level', p < 0.5 ? 'danger' : 'warn');
+  setData(el, 'level', p < 0.5 ? 'danger' : p < WARN.safeHold ? 'warn' : 'safe');
   el.classList.toggle('imminent', raid.remaining < 60);
   el.classList.toggle('has-map', !!place);
   put(el.querySelector('[data-count]'), clock(raid.remaining));
@@ -260,24 +260,26 @@ function buildPanel(s, refs) {
   const el = slot(refs, 'build', s.build.id, `
     <header>${icon('economy')}Construction</header>
     <div class="mini">${icon(b.id)}<b>${b.name}</b></div>
-    <div class="mini-stats"><span>Lv ${E.level(s, b.id) + 1}</span><span data-t></span></div>
+    <div class="mini-stats"><span>Lv ${E.level(s, b.id)} → ${E.level(s, b.id) + 1}</span><span data-t></span></div>
     <div class="timebar"><i data-b></i></div>`);
   putHtml(el.querySelector('[data-t]'), `${labeled('clock')}${clock(s.build.remaining)}`);
   setW(el.querySelector('[data-b]'), pct(1 - s.build.remaining / s.build.total));
 }
 
 function eventsPanel(s, refs) {
-  const key = s.events.map((x) => x.uid).join(',');
+  // Soonest deadline first: the order about to answer itself is the one that has to be seen.
+  const list = s.events.slice().sort((a, b) => a.left - b.left);
+  const key = list.map((x) => x.uid).join(',');
   if (!s.events.length) {
     slot(refs, 'events', 'none', `<header>${icon('message')}Transmissions</header><p class="idle">No orders pending.</p>`);
     return;
   }
   // The order closest to its deadline sets the scene behind the list.
-  const lead = s.events.reduce((a, x) => (x.left < a.left ? x : a));
+  const lead = list[0];
   const where = [(lead.params || {}).held, (lead.params || {}).node].filter((id) => E.sectorById(id));
   const el = slot(refs, 'events', key + where.join(), `<header>${icon('message')}Transmissions<span class="count-badge">${s.events.length}</span></header>
     ${where.length ? mapBackdrop(s, where, { cls: 'panel' }) : ''}
-    ${s.events.map((x) => {
+    ${list.map((x) => {
       const ev = E.eventById(x.id);
       return `<button class="tx ${ev.aftermath || ev.urgent ? 'crisis' : ''}" data-act="event" data-uid="${x.uid}">
         ${icon(ev.aftermath ? 'fire' : 'message')}<span><b>${esc(E.fillText(x, ev.title))}</b><small>${ev.aftermath ? 'Damage report' : ev.urgent ? 'Urgent' : 'Decision required'}</small></span>
@@ -348,5 +350,9 @@ function effectsPanel(s, refs) {
 function feedPanel(s, refs) {
   const key = 'f' + s.lineSeq;
   slot(refs, 'feed', key, `<header>${icon('message')}System feed<button class="btn ghost small" data-act="archive">${icon('book')}Archive</button></header>
-    <ol>${s.log.slice(-6).reverse().map((l) => `<li class="tone-${l.tone}"><time>${time(l.t)}</time><span>${esc(l.text)}</span></li>`).join('')}</ol>`);
+    <ol>${s.log.slice(-6).reverse().map((l) => `<li class="tone-${l.tone}"><time data-at="${l.t}"></time><span>${esc(l.text)}</span></li>`).join('')}</ol>`);
+  // How long ago, not when in play time: "3h" beside a line read as three hours ago anyway.
+  for (const t of refs.panels.feed.querySelectorAll('time[data-at]')) {
+    put(t, time(Math.max(0, s.playTime - Number(t.dataset.at))));
+  }
 }

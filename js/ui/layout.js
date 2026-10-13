@@ -16,16 +16,16 @@ export const DOMAINS = {
     title: 'Economy', factors: [],
     tabs: [
       { id: 'production', name: 'Production', icon: 'trend', kinds: ['core', 'producer'] },
-      { id: 'conversion', name: 'Conversion', icon: 'exchange', kinds: ['converter'] },
       { id: 'storage', name: 'Storage', icon: 'battery', kinds: ['storage', 'offline'] },
+      { id: 'conversion', name: 'Conversion', icon: 'exchange', kinds: ['converter'] },
     ],
   },
   military: {
     title: 'Military', factors: ['power', 'defense'],
     tabs: [
+      { id: 'troops', name: 'Troops', icon: 'militia', unlocker: 'barracks', shop: 'staff' },
       { id: 'offense', name: 'Offense', icon: 'power', unlocker: 'armory', shop: 'weapons' },
       { id: 'defense', name: 'Defense', icon: 'defense', unlocker: 'works', shop: 'defenses' },
-      { id: 'troops', name: 'Troops', icon: 'militia', unlocker: 'barracks', shop: 'staff' },
     ],
   },
   research: {
@@ -84,12 +84,10 @@ export function domainReady(s, domain) {
   return !!d && d.tabs.some((t) => readyCount(s, t) > 0);
 }
 
-const ORDER = { open: 0, available: 1, locked: 2 };
-
-// Unlocked first, locked last; declared order breaks ties.
+// Tabs keep the order they are declared in, which is the order they unlock in: a tab never moves
+// under the player's thumb, and the locked one waits at the end.
 export function sortedTabs(s, domain) {
-  return DOMAINS[domain].tabs.map((t, i) => ({ t, i, st: tabStatus(s, t) }))
-    .sort((a, b) => ORDER[a.st] - ORDER[b.st] || a.i - b.i);
+  return DOMAINS[domain].tabs.map((t, i) => ({ t, i, st: tabStatus(s, t) }));
 }
 
 // Where a building or a shop item lives, for directive "Go" buttons and alerts.

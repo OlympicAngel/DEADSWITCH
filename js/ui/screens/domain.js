@@ -20,7 +20,7 @@ export function renderDomain(s, ui, domain) {
   const d = DOMAINS[domain];
   const tabs = sortedTabs(s, domain);
   if (!tabs.some((x) => x.t.id === ui.inner[domain])) {
-    ui.inner[domain] = tabs[0].t.id;
+    ui.inner[domain] = (tabs.find((x) => x.st !== 'locked') || tabs[0]).t.id;
   }
   const tab = d.tabs.find((t) => t.id === ui.inner[domain]);
   const tabBar = tabs.map(({ t, st }) => `

@@ -1,6 +1,6 @@
 // App shell: top bar, alert strip, screen router, bottom navigation and the frame loop.
 // Screens rebuild only on structural change; numbers and timers are patched in place every frame.
-import { BUILDINGS, ITEMS, ITEM_BY_ID, NODES, RANKS, RESOURCE_KEYS, SECTORS } from '../data.js';
+import { BUILDINGS, ITEMS, ITEM_BY_ID, NODES, RANKS, RESOURCE_KEYS, SECTORS, WARN } from '../data.js';
 import * as E from '../engine.js';
 import { esc, num, pct, rate, whole } from '../format.js';
 import { chanceClass, clock, factorTag, tags } from './common.js';
@@ -145,10 +145,7 @@ export function createUI(root, game) {
       return;
     }
     const s = game.state;
-    // A locked bottom-nav item does nothing.
-    if (t.dataset.nav && t.classList.contains('locked')) {
-      return;
-    }
+    // A locked bottom-nav item leads to what unlocks it, like every other locked thing.
     // Locked things lead to what unlocks them.
     if (t.dataset.req) {
       const l = locate('building', t.dataset.req);
@@ -379,7 +376,9 @@ export function createUI(root, game) {
     const base = [ui.screen, ui.inner[ui.screen]];
     if (ui.screen === 'command') return JSON.stringify(base);
     if (ui.screen === 'map') {
-      const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(2)}${n.marks}`).join();
+      // Strength to one place: the labels drift a little between rebuilds, and the map is not rebuilt
+      // (and the drag under the player's finger not cut) every time some sector gains a hundredth.
+      const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(1)}${n.marks}`).join();
       const postures = Object.values(s.clans).map((c) => c.stances.join('')).join('|');
       const beams = E.attacks(s).map((a) => (E.attackPlace(s, a) || []).join()).join('|');
       return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, s.chapter, s.ending, E.level(s, 'core')]);
@@ -397,7 +396,9 @@ export function createUI(root, game) {
     }
     setData(app, 'screen', ui.screen);
     const key = structureKey(s);
-    if (key !== ui.key) {
+    // Never rebuild the map out from under a finger: wait for the drag or pinch to end.
+    const holding = ui.screen === 'map' && view.querySelector('[data-mapview].dragging');
+    if (key !== ui.key && !holding) {
       ui.key = key;
       const scroll = view.scrollTop;
       const oldSegs = view.querySelector('.segs');
@@ -428,9 +429,12 @@ export function createUI(root, game) {
       view.scrollTop = scroll;
       centerTab(segsScroll, entered);
       ui.logDirty = true;
-      if (ui.screen === 'map' && (ui.lastScreen !== 'map' || ui.sheet)) {
+      // Centre only when where the player is looking changed, not on every rebuild.
+      const look = `${ui.sector}|${ui.sheet}`;
+      if (ui.screen === 'map' && (ui.lastScreen !== 'map' || (ui.sheet && look !== ui.lastLook))) {
         focusSector();
       }
+      ui.lastLook = look;
       ui.lastScreen = ui.screen;
       if (ui.coach) {
         coach(ui.coach);
@@ -549,7 +553,6 @@ export function createUI(root, game) {
   // Floating alerts: open full width when new, fold into a blinking badge after FLOAT_OPEN_MS or
   // when dismissed; tapping the badge opens it again. Attacks we are likely to hold are not shown.
   const FLOAT_OPEN_MS = 30000;
-  const SAFE_HOLD = 0.8;
   ui.floats = {};
 
   function floatState(key) {
@@ -563,18 +566,22 @@ export function createUI(root, game) {
     return f;
   }
 
+  // One attack, one signature: strength is not part of it, because holding an attack in changes
+  // its strength every step and each step would otherwise read as a fresh attack.
+  const sig = (a) => a.faction + (a.from || '') + Math.round(a.total) + (a.assault ? 'a' : a.siege ? 's' : 'r');
+
   function updateAlerts(s) {
     const box = root.querySelector('[data-floats]');
     const items = [];
     // Command already shows both of these in full, so the floats would only cover the reactor.
     const quiet = ui.screen === 'command';
-    const threats = quiet ? [] : E.attacks(s).filter((a) => E.raidChance(s, a) < SAFE_HOLD);
+    const threats = quiet ? [] : E.attacks(s).filter((a) => E.raidChance(s, a) < WARN.safeHold);
     const atk = threats[0] || null;
     if (atk) {
       const p = E.raidChance(s, atk);
       const more = threats.length - 1;
       items.push({
-        key: 'atk:' + threats.map((a) => a.faction + a.strength).join(','), level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
+        key: 'atk:' + threats.map(sig).join(','), level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
         body: `<button class="fl-body" data-go="command"><span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b data-t></b><em data-h></em></button>`,
         time: clock(atk.remaining), hold: `hold ${pct(p)}`, holdCls: 'chance-' + chanceClass(p),
       });
@@ -619,9 +626,6 @@ export function createUI(root, game) {
     if (!atk) {
       ui.imminent = false;
     }
-    // One attack, one signature: strength is not part of it, because holding an attack in changes
-    // its strength every step and each step would otherwise read as a fresh attack.
-    const sig = (a) => a.faction + (a.from || '') + Math.round(a.total) + (a.assault ? 'a' : a.siege ? 's' : 'r');
     const key = E.attacks(s).map(sig).join(',');
     const newest = E.attacks(s).find((a) => !(ui.raidKey || '').split(',').includes(sig(a)));
     if (newest && ui.raidKey !== null) {
@@ -629,7 +633,8 @@ export function createUI(root, game) {
       vibrate([150, 80, 150, 80, 300]);
       shake();
       screenFlash('alert');
-      toast(`${icon('alert')}<b>${E.attackName(newest)} inbound</b> Arrives in ${clock(newest.remaining)}`, 'bad');
+      // Off Command the alert strip already says it, full width; a toast on top would say it twice.
+      if (quiet) toast(`${icon('alert')}<b>${E.attackName(newest)} inbound</b> Arrives in ${clock(newest.remaining)}`, 'bad');
     }
     ui.raidKey = key;
   }
@@ -653,7 +658,7 @@ export function createUI(root, game) {
       }
     }
     const atk = E.nextAttack(s);
-    const danger = atk && E.raidChance(s, atk) < 0.8;
+    const danger = atk && E.raidChance(s, atk) < WARN.safeHold;
     badge('command', s.events.length || (danger ? '!' : ''), 'red');
     badge('military', danger ? '!' : '', 'red');
     // Dot = something here can be built or upgraded now; the same dot marks the inner tab and the card.

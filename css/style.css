@@ -15,7 +15,7 @@
   --hud-glow: rgba(255, 107, 61, .35);
   --text: #dfe7ec;
   --muted: #8396a3;
-  --dim: #556773;
+  --dim: #748896; /* small text on panels: 4.5:1 or better */
   --ok: #5fd38d;
   --warn: #ffb03d;
   --bad: #ff5d5d;
@@ -184,6 +184,7 @@ p {
   }
 
   .app {
+    max-width: 480px;
     border-left: 1px solid var(--line);
     border-right: 1px solid var(--line);
     box-shadow: 0 0 80px rgba(255, 107, 61, .07);
@@ -385,6 +386,13 @@ p {
   width: 100%;
 }
 
+.pill-body b,
+.pill-body small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
 .pill-body b {
   font: 600 13px/1 var(--font-num);
   color: var(--text);
@@ -540,13 +548,8 @@ p {
   background: rgba(255, 93, 93, .14);
   border-color: rgba(255, 93, 93, .6);
   color: var(--bad);
-  animation: alertPulse 1.2s ease-in-out infinite;
-}
-
-@keyframes alertPulse {
-  50% {
-    box-shadow: 0 0 16px rgba(255, 93, 93, .45);
-  }
+  /* A glow, held still: an animated box-shadow repaints every frame (AGENTS.md battery rule). */
+  box-shadow: 0 0 12px rgba(255, 93, 93, .35);
 }
 
 /* =================== View & screens =================== */
@@ -650,16 +653,19 @@ p {
   gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
-  background: linear-gradient(180deg, var(--bg-2) 70%, transparent);
+  background: var(--bg-2);
+  box-shadow: 0 8px 10px -6px var(--bg-2);
 }
 
+/* Three tabs share the row at any phone width; a long name gives up letters, not the row. */
 .seg {
-  flex: 1 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 9px 12px;
+  padding: 9px 8px;
   cursor: pointer;
   white-space: nowrap;
   background: rgba(255, 107, 61, .04);
@@ -676,6 +682,11 @@ p {
   background: var(--hud);
   border-color: var(--hud);
   box-shadow: 0 0 16px var(--hud-glow);
+}
+
+.seg span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .seg.st-locked {
@@ -758,7 +769,8 @@ p {
 }
 
 .card.locked {
-  opacity: .5;
+  opacity: .75;
+  filter: grayscale(1);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1372,7 +1384,7 @@ p {
 }
 
 .btn.danger:not(:disabled) {
-  background: linear-gradient(180deg, #ff7a7a, #d93a3a);
+  background: linear-gradient(180deg, #d93a3a, #b42828);
   color: #fff;
   box-shadow: 0 0 18px rgba(255, 93, 93, .4);
 }
@@ -1388,6 +1400,7 @@ p {
 }
 
 .btn.small {
+  min-height: 36px;
   padding: 7px 10px;
   font-size: 11.5px;
 }
@@ -1407,6 +1420,12 @@ button:focus-visible,
 [data-sector]:focus-visible {
   outline: 2px solid var(--warn);
   outline-offset: 2px;
+}
+
+/* A chamfered button clips its own outline away, so its focus ring is drawn inside the cut. */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--warn), inset 0 0 0 4px #000;
 }
 
 /* =================== Command (war room) =================== */
@@ -1802,7 +1821,22 @@ button:focus-visible,
 }
 
 .incoming.imminent {
-  animation: alertPulse .8s ease-in-out infinite;
+  box-shadow: 0 0 16px rgba(255, 93, 93, .45);
+}
+
+/* Held comfortably: still on the way, but nothing to shout about. */
+.incoming[data-level='safe'] {
+  border-color: rgba(95, 211, 141, .35);
+}
+
+.incoming[data-level='safe']>header {
+  color: var(--ok);
+}
+
+.incoming[data-level='safe'] .blink-dot {
+  animation: none;
+  background: var(--ok);
+  opacity: .6;
 }
 
 .incoming .timebar i {
@@ -2292,6 +2326,8 @@ button:focus-visible,
 
 /* =================== Map =================== */
 .map-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--line);
   border-radius: var(--r);
   overflow: hidden;
@@ -2327,6 +2363,11 @@ button:focus-visible,
 
 .node {
   cursor: pointer;
+}
+
+.node .hit {
+  fill: transparent;
+  stroke: none;
 }
 
 .node .hex {
@@ -2443,14 +2484,10 @@ button:focus-visible,
   transform: scale(1.08);
 }
 
+/* The sector an operation is on wears the crosshair (an HTML layer); its hex is not animated, since a
+   looping stroke repaints the whole map every frame. */
 .node.attacking .hex {
-  animation: underFire .5s steps(2) infinite;
-}
-
-@keyframes underFire {
-  50% {
-    stroke: var(--warn);
-  }
+  stroke: var(--warn);
 }
 
 .legend {
@@ -2827,7 +2864,7 @@ button:focus-visible,
 }
 
 .nav-btn.locked {
-  color: #3a4a55;
+  color: var(--dim);
 }
 
 .nav-btn.locked .nav-ico {
@@ -2870,7 +2907,7 @@ button:focus-visible,
   font-style: normal;
   text-align: center;
   color: #fff;
-  background: var(--bad);
+  background: #c62f2f; /* white on it at 5.5:1 */
   box-shadow: 0 0 10px rgba(255, 93, 93, .6);
   animation: badgePop .4s var(--spring);
 }
@@ -3357,7 +3394,7 @@ dialog::backdrop {
   padding: 12px;
 }
 
-.menu-actions .danger {
+.menu-actions .btn.danger:not(:disabled) {
   grid-column: 1 / -1;
   background: rgba(255, 93, 93, .1);
   color: var(--bad);
@@ -3926,7 +3963,6 @@ dialog.intro-modal .modal-body {
   to {
     transform: rotate(var(--a)) translateX(78vmin) scale(calc(var(--r) * 2.6));
     opacity: 0;
-    filter: blur(3px);
   }
 }
 
@@ -4917,7 +4953,7 @@ dialog.intro-modal .callsign:not(.in) {
   display: none;
 }
 
-@media (orientation: landscape) and (max-height: 520px) {
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
   .app {
     display: none;
   }
@@ -5317,7 +5353,7 @@ dialog {
   border: 1px solid rgba(255, 176, 61, .6);
   background: rgba(255, 176, 61, .1);
   color: var(--warn);
-  animation: alertPulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(255, 176, 61, .25);
 }
 
 .op-banner span {
@@ -5909,8 +5945,8 @@ dialog.report:has(.battle.def.loss) {
 
 .map-viewport {
   position: relative;
-  height: calc(100% - 39px);
-  min-height: 360px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   touch-action: none;
   cursor: grab;
@@ -6751,7 +6787,7 @@ dialog.report:has(.battle.def.loss) {
 }
 
 .notify-why {
-  margin: -4px 0 8px;
+  margin: 8px 0;
   font-size: 11px;
 }
 

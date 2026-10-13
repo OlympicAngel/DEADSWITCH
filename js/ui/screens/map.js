@@ -138,7 +138,7 @@ function bindPan(root) {
     points.set(e.pointerId, at(e));
     if (points.size === 2) {
       const [a, b] = [...points.values()];
-      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom };
+      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom, mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
       drag = null;
       moved = true; // a pinch must not land as a tap on a sector
       return;
@@ -150,7 +150,13 @@ function bindPan(root) {
     if (points.has(e.pointerId)) points.set(e.pointerId, at(e));
     if (pinch && points.size >= 2) {
       const [a, b] = [...points.values()];
-      setZoom(view, world, (pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.dist, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      // Two fingers moving together carry the map with them; spreading them zooms around their middle.
+      pan.x += mid.x - pinch.mid.x;
+      pan.y += mid.y - pinch.mid.y;
+      pinch.mid = mid;
+      applyPan(view, world);
+      setZoom(view, world, (pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.dist, mid.x, mid.y);
       return;
     }
     if (!drag || e.pointerId !== drag.id) return;
@@ -168,16 +174,31 @@ function bindPan(root) {
   });
   const end = (e) => {
     points.delete(e.pointerId);
-    if (points.size < 2) pinch = null;
     drag = null;
-    view.classList.remove('dragging');
+    if (points.size === 1 && pinch) {
+      // One finger lifted off a pinch: the one still down goes on dragging from where it is.
+      const [[id, p]] = [...points.entries()];
+      const r = view.getBoundingClientRect();
+      drag = { id, x: p.x + r.left, y: p.y + r.top, px: pan.x, py: pan.y };
+    }
+    if (points.size < 2) pinch = null;
+    if (!drag) view.classList.remove('dragging');
   };
   view.addEventListener('pointerup', end);
   view.addEventListener('pointercancel', end);
   view.addEventListener('wheel', (e) => {
     e.preventDefault();
+    const unit = e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1; // lines and pages, in pixels
+    const dx = e.deltaX * unit;
+    const dy = e.deltaY * unit;
+    // A trackpad swipe sideways pans; a wheel or a pinch (ctrl) zooms by as much as it turned.
+    if (!e.ctrlKey && Math.abs(dx) > Math.abs(dy)) {
+      pan.x -= dx;
+      applyPan(view, world);
+      return;
+    }
     const p = at(e);
-    setZoom(view, world, zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), p.x, p.y);
+    setZoom(view, world, zoom * Math.exp(-Math.max(-120, Math.min(120, dy)) * (e.ctrlKey ? 0.01 : 0.0018)), p.x, p.y);
   }, { passive: false });
   for (const b of root.querySelectorAll('[data-zoom]')) {
     b.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -292,6 +313,7 @@ function renderTheater(s, ui) {
     const ic = st === 'owned' ? (x.id === MAP.home ? 'core' : 'check') : st === 'locked' ? 'lock' : known ? FACTIONS[f].icon : 'hex';
     return `
       <g class="node st-${st} ${x.boss ? 'boss' : ''} ${ui.sector === x.id ? 'sel' : ''} ${s.op && s.op.sector === x.id ? 'attacking' : ''}" data-sector="${x.id}" transform="translate(${p.x},${p.y})" style="--fc:${color}" tabindex="0" role="button" aria-label="${esc(label)}">
+        <circle class="hit" r="${r + 26}" cy="${r * 0.6}"/>
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
         <text class="name" dy="${r + 34}">${esc(label)}</text>
@@ -509,7 +531,7 @@ export function updateMapScreen(s, ui, refs) {
   if (refs.btn) {
     const running = s.op && s.op.sector === sec.id;
     refs.btn.disabled = !E.canLaunch(s, sec);
-    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : p < 0.5 ? 'Launch anyway' : 'Launch');
+    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : `Launch · ${pct(p)}`);
     refs.btn.classList.toggle('risky', p < 0.5);
   }
   if (refs.opbar && s.op) {

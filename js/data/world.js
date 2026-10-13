@@ -362,7 +362,9 @@ export const OPS = {
 // How long an attack is visible before it lands: half the warning it used to carry, plus the time
 // one of our own operations would need to cover that ground, so a strike out of the next sector
 // barely gives us time to turn around and one from deep in their territory is seen coming.
-export const WARN = { share: 0.5, travel: 3, floor: 45 };
+export const WARN = { share: 0.5, travel: 3, floor: 45,
+  safeHold: 0.8, // an attack held at least this likely raises no alarm: no alert strip, no red badge, a calm panel
+};
 
 export const RAIDS = {
   startAtCore: 2,
