@@ -70,6 +70,7 @@ export function newState(seed = 1) {
     buffs: [],
     align: 0,
     directive: 0,
+    directives: 2, // which edition of DIRECTIVES the index above counts in (migrate() moves older ones)
     chapter: 0,
     ending: null,
     stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0 },
@@ -152,6 +153,11 @@ export function migrate(raw) {
     s[k] = Number.isFinite(Number(raw[k])) ? Math.min(hi, Math.max(lo, Number(raw[k]))) : base[k];
   }
   s.stats = { ...base.stats, ...raw.stats };
+  // Edition 2 put three directives after Capture Rust Market: a run already past it moves along with them.
+  if ((raw.directives || 1) < 2 && s.directive > TUTORIAL.directive) {
+    s.directive += 3;
+  }
+  s.directives = 2;
   s.sectors = Array.isArray(raw.sectors) ? raw.sectors : base.sectors;
   s.buffs = (Array.isArray(raw.buffs) ? raw.buffs : []).filter((b) => b && typeof b.key === 'string'
     && Number.isFinite(b.amount) && Number.isFinite(b.remaining));

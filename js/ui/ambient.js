@@ -104,7 +104,7 @@ function read(s) {
 function weight() {
   const held = (bed.ctx.currentTime - bed.since) - FADE_AFTER;
   const tired = held <= 0 ? 1 : Math.max(FADE_FLOOR, 1 - (held / 90) * (1 - FADE_FLOOR));
-  return tired * (0.8 + bed.now.tension * 0.35);
+  return tired * (0.8 + bed.now.tension * 0.35) * bed.duck;
 }
 
 // One eighth note. The pattern says what lands; the mood says how hard.
@@ -113,17 +113,20 @@ function pulse(n) {
   const w = weight();
   const slot = mood.bars[bed.bar % mood.bars.length][n % BAR];
   const chord = bed.chord;
+  // Each note lands where the lookahead put it, not whenever the timer happened to run.
+  const at = Math.max(0, bed.next - bed.ctx.currentTime);
   if (slot === 'K') {
-    voice('music', chord[0] * 0.5, 0.4, { type: 'sine', vol: mood.hit * w, slide: -8, wet: 0.22 });
-    air('music', 0.09, { vol: 0.02 * w, freq: 170, q: 2, wet: 0.3 });
+    // An octave above the root's sub: a phone speaker plays nothing at 27 Hz.
+    voice('music', chord[0], 0.4, { type: 'sine', vol: mood.hit * w, slide: -8, wet: 0.22, at });
+    air('music', 0.09, { vol: 0.02 * w, freq: 170, q: 2, wet: 0.3, at });
   } else if (slot === 't') {
-    air('music', 0.045, { vol: 0.016 * w, freq: 5600, q: 3.5, type: 'bandpass', wet: 0.45 });
+    air('music', 0.045, { vol: 0.016 * w, freq: 5600, q: 3.5, type: 'bandpass', wet: 0.45, at });
   } else if (slot === 'o') {
     // The off-beat accent carries the harmony, so the rhythm says something as well as keeping time.
-    voice('music', chord[1 + (bed.bar % (chord.length - 1))], 0.3, { type: 'triangle', vol: 0.028 * w, wet: 0.6 });
+    voice('music', chord[1 + (bed.bar % (chord.length - 1))], 0.3, { type: 'triangle', vol: 0.028 * w, wet: 0.6, at });
   }
   if (shimmer && n % BAR === 10) {
-    voice('music', chord[chord.length - 1] * 4, 0.5, { type: 'sine', vol: 0.014 * shimmer, wet: 0.8 });
+    voice('music', chord[chord.length - 1] * 4, 0.5, { type: 'sine', vol: 0.014 * shimmer * bed.duck, wet: 0.8, at });
   }
 }
 
@@ -164,7 +167,7 @@ export function startAmbient(s) {
   const now = read(s);
   bed = {
     ctx: b.ctx, pad, now, bar: -1, chord: now.mood.chords[0].map((n) => semitone(now.root, n)),
-    step: 0, next: b.ctx.currentTime + 0.1, since: b.ctx.currentTime, timer: setInterval(pump, 90),
+    step: 0, next: b.ctx.currentTime + 0.1, since: b.ctx.currentTime, timer: setInterval(pump, 90), duck: 1,
   };
 }
 
@@ -203,7 +206,9 @@ export function duckAmbient(on) {
   if (!bed) {
     return;
   }
-  ramp(bed.pad.gain.gain, on ? bed.now.mood.gain * 0.12 : bed.now.mood.gain * weight(), bed.ctx.currentTime, 0.5);
+  // Held in `duck` so the next chord change and every beat of the rhythm stay down with it.
+  bed.duck = on ? 0.12 : 1;
+  ramp(bed.pad.gain.gain, bed.now.mood.gain * weight(), bed.ctx.currentTime, 0.5);
 }
 
 /** What the bed is doing, for the developer panel. */

@@ -10,6 +10,8 @@ import * as store from './host/store.js';
 import { createPresence } from './host/presence.js';
 import { scheduleAlerts, refreshAlerts, cancelAlerts, setBadge, clearBadge, askForBackground } from './host/notify.js';
 import { startAmbient, stopAmbient, ambientTick } from './ui/ambient.js';
+import { sleepAudio } from './ui/audio.js';
+import { stopVoice } from './ui/voice.js';
 import { keepAwake, regainAwake, needsAwake } from './host/awake.js';
 
 const OFFLINE_REPORT_SECONDS = 60; // a shorter absence is caught up quietly
@@ -324,6 +326,8 @@ async function start() {
       store.flush();
       try {
         stopAmbient();
+        sleepAudio(true); // cut scene scores, static and anything else still ringing
+        stopVoice();
         keepAwake(false);
         scheduleAlerts(game.state);
         setBadge(game.state);
@@ -339,6 +343,7 @@ async function start() {
         catchUp(awayMs / 1000);
       }
       startLoop();
+      sleepAudio(false);
       startAmbient(game.state);
       regainAwake(); // the browser drops the lock when the page hides
       ui.render();
@@ -356,7 +361,12 @@ async function start() {
   }
   store.keepStorage(); // ask once that the save not be evicted to reclaim space
   // A browser only starts audio from a gesture, so the bed waits for the first tap of the session.
-  addEventListener('pointerdown', () => startAmbient(game.state), { once: true });
+  // pointerup and click count as a gesture on touch screens; pointerdown does not on every browser.
+  const unlock = () => {
+    startAmbient(game.state);
+    for (const t of ['pointerup', 'click', 'keydown']) removeEventListener(t, unlock);
+  };
+  for (const t of ['pointerup', 'click', 'keydown']) addEventListener(t, unlock);
   // Chrome grants periodic background sync on its own schedule, so ask on the way in as well as out.
   askForBackground();
   // Exposed for debugging from the browser console.
@@ -364,6 +374,13 @@ async function start() {
 }
 
 if ('serviceWorker' in navigator) {
-  addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // Every file this page loaded goes to the worker, so one visit is enough to play offline.
+    navigator.serviceWorker.ready.then((reg) => {
+      const files = performance.getEntriesByType('resource').map((r) => r.name).filter((u) => u.startsWith(location.origin));
+      if (reg.active) reg.active.postMessage({ cache: [...new Set(files)] });
+    }).catch(() => {});
+  });
 }
 boot();

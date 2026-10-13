@@ -12,7 +12,7 @@ import { DOMAINS } from './layout.js';
 import { sfx, volume, setVolume } from './sfx.js';
 import { introStage, playScene, frameHit } from './intro.js';
 import { startScore, scoreScene, stopScore, swell } from './score.js';
-import { duckAmbient } from './ambient.js';
+import { duckAmbient, startAmbient } from './ambient.js';
 import { say as speak, sayLength, stopVoice, voiceName } from './voice.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
@@ -839,9 +839,13 @@ export function createModals(dialog, game, onChange) {
         el.previousElementSibling.firstElementChild.outerHTML = icon(volume(id) ? 'sound' : 'mute');
         if (id === 'sfx') {
           sfx.click(); // each slider plays what it is setting
-        } else if (id === 'voice') {
-          speak('Voice check.');
+        } else if (id === 'music') {
+          startAmbient(game.state); // raised from zero: the bed comes back now, not on the next visit
         }
+      };
+      // Speech is asked for once the slider is let go: every step of a drag cancelled and restarted it.
+      el.onchange = () => {
+        if (el.dataset.vol === 'voice') speak('Voice check.');
       };
     }
     const hapticBtn = $('#mHaptic');

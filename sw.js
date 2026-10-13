@@ -2,16 +2,45 @@
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
 const CACHE = 'deadswitch-v1.22';
 const FONTS = 'deadswitch-fonts-v1';
-// The shell is enough to boot; everything else is cached the first time it is asked for, so adding
-// a file to the game never means remembering to add it here.
+// The shell is enough to boot. Every other file is whatever the page has loaded: the page hands its
+// list over once the worker is ready (js/main.js), and a new build re-fetches everything the last
+// one held, so adding a file to the game never means remembering to add it here.
 const SHELL = ['./', './index.html', './css/style.css', './js/main.js', './manifest.webmanifest', './icon.svg'];
 
+/** Fetches a file past the HTTP cache, so a new build is never filled with the last one's files. */
+const fresh = (url) => fetch(new Request(url, { cache: 'reload' })).then((res) => (res.ok ? res : Promise.reject(new Error(url))));
+
 self.addEventListener('install', (e) => {
-  // One missing file must not stop the worker installing: without it the app has no offline copy at
-  // all, and a half-cached shell still works because everything else is cached on first use.
-  e.waitUntil(caches.open(CACHE)
-    .then((c) => Promise.all(SHELL.map((url) => c.add(url).catch(() => {}))))
-    .then(() => self.skipWaiting()));
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    // The shell has to land, or this worker does not install and the last good one stays.
+    await Promise.all(SHELL.map(async (url) => cache.put(url, await fresh(url))));
+    // Everything the previous build had cached comes across as this build's copy, so a deploy does
+    // not leave an offline launch with only a shell to boot from.
+    const old = (await caches.keys()).filter((k) => k.startsWith('deadswitch-v') && k !== CACHE);
+    for (const name of old) {
+      const prev = await caches.open(name);
+      await Promise.all((await prev.keys()).map(async (req) => {
+        if (await cache.match(req)) return;
+        try {
+          await cache.put(req.url, await fresh(req.url));
+        } catch {
+          const keep = await prev.match(req);
+          if (keep) await cache.put(req.url, keep); // offline right now: the old copy beats none
+        }
+      }));
+    }
+    await self.skipWaiting();
+  })());
+});
+
+// The page lists every file it loaded; whatever is not cached yet is fetched now, so the first
+// visit is already enough to play offline.
+self.addEventListener('message', (e) => {
+  const urls = e.data && Array.isArray(e.data.cache) ? e.data.cache : [];
+  e.waitUntil(caches.open(CACHE).then((cache) => Promise.all(urls
+    .filter((u) => typeof u === 'string' && new URL(u).origin === location.origin)
+    .map(async (u) => { if (!(await cache.match(u))) await cache.put(u, await fresh(u)).catch(() => {}); }))));
 });
 
 self.addEventListener('activate', (e) => {
@@ -22,15 +51,16 @@ self.addEventListener('activate', (e) => {
     .then(() => fireDue('activate')));
 });
 
-/** Serve what we have, then quietly replace it, so a reload always has the newest build. */
-async function staleWhileRevalidate(req, cacheName) {
+/** Serve what we have, then quietly replace it, so the next launch has the newest build. */
+async function staleWhileRevalidate(e, req, cacheName) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(req);
-  const live = fetch(req).then((res) => {
-    if (res && res.ok) cache.put(req, res.clone());
+  const live = fetch(req, { cache: 'no-cache' }).then(async (res) => {
+    if (res && res.ok) await cache.put(req, res.clone());
     return res;
   }).catch(() => null);
-  return hit || live || new Response('', { status: 504 });
+  e.waitUntil(live); // the worker must not be stopped before the new copy is stored
+  return hit || (await live) || new Response('', { status: 504 });
 }
 
 self.addEventListener('fetch', (e) => {
@@ -46,11 +76,11 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   if (url.origin === location.origin) {
-    e.respondWith(staleWhileRevalidate(request, CACHE));
+    e.respondWith(staleWhileRevalidate(e, request, CACHE));
     return;
   }
   if (/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) {
-    e.respondWith(staleWhileRevalidate(request, FONTS));
+    e.respondWith(staleWhileRevalidate(e, request, FONTS));
   }
 });
 
@@ -63,6 +93,8 @@ function readDue() {
     let req;
     try {
       req = indexedDB.open('deadswitch', 1);
+      // Should we ever open it before the page has, the store the page expects has to be there.
+      req.onupgradeneeded = () => req.result.createObjectStore('save');
     } catch {
       resolve([]);
       return;
@@ -87,6 +119,8 @@ function writeDue(list) {
     let req;
     try {
       req = indexedDB.open('deadswitch', 1);
+      // Should we ever open it before the page has, the store the page expects has to be there.
+      req.onupgradeneeded = () => req.result.createObjectStore('save');
     } catch {
       resolve();
       return;
@@ -105,6 +139,8 @@ function writeDue(list) {
 }
 
 const STALE = 8 * 60 * 60 * 1000; // the longest an absence counts for, so nothing older is worth saying
+// An attack warning is only news while the attack is: a quarter of an hour after it was due, it landed.
+const FRESH = { attack: 15 * 60 * 1000 };
 
 /** Leaves a note that the browser woke us, and why. Without it there is no way to tell a wake that
  *  found nothing from a wake that never happened, which is the whole question with these alerts. */
@@ -113,6 +149,8 @@ function markWake(why, fired) {
     let req;
     try {
       req = indexedDB.open('deadswitch', 1);
+      // Should we ever open it before the page has, the store the page expects has to be there.
+      req.onupgradeneeded = () => req.result.createObjectStore('save');
     } catch {
       resolve();
       return;
@@ -148,12 +186,15 @@ async function fireDue(why) {
   // commander wants to know, and each gets its own tag so it does not bury the others.
   const latest = new Map();
   for (const x of all) {
-    if (x.at <= now && now - x.at < STALE) latest.set(x.kind || 'attack', x);
+    if (x.at <= now && now - x.at < (FRESH[x.kind || 'attack'] ?? STALE)) latest.set(x.kind || 'attack', x);
   }
   for (const [kind, item] of latest) {
-    await self.registration.showNotification(item.title, {
-      body: item.body, tag: `deadswitch-${kind}`, renotify: true, icon: './icon.svg', badge: './icon.svg',
-    });
+    try {
+      await self.registration.showNotification(item.title, {
+        body: item.body, tag: `deadswitch-${kind}`, renotify: true, timestamp: item.at,
+        icon: './icons/icon-192.png', badge: './icons/icon-192.png',
+      });
+    } catch { /* permission taken back since: the wake is still worth writing down */ }
   }
   // What has been said is spent: without this the next wake repeats it and the one still to come
   // never gets a turn.

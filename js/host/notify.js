@@ -181,7 +181,7 @@ async function show(title, body, kind = 'attack') {
   try {
     const reg = await navigator.serviceWorker.getRegistration();
     if (reg) {
-      await reg.showNotification(title, { body, tag: `${TAG}-${kind}`, renotify: true, icon: './icon.svg', badge: './icon.svg' });
+      await reg.showNotification(title, { body, tag: `${TAG}-${kind}`, renotify: true, icon: './icons/icon-192.png', badge: './icons/icon-192.png' });
     }
   } catch { /* the browser said no; nothing to do about it */ }
 }
@@ -193,8 +193,9 @@ async function show(title, body, kind = 'attack') {
  *  writes when the list has actually moved on. */
 export function refreshAlerts(s, timers_ = false) {
   if (!notifyWanted() || typeof Notification === 'undefined' || Notification.permission !== 'granted') {
-    if (lastDue) {
-      lastDue = '';
+    // Switched off (or never allowed): the worker's list goes, or it fires what an earlier session left.
+    if (lastDue !== 'off') {
+      lastDue = 'off';
       setDue([]);
     }
     return;

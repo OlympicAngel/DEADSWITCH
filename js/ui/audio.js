@@ -28,6 +28,14 @@ function clamp01(n) {
 }
 
 let bus = null;
+let asleep = false; // the page is hidden: nothing plays until it is back
+
+/** Puts the whole engine to sleep while the page is hidden (and wakes it after). */
+export function sleepAudio(on) {
+  asleep = on;
+  if (!bus) return;
+  (on ? bus.ctx.suspend() : bus.ctx.resume()).catch(() => {});
+}
 
 /** Volume of a bus, 0 to 1. */
 export const volume = (id) => level[id];
@@ -37,6 +45,9 @@ export function setVolume(id, v) {
   level[id] = clamp01(v);
   if (bus && bus[id]) {
     bus[id].gain.setTargetAtTime(level[id], bus.ctx.currentTime, 0.02);
+    // The reverb send follows the slider too: left at full, a bus turned down to a whisper still
+    // filled the room with its echo.
+    bus[id + 'Send'].gain.setTargetAtTime(level[id], bus.ctx.currentTime, 0.02);
   }
   try {
     localStorage.setItem(KEY, JSON.stringify(level));
@@ -48,7 +59,8 @@ export function setVolume(id, v) {
 /** The engine, built on first use. Null when the browser has no audio at all. */
 export function audio() {
   if (bus) {
-    if (bus.ctx.state === 'suspended') {
+    // Suspended by us, or 'interrupted' by iOS for a call or a lock: either way, a sound wants it back.
+    if (bus.ctx.state !== 'running' && !asleep) {
       bus.ctx.resume().catch(() => {});
     }
     return bus;
@@ -58,23 +70,29 @@ export function audio() {
     return null;
   }
   const ctx = new AC();
+  // Everything was mixed some 15 dB under where a phone speaker wants it, under the compressor's
+  // threshold: the master lifts it into the range the compressor actually holds.
+  const master = ctx.createGain();
+  master.gain.value = 2.5;
   const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = -16;
+  comp.threshold.value = -12;
+  comp.knee.value = 6;
   comp.ratio.value = 7;
   comp.attack.value = 0.004;
   comp.release.value = 0.22;
+  master.connect(comp);
   comp.connect(ctx.destination);
   const verb = ctx.createConvolver();
   verb.buffer = impulse(ctx, 2.6, 2.4);
   const wet = ctx.createGain();
   wet.gain.value = 0.85;
-  verb.connect(wet).connect(comp);
+  verb.connect(wet).connect(master);
   const make = (id) => {
     const g = ctx.createGain();
     g.gain.value = level[id];
-    g.connect(comp);
+    g.connect(master);
     const send = ctx.createGain();
-    send.gain.value = 1;
+    send.gain.value = level[id];
     send.connect(verb);
     return { gain: g, send };
   };
@@ -86,8 +104,11 @@ export function audio() {
 
 /** Where a sound plugs in: its bus and the reverb send beside it. */
 function out(id) {
+  if (!level[id]) {
+    return null; // a bus at zero builds nothing, not even the engine
+  }
   const b = audio();
-  if (!b || !level[id]) {
+  if (!b) {
     return null;
   }
   return { ctx: b.ctx, dry: b[id], send: id === 'music' ? b.musicSend : b.sfxSend };
@@ -177,7 +198,7 @@ export function air(id, dur, { vol = 0.05, at = 0, freq = 900, q = 1, slide = 0,
 
 /** A sustained pad: `slots` notes of three detuned saws each, retuned while it plays. */
 export function startPad(id, slots = 4, { wet = 0.5, q = 2 } = {}) {
-  const b = audio();
+  const b = level[id] ? audio() : null;
   if (!b) {
     return null;
   }
