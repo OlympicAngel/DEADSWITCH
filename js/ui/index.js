@@ -20,7 +20,7 @@ import { DOMAINS, NAV, domainReady, domainReq, locate, sortedTabs } from './layo
 import { createModals } from './modals.js';
 import { measureVisible, watchVisible } from './onscreen.js';
 import { bindCommand, renderCommand, updateCommand } from './screens/command.js';
-import { bindDomain, buyCount, renderDomain, updateDomain } from './screens/domain.js';
+import { bindDomain, buyCount, renderDomain, spendShare, updateDomain } from './screens/domain.js';
 import { bindMapScreen, centerOn, defaultSector, liveSector, renderMapScreen, updateMapScreen } from './screens/map.js';
 import { sfx } from './sfx.js';
 import { createTutor } from './teach.js';
@@ -32,6 +32,18 @@ export function createUI(root, game) {
   const ui = {
     screen: 'command', inner: {}, buyMode: 1, sector: null, sheet: false,
     key: '', refs: null, logSeq: -1, raidKey: null, imminent: false, unseen: new Set(), coach: null,
+  };
+  // The buy mode and the last inner tab of each screen are the player's habits, kept per browser.
+  const PREFS = 'deadswitch.ui';
+  try {
+    const p = JSON.parse(localStorage.getItem(PREFS) || 'null');
+    if (p && (p.buyMode === 'max' || [1, 10].includes(p.buyMode))) ui.buyMode = p.buyMode;
+    if (p && p.inner && typeof p.inner === 'object') Object.assign(ui.inner, p.inner);
+  } catch { /* storage blocked: defaults */ }
+  const keepPrefs = () => {
+    try {
+      localStorage.setItem(PREFS, JSON.stringify({ buyMode: ui.buyMode, inner: ui.inner }));
+    } catch { /* nothing to do */ }
   };
 
   root.innerHTML = `
@@ -69,7 +81,7 @@ export function createUI(root, game) {
   const $ = (q) => root.querySelector(q);
   const view = $('#view');
   const app = $('.app');
-  const modals = createModals($('#modal'), game, () => render());
+  const modals = createModals($('#modal'), game, () => render(), (html, tone) => toast(html, tone));
   // The developer panel reads the focus and may change anything; a run of it rebuilds the screen.
   const debug = createDebug(game, () => { ui.key = ''; render(); });
   game.dev.panel = debug;
@@ -178,10 +190,12 @@ export function createUI(root, game) {
     if (t.dataset.inner) {
       ui.inner[ui.screen] = t.dataset.inner;
       ui.sheet = false;
+      keepPrefs();
       setFocus('screen', `${ui.screen}:${t.dataset.inner}`);
       sfx.click();
     } else if (t.dataset.mode) {
       ui.buyMode = t.dataset.mode === 'max' ? 'max' : Number(t.dataset.mode);
+      keepPrefs();
     } else if (t.dataset.sector) {
       ui.sector = t.dataset.sector;
       ui.sheet = true;
@@ -333,6 +347,19 @@ export function createUI(root, game) {
       case 'buy': {
         const item = ITEMS.find((i) => i.id === id);
         const n = buyCount(s, ui, item);
+        // A buy that takes more than half of a stockpile asks for a second tap, a beat later.
+        if (spendShare(s, E.itemCost(s, item, n)) > 0.5) {
+          const since = performance.now() - Number(t.dataset.armed || 0);
+          if (!(t.dataset.armed && since > 500 && since < 4000)) {
+            if (!t.dataset.armed || since >= 4000) {
+              t.dataset.armed = String(performance.now());
+              sfx.click();
+              setTimeout(() => { delete t.dataset.armed; }, 4000);
+            }
+            break;
+          }
+          delete t.dataset.armed;
+        }
         const before = E.factors(s);
         if (game.act.buy(id, n)) {
           sfx.buy();

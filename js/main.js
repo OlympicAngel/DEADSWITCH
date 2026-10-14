@@ -151,6 +151,8 @@ function mergeAway(into, add) {
   for (const k of Object.keys(add.gained)) into.gained[k] = (into.gained[k] || 0) + add.gained[k];
   for (const k of Object.keys(add.happened)) into.happened[k] = (into.happened[k] || 0) + add.happened[k];
   into.happened.pending = add.happened.pending; // what is waiting now, not the two counts added up
+  into.answered = [...(into.answered || []), ...(add.answered || [])];
+  into.fell = [...(into.fell || []), ...(add.fell || [])];
 }
 
 function catchUp(seconds) {
@@ -164,7 +166,12 @@ function catchUp(seconds) {
     const { flows, ...keep } = report; // the flows are the UI's, not the report's
     // Every battle the catch-up just resolved is already counted in the report, so the pile of
     // individual reports it queued goes: one modal for the whole absence. Cut scenes stay.
-    const quiet = s.inbox.slice(mark).filter((m) => m.kind !== 'raid' && m.kind !== 'op');
+    const queued = s.inbox.slice(mark);
+    // What I answered in their place and the ground that fell are named in the report itself, so
+    // coming back is one dialog and not one per thing that happened.
+    keep.answered = queued.filter((m) => m.kind === 'expired').map((m) => ({ title: m.title, label: m.label }));
+    keep.fell = queued.filter((m) => m.kind === 'raid' && m.fell && E.sectorById(m.target)).map((m) => E.sectorById(m.target).name);
+    const quiet = queued.filter((m) => m.kind !== 'raid' && m.kind !== 'op' && m.kind !== 'expired');
     s.inbox.length = mark;
     s.inbox.push(...quiet);
     const waiting = s.inbox.find((m) => m.kind === 'away');

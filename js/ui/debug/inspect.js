@@ -85,9 +85,12 @@ function building(s, id) {
       ['produces', () => JSON.stringify(b.produces || {})],
       ['consumes', () => JSON.stringify(b.consumes || {})],
       ['paused', () => !!s.paused[id]],
+      ['queued', () => `${E.queued(s, id)} of this · ${s.queue.length} / ${E.queueSlots(s)} slots: ${s.queue.join(', ') || '-'}`],
     ],
     json: () => b,
     actions: [
+      ['queue one', (g) => { if (g.state.queue.length < 8) g.state.queue.push(id); }],
+      ['clear queue', (g) => { g.state.queue = []; }],
       ['+1 level', (g) => { g.state.levels[id] = (g.state.levels[id] || 0) + 1; }],
       ['−1 level', (g) => { g.state.levels[id] = Math.max(0, (g.state.levels[id] || 0) - 1); }],
       ['+10 levels', (g) => { g.state.levels[id] = (g.state.levels[id] || 0) + 10; }],

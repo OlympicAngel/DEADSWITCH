@@ -18,7 +18,7 @@ import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.
 import { setFocus } from './focus.js';
 import { notifyWanted, notifySupported, setNotify, notifyWhy, notifyDiagnosis } from '../host/notify.js';
 
-export function createModals(dialog, game, onChange) {
+export function createModals(dialog, game, onChange, notify = () => {}) {
   let onClose = null;
   let typing = null;
   let finished = true;
@@ -451,6 +451,13 @@ export function createModals(dialog, game, onChange) {
     }, then);
   }
 
+  /** A held attack is news, not a decision: a line that goes by, not a dialog to dismiss. */
+  function heldNote(r, then) {
+    const salvage = r.loot && r.loot.money ? ` · +${num(r.loot.money)} Scrip` : '';
+    notify(`${icon('defense')}<b>Held: ${esc(r.name || FACTIONS[r.faction].raidName)}</b> ${pct(r.chance)} odds${salvage}${r.mended ? ' · a breach mended' : ''}`, 'good');
+    then();
+  }
+
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
     const place = r.assault && E.sectorById(r.target) ? esc(E.sectorById(r.target).name) : '';
@@ -748,12 +755,14 @@ export function createModals(dialog, game, onChange) {
       ['defense', 'Attacks held', h.held, 'good-t'],
       ['fire', 'Attacks broke through', h.breached, 'bad-t'],
       ['power', 'Sectors taken', h.taken, 'good-t'],
-      ['map', 'Sectors lost', h.lost, 'bad-t'],
+      ['map', 'Sectors lost', (report.fell || []).length ? 0 : h.lost, 'bad-t'],
       ['message', 'Transmissions', h.orders, ''],
-      ['core', 'Answered in your place', h.decided, 'bad-t'],
+      ['core', 'Answered in your place', (report.answered || []).length ? 0 : h.decided, 'bad-t'],
       ['message', 'Still waiting for you', h.pending, 'warn-t'],
     ].filter(([, , n]) => n > 0)
-      .map(([ic, label, n, cls]) => `<div class="r"><span>${icon(ic)}${label}</span><b class="${cls}">${num(n)}</b></div>`).join('');
+      .map(([ic, label, n, cls]) => `<div class="r"><span>${icon(ic)}${label}</span><b class="${cls}">${num(n)}</b></div>`).join('')
+      + (report.fell || []).map((name) => `<div class="r"><span>${icon('map')}${esc(name)}</span><b class="bad-t">Lost</b></div>`).join('')
+      + (report.answered || []).map((a) => `<div class="r"><span>${icon('core')}${esc(a.title)}</span><b class="bad-t">${esc(a.label)}</b></div>`).join('');
     // Nothing was produced in the dark, so there is nothing to list: only what the war did, and what
     // would have been running if the Watch Daemon were up.
     open(`
@@ -944,7 +953,7 @@ export function createModals(dialog, game, onChange) {
         return cut(CUTS.memory, { name: sec.name, text: sec.lore, at: sec.id }, next);
       },
       away: () => showOffline(item.report, next),
-      op: () => showOp(item, next), raid: () => showRaid(item, next), expired: () => showExpired(item, next) }[item.kind];
+      op: () => showOp(item, next), raid: () => (item.win ? heldNote(item, next) : showRaid(item, next)), expired: () => showExpired(item, next) }[item.kind];
     if (!show) {
       next();
       return true;

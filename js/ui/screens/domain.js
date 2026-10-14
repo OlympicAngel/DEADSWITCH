@@ -243,6 +243,11 @@ function setStorageLink(s, btn, cost, normalAct) {
   }
 }
 
+/** The largest share of any one stockpile a price would take. */
+export function spendShare(s, cost) {
+  return Math.max(0, ...Object.entries(cost).map(([k, v]) => (s.res[k] > 0 ? v / s.res[k] : 0)));
+}
+
 export function buyCount(s, ui, item) {
   return ui.buyMode === 'max' ? Math.max(1, E.maxAffordable(s, item)) : ui.buyMode;
 }
@@ -312,7 +317,8 @@ export function updateDomain(s, ui, refs, flows) {
     const ok = E.canAfford(s, cost);
     const over = !ok && E.exceedsCap(s, cost).length > 0;
     r.btn.disabled = !ok && !over;
-    put(r.label, over ? 'Need storage' : n > 1 ? `Buy ×${n}` : 'Buy');
+    const share = ok ? spendShare(s, cost) : 0;
+    put(r.label, over ? 'Need storage' : r.btn.dataset.armed ? 'Tap again' : `${n > 1 ? `Buy ×${n}` : 'Buy'}${share > 0.5 ? ` · ${pct(share)}` : ''}`);
     setStorageLink(s, r.btn, over ? cost : null, 'buy');
     r.el.classList.toggle('affordable', ok);
   }

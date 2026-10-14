@@ -167,6 +167,7 @@ export function createDebug(game, rerender) {
       ['assaultTimer', () => t1(s.assaultTimer)],
       ['offlineRaids', () => s.offlineRaids],
       ['build', () => (s.build ? `${s.build.id} ${s.build.remaining.toFixed(1)}s` : '-')],
+      ['queue', () => `${s.queue.join(', ') || '-'} (${s.queue.length}/${E.queueSlots(s)})`],
       ['op', () => (s.op ? `${s.op.sector} ${s.op.remaining.toFixed(1)}s` : '-')],
       ['raid', () => (s.raid ? `${s.raid.faction} ${s.raid.remaining.toFixed(1)}s` : '-')],
       ['assault', () => (s.assault ? `${s.assault.from}→${s.assault.target} ${s.assault.remaining.toFixed(1)}s` : '-')],
