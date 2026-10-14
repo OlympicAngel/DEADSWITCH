@@ -392,13 +392,15 @@ function defLabel(s, x, r) {
 
 // What a sector sends out, against what it costs to take. Walls and barracks are not the same thing,
 // and the ratio is the whole point of the stat, so it is named here rather than left to be inferred.
+// One number for what it hits us with: its assault as it would be sent now. The sector's own attack
+// stat is one term of it, shown with the rest in the breakdown, and its ratio names the kind of ground.
 function attackRow(s, sec) {
   const atk = E.baseAttack(s, sec.id);
   const def = E.baseDefense(s, sec.id) * OPS.defenseScale; // on the scale the briefing shows it
   const ratio = atk / Math.max(1, def);
-  const kind = ratio >= 2.4 ? ['bad-t', 'Sends more than it holds'] : ratio >= 1.2 ? ['bad-t', 'Lightly held, heavily armed']
-    : ratio >= 0.7 ? ['', 'Front line'] : ['', 'A wall with few behind it'];
-  return `<div class="r" data-tip="text" data-tip-text="Attack ${num(atk)} against defense ${num(def)}: ${pct(ratio)} of it."><span>${icon('power')}Its attack</span><b class="${kind[0]}">${num(atk)}<em class="atk-kind">${esc(kind[1])}</em></b></div>`;
+  const kind = ratio >= 2.4 ? 'Sends more than it holds' : ratio >= 1.2 ? 'Lightly held, heavily armed'
+    : ratio >= 0.7 ? 'Front line' : 'A wall with few behind it';
+  return `<div class="r" data-tip="assault:${sec.id}"><span>${icon('power')}Its attack on us</span><b class="bad-t"><span data-asl></span><em class="atk-kind">${esc(kind)}</em></b></div>`;
 }
 
 // Current strength against the sector's base defense.
@@ -483,12 +485,11 @@ function briefing(s, sec) {
       ${postureRow(s, sec)}
       ${fortRow(s, sec)}
       <div class="r" data-tip="text" data-tip-text="Time from launch until the operation lands and the roll is made."><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
-      ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="text" data-tip-text="An operation takes ${pct(OPS.troopsMarch)} of the Troops' Defense with it until it lands."><span>${icon('defense')}Defense while out</span><b class="warn-t" data-out></b></div>` : ''}
+      ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="text" data-tip-text="An operation takes ${pct(OPS.troopsMarch)} of the Troops' Defense with it until it lands."><span>${icon('defense')}Our Defense while out</span><b class="warn-t" data-out></b></div>` : ''}
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${attackRow(s, sec)}
-      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="assault:${sec.id}"><span>${icon('power')}Its assaults</span><b class="bad-t" data-asl></b></div>` : ''}
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
     </div>

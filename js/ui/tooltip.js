@@ -117,8 +117,8 @@ export function createTips(game) {
   function assaultTip(s, id) {
     const sec = E.sectorById(id);
     const a = E.assaultParts(s, id);
-    return head('power', `${sec.name}: assaults`, num(a.total))
-      + row('Its attack', num(a.attack))
+    return head('power', `${sec.name}: its attack on us`, num(a.total))
+      + row('Its own attack stat', num(a.attack))
       + row('War dial', times(NODES.assaultMult))
       + (Math.abs(a.grit - 1) > 0.005 ? row('From its strength', times(a.grit), a.grit > 1 ? 'neg' : '') : '')
       + (Math.abs(a.push - 1) > 0.005 ? row('Push after failed assaults', times(a.push), 'neg') : '')
