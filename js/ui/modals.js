@@ -393,6 +393,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         <div class="stamp ${r.stampCls || ''}">${r.stamp}</div>
         <div class="spoils">${r.spoils}</div>
         ${r.note ? `<p class="note">${r.note}</p>` : ''}
+        ${r.why ? `<ul class="why">${r.why}</ul>` : ''}
         <button class="btn primary wide" data-close>Continue</button>
       </div>`, { cls: 'report locked', then });
     sfx.launch();
@@ -459,6 +460,17 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     then();
   }
 
+  /** What went into a lost battle, as facts: the numbers it was decided on and what moved them. */
+  function whyLines(r) {
+    const w = r.why || {};
+    const lines = [`Their ${num(r.strength)} against your ${num(r.defense)}: ${(r.strength / Math.max(1, r.defense)).toFixed(1)}×, odds ${pct(r.chance)}.`];
+    if (w.troops) lines.push(`Troops were out on an operation: −${num(w.troops)} Defense.`);
+    if (r.assault && w.stance && w.stance !== 1) lines.push(`Their clan's stance: ×${w.stance} strength.`);
+    if (w.grudge) lines.push('Vengeance: they came heavier.');
+    if (w.rushed) lines.push('Met early: they arrived heavier for the forced march.');
+    return lines.map((l) => `<li>${esc(l)}</li>`).join('');
+  }
+
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
     const place = r.assault && E.sectorById(r.target) ? esc(E.sectorById(r.target).name) : '';
@@ -478,6 +490,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         ? `${icon('skull')}${place} fell at once: they came with ${(r.strength / Math.max(1, r.defense)).toFixed(1)}× your Defense, and from ${NODES.overrunRatio}× a sector falls on the first breach.`
         : r.plundered ? `${icon('money')}The stores at ${place} are empty. The walls held.`
           : r.assault ? (r.fell ? `${icon('fire')}${place} has fallen.` : '') : `${icon('fire')}Damage reports incoming.`,
+      why: r.win ? '' : whyLines(r),
     }, then);
   }
 

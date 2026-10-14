@@ -2,7 +2,7 @@
 import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
-  level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
+  level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve, troopsOut, troopDefense,
 } from './economy.js';
 import { clanProfile, clanProfiles, stirClan } from './clans.js';
 import { rand, range, pick, odds } from './rng.js';
@@ -879,6 +879,13 @@ function resolveAttack(s, raid, offline) {
   const prof = clanProfile(s, raid.faction);
   const report = { kind: 'raid', name, faction: raid.faction, strength: raid.strength, defense, chance, roll, win: roll < chance, offline: !!offline };
   Object.assign(report, { assault: !!raid.assault, from: raid.from, target: raid.target });
+  // What went into the numbers, so a report can say why as well as what: facts, not advice.
+  report.why = {
+    troops: troopsOut(s) ? troopDefense(s) : 0, // Defense that was out on an operation
+    stance: Math.round(prof.strength * 100) / 100, // the clan's mood on their strength (assaults)
+    grudge: !!raid.grudge,
+    rushed: !!raid.rush,
+  };
   // Both sides bleed. Holding the line still costs people, and their dead stay dead.
   takeLosses(s, report, report.win ? RAIDS.winLoss : RAIDS.unitLoss, defense, raid.strength);
   report.theirLoss = Math.min(raid.strength, Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition));
