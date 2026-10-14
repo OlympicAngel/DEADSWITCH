@@ -67,7 +67,11 @@ export function alignBonus(s, key) {
 }
 
 export function buffBonus(s, key) {
-  return s.buffs.reduce((sum, b) => sum + (b.key === key ? b.amount : 0), 0);
+  // Penalties from orders stack, but only so far (EVENTS_CFG.buffFloor); a clan stance's standing
+  // effect is counted on top.
+  const ev = s.buffs.reduce((sum, b) => sum + (b.key === key && !b.clan ? b.amount : 0), 0);
+  const clan = s.buffs.reduce((sum, b) => sum + (b.key === key && b.clan ? b.amount : 0), 0);
+  return Math.max(EVENTS_CFG.buffFloor, ev) + clan;
 }
 
 // Every additive % source for one key, itemised for tooltips.

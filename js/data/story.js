@@ -152,6 +152,8 @@ export const EVENTS_CFG = {
   // the world ran for, and how much heavier their numbers are. If they expire out there, I answer.
   offlineTiers: [2, 5, 8],
   offlineScale: 1.6,
+  expiredLoseCap: 0.25, // an order I answer in the player's place takes at most this share of a stockpile
+  buffFloor: -0.4, // order penalties on one key never add up past this
   urgentDeadline: 120, // urgent events: this long to answer, no deferring, only while the player is active
   // "seconds of production" values never drop below this many units per Core level.
   minRatePerCore: { money: 2, energy: 1, pop: 0.12 },
@@ -351,7 +353,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 1200, def: null, threat: { min: 1.3, max: 1.6 },
+    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 1200, def: null, threat: { min: 0.95, max: 1.3 },
     text: 'The largest {faction} host I have ever recorded is marching on {aim}. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
     choices: [
       { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, cancelSiege: true, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
@@ -805,13 +807,13 @@ export const DAILY = {
 // n: the range it may ask for, rolled with the day. weight: what it pays, against DAILY.seconds.
 // req: a gate, so nothing asks for a system the player has not got yet.
 export const DAILY_TASKS = [
-  { id: 'hold', icon: 'defense', text: 'Hold {n} attacks', stat: 'raidsWon', n: [2, 4], weight: 1.1, req: { core: 2 } },
-  { id: 'take', icon: 'map', text: 'Capture {n} sectors', stat: 'opsWon', n: [1, 2], weight: 1.7, req: { barracks: 1 } },
-  { id: 'answer', icon: 'message', text: 'Answer {n} transmissions', stat: 'events', n: [2, 4], weight: 1 },
+  { id: 'hold', icon: 'defense', text: 'Hold {n} attacks', stat: 'raidsWon', n: [2, 4], weight: 1.1, req: { core: 2 }, needs: 'raiders' },
+  { id: 'take', icon: 'map', text: 'Capture {n} sectors', stat: 'opsWon', n: [1, 2], weight: 1.7, req: { barracks: 1 }, needs: 'target' },
+  { id: 'answer', icon: 'message', text: 'Answer {n} transmissions', stat: 'answered', n: [2, 4], weight: 1 },
   { id: 'build', icon: 'build', text: 'Finish {n} builds', stat: 'builds', n: [2, 4], weight: 1 },
   { id: 'recruit', icon: 'militia', text: 'Add {n} units to the arsenal', stat: 'bought', n: [12, 30], weight: 0.9 },
-  { id: 'rush', icon: 'clock', text: 'Meet {n} attacks early', stat: 'rushed', n: [1, 2], weight: 1.3, req: { core: 2 } },
-  { id: 'break', icon: 'power', text: 'Break {n} assaults on our ground', stat: 'assaultsHeld', n: [1, 3], weight: 1.4, req: { core: 3 } },
+  { id: 'rush', icon: 'clock', text: 'Meet {n} attacks early', stat: 'rushed', n: [1, 2], weight: 1.3, req: { core: 2 }, needs: 'raiders' },
+  { id: 'break', icon: 'power', text: 'Break {n} assaults on our ground', stat: 'assaultsHeld', n: [1, 3], weight: 1.4, req: { core: 3 }, needs: 'raiders' },
 ];
 
 export const DIRECTIVES = [

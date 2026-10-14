@@ -1,12 +1,12 @@
 // Story systems: choice events, directives, chapters, alignment and timed effects.
 import {
-  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, DAILY, DAILY_TASKS, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS,
+  EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, DAILY, DAILY_TASKS, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS, SECTORS,
 } from '../data.js';
 import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
   buildingStatus,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush } from './war.js';
+import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
 import { stirClan } from './clans.js';
 import { range, pick, rand, mix } from './rng.js';
 
@@ -62,14 +62,17 @@ export function fillText(inst, str) {
 }
 
 // Concrete consequences of one choice, for both the UI preview and resolution.
-export function choiceOutcome(s, inst, choice) {
+export function choiceOutcome(s, inst, choice, expired = false) {
   // An order that came in while nobody was listening asks for more and pays more. An answer that
   // costs me Humanity is cheap by nature, so the one that buys it back is discounted and pays better.
   const big = inst.big ? EVENTS_CFG.offlineScale : 1;
+  // What I decide in the player's place never does more harm than the order said: no away premium
+  // on what is lost, and a stockpile loss held to EVENTS_CFG.expiredLoseCap.
+  const harm = expired ? 1 : big;
   const good = choice.align > 0;
   const lose = {};
   for (const [r, share] of Object.entries(choice.lose || {})) {
-    lose[r] = Math.floor(s.res[r] * Math.min(0.9, share * EVENTS_CFG.loseScale * big));
+    lose[r] = Math.floor(s.res[r] * Math.min(expired ? EVENTS_CFG.expiredLoseCap : 0.9, share * EVENTS_CFG.loseScale * harm));
   }
   // What an order pays is paid in full: it overfills the stores rather than vanishing into them.
   const gain = scaled(s, choice.gain, EVENTS_CFG.gainScale * big * (good ? EVENTS_CFG.goodGain : 1));
@@ -77,7 +80,7 @@ export function choiceOutcome(s, inst, choice) {
   const levels = (choice.loseLevel || []).map((k) => inst.params && inst.params[k]).filter((id) => id && level(s, id) > 0);
   const units = {};
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
-    units[tab] = unitsLost(s, tab, share * big);
+    units[tab] = unitsLost(s, tab, share * harm);
   }
   const callOff = choice.cancelSiege && s.sieges.some((x) => x.uid === inst.uid);
   // A price can never exceed storage, or the choice could not exist.
@@ -88,7 +91,7 @@ export function choiceOutcome(s, inst, choice) {
   // Humanity moves further in both directions out there, and further again towards Guardian:
   // walking back from what the war makes of a machine has to be worth the walk.
   const align = choice.align
-    ? Math.round(choice.align * EVENTS_CFG.alignScale * big * (choice.align > 0 ? EVENTS_CFG.goodScale : 1))
+    ? Math.round(choice.align * EVENTS_CFG.alignScale * (choice.align > 0 ? big * EVENTS_CFG.goodScale : harm))
     : 0;
   const p = inst.params || {};
   // Buffs last a stretch rolled when the event fired; a penalty outlives a bonus (EVENTS_CFG).
@@ -100,7 +103,8 @@ export function choiceOutcome(s, inst, choice) {
   const assault = choice.assault && p.node ? { from: p.node, target: p.held, delay: choice.assault } : null;
   const cede = choice.cede && p.held ? p.held : null;
   // Handing ground over is a sale, and the price is what that ground is worth, not a flat tribute.
-  if (cede) {
+  // It is sold once: ground taken back and handed over again pays nothing the second time.
+  if (cede && !(s.ceded || []).includes(cede)) {
     for (const [r, v] of Object.entries(opLoot(sectorById(cede)))) {
       gain[r] = (gain[r] || 0) + Math.ceil(v * EVENTS_CFG.cedeShare);
     }
@@ -257,6 +261,9 @@ export function advanceEvents(s, dt, offline, active = false) {
   // time) there is nothing left to pay for, so the order goes with it.
   s.events = s.events.filter((x) => !EVENT_BY_ID[x.id].threat || s.sieges.some((g) => g.uid === x.uid));
   for (const inst of s.events.slice()) {
+    // An urgent order only arrives to someone watching; if they put the phone down, its two minutes
+    // wait for them rather than running out in the dark.
+    if (offline && EVENT_BY_ID[inst.id].urgent) continue;
     inst.left -= dt;
     if (inst.left <= 0) {
       const ev = EVENT_BY_ID[inst.id];
@@ -287,8 +294,10 @@ export function advanceEvents(s, dt, offline, active = false) {
   }
   s.eventTimer = range(s, EVENTS_CFG.intervalMin, EVENTS_CFG.intervalMax, 'event');
   const core = level(s, 'core');
-  const pool = EVENTS.filter((e) => !e.aftermath && (!e.urgent || active) && e.minCore <= core
-    && !s.recentEvents.includes(e.id) && inBand(s, e));
+  const open = EVENTS.filter((e) => !e.aftermath && (!e.urgent || active) && e.minCore <= core && inBand(s, e));
+  // Recent ones wait their turn, but never so many that a small early pool runs dry.
+  const recent = s.recentEvents.slice(-Math.min(RECENT_EVENTS, Math.floor(open.length / 2)));
+  const pool = open.filter((e) => !recent.includes(e.id));
   while (pool.length) {
     const ev = weighted(s, pool);
     if (spawn(s, ev, false, offline)) {
@@ -333,7 +342,7 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (!choice || (!expired && !canChoose(s, inst, choice))) {
     return null;
   }
-  const out = choiceOutcome(s, inst, choice);
+  const out = choiceOutcome(s, inst, choice, expired);
   // What the base was worth before the decision, so the report can say what it actually cost rather
   // than only what was taken: a building level is a rate, troops are Power and Defense.
   const was = { ...rawFactors(s), ...Object.fromEntries(RESOURCE_KEYS.map((r) => [r, grossRate(s, r)])) };
@@ -350,8 +359,10 @@ export function resolveEvent(s, uid, index, expired = false) {
   for (const id of out.levels) {
     loseLevel(s, id);
   }
+  // The same share the preview showed: the away premium on an answered order, none on an expired one.
+  const harm = inst.big && !expired ? EVENTS_CFG.offlineScale : 1;
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
-    loseUnits(s, tab, share);
+    loseUnits(s, tab, share * harm);
   }
   if (out.align) {
     s.align = Math.max(ALIGNMENT.min, Math.min(ALIGNMENT.max, s.align + out.align));
@@ -361,7 +372,10 @@ export function resolveEvent(s, uid, index, expired = false) {
     say(s, 'grudge', { faction: FACTIONS[out.grudge.faction].name }, 'bad');
   }
   if (out.buff) {
-    s.buffs.push({ ...out.buff, remaining: out.buff.duration });
+    // The same order twice refreshes its effect instead of stacking a second copy of it.
+    const same = s.buffs.find((b) => !b.clan && b.label === out.buff.label && b.key === out.buff.key);
+    if (same) same.remaining = Math.max(same.remaining, out.buff.duration);
+    else s.buffs.push({ ...out.buff, remaining: out.buff.duration });
   }
   if (out.strength && sectorById(out.strength.id) && !s.sectors.includes(out.strength.id)) {
     shiftStrength(s, out.strength.id, out.strength.delta);
@@ -380,7 +394,8 @@ export function resolveEvent(s, uid, index, expired = false) {
     spawnAssault(s, { from: out.assault.from, target: out.assault.target }, out.assault.delay);
   }
   if (out.cede && s.sectors.includes(out.cede)) {
-    loseSector(s, out.cede, sectorById(inst.params.node).faction);
+    if (!s.ceded.includes(out.cede)) s.ceded.push(out.cede);
+    loseSector(s, out.cede, factionOf(s, inst.params.node) || sectorById(inst.params.node).faction);
   }
   if (choice.raidDelay) {
     delayRaid(s, choice.raidDelay);
@@ -392,6 +407,7 @@ export function resolveEvent(s, uid, index, expired = false) {
   }
   s.events = s.events.filter((x) => x !== inst);
   s.stats.events++;
+  if (!expired) s.stats.answered = (s.stats.answered || 0) + 1; // what the player answered, for the daily board
   const label = fillText(inst, choice.label);
   const result = fillText(inst, choice.result);
   if (expired) {
@@ -475,7 +491,11 @@ export function checkDirectives(s) {
 
 /** The orders standing for one day: a pure hash of the save's seed and that day. */
 export function dailyFor(s, day) {
-  const open = DAILY_TASKS.filter((t) => !t.req || Object.entries(t.req).every(([id, n]) => level(s, id) >= n));
+  // Nothing on the board that the war cannot give today: no captures without a sector in reach, no
+  // attacks to hold once nobody is left to send them.
+  const can = { target: SECTORS.some((x) => sectorStatus(s, x) === 'target'), raiders: activeRaiders(s).length > 0 };
+  const open = DAILY_TASKS.filter((t) => (!t.req || Object.entries(t.req).every(([id, n]) => level(s, id) >= n))
+    && (!t.needs || can[t.needs]));
   const want = Math.min(open.length, DAILY.count + (level(s, 'core') >= DAILY.countAtCore ? 1 : 0));
   const left = open.slice();
   const out = [];

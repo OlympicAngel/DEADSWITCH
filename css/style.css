@@ -1990,9 +1990,19 @@ button:focus-visible,
 
 .inc-foot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px 10px;
+}
+
+/* The hold chance gets its own line; the two buttons share the next one. */
+.inc-foot .hold {
+  flex: 1 0 100%;
+}
+
+.inc-foot .btn {
+  flex: 1 1 0;
 }
 
 .hold {
@@ -6859,7 +6869,7 @@ dialog.report:has(.battle.def.loss) {
 /* Meeting an attack early: a quiet option until it is armed, then it reads like what it is. */
 .inc-foot [data-act="rush"] em {
   display: block;
-  font: 600 9px var(--font-hud);
+  font: 600 10.5px var(--font-hud);
   font-style: normal;
   letter-spacing: .06em;
   color: var(--warn);

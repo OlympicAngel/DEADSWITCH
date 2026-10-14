@@ -44,6 +44,7 @@ export function newState(seed = 1) {
     queue: [], // building ids waiting behind the build under way (BALANCE.buildQueue)
     sectors: [MAP.home],
     taken: [], // sectors ever captured (loot and memories pay once)
+    ceded: [], // sectors ever handed over by an order (the sale pays once)
     // per sector: { m: strength multiplier (enemy), marks: breached assaults (yours), a: aggression, seen: times inspected }
     nodes: {},
     // sectors whose clan is no longer the one on the map: id -> the faction that took it off us
@@ -73,7 +74,7 @@ export function newState(seed = 1) {
     directives: 2, // which edition of DIRECTIVES the index above counts in (migrate() moves older ones)
     chapter: 0,
     ending: null,
-    stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0 },
+    stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0, answered: 0 },
     // Daily orders. `day` is the calendar day the host last handed in (js/main.js); 0 means the
     // board has never been dealt, which is what rollDaily looks for on a first run.
     daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false },
@@ -180,6 +181,7 @@ export function migrate(raw) {
   for (const k of Object.keys(s.res)) {
     s.res[k] = Number.isFinite(Number(s.res[k])) ? Math.max(0, Number(s.res[k])) : base.res[k];
   }
+  s.ceded = (Array.isArray(raw.ceded) ? raw.ceded : []).filter((id) => sectorById(id));
   s.queue = (Array.isArray(raw.queue) ? raw.queue : []).filter((id) => typeof id === 'string' && BY_ID[id]).slice(0, 8);
   // A build in progress carries its own price (refunded on cancel) and clock: both have to be numbers.
   const bd = s.build;
