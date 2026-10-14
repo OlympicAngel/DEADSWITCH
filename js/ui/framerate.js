@@ -65,3 +65,10 @@ export function stepAmbientLoops(root = document) {
 }
 
 const GLIDES = new Set(['width', 'stroke-dasharray']);
+
+/** Puts every endless loop under `root` on the clock now: a scene that restarts dozens of them at
+ *  once can slip some past animationstart, and those would run at the display rate. */
+export function stepLoopsIn(root) {
+  if (!period || !root.getAnimations) return;
+  for (const a of root.getAnimations({ subtree: true })) quantize(a);
+}

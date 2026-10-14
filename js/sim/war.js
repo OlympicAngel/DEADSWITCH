@@ -814,6 +814,11 @@ export function advanceAssaults(s, dt, offline) {
  *  alone, they may strip up to RALLY.donors of their own to make one sector strong enough to try,
  *  and that sector then wants it back more than anything. Their profile decides whether they do it
  *  at all, and losing a capital is what really moves them (data/world.js). */
+/** The chance a clan that just lost ground pulls its other sectors together to take it back. */
+export function rallyChance(s, faction, capital = false) {
+  return Math.min(RALLY.maxChance, RALLY.base * clanProfile(s, faction).retake * (capital ? RALLY.capital : 1));
+}
+
 export function rallyClan(s, faction, lostId) {
   const lost = SECTOR_BY_ID[lostId];
   const mine = clanSectors(s, faction).filter((x) => !s.sectors.includes(x.id));
@@ -826,9 +831,7 @@ export function rallyClan(s, faction, lostId) {
   if (near.some((x) => assaultStrength(s, x.id) >= need)) {
     return null;
   }
-  const prof = clanProfile(s, faction);
-  const chance = Math.min(0.95, RALLY.base * prof.retake * (lost.boss ? RALLY.capital : 1));
-  if (rand(s, 'rally') >= chance) {
+  if (rand(s, 'rally') >= rallyChance(s, faction, lost.boss)) {
     return null;
   }
   // Whoever is closest to it leads, and the strongest of the rest feed them.

@@ -2,6 +2,7 @@
 // hard cut that moves the camera, lights different layers and restarts their animations, so the
 // sequence plays like a cut scene rather than a slideshow. The beats themselves are in
 // js/data/story.js and the score is js/ui/score.js.
+import { stepLoopsIn } from './framerate.js';
 
 const DUST = 34; // drifting motes in the ruins
 const SHARDS = 16; // debris thrown at the camera by the raid
@@ -93,6 +94,7 @@ export function playScene(root, id, map = '') {
   void cam.offsetWidth;
   cam.style.transition = `transform ${ms}ms cubic-bezier(.22, .7, .3, 1)`;
   cam.style.transform = to;
+  requestAnimationFrame(() => stepLoopsIn(root));
 }
 
 /** Knocks the whole frame sideways once, for the beats that land hard. */

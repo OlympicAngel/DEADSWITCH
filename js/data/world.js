@@ -489,6 +489,7 @@ export const NODES = {
 export const RALLY = {
   base: 0.6, // chance before the clan's own profile is read
   capital: 3, // x that chance when it was their capital that fell
+  maxChance: 0.95, // never certain
   donors: 3, // how many of their other sectors can send anything
   take: 0.75, // share of a donor's strength that marches
   keep: 1, // how much of it is still there when it arrives

@@ -16,6 +16,7 @@ import { duckAmbient, startAmbient } from './ambient.js';
 import { say as speak, sayLength, stopVoice, voiceName } from './voice.js';
 import { shake, burst, vibrate, hapticsOn, setHaptics, screenFlash } from './fx.js';
 import { setFocus } from './focus.js';
+import { stepLoopsIn } from './framerate.js';
 import { notifyWanted, notifySupported, setNotify, notifyWhy, notifyDiagnosis } from '../host/notify.js';
 
 export function createModals(dialog, game, onChange, notify = () => {}) {
@@ -219,6 +220,9 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       </div>`, { cls: 'cinematic intro-modal locked', then });
     const reveal = arm();
     const stage = dialog.querySelector('.intro');
+    // The gate can sit open for as long as the player likes: every loop on it steps on the clock.
+    requestAnimationFrame(() => stepLoopsIn(stage));
+    setTimeout(() => stepLoopsIn(stage), 1500);
     const tl = dialog.querySelector('#tl');
     const dots = dialog.querySelector('#bs');
     const foot = dialog.querySelector('#bf');
@@ -437,6 +441,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   function showOp(r, then) {
     const s = game.state;
     const sec = E.sectorById(r.sector);
+    setFocus('sector', r.sector);
     const from = sec.links.find((l) => s.sectors.includes(l));
     battle({
       mode: 'op', stamp: r.win ? 'Captured' : 'Repelled',
@@ -474,6 +479,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
 
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
+    setFocus(r.assault && E.sectorById(r.target) ? 'sector' : 'screen', r.assault && E.sectorById(r.target) ? r.target : 'command');
     const place = r.assault && E.sectorById(r.target) ? esc(E.sectorById(r.target).name) : '';
     battle({
       mode: 'def', stamp: r.win ? 'Held' : r.overrun ? 'Overrun' : r.plundered ? 'Plundered' : 'Breached',
@@ -744,6 +750,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   }
 
   function showArchive() {
+    setFocus('screen', 'archive');
     open(`<span class="kicker">${icon('book')}Archive</span><h2>The record so far</h2>
       ${archiveBody(game.state)}
       <button class="btn primary wide" data-close>Close</button>`, { cls: 'archive-modal' });
@@ -768,6 +775,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   // ---------- system ----------
 
   function showOffline(report, then) {
+    setFocus('screen', 'away');
     const gains = Object.keys(RESOURCES).map((r) => `<div class="r"><span>${icon(r)}${RESOURCES[r].name}</span><b class="${report.gained[r] < 0 ? 'bad-t' : 'good-t'}">${report.gained[r] >= 0 ? '+' : '−'}${num(Math.abs(report.gained[r]))}</b></div>`).join('');
     const h = report.happened || {};
     const forces = Object.entries(report.forces || {}).filter(([, d]) => Math.abs(d) >= 1)
@@ -835,6 +843,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   }
 
   function openMenu() {
+    setFocus('screen', 'settings');
     open(`
       <span class="kicker">${icon('settings')}System</span>
       <h2>Settings</h2>

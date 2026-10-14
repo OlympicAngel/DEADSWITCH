@@ -133,6 +133,9 @@ function impulse(ctx, secs, decay) {
   return buf;
 }
 
+const NOISE_SECS = 3;
+const noise = new WeakMap(); // one shared noise loop per context: every breath plays a stretch of it
+
 export function noiseBuffer(ctx, secs) {
   const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * secs), ctx.sampleRate);
   const d = buf.getChannelData(0);
@@ -178,7 +181,8 @@ export function air(id, dur, { vol = 0.05, at = 0, freq = 900, q = 1, slide = 0,
   }
   const t = o.ctx.currentTime + at;
   const src = o.ctx.createBufferSource();
-  src.buffer = noiseBuffer(o.ctx, Math.min(3, dur + 0.2));
+  if (!noise.has(o.ctx)) noise.set(o.ctx, noiseBuffer(o.ctx, NOISE_SECS));
+  src.buffer = noise.get(o.ctx);
   src.loop = true;
   const f = o.ctx.createBiquadFilter();
   f.type = type;
@@ -198,7 +202,7 @@ export function air(id, dur, { vol = 0.05, at = 0, freq = 900, q = 1, slide = 0,
     w.gain.value = wet;
     g.connect(w).connect(o.send);
   }
-  src.start(t);
+  src.start(t, Math.random() * NOISE_SECS); // a different stretch each time, so no two breaths match
   src.stop(t + dur + 0.1);
 }
 
