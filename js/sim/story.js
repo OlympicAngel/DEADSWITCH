@@ -187,7 +187,9 @@ function spawn(s, ev, front, big = false) {
     // An order that offers to seal breaches has to find a sector with breaches, or it is offering
     // nothing and should not have been sent.
     const heals = ev.choices.some((c) => c.clearMarks);
-    const all = borders(s, true).filter((b) => !heals || breaches(s, b.target) > 0);
+    // Some traffic only makes sense from a clan with clans in it (a feast, a warlord, a ledger).
+    const all = borders(s, true).filter((b) => (!heals || breaches(s, b.target) > 0)
+      && (!ev.factions || ev.factions.includes(factionOf(s, b.from))));
     if (!all.length) return false;
     const open = all.filter((b) => !b.locked);
     const b = pick(s, open.length && rand(s, 'event') >= EVENTS_CFG.lockedBorderChance ? open : all, 'event');

@@ -97,11 +97,13 @@ export function bindCommand(panel) {
 }
 
 // Rebuilds a panel only when its key changes; returns the element for in-place patching.
+// `html` may be a function, so a panel whose markup is costly (a map backdrop) builds it only when
+// its key changes rather than on every tick to throw it away.
 function slot(refs, id, key, html) {
   const el = refs.panels[id];
   if (refs.keys[id] !== key) {
     refs.keys[id] = key;
-    el.innerHTML = html;
+    el.innerHTML = typeof html === 'function' ? html() : html;
   }
   return el;
 }
@@ -161,7 +163,7 @@ function raidPanel(s, refs) {
   const sub = raid.assault
     ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches`
     : place ? `${fac.name} · out of ${esc(E.sectorById(place[0]).name)}` : fac.name;
-  const el = slot(refs, 'raid', raid.faction + (place || []).join() + E.troopsOut(s) + (raid.assault ? E.breaches(s, raid.target) : ''), `
+  const el = slot(refs, 'raid', raid.faction + (place || []).join() + E.troopsOut(s) + (raid.assault ? E.breaches(s, raid.target) : ''), () => `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     ${place ? mapBackdrop(s, [place[1], place[0]], { beam: place, cls: 'panel' }) : ''}
     <div class="inc-main">
@@ -273,10 +275,10 @@ function buildPanel(s, refs) {
   const b = BY_ID[s.build.id];
   const el = slot(refs, 'build', `${s.build.id}|${line}`, `
     <header>${icon('economy')}Construction<span class="count-badge" data-tip="text" data-tip-text="Builds waiting: ${s.queue.length} of ${E.queueSlots(s)}.">${s.queue.length}/${E.queueSlots(s)}</span></header>
-    <div class="mini">${icon(b.id)}<b>${b.name}</b>
-      <button class="btn ghost tiny" data-act="cancel-build"><span>Cancel</span></button></div>
+    <div class="mini">${icon(b.id)}<b>${b.name}</b></div>
     <div class="mini-stats"><span data-tip="text" data-tip-text="Level now and the level this build reaches.">Lv ${E.level(s, b.id)} → ${E.level(s, b.id) + 1}</span><span data-t></span></div>
     <div class="timebar"><i data-b></i></div>
+    <div class="build-acts"><button class="btn ghost tiny" data-act="cancel-build"><span>Cancel</span></button></div>
     ${queueList(s)}`);
   putHtml(el.querySelector('[data-t]'), `${labeled('clock')}${clock(s.build.remaining)}`);
   setW(el.querySelector('[data-b]'), pct(1 - s.build.remaining / s.build.total));
@@ -293,7 +295,7 @@ function eventsPanel(s, refs) {
   // The order closest to its deadline sets the scene behind the list.
   const lead = list[0];
   const where = [(lead.params || {}).held, (lead.params || {}).node].filter((id) => E.sectorById(id));
-  const el = slot(refs, 'events', key + where.join(), `<header>${icon('message')}Transmissions<span class="count-badge">${s.events.length}</span></header>
+  const el = slot(refs, 'events', key + where.join(), () => `<header>${icon('message')}Transmissions<span class="count-badge">${s.events.length}</span></header>
     ${where.length ? mapBackdrop(s, where, { cls: 'panel' }) : ''}
     ${list.map((x) => {
       const ev = E.eventById(x.id);

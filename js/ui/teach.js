@@ -78,8 +78,19 @@ export function createTutor(root, game, onChange) {
   el.addEventListener('click', (e) => {
     const b = e.target.closest('[data-teach]');
     if (!b || !lesson) return;
-    if (b.dataset.teach === 'skip') finish();
-    else advance();
+    if (b.dataset.teach === 'skip') {
+      // A skipped lesson never comes back on its own, so the first tap only asks.
+      if (b.dataset.armed && performance.now() - Number(b.dataset.armed) > 400) {
+        finish();
+      } else if (!b.dataset.armed) {
+        b.dataset.armed = String(performance.now());
+        b.textContent = 'Skip this lesson?';
+        setTimeout(() => { delete b.dataset.armed; b.textContent = 'Skip'; }, 3500);
+        return;
+      } else {
+        return;
+      }
+    } else advance();
     onChange();
   });
 

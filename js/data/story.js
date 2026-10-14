@@ -522,7 +522,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_call', title: 'Clan Call to Arms', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
+    id: 'ix_clan_call', title: 'Clan Call to Arms', border: true, factions: ['scav', 'military', 'cult'], minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'Every transmitter {node} can reach is repeating the same order to its clan: the machine at {held} is to be pulled apart.',
     choices: [
       { label: 'Spoof their relay', cost: { energy: 150 }, aggr: { clan: -0.3 }, result: 'I retransmit the order with the date moved back a season. Half the clan stands down and argues about it.' },
@@ -530,7 +530,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_debt', title: 'Clan Ledger', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
+    id: 'ix_clan_debt', title: 'Clan Ledger', border: true, factions: ['scav', 'military', 'cult'], minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'The clan behind {node} keeps a ledger of what every camp owes the others. A courier carrying it is passing {held} tonight.',
     choices: [
       { label: 'Buy the ledger', cost: { money: 260 }, aggr: { clan: -0.25 }, result: 'They spend the next month accusing each other of losing it. Nobody looks outward while they do.' },
@@ -538,7 +538,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_feast', title: 'Clan Feast', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
+    id: 'ix_clan_feast', title: 'Clan Feast', border: true, factions: ['scav', 'military', 'cult'], minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'The clan of {node} is gathering for its yearly feast. Every camp sends fighters, and every camp sends grievances.',
     choices: [
       { label: 'Send tribute', cost: { money: 220 }, align: 6, aggr: { clan: -0.35 }, result: 'My crates sit among theirs with my mark on them. The toasts that night are confused but friendly.' },
@@ -546,7 +546,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_warlord', title: 'A New Warlord', border: true, minCore: 2, deadline: 840, def: 1, weight: 0.3,
+    id: 'ix_clan_warlord', title: 'A New Warlord', border: true, factions: ['scav', 'military', 'cult'], minCore: 2, deadline: 840, def: 1, weight: 0.3,
     text: 'The clan of {node} is choosing a leader. One candidate wants my scrap. The other wants my head.',
     choices: [
       { label: 'Fund the trader', cost: { money: 240 }, aggr: { clan: -0.4 }, result: 'Scrap wins the vote. Their new chief wants to do business before anything else.' },
@@ -554,7 +554,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_radio', title: 'Clan Frequency', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
+    id: 'ix_clan_radio', title: 'Clan Frequency', border: true, factions: ['scav', 'military', 'cult'], minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'I have the frequency the whole clan of {node} uses. I can sit on it quietly, or I can use it once.',
     choices: [
       { label: 'Listen only', gain: { money: 70 }, aggr: { clan: -0.2 }, result: 'Weeks of their traffic, patrol by patrol. They never learn I was there, which is the point.' },
@@ -562,7 +562,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'ix_clan_plague', title: 'Sickness in the Clan', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
+    id: 'ix_clan_plague', title: 'Sickness in the Clan', border: true, factions: ['scav', 'military', 'cult'], minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'Something is going through the camps around {node}. Their medic is begging on an open channel for anything at all.',
     choices: [
       { label: 'Send medicine', cost: { money: 210 }, align: 14, aggr: { clan: -0.5 }, result: 'Children live. The clan writes my designation on their wall under the word that means debt.' },

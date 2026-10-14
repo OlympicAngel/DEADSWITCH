@@ -385,8 +385,8 @@ function attackRow(s, sec) {
   const def = E.baseDefense(s, sec.id);
   const ratio = atk / Math.max(1, def);
   const kind = ratio >= 1.2 ? ['bad-t', 'Sends more than it holds'] : ratio >= 0.6 ? ['bad-t', 'Lightly held, heavily armed']
-    : ratio >= 0.35 ? ['', 'Front line'] : ['good-t', 'A wall with few behind it'];
-  return `<div class="r" data-tip="text" data-tip-text="${esc(kind[1])}. Defense is what it costs to take; attack is what it sends. They are not the same number."><span>${icon('power')}Its attack</span><b class="${kind[0]}">${num(atk)}<em class="atk-kind">${esc(kind[1])}</em></b></div>`;
+    : ratio >= 0.35 ? ['', 'Front line'] : ['', 'A wall with few behind it'];
+  return `<div class="r" data-tip="text" data-tip-text="Attack ${num(atk)} against defense ${num(def)}: ${pct(ratio)} of it."><span>${icon('power')}Its attack</span><b class="${kind[0]}">${num(atk)}<em class="atk-kind">${esc(kind[1])}</em></b></div>`;
 }
 
 // Current strength against the sector's base defense.

@@ -259,8 +259,8 @@ p {
 }
 
 .ident {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 60px;
+  min-width: 60px; /* the callsign and rank never shrink to nothing beside wide numbers */
   display: flex;
   flex-direction: column;
 }
@@ -274,10 +274,10 @@ p {
 }
 
 .ident span {
-  font: 600 8px var(--font-hud);
+  font: 600 9.5px var(--font-hud);
   color: var(--hud);
   text-transform: uppercase;
-  letter-spacing: .12em;
+  letter-spacing: .06em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -335,6 +335,13 @@ p {
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   padding-left: 11px;
+}
+
+@media (max-width: 400px) {
+  .tb-res {
+    gap: 11px;
+    padding-left: 8px;
+  }
 }
 
 .pill {
@@ -2045,8 +2052,14 @@ button:focus-visible,
   min-width: 0;
 }
 
-.mini [data-act='cancel-build'] {
-  margin-left: auto;
+.mini-stats span {
+  white-space: nowrap;
+}
+
+.build-acts {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
 }
 
 .build-queue {

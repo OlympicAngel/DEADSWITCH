@@ -179,8 +179,8 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   const nameForm = (btn) => `
     <form class="callsign reveal" id="callsign">
       <label for="cs">Callsign</label>
-      <input id="cs" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Name your commander" required>
-      <button class="btn primary wide" type="submit" disabled>${btn}</button>
+      <input id="cs" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Name your commander" value="Commander" required>
+      <button class="btn primary wide" type="submit">${btn}</button>
     </form>`;
 
   function bindName(then) {
@@ -196,7 +196,8 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       dialog.close();
       finish();
     });
-    return () => { form.classList.add('in'); input.focus(); };
+    // Not focused: a keyboard springing up over the last line of the opening is the wrong welcome.
+    return () => { form.classList.add('in'); };
   }
 
   // Every cut scene in the game runs through here (the opening, a Core level, a chapter, a clan
