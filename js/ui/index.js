@@ -137,8 +137,7 @@ export function createUI(root, game) {
       return [tab[0], tab[1], '.card.item.affordable, .card.item, .card[data-card]'];
     }
     if (c.sector) {
-      ui.sector = c.sector;
-      return ['map', 'theater', null, true];
+      return ['map', 'theater', null, c.sector];
     }
     if (c.raidsWon) return ['military', 'defense', '.card.item, .card[data-card]'];
     return ['command', null, '.reactor'];
@@ -380,7 +379,10 @@ export function createUI(root, game) {
           sfx.click();
           go(tg[0], tg[1], tg[2]);
           if (tg[3]) {
+            // The sector the directive names, not whatever attack is live: set after go(), which would override it.
+            ui.sector = tg[3];
             ui.sheet = true;
+            render();
           }
         }
         break;

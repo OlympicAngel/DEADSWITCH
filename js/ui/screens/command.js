@@ -266,7 +266,7 @@ function buildPanel(s, refs) {
     const go = ready.length ? `${ready[0][0]}:${ready[0][1].id}` : 'economy';
     slot(refs, 'build', `idle${n}${go}|${line}`, `
       <header>${icon('economy')}Construction</header>
-      <p class="idle warn-t">Builder idle${n ? ` · ${n} ready` : ''}${s.queue.length ? ' · queue waiting on the stores' : ''}</p>
+      <p class="idle warn-t">Builder idle${n ? ` · ${n} ready` : ''}${s.queue.length ? ` · ${s.queue.length} queued` : ''}</p>
       ${queueList(s)}
       <button class="btn ghost small" data-go="${go}">${icon('up')}Build</button>`);
     return;
