@@ -822,6 +822,7 @@ export const DAILY = {
   count: 2, // orders a day holds...
   countAtCore: 5, // ...and from this AI Core level, one more
   seconds: 150, // seconds of production one order of weight 1 pays
+  energyShare: 0.4, // ...in Scrip, and this share of it again in Energy
   streakStep: 0.12, // every day cleared in a row pays this much more again...
   streakMax: 7, // ...up to this many days
   bonusShare: 1.5, // clearing the whole day pays this much of one order on top

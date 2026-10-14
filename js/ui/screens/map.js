@@ -470,14 +470,14 @@ function briefing(s, sec) {
   return `${head}
     <div class="duel">
       <div data-tip="text" data-tip-text="Power ×${OPS.powerMult} while attacking."><small>${icon('power')}Strike power</small><b data-power></b></div>
-      <div class="odds-ring"><b data-chance></b><small>odds</small></div>
-      <div><small>${icon('defense')}Their defense</small><b>${num(E.sectorDefense(s, sec))}</b></div>
+      <div class="odds-ring" data-tip="text" data-tip-text="Chance the operation takes the sector, from strike power against their defense."><b data-chance></b><small>odds</small></div>
+      <div data-tip="text" data-tip-text="What holds the sector: its base defense, how far it has grown, and support from its clan's sectors next to it."><small>${icon('defense')}Their defense</small><b>${num(E.sectorDefense(s, sec))}</b></div>
     </div>
     <div class="oddsbar"><i data-odds></i></div>
     <div class="rows">
       ${postureRow(s, sec)}
       ${fortRow(s, sec)}
-      <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
+      <div class="r" data-tip="text" data-tip-text="Time from launch until the operation lands and the roll is made."><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
       ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="text" data-tip-text="Troops leave the wall until the operation lands."><span>${icon('defense')}Defense while out</span><b class="warn-t">${num(E.factors(s).defense)} → ${num(Math.max(0, E.factors(s).defense - E.troopDefense(s)))}</b></div>` : ''}
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>

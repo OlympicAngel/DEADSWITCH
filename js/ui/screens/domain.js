@@ -29,7 +29,7 @@ export function renderDomain(s, ui, domain) {
     </button>`).join('');
   const factors = d.factors.map((k) => `
     <div class="stat stat-${k}" data-tip="factor:${k}">${icon(k)}<b data-factor="${k}"></b><small>${FACTORS[k].name.replace('AI ', '')}</small></div>`).join('');
-  const raidBar = domain === 'military' ? '<div class="raid-mini" data-raidmini hidden></div>' : '';
+  const raidBar = domain === 'military' ? '<div class="raid-mini" data-raidmini hidden data-tip="text" data-tip-text="The next attack: time to impact, its strength, and the chance our Defense holds it."></div>' : '';
   return `
     <div class="screen domain dom-${domain}">
       <header class="screen-head">

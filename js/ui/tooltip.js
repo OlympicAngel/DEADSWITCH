@@ -88,7 +88,7 @@ export function createTips(game) {
     let status;
     if (amt > c) {
       const store = r === 'energy' ? 'battery' : 'habitat';
-      status = row('Exceeds storage', `Upgrade ${icon(store)}${BY_ID[store].name}`, 'warn');
+      status = row('Exceeds storage', `${icon(store)}${BY_ID[store].name} caps it at ${num(c)}`, 'warn');
     } else if (have >= amt) {
       status = row('Status', 'Affordable', 'ok');
     } else if (net > 0) {

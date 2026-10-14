@@ -375,6 +375,7 @@ export const RAIDS = {
   // A raid that lands this far over our Defense does not just rob the place, it cracks it: the
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
+  minWarning: 60, // seconds: no raid is ever brought closer than this, and a cancelled one waits this long for the next
   threatShare: 0.3, // raid strength tracks this share of your threat index...
   defenseWeight: 0.5, // ...with Defense counted at this weight in it, so building walls does not call down raids as heavy as the walls
   spreadMin: 0.8, // ...times a random spread
@@ -459,6 +460,7 @@ export const NODES = {
   rushCost: 0.5,
   rushFloor: 20, // seconds still left on the clock, so the panel can be read before it lands
   rushHold: 5, // seconds of holding that brings an attack all the way in
+  rushCurve: 2.2, // how fast the price of meeting it early falls off as it is walked in
   rushTicks: 5, // steps a second while it is held
   // A sector that keeps throwing itself at the same wall and keeps failing does not get weaker at
   // it: it gets angrier and a little thinner. Each held assault adds pushPerLoss to what it sends

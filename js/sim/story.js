@@ -535,7 +535,7 @@ export function dailyProgress(s, o) {
 /** What one order pays: seconds of production, so it is worth clearing at Core 8 as at Core 2. */
 export function dailyReward(s, weight = 1) {
   const mult = weight * (1 + Math.min(s.daily.streak, DAILY.streakMax) * DAILY.streakStep);
-  return { money: eventValue(s, 'money', DAILY.seconds * mult), energy: eventValue(s, 'energy', DAILY.seconds * mult * 0.4) };
+  return { money: eventValue(s, 'money', DAILY.seconds * mult), energy: eventValue(s, 'energy', DAILY.seconds * mult * DAILY.energyShare) };
 }
 
 /** Turns the day over when the host says it has. A day skipped entirely ends the streak. */

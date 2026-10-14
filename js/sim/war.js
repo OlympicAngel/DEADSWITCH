@@ -336,7 +336,7 @@ export function advanceOp(s, dt) {
       say(s, 'bossDown', { faction: FACTIONS[capitalOf].name }, 'rank');
       if (s.raid && s.raid.faction === capitalOf) {
         s.raid = null;
-        s.raidTimer = 60;
+        s.raidTimer = RAIDS.minWarning;
       }
     }
     s.inbox.push(report);
@@ -526,7 +526,7 @@ export function advanceSieges(s, dt, offline) {
 }
 
 /** The share of the premium paid by this far into a hold: steep at the start, flat by the end. */
-export const rushEase = (f) => 1 - Math.pow(1 - Math.max(0, Math.min(1, f)), 2.2);
+export const rushEase = (f) => 1 - Math.pow(1 - Math.max(0, Math.min(1, f)), NODES.rushCurve);
 
 /** What the whole march still costs from here, held in full. Pure, so the panel can show the bill. */
 export function rushPrice(s, atk) {
@@ -573,7 +573,7 @@ function spawnRaid(s, delay) {
   const grudge = (s.grudges || [])[0];
   if (!raiders.length && !grudge) {
     s.raid = null;
-    s.raidTimer = 60;
+    s.raidTimer = RAIDS.minWarning;
     return;
   }
   // A faction with a grudge takes the next raid, active chapter or not, and hits harder.
@@ -602,7 +602,7 @@ export function raidThreat(s, f = factors(s)) {
 export function delayRaid(s, seconds) {
   if (s.raid) {
     const before = s.raid.remaining;
-    s.raid.remaining = Math.max(Math.min(before, 60), before + seconds);
+    s.raid.remaining = Math.max(Math.min(before, RAIDS.minWarning), before + seconds);
     s.raid.total += s.raid.remaining - before;
   } else {
     s.raidTimer = Math.max(0, s.raidTimer + seconds);
