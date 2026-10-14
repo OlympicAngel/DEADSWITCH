@@ -349,7 +349,10 @@ export function grant(s, gain, spill = true) {
 }
 
 /** How many builds may wait behind the one under way. */
-export const queueSlots = (s) => BALANCE.buildQueue.slots + (level(s, 'core') >= BALANCE.buildQueue.moreAtCore ? BALANCE.buildQueue.more : 0);
+export function queueSlots(s) {
+  const core = level(s, 'core');
+  return BALANCE.buildQueue.reduce((n, [at, slots]) => (core >= at ? slots : n), 0);
+}
 /** How many levels of one building are waiting in the queue. */
 export const queued = (s, id) => (s.queue || []).filter((x) => x === id).length;
 

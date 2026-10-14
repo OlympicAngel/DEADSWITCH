@@ -880,6 +880,7 @@ export const LINES = {
   stanceEnd: ['{stance}: over. The {faction} have moved on.'],
   sectorLost: ['{sector} has fallen to {faction}.'],
   opCut: ['The road to {sector} is gone. The operation turned back with what it took out.'],
+  breachSealed: ['No enemy borders {sector} any more. Its breaches are sealed.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
   bossDown: ['The {faction} capital has fallen. Their raids stop here. Their survivors will not.'],
   chapter: ['{kicker}: {title}.'],

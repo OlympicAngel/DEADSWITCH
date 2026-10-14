@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.25.0';
+export const VERSION = '1.26.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -50,9 +50,10 @@ export const BALANCE = {
   // attacksPerHour x the hours counted is how many attacks may land, up to maxAttacks.
   offline: { graceSeconds: 120, warHours: 8, attacksPerHour: 0.5, maxAttacks: 4,
     baseHours: 0, hoursPerStep: 1, baseEfficiency: 0.5, efficiencyPerStep: 0.05, maxEfficiency: 0.8 },
-  // Builds waiting behind the one under way. Each is paid for when it starts, not when it is queued,
-  // and starts the moment the builder is free and the stores can pay (away or not).
-  buildQueue: { slots: 2, more: 2, moreAtCore: 5 },
+  // Builds waiting behind the one under way, by AI Core level: [from this Core level, this many].
+  // Each is paid for when it starts, not when it is queued, and starts the moment the builder is free
+  // and the stores can pay (away or not).
+  buildQueue: [[1, 1], [4, 2], [7, 3]],
 };
 
 // kind: 'core' | 'producer' | 'converter' | 'storage' | 'offline' | 'unlocker'

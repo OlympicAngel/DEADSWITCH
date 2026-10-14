@@ -456,7 +456,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   /** A held attack is news, not a decision: a line that goes by, not a dialog to dismiss. */
   function heldNote(r, then) {
     const salvage = r.loot && r.loot.money ? ` · +${num(r.loot.money)} Scrip` : '';
-    notify(`${icon('defense')}<b>Held: ${esc(r.name || FACTIONS[r.faction].raidName)}</b> ${pct(r.chance)} odds${salvage}${r.mended ? ' · a breach mended' : ''}`, 'good');
+    notify(`${icon('defense')}<b>Held: ${esc(r.name || FACTIONS[r.faction].raidName)}</b> ${pct(r.chance)} odds${salvage}`, 'good');
     then();
   }
 

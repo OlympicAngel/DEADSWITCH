@@ -142,7 +142,21 @@ export const resetPush = (s, id) => { if (s.nodes[id]) s.nodes[id].p = 1; };
 
 // Enemy sectors in open chapters slowly rebuild on their own, up to the hard ceiling, and every
 // sector's anger at you cools off while you leave it alone.
+// A cracked sector is sealed once nothing hostile borders it: with no enemy at its walls there is
+// nobody to finish the job, and the breaches are repaired.
+function sealSafe(s) {
+  for (const id of s.sectors) {
+    const n = s.nodes[id];
+    if (!n || !n.marks) continue;
+    if (!SECTOR_BY_ID[id].links.some((l) => factionOf(s, l) && !s.sectors.includes(l))) {
+      n.marks = 0;
+      say(s, 'breachSealed', { sector: SECTOR_BY_ID[id].name }, 'good');
+    }
+  }
+}
+
 export function advanceNodes(s, dt) {
+  sealSafe(s);
   const grow = (NODES.growthPerHour * dt) / 3600;
   const profiles = clanProfiles(s);
   for (const sec of SECTORS) {
@@ -908,12 +922,6 @@ function resolveAttack(s, raid, offline) {
     report.loot = loot;
     s.stats.raidsWon++;
     if (raid.assault) s.stats.assaultsHeld = (s.stats.assaultsHeld || 0) + 1;
-    // Holding a cracked sector is how it gets patched: one breach mended for every attack it turns back.
-    const mend = s.nodes[raid.target];
-    if (mend && mend.marks > 0 && s.sectors.includes(raid.target)) {
-      mend.marks--;
-      report.mended = true;
-    }
     say(s, 'raidWon', { raid: name, loot: loot.money }, 'good');
   } else if (raid.assault) {
     s.stats.raidsLost++;
