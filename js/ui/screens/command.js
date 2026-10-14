@@ -1,10 +1,10 @@
 // Command: the war room. Threat reactor in the middle, live feeds for every front around it.
 import {
-  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS, WARN,
+  FACTIONS, FACTORS, RANKS, RAIDS, NODES, DIRECTIVES, ALIGNMENT, BY_ID, SECTORS, WARN, DAILY,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
-import { icon, labeled, ICON_LABELS } from '../icons.js';
+import { icon, labeled } from '../icons.js';
 import { tags, clock, chanceClass, bonusText } from '../common.js';
 import { put, putHtml, setCls, setData, setW, setAttr, setStyle } from '../dom.js';
 import { onScreen } from '../onscreen.js';
@@ -327,29 +327,41 @@ function directivePanel(s, refs) {
   setW(el.querySelector('[data-b]'), pct(Math.min(1, have / need)));
 }
 
-/** A reward in words, for a tooltip, where the icon tags of `tags()` cannot go. */
-const rewardText = (r) => Object.entries(r).filter(([, v]) => v).map(([k, v]) => `${num(v)} ${ICON_LABELS[k] || k}`).join(' and ');
 
 // Today's orders: what the board is asking for, how far each one has got, and what the run of days
 // is worth. Rebuilt when the board changes, patched every frame while it is being played towards.
 function dailyPanel(s, refs) {
   const list = s.daily.tasks;
-  const el = slot(refs, 'daily', s.daily.day + ':' + s.daily.streak + ':' + list.map((o) => o.id + o.need + o.done).join(','), !list.length ? '' : `
+  const cleared = list.length > 0 && list.every((o) => o.done);
+  const state = (o) => (o.claimed ? 'claimed' : o.done ? 'ready' : 'open');
+  const key = s.daily.day + ':' + s.daily.streak + ':' + s.daily.paid + ':' + list.map((o) => o.id + o.need + state(o)).join(',');
+  const collect = (which) => `<button class="btn primary small d-claim" data-act="claim-daily" data-id="${which}">${icon('check')}Collect</button>`;
+  const el = slot(refs, 'daily', key, !list.length ? '' : `
     <header>${icon('clock')}Today's orders${s.daily.streak ? `<span class="streak">${icon('spark')}${s.daily.streak} day${s.daily.streak === 1 ? '' : 's'} running</span>` : ''}</header>
     <div class="dailies">${list.map((o, i) => {
     const t = E.dailyTask(o.id);
-    return `<div class="daily${o.done ? ' done' : ''}" data-tip="text" data-tip-text="Pays ${esc(rewardText(E.dailyReward(s, t.weight)))}. Clearing every order on the board pays again on top.">
+    return `<div class="daily is-${state(o)}">
         <span class="d-ico">${icon(o.done ? 'check' : t.icon)}</span>
         <div><b>${esc(E.dailyText(t, o.need, num))}</b><span class="t" data-d="${i}"></span></div>
+        <div class="d-pay">${o.claimed ? '<span class="muted">Collected</span>' : `<span class="d-rw" data-rw="${i}"></span>${o.done ? collect(i) : ''}`}</div>
         <div class="d-bar"><i data-db="${i}"></i></div>
       </div>`;
-  }).join('')}</div>`);
+  }).join('')}
+    <div class="daily d-board is-${s.daily.paid ? 'claimed' : cleared ? 'ready' : 'open'}" data-tip="text" data-tip-text="Paid once every order on today's board is cleared.">
+      <span class="d-ico">${icon('spark')}</span>
+      <div><b>Clear the board</b><span class="t">${list.filter((o) => o.done).length} / ${list.length}</span></div>
+      <div class="d-pay">${s.daily.paid ? '<span class="muted">Collected</span>' : `<span class="d-rw" data-rw="board"></span>${cleared ? collect('board') : ''}`}</div>
+    </div></div>`);
   el.hidden = !list.length;
   list.forEach((o, i) => {
     const [have, need] = E.dailyProgress(s, o);
     put(el.querySelector(`[data-d="${i}"]`), `${num(Math.min(have, need))} / ${num(need)}`);
     setW(el.querySelector(`[data-db="${i}"]`), pct(Math.min(1, have / need)));
+    const rw = el.querySelector(`[data-rw="${i}"]`);
+    if (rw) putHtml(rw, tags(E.dailyReward(s, E.dailyTask(o.id).weight), '+'));
   });
+  const board = el.querySelector('[data-rw="board"]');
+  if (board) putHtml(board, tags(E.dailyReward(s, DAILY.bonusShare), '+'));
 }
 
 function effectsPanel(s, refs) {

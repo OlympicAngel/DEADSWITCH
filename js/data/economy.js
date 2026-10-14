@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.29.2';
+export const VERSION = '1.30.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -28,7 +28,9 @@ export const BALANCE = {
   growthMult: 1.35, // stretches each per-level / per-unit growth: g -> 1 + (g - 1) * growthMult
   economyPriceMult: { money: 1.5 }, // extra multiplier on one resource's share of Economy building prices
   buildingPriceMult: { money: 1.3 }, // and on every building's Scrip price, Economy or not
-  corePriceMult: { money: 1.9 }, // the AI Core is dearer again: the ladder is what the run is paced by
+  corePriceMult: { money: 2.25 }, // the AI Core is dearer again: the ladder is what the run is paced by
+  // Scrip price of everything built outside the Storage tab and the Core: producers, converters, facilities.
+  workPriceMult: { money: 1.5 },
   buildTimeMult: 1.5, // every build takes this much longer...
   buildTimePower: 0.25, // ...and each level adds a little more again: time x (n + 1)^this
   longBuild: 300, // a build set to run this long is worth telling the player about when it lands
@@ -36,7 +38,7 @@ export const BALANCE = {
   // Per-resource share of the per-level climb (growth' - 1). Scrip climbs slower than the raw growth,
   // and energy and people slower again: Scrip is what a run is paced by, not the stores that hold them.
   resourceGrowth: { money: 0.8, energy: 0.62, pop: 0.58 },
-  coreGateShare: 0.5, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
+  coreGateShare: 0.575, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
   unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 cuts its shop prices 5% (compounding)
   threatExpertWeight: 5,

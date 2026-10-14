@@ -2232,9 +2232,34 @@ button:focus-visible,
 
 .daily {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 10px;
+}
+
+.daily .d-pay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.daily .d-rw {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.daily .d-claim {
+  min-height: 34px;
+  padding: 6px 12px;
+}
+
+.daily.d-board {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
 }
 
 /* Its own track, not the panel-wide .timebar, which is pinned to the panel's bottom edge. */
@@ -2253,9 +2278,6 @@ button:focus-visible,
   transition: width .25s linear;
 }
 
-.daily.done .d-bar i {
-  background: var(--good);
-}
 
 .daily b {
   display: block;
@@ -2272,12 +2294,18 @@ button:focus-visible,
   color: var(--hud-2);
 }
 
-.daily.done {
+.daily.is-claimed {
   opacity: .55;
 }
 
-.daily.done .d-ico {
+.daily.is-ready .d-ico,
+.daily.is-claimed .d-ico {
   color: var(--good);
+}
+
+.daily.is-ready .d-bar i,
+.daily.is-claimed .d-bar i {
+  background: var(--good);
 }
 
 .panel > header .streak {
@@ -5810,6 +5838,16 @@ dialog.report:has(.battle.def.loss) {
   border-color: rgba(255, 176, 61, .6);
   background: rgba(40, 28, 12, .94);
   color: var(--warn);
+}
+
+.fl-green {
+  border-color: rgba(76, 214, 140, .6);
+  background: rgba(12, 36, 24, .94);
+  color: var(--good);
+}
+
+.fl-green .fl-body b {
+  color: var(--good);
 }
 
 .fl-red {

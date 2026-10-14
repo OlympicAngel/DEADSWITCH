@@ -237,12 +237,11 @@ export function sectorDefense(s, sec) {
   if (sec.id === TUTORIAL.target && s.directive >= TUTORIAL.directive && (s.scripted.retake || 0) < 2) {
     return TUTORIAL.defense;
   }
-  return Math.ceil(baseDefense(s, sec.id) * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
+  return Math.ceil(baseDefense(s, sec.id) * OPS.defenseScale * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
 }
 
-/** What we actually hit a sector with. Threat never sees this multiplier, so a stronger offensive
- *  does not call down a heavier war on the Nest. */
-export const opPower = (s, f = factors(s)) => f.power * OPS.powerMult;
+/** What we hit a sector with: our Power, as it reads everywhere else. */
+export const opPower = (s, f = factors(s)) => f.power;
 
 export function opChance(s, sec) {
   return odds(opPower(s), sectorDefense(s, sec), OPS.winSharpness);

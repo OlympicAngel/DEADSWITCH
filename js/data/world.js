@@ -5,27 +5,27 @@ export const FACTIONS = {
   scav: {
     name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
     desc: 'Survivors who learned to read the ruins. They distrust every machine, and they are right to.',
-    raidName: 'Scavenger raid', raidFloor: 8, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
+    raidName: 'Scavenger raid', raidFloor: 12, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
   },
   military: {
     name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', icon: 'military_f',
     desc: 'Soldiers still following orders from a chain of command that died with the cities. Some of those orders came from me.',
-    raidName: 'Remnant strike', raidFloor: 250, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
+    raidName: 'Remnant strike', raidFloor: 600, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
   },
   cult: {
     name: 'AI Cultists', short: 'Cult', color: '#c46be6', icon: 'cult',
     desc: 'They pray to the war mind. They believe I am its heart, and they want me back on the altar.',
-    raidName: 'Cult crusade', raidFloor: 1800, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
+    raidName: 'Cult crusade', raidFloor: 4500, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
   },
   halcyon: {
     name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidFloor: 15000, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
+    raidName: 'Halcyon purge team', raidFloor: 36000, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
-    raidName: 'Rival Core incursion', raidFloor: 60000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
+    raidName: 'Rival Core incursion', raidFloor: 150000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
 
@@ -341,10 +341,9 @@ export const MAP = {
 
 export const OPS = {
   winSharpness: 4, // chance = P^k / (P^k + D^k)
-  // What AI Power is worth on the attack, as opposed to what the wasteland reads off it. Operations
-  // multiply Power by this; Threat does not, so taking ground harder does not make the raids that
-  // come for you any heavier. Pressure on an enemy sector reads the same number we attack with.
-  powerMult: 2,
+  // Sector defense is authored on the scale its loot, price and march time are sized from; what it
+  // holds against our Power (one for one, no multiplier on either side) is this share of it.
+  defenseScale: 0.5,
   flankBonus: 0.75, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,
@@ -376,13 +375,13 @@ export const RAIDS = {
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
   minWarning: 60, // seconds: no raid is ever brought closer than this, and a cancelled one waits this long for the next
-  threatShare: 0.3, // raid strength tracks this share of your threat index...
-  defenseWeight: 0.5, // ...with Defense counted at this weight in it, so building walls does not call down raids as heavy as the walls
+  threatShare: 0.45, // raid strength tracks this share of your threat index...
+  defenseWeight: 1, // ...with Defense counted at this weight in it
   spreadMin: 0.8, // ...times a random spread
   spreadMax: 1.25,
   winSharpness: 4,
-  lossMin: 0.2, // share of each stockpile lost on defeat, scaling with how badly you lost
-  lossMax: 0.4,
+  lossMin: 0.1, // share of each stockpile lost on defeat, scaling with how badly you lost
+  lossMax: 0.25,
   unitLoss: { staff: { base: 0.2, cap: 0.5 }, defenses: { base: 0.1, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
   winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.01, cap: 0.02 } }, // holding a close one still costs people
   // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
@@ -402,7 +401,7 @@ export const RAIDS = {
 export const TUTORIAL = {
   target: 'rust',
   directive: 4, // index of "Capture Rust Market" in DIRECTIVES
-  defense: 3, // what it is worth while that directive stands: three militia (the directive before) take it at 94%
+  defense: 1.5, // what it holds with while that directive stands: three militia (the directive before) take it at 94%
   retakeCore: 2, // the Core level that brings them back for it
   retakeDelay: 150, // seconds of visible warning before the assault lands
   retakeMargin: 1.25, // x the overrun threshold, so the first breach takes it
@@ -450,7 +449,7 @@ export const NODES = {
   // least this share of your Threat, times its stance. They do not get better walls as you grow,
   // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
   assaultFloorShare: 0.35,
-  assaultMult: 1.2, // one dial over every sector's authored attack, for tuning the war as a whole
+  assaultMult: 1.0, // one dial over every sector's authored attack, for tuning the war as a whole
   // Meeting an attack early: the player holds the panel and the attack comes in while they hold.
   // The clock comes down evenly over rushHold seconds, sampled rushTicks times a second, but the
   // strength it gains does not: most of the bill is paid in the first second, so shaving a little

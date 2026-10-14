@@ -216,6 +216,9 @@ export const priceGrowth = (g, k) => 1 + (g - 1) * BALANCE.growthMult * (BALANCE
 
 const ECONOMY_KINDS = ['core', 'producer', 'converter', 'storage'];
 
+// The Storage tab (stores and the Watch Daemon) keeps its prices; everything else built pays BALANCE.workPriceMult.
+const STORE_KINDS = ['storage', 'offline'];
+
 // Extra per-resource multiplier for Economy-tab buildings only.
 export const econMult = (b, k) => (ECONOMY_KINDS.includes(b.kind) && BALANCE.economyPriceMult[k]) || 1;
 
@@ -228,7 +231,8 @@ export function buildingCost(s, b) {
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
     out[k] = Math.ceil(v * econMult(b, k) * (BALANCE.buildingPriceMult[k] || 1)
-      * (b.id === 'core' ? BALANCE.corePriceMult[k] || 1 : 1) * priceFactor(b.growth, n, k));
+      * (b.id === 'core' ? BALANCE.corePriceMult[k] || 1 : STORE_KINDS.includes(b.kind) ? 1 : BALANCE.workPriceMult[k] || 1)
+      * priceFactor(b.growth, n, k));
   }
   return out;
 }

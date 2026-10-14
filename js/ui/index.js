@@ -20,7 +20,7 @@ import { DOMAINS, NAV, domainReady, domainReq, locate, sortedTabs } from './layo
 import { createModals } from './modals.js';
 import { measureVisible, watchVisible } from './onscreen.js';
 import { bindCommand, renderCommand, updateCommand } from './screens/command.js';
-import { bindDomain, buyCount, renderDomain, spendShare, updateDomain } from './screens/domain.js';
+import { bindDomain, buyCount, renderDomain, updateDomain } from './screens/domain.js';
 import { bindMapScreen, centerOn, defaultSector, liveSector, renderMapScreen, updateMapScreen } from './screens/map.js';
 import { sfx } from './sfx.js';
 import { createTutor } from './teach.js';
@@ -310,6 +310,17 @@ export function createUI(root, game) {
       case 'dequeue':
         if (game.act.dequeue(Number(t.dataset.i))) sfx.click();
         break;
+      case 'claim-daily': {
+        const which = id === 'board' || id === 'all' ? id : Number(id);
+        const paid = game.act.claimDaily(which);
+        if (paid) {
+          sfx.buy();
+          vibrate(20);
+          floatText(t, tags(paid, '+'));
+          burst(t, 'var(--good)', 14);
+        }
+        break;
+      }
       // A cancel throws away the time already built, so it takes a second tap, after a beat.
       case 'cancel-build': {
         const since = performance.now() - Number(t.dataset.armed || 0);
@@ -347,19 +358,6 @@ export function createUI(root, game) {
       case 'buy': {
         const item = ITEMS.find((i) => i.id === id);
         const n = buyCount(s, ui, item);
-        // A buy that takes more than half of a stockpile asks for a second tap, a beat later.
-        if (spendShare(s, E.itemCost(s, item, n)) > 0.5) {
-          const since = performance.now() - Number(t.dataset.armed || 0);
-          if (!(t.dataset.armed && since > 500 && since < 4000)) {
-            if (!t.dataset.armed || since >= 4000) {
-              t.dataset.armed = String(performance.now());
-              sfx.click();
-              setTimeout(() => { delete t.dataset.armed; }, 4000);
-            }
-            break;
-          }
-          delete t.dataset.armed;
-        }
         const before = E.factors(s);
         if (game.act.buy(id, n)) {
           sfx.buy();
@@ -373,22 +371,6 @@ export function createUI(root, game) {
         break;
       }
       case 'launch': {
-        // Long odds, or an attack due before the troops are back off the wall: a second tap, a beat later.
-        const sec = E.sectorById(id);
-        const atk = E.nextAttack(s);
-        const risky = sec && (E.opChance(s, sec) < 0.5 || (atk && E.troopDefense(s) > 0 && atk.remaining < E.opTime(sec)));
-        if (risky) {
-          const since = performance.now() - Number(t.dataset.armed || 0);
-          if (!(t.dataset.armed && since > 500 && since < 4000)) {
-            if (!t.dataset.armed || since >= 4000) {
-              t.dataset.armed = String(performance.now());
-              sfx.click();
-              setTimeout(() => { delete t.dataset.armed; }, 4000);
-            }
-            break;
-          }
-          delete t.dataset.armed;
-        }
         if (game.act.launch(id)) {
           sfx.launch();
           vibrate([30, 40, 60]);
@@ -655,6 +637,14 @@ export function createUI(root, game) {
         time: clock(first.left),
       });
     }
+    // Finished orders wait to be collected; the alert collects them all from wherever the player is.
+    const ready = E.dailyReady(s);
+    if (ready && !quiet) {
+      items.push({
+        key: 'daily:' + s.daily.day + ':' + ready, level: 'green', ico: 'check',
+        body: `<button class="fl-body" data-act="claim-daily" data-id="all"><span>${ready} order${ready > 1 ? 's' : ''} to collect</span><b>Collect</b></button>`,
+      });
+    }
     for (const k of Object.keys(ui.floats)) {
       if (!items.some((x) => x.key === k)) delete ui.floats[k];
     }
@@ -669,7 +659,8 @@ export function createUI(root, game) {
     for (const x of items) {
       const el = box.querySelector(`[data-fl="${x.key}"]`);
       el.classList.toggle('collapsed', floatState(x.key).collapsed);
-      put(el.querySelector('[data-t]'), x.time);
+      const tm = el.querySelector('[data-t]');
+      if (tm) put(tm, x.time);
       const h = el.querySelector('[data-h]');
       if (h) {
         put(h, x.hold);

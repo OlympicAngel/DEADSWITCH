@@ -469,7 +469,7 @@ function briefing(s, sec) {
   const running = s.op && s.op.sector === sec.id;
   return `${head}
     <div class="duel">
-      <div data-tip="text" data-tip-text="Power ×${OPS.powerMult} while attacking."><small>${icon('power')}Strike power</small><b data-power></b></div>
+      <div data-tip="text" data-tip-text="Our Power, against their defense."><small>${icon('power')}Strike power</small><b data-power></b></div>
       <div class="odds-ring" data-tip="text" data-tip-text="Chance the operation takes the sector, from strike power against their defense."><b data-chance></b><small>odds</small></div>
       <div data-tip="text" data-tip-text="What holds the sector: its base defense, how far it has grown, and support from its clan's sectors next to it."><small>${icon('defense')}Their defense</small><b>${num(E.sectorDefense(s, sec))}</b></div>
     </div>
@@ -548,7 +548,7 @@ export function updateMapScreen(s, ui, refs) {
   if (refs.btn) {
     const running = s.op && s.op.sector === sec.id;
     refs.btn.disabled = !E.canLaunch(s, sec);
-    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : refs.btn.dataset.armed ? 'Tap again to launch' : `Launch · ${pct(p)}`);
+    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : `Launch · ${pct(p)}`);
     refs.btn.classList.toggle('risky', p < 0.5);
   }
   if (refs.opbar && s.op) {

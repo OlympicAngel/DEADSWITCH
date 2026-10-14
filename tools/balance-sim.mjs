@@ -430,6 +430,7 @@ function play(seed) {
   for (let t = 0; t < HOURS * 3600; t++) {
     // The engine has no clock, so the host deals the daily board; here a day of play is a day.
     E.rollDaily(s, Math.floor(t / 86400) + 1);
+    if (t % THINK_EVERY === 0) E.claimDaily(s, 'all'); // finished orders are collected when the player looks in
     E.step(s, 1, false, true);
 
     const atk = E.nextAttack(s);
@@ -549,9 +550,15 @@ const n = (x) => (x >= 1e6 ? (x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? (x / 1e3).t
 console.log(`\nEnd of run (averages)`);
 console.log(`  Power ${n(mean((r) => r.factors.power))}  Defense ${n(mean((r) => r.factors.defense))}  Experts ${n(mean((r) => r.factors.experts))}  Threat ${n(mean((r) => r.threat))}`);
 console.log(`  Sectors held ${mean((r) => r.sectors).toFixed(1)}  Humanity ${mean((r) => r.align).toFixed(0)}`);
-console.log(`  Raids/sieges won ${mean((r) => r.stats.raidsWon).toFixed(1)}  lost ${mean((r) => r.stats.raidsLost).toFixed(1)}`);
+const share = (w, l) => (w + l ? `${Math.round((100 * w) / (w + l))}% held` : '-');
+{
+  // stats.raidsWon/raidsLost count every attack on us; assaults are split out below.
+  const w = mean((r) => r.stats.raidsWon - r.tally.assaultsHeld);
+  const l = mean((r) => r.stats.raidsLost - r.tally.assaultsBreached);
+  console.log(`  Raids/sieges held ${w.toFixed(1)}  lost ${l.toFixed(1)}  (${share(w, l)})`);
+}
 console.log(`  Operations won ${mean((r) => r.stats.opsWon).toFixed(1)}  lost ${mean((r) => r.stats.opsLost).toFixed(1)}`);
-console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  breached ${mean((r) => r.tally.assaultsBreached).toFixed(1)}  raids that cracked a wall ${mean((r) => r.tally.raidBreaches).toFixed(1)}  sectors lost ${mean((r) => r.tally.sectorsLost).toFixed(1)}`);
+console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  breached ${mean((r) => r.tally.assaultsBreached).toFixed(1)}  (${share(mean((r) => r.tally.assaultsHeld), mean((r) => r.tally.assaultsBreached))})  raids that cracked a wall ${mean((r) => r.tally.raidBreaches).toFixed(1)}  sectors lost ${mean((r) => r.tally.sectorsLost).toFixed(1)}`);
 console.log(`  Capture loot ${mean((r) => avg(r.tally.lootMin) || 0).toFixed(1)} min of Scrip income, held-attack salvage ${mean((r) => avg(r.tally.salvageMin) || 0).toFixed(1)} min`);
 console.log(`  Humanity from choices ${mean((r) => r.tally.align).toFixed(0)} over ${mean((r) => r.tally.picked).toFixed(0)} answers, ${mean((r) => r.tally.pricedOut).toFixed(0)} options unaffordable`);
 console.log('  levels ' + JSON.stringify(runs[0].levels));

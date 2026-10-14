@@ -265,8 +265,8 @@ function screen(s, id) {
       ['sectors held', () => `${s.sectors.length - 1} · align ${Math.round(s.align)}`],
       ['event drain', () => JSON.stringify(E.eventDrain(s))],
       ['directive', () => (E.currentDirective(s) ? `${s.directive}: ${E.currentDirective(s).text}` : 'all done')],
-      ['daily board', () => `day ${s.daily.day} \u00b7 streak ${s.daily.streak} (best ${s.daily.best}) \u00b7 ${s.daily.paid ? 'bonus paid' : 'bonus open'}`],
-      ['daily orders', () => (s.daily.tasks.map((o) => { const [have, need] = E.dailyProgress(s, o); return `${o.id} ${have}/${need}${o.done ? ' \u2713' : ''}`; }).join(' \u00b7 ') || 'none dealt')],
+      ['daily board', () => `day ${s.daily.day} \u00b7 streak ${s.daily.streak} (best ${s.daily.best}) \u00b7 ${s.daily.paid ? 'bonus paid' : 'bonus open'} \u00b7 ${E.dailyReady(s)} to collect`],
+      ['daily orders', () => (s.daily.tasks.map((o) => { const [have, need] = E.dailyProgress(s, o); return `${o.id} ${have}/${need}${o.done ? (o.claimed ? ' \u2713' : ' ready') : ''}`; }).join(' \u00b7 ') || 'none dealt')],
       ['daily pays', () => Object.entries(E.dailyReward(s)).map(([r, v]) => `${r} ${v}`).join(' ') + ` (x${(1 + Math.min(s.daily.streak, DAILY.streakMax) * DAILY.streakStep).toFixed(2)} for the run)`],
       ['events seen', () => s.recentEvents.join(' ') || '-'],
       ['clan stances', () => Object.keys(FACTIONS).map((f) => `${f}:${E.stanceList(s, f).length}`).join(' ')],
@@ -326,6 +326,7 @@ function screen(s, id) {
       ['next day of orders', (g) => E.rollDaily(g.state, g.state.daily.day + 1)],
       ['clear an order', (g) => { const o = g.state.daily.tasks.find((x) => !x.done); if (o) o.from = (g.state.stats[E.dailyTask(o.id).stat] || 0) - o.need; }],
       ['streak +1', (g) => { g.state.daily.streak++; }],
+      ['collect all orders', (g) => E.claimDaily(g.state, 'all')],
     ],
   };
 }

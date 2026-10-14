@@ -519,7 +519,7 @@ export function dailyFor(s, day) {
   for (let i = 0; i < want; i++) {
     const t = left.splice(mix(s.rng, day, i) % left.length, 1)[0];
     const [lo, hi] = t.n;
-    out.push({ id: t.id, need: lo + (mix(s.rng, day, i, 7) % (hi - lo + 1)), from: s.stats[t.stat] || 0, done: false });
+    out.push({ id: t.id, need: lo + (mix(s.rng, day, i, 7) % (hi - lo + 1)), from: s.stats[t.stat] || 0, done: false, claimed: false });
   }
   return out;
 }
@@ -550,15 +550,17 @@ export function rollDaily(s, day) {
     return false;
   }
   const cleared = s.daily.tasks.length && s.daily.tasks.every((o) => o.done);
+  claimDaily(s, 'all'); // nothing earned is lost to the turn of the day: what was left uncollected pays now
   s.daily.streak = s.daily.day && cleared && gap > 0 && gap <= DAILY.grace + 1 ? s.daily.streak + 1 : 0;
   s.daily.best = Math.max(s.daily.best || 0, s.daily.streak);
   s.daily.day = day;
   s.daily.tasks = dailyFor(s, day);
   s.daily.paid = false;
+  s.daily.cleared = false;
   return true;
 }
 
-/** Pays out whatever finished since the last look. Called every tick; it does nothing most of them. */
+/** Marks whatever finished since the last look; its pay waits to be collected. Called every tick. */
 export function checkDaily(s) {
   for (const o of s.daily.tasks) {
     const [have, need] = dailyProgress(s, o);
@@ -567,20 +569,43 @@ export function checkDaily(s) {
     }
     o.done = true;
     const task = dailyTask(o.id);
-    const reward = dailyReward(s, task.weight);
-    grant(s, reward);
     say(s, 'daily', { text: dailyText(task, o.need) }, 'good');
-    s.fx.push({ kind: 'daily', text: dailyText(task, o.need), reward });
+    s.fx.push({ kind: 'daily', text: dailyText(task, o.need), reward: dailyReward(s, task.weight) });
   }
-  // The day itself pays once, on top, when every order on it is cleared.
-  if (!s.daily.paid && s.daily.tasks.length && s.daily.tasks.every((o) => o.done)) {
-    s.daily.paid = true;
-    const reward = dailyReward(s, DAILY.bonusShare);
-    grant(s, reward);
+  if (boardCleared(s) && !s.daily.cleared) {
+    s.daily.cleared = true;
     const n = s.daily.streak + 1;
     say(s, 'dailyAll', { n: n === 1 ? 'the first day' : `${n} days` }, 'good');
-    s.fx.push({ kind: 'daily', text: 'Every order cleared', reward, all: true });
+    s.fx.push({ kind: 'daily', text: 'Every order cleared', reward: dailyReward(s, DAILY.bonusShare), all: true });
   }
+}
+
+const boardCleared = (s) => s.daily.tasks.length > 0 && s.daily.tasks.every((o) => o.done);
+
+/** What is waiting to be collected: finished orders, and the board itself once all of them are. */
+export function dailyReady(s) {
+  return s.daily.tasks.filter((o) => o.done && !o.claimed).length + (boardCleared(s) && !s.daily.paid ? 1 : 0);
+}
+
+/** Collects one finished order (its index), the cleared board ('board'), or everything ready ('all').
+ *  The pay is sized when it is collected, on what the base makes then. Returns what was paid, or null. */
+export function claimDaily(s, which) {
+  const paid = {};
+  const add = (r) => {
+    grant(s, r);
+    for (const [k, v] of Object.entries(r)) paid[k] = (paid[k] || 0) + v;
+  };
+  s.daily.tasks.forEach((o, i) => {
+    if (o.done && !o.claimed && (which === 'all' || which === i)) {
+      o.claimed = true;
+      add(dailyReward(s, dailyTask(o.id).weight));
+    }
+  });
+  if ((which === 'all' || which === 'board') && boardCleared(s) && !s.daily.paid) {
+    s.daily.paid = true;
+    add(dailyReward(s, DAILY.bonusShare));
+  }
+  return Object.keys(paid).length ? paid : null;
 }
 
 // ---------- lessons ----------

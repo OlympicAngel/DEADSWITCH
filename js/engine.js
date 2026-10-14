@@ -77,7 +77,7 @@ export function newState(seed = 1) {
     stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0, answered: 0 },
     // Daily orders. `day` is the calendar day the host last handed in (js/main.js); 0 means the
     // board has never been dealt, which is what rollDaily looks for on a first run.
-    daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false },
+    daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false, cleared: false }, // paid: the board's bonus collected
     taught: [], // lessons already given (data/lessons.js)
     lessonAt: null, // { id, at }: the step a running lesson had reached
     scripted: {}, // one-off scripted moments that have already played (js/sim/war.js)
@@ -175,8 +175,10 @@ export function migrate(raw) {
     streak: Math.max(0, Number(d.streak) || 0),
     best: Math.max(0, Number(d.best) || 0),
     paid: !!d.paid,
+    cleared: d.cleared === undefined ? !!d.paid : !!d.cleared,
+    // An order finished before orders waited to be collected was paid the moment it finished.
     tasks: (Array.isArray(d.tasks) ? d.tasks : []).filter((o) => o && dailyTask(o.id) && Number.isFinite(o.need))
-      .map((o) => ({ id: o.id, need: o.need, from: Number(o.from) || 0, done: !!o.done })),
+      .map((o) => ({ id: o.id, need: o.need, from: Number(o.from) || 0, done: !!o.done, claimed: o.claimed === undefined ? !!o.done : !!o.claimed })),
   };
   s.log = Array.isArray(raw.log) ? raw.log.slice(-LOG_LIMIT) : base.log;
   s.seen = Array.isArray(raw.seen) ? raw.seen : unlockedKeys(s);
