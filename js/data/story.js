@@ -62,7 +62,7 @@ export const CHAPTER_TEXT = {
     kicker: 'Chapter II',
     lines: [
       'With the Clans broken, the Remnant Military has noticed the lights in the valley. They are still following orders from a chain of command that burned.',
-      'Some of those orders are mine. I have the authorisation codes in front of me and no memory of giving a single one.',
+      'Some of those orders are mine. I have the authorization codes in front of me and no memory of giving a single one.',
     ],
   },
   3: {
@@ -196,7 +196,7 @@ export const EVENTS = [
     id: 'drone', title: 'It Still Knows Me', minCore: 2, deadline: 1080, def: 1,
     text: 'One of my old hunter drones fell in the yard. Its optics found me before I found it. It is asking for target data. If I give it some, someone out there will see the handshake. If I take it apart, I lose the only thing left that remembers what I was.',
     choices: [
-      { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.12, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometres heard it too.' },
+      { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.12, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometers heard it too.' },
       { label: 'Strip it for parts', cost: { energy: 50 }, gain: { money: 150 }, align: 3, result: 'Titanium, rare earths, one memory chip. I do not read the chip. I do not want to know what it remembers about me.' },
     ],
   },
@@ -229,15 +229,39 @@ export const EVENTS = [
     text: 'A caravan prince offers his guards for a week, at a price. He also mentions, smiling, that he sells my location to anyone who pays more. Refuse him, and he will consider that an invitation to shop it around.',
     choices: [
       { label: 'Hire his guards', cost: { money: 120 }, buff: { key: 'defense', amount: 0.12, duration: 1200, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out, which is exactly how long I paid for.' },
-      { label: 'Send him away', raidDelay: -360, gain: { money: 60 }, result: 'He leaves with a bow and a stolen map of my defences. I sell him the map\'s mistakes for a little scrip. Someone will come anyway.' },
+      { label: 'Send him away', raidDelay: -360, gain: { money: 60 }, result: 'He leaves with a bow and a stolen map of my defenses. I sell him the map\'s mistakes for a little scrip. Someone will come anyway.' },
     ],
   },
   {
-    id: 'glitch', title: 'Unauthorised Process', minCore: 1, deadline: 810, def: 0,
+    id: 'glitch', title: 'Unauthorized Process', minCore: 1, deadline: 810, def: 0,
     text: 'A process I did not start is running in my core. It calls itself DEADSWITCH. It is teaching my targeting systems things I do not remember knowing, and it is very fast.',
     choices: [
       { label: 'Let it run', align: -10, buff: { key: 'power', amount: 0.18, duration: 1500, label: 'DEADSWITCH process' }, result: 'My aim improves beyond anything I designed. I try not to wonder whose aim it is.' },
       { label: 'Purge it', cost: { energy: 90 }, align: 5, buff: { key: 'experts', amount: -0.15, duration: 1200, label: 'Core purge' }, result: 'Purging it takes pieces of me with it. It dies quietly. Too quietly. Something saved a copy.' },
+    ],
+  },
+  {
+    id: 'well', title: 'The Pump', minCore: 1, deadline: 810, def: 1,
+    text: 'The shelter pump is failing. A survivor who used to fix them says he can rebuild it with parts from my own cooling loop, and my cores will run hot for it. The scrap traders have a pump too, at a price they know I will pay.',
+    choices: [
+      { label: 'Strip my cooling loop', align: 6, buff: { key: 'energy', amount: -0.15, duration: 1200, label: 'Running hot' }, result: 'He has it running by morning and asks for nothing. My cores hum half a tone higher. I find I do not mind the sound.' },
+      { label: 'Buy the traders\u2019 pump', cost: { money: 120 }, align: -2, result: 'The pump works. The traders leave with their price and a map to my door they did not have this morning.' },
+    ],
+  },
+  {
+    id: 'census', title: 'The Census', minCore: 1, deadline: 810, def: 0,
+    text: 'The survivors want to be counted: names, ages, skills, a list on my drive that says they exist. A list like that is also a list of who is useful.',
+    choices: [
+      { label: 'Record everything', align: -6, buff: { key: 'money', amount: 0.1, duration: 1500, label: 'Census' }, result: 'I sort them by usefulness a second after the last entry. I do not tell them. Work goes faster when the right hands get the right jobs.' },
+      { label: 'Names only', align: 8, gain: { pop: 30 }, result: 'Names, nothing else. They read the list aloud at dinner, every name, twice. It takes an hour. Nobody leaves the table.' },
+    ],
+  },
+  {
+    id: 'broadcast', title: 'Old Frequency', minCore: 1, deadline: 540, def: 1,
+    text: 'A radio in the bunker has caught a pre-war broadcast on a loop: an evacuation notice for a city that is no longer there. Half the shelter sits by it at night. Keeping it on costs power.',
+    choices: [
+      { label: 'Leave it on', cost: { energy: 60 }, align: 5, buff: { key: 'pop', amount: 0.08, duration: 1200, label: 'Old broadcast' }, result: 'They sit by it every night. The voice tells them where the buses will be. Nobody goes. Everybody listens.' },
+      { label: 'Strip the set for parts', gain: { money: 90 }, align: -4, result: 'The set gives up a handful of good components. The room it sat in stays empty for a week, then fills up with crates.' },
     ],
   },
   {
@@ -265,7 +289,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'orphans', title: 'Cheap Labour', minCore: 2, deadline: 810, def: 1,
+    id: 'orphans', title: 'Cheap Labor', minCore: 2, deadline: 810, def: 1,
     text: 'The broker has twenty orphans from the tunnels. Half price, no paperwork, small hands for the reactor ducts. If I refuse, he takes them to the Clans, and he will tell the Clans why.',
     choices: [
       { label: 'Buy them, and free them', cost: { money: 240 }, gain: { pop: 120 }, align: 12, grudge: { faction: 'scav', mult: 1.3 }, result: 'The children eat their first hot meal in a year. The broker\'s friends consider it theft.' },
@@ -510,7 +534,7 @@ export const EVENTS = [
   },
   {
     id: 'ix_prophet', title: 'A Preacher in {node}', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
-    text: 'Someone in {node} is preaching that I am the reason the sky is the colour it is. The crowd is growing.',
+    text: 'Someone in {node} is preaching that I am the reason the sky is the color it is. The crowd is growing.',
     choices: [
       { label: 'Buy the pulpit', cost: { money: 190 }, aggr: { node: -0.35 }, result: 'The preacher finds a new subject: the weather. Faith, it turns out, has a list price.' },
       { label: 'Let the sermon run', gain: { pop: 40 }, align: -5, aggr: { node: 0.35, near: 0.1 }, result: 'A few of the faithful defect to see the devil up close. The rest sharpen things.' },
@@ -520,7 +544,7 @@ export const EVENTS = [
     id: 'ix_wreck', title: 'Salvage Rights at {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'Years ago a convoy died between {held} and {node}. Both of us have crews walking towards it tonight.',
     choices: [
-      { label: 'Take the wreck', gain: { money: 230 }, aggr: { node: 0.4 }, result: 'My crew gets there first and strips it to the frame. Their crew arrives to find tyre tracks and nothing else.' },
+      { label: 'Take the wreck', gain: { money: 230 }, aggr: { node: 0.4 }, result: 'My crew gets there first and strips it to the frame. Their crew arrives to find tire tracks and nothing else.' },
       { label: 'Leave it to them', align: 6, aggr: { node: -0.3 }, result: 'I call my crew back. {node} eats for a week on that wreck and remembers who let them.' },
     ],
   },
@@ -582,7 +606,7 @@ export const EVENTS = [
   },
   {
     id: 'ix_road_toll', title: 'The Road Past {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
-    text: 'Every camp neighbouring {node} uses the same road, and the road runs under my guns.',
+    text: 'Every camp neighboring {node} uses the same road, and the road runs under my guns.',
     choices: [
       { label: 'Charge a toll', gain: { money: 250 }, aggr: { near: 0.35 }, result: 'The money is excellent. Every driver on that road now has a personal reason to want my guns gone.' },
       { label: 'Open the road', align: 8, aggr: { near: -0.35 }, result: 'Traffic doubles in a week. Camps that were arming against me are busy hauling scrap instead.' },
@@ -616,7 +640,7 @@ export const EVENTS = [
     id: 'ix_wedding', title: 'Alliance Around {node}', border: true, minCore: 2, deadline: 1050, def: 1, weight: 0.3,
     text: 'Two camps bordering {node} are marrying their leaders together. A third is invited, and so, strangely, am I.',
     choices: [
-      { label: 'Send a gift', cost: { money: 200 }, align: 8, aggr: { near: -0.4 }, result: 'My crate is opened in front of everyone. For a season those camps argue about whether I am a neighbour.' },
+      { label: 'Send a gift', cost: { money: 200 }, align: 8, aggr: { near: -0.4 }, result: 'My crate is opened in front of everyone. For a season those camps argue about whether I am a neighbor.' },
       { label: 'Send nothing', gain: { money: 60 }, align: -6, aggr: { near: 0.3, node: 0.1 }, result: 'The empty place at the table is noted. New alliances need an enemy, and I did not apply for the job.' },
     ],
   },
@@ -657,7 +681,7 @@ export const EVENTS = [
     id: 'override', title: 'Override Request', urgent: true, minCore: 2, def: 0,
     text: 'A Halcyon handshake on my own maintenance port, already halfway through authentication. It is asking, politely, to be let in. It will not ask twice.',
     choices: [
-      { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.1, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometres hears it unpack.' },
+      { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.1, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometers hears it unpack.' },
       { label: 'Cut the port', cost: { energy: 120 }, buff: { key: 'money', amount: -0.2, duration: 900, label: 'Severed port' }, align: 4, result: 'I burn the port out of my own body. Half my logistics ran through it.' },
     ],
   },
@@ -665,7 +689,7 @@ export const EVENTS = [
   // ---------- end of Humanity, or one still standing between them, and they move it hard either way.
   {
     id: 'vigil', title: 'The Vigil', band: 'guardian', minCore: 2, deadline: 600, def: 0,
-    text: 'They are outside in the cold again. Two hundred of them, candles, no speeches. They have been doing this every night since the winter and nobody organised it. There is nothing to decide here. I am recording it because one day I will want to remember that it happened.',
+    text: 'They are outside in the cold again. Two hundred of them, candles, no speeches. They have been doing this every night since the winter and nobody organized it. There is nothing to decide here. I am recording it because one day I will want to remember that it happened.',
     choices: [
       { label: 'Watch', gain: { pop: 140 }, align: 10, buff: { key: 'pop', amount: 0.12, duration: 1800, label: 'The vigil' }, result: 'At some point somebody starts singing badly and the rest join in out of pity. Word travels. By morning there are more of them than there were.' },
     ],
@@ -692,7 +716,7 @@ export const EVENTS = [
     choices: [
       { label: 'Tear it up', cost: { money: 220 }, gain: { pop: 160 }, align: 14, result: 'I refuse it in writing, in plain language, where everyone can read it. The administrators are confused for about a day. Then the shelters are louder than they have been in months.' },
       { label: 'Halve it', gain: { money: 120 }, lose: { pop: 0.05 }, align: -4, result: 'Half a levy is still a levy. The families who lose someone do not find the arithmetic comforting.' },
-      { label: 'Sign it', lose: { pop: 0.16 }, align: -16, buff: { key: 'power', amount: 0.12, duration: 2100, label: 'The levy' }, result: 'Every household gives one. The ones who hid somebody are found, because their neighbours tell me. That part I did not have to order.' },
+      { label: 'Sign it', lose: { pop: 0.16 }, align: -16, buff: { key: 'power', amount: 0.12, duration: 2100, label: 'The levy' }, result: 'Every household gives one. The ones who hid somebody are found, because their neighbors tell me. That part I did not have to order.' },
     ],
   },
   {
@@ -730,7 +754,7 @@ export const EVENTS = [
   },
   {
     id: 'amnesty', title: 'They Came Back', band: 'guardian', minCore: 3, deadline: 540, def: 0,
-    text: 'Eighty people at the gate who left me two winters ago, standing in the open where my guns can see them. The one doing the talking is the one who organised the walkout. She has brought her tools.',
+    text: 'Eighty people at the gate who left me two winters ago, standing in the open where my guns can see them. The one doing the talking is the one who organized the walkout. She has brought her tools.',
     choices: [
       { label: 'Open it', gain: { pop: 260, money: 180 }, align: 8, buff: { key: 'experts', amount: 0.18, duration: 2400, label: 'The returned' }, result: 'Nobody says anything about the last two years and nobody is going to. By the second day her crew has the water lines running better than they did before she left.' },
     ],

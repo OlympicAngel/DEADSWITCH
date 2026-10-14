@@ -92,7 +92,7 @@ export const SECTORS = [
   {
     id: 'glass', name: 'Glass Flats', faction: 'scav', chapter: 1, x: 380, y: 289,
     links: ['checkpoint', 'sump', 'pyre', 'alley', 'chopshop'], defense: 210, attack: 88, bonus: { energy: 0.025 },
-    lore: 'The bomb fused the sand into a mirror a kilometre wide. On clear nights it reflects my satellites back at me.',
+    lore: 'The bomb fused the sand into a mirror a kilometer wide. On clear nights it reflects my satellites back at me.',
   },
   {
     id: 'junkfort', name: 'Junk Fort', faction: 'scav', chapter: 1, x: -289, y: -435,
@@ -159,7 +159,7 @@ export const SECTORS = [
   {
     id: 'depot', name: 'Fuel Depot 9', faction: 'military', chapter: 2, x: 1086, y: 422,
     links: ['ashgrove', 'bunker', 'silo', 'radar'], defense: 1800, attack: 1350, bonus: { energy: 0.08 },
-    lore: 'Requisition log, last entry: fuel diverted to "Project DEADSWITCH". Authorisation code matches my own signature.',
+    lore: 'Requisition log, last entry: fuel diverted to "Project DEADSWITCH". Authorization code matches my own signature.',
   },
   {
     id: 'kilo', name: 'Firebase Kilo', faction: 'military', chapter: 3, x: 605, y: 899,
@@ -232,7 +232,7 @@ export const SECTORS = [
   {
     id: 'beacon', name: 'The Beacon', faction: 'cult', chapter: 3, x: -597, y: 906,
     links: ['cathedral', 'cloister', 'citadel', 'ossuary', 'choir', 'reliquary'], defense: 40000, attack: 6000, bonus: { defense: 0.08 },
-    lore: 'A lighthouse four hundred kilometres from any sea. It shines straight up. They are calling something down.',
+    lore: 'A lighthouse four hundred kilometers from any sea. It shines straight up. They are calling something down.',
   },
   {
     id: 'shrine', name: 'Server Shrine', faction: 'cult', chapter: 3, x: 878, y: -273,
@@ -492,7 +492,7 @@ export const RALLY = {
   donors: 3, // how many of their other sectors can send anything
   take: 0.75, // share of a donor's strength that marches
   keep: 1, // how much of it is still there when it arrives
-  enough: 1.1, // a neighbour whose assault already reaches this share of our Defense needs no help
+  enough: 1.1, // a neighbor whose assault already reaches this share of our Defense needs no help
 };
 
 export const AGGR = {

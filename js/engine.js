@@ -1,6 +1,6 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS, ALIGNMENT, BUILDINGS, ENDINGS } from './data.js';
-import { produce, advanceBuild, unlockedKeys, say, offlineLimits, maxLevel, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT } from './sim/economy.js';
+import { produce, advanceBuild, unlockedKeys, say, offlineLimits, maxLevel, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT, factors } from './sim/economy.js';
 import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, checkDaily, dailyTask, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
@@ -309,6 +309,7 @@ export function catchUp(s, seconds, already = 0) {
   const grace = Math.max(0, Math.min(total, BALANCE.offline.graceSeconds - already));
   const before = { ...s.res };
   const was = { ...s.stats, sectors: s.sectors.length };
+  const force = factors(s);
   // Production is linear between timers and every timer that changes it is landed on exactly, so a
   // few thousand steps carry an 8h absence as faithfully as twenty thousand did, in a fraction of the
   // time the page sits frozen on the way back.
@@ -350,7 +351,10 @@ export function catchUp(s, seconds, already = 0) {
     decided: (s.stats.expired || 0) - (was.expired || 0),
     pending: s.events.length, // still unanswered, and about to open behind this report
   };
+  // What the fighting cost or the queue added in units, as the three numbers the player watches.
+  const now = factors(s);
+  const forces = Object.fromEntries(Object.keys(now).map((k) => [k, now[k] - force[k]]));
   // The last step of a long absence usually ran at speed 0; what the screen wants is the base running now.
   flows = produce({ ...s, res: { ...s.res } }, 1);
-  return { seconds: total, paid: Math.min(total, paid), away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, flows };
+  return { seconds: total, paid: Math.min(total, paid), away: seconds, efficiency: limits.efficiency, dark: !!limits.dark, gained, happened, forces, flows };
 }

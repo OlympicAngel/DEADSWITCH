@@ -1,7 +1,7 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
   RESOURCES, FACTIONS, BOOT, CUTS, WIPE_TEXT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES, RANKS,
-  RESOURCE_KEYS, FACTORS,
+  RESOURCE_KEYS, FACTORS, CORE_MEMORIES, MAP,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, rate, esc } from '../format.js';
@@ -719,7 +719,9 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     }).join('');
     const sealed = CHAPTERS.find((c) => s.chapter < c.id);
     const ending = s.ending ? `<article class="panel chapter ending"><header>${icon('spark')}Epilogue</header><h3>${ENDINGS[s.ending].title}</h3>${ENDINGS[s.ending].lines.map((l) => `<p>${esc(l)}</p>`).join('')}<p class="muted">${esc(ENDINGS.after)}</p></article>` : '';
-    const frags = SECTORS.filter((x) => s.sectors.includes(x.id));
+    // A fragment is kept once read: losing the ground does not take back what it told me.
+    const frags = SECTORS.filter((x) => x.id === MAP.home || s.sectors.includes(x.id) || s.taken.includes(x.id));
+    const memories = Object.entries(CORE_MEMORIES).filter(([lv]) => Number(lv) <= E.level(s, 'core'));
     const st = s.stats;
     const rec = [
       ['map', 'Sectors held', `${s.sectors.length - 1} / ${SECTORS.length - 1}`],
@@ -733,7 +735,9 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         ${ending}${chapters}
         ${sealed ? `<article class="panel chapter sealed"><header>${icon('lock')}${CHAPTER_TEXT[sealed.id].kicker}</header><p class="muted">Sealed. Opens at ${icon('core')}AI Core Lv ${sealed.core}.</p></article>` : ''}
         <section class="panel"><header>${icon('book')}Memory fragments<span class="count-badge">${frags.length}/${SECTORS.length}</span></header>
-          <ol class="memories">${frags.map((x) => `<li style="--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}"><b>${x.name}</b><span>${esc(x.lore)}</span></li>`).join('')}</ol></section>
+          <ol class="memories">${frags.map((x) => `<li style="--fc:${x.faction ? FACTIONS[x.faction].color : 'var(--hud)'}"><b>${x.name}${s.sectors.includes(x.id) ? '' : ' <small class="muted">Lost</small>'}</b><span>${esc(x.lore)}</span></li>`).join('')}</ol></section>
+        ${memories.length ? `<section class="panel"><header>${icon('core')}Core memories<span class="count-badge">${memories.length}/${Object.keys(CORE_MEMORIES).length}</span></header>
+          <ol class="memories">${memories.map(([lv, text]) => `<li><b>${icon('core')}Lv ${lv}</b><span>${esc(text)}</span></li>`).join('')}</ol></section>` : ''}
         <section class="panel"><header>${icon('check')}Service record${navigator.share ? `<button class="btn ghost small" data-act="share">${icon('export')}Share</button>` : ''}</header><div class="rows">${rec}</div></section>
         <section class="panel feed"><header>${icon('message')}System log</header><ol class="log"></ol></section>
       </div>`;
@@ -766,7 +770,9 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   function showOffline(report, then) {
     const gains = Object.keys(RESOURCES).map((r) => `<div class="r"><span>${icon(r)}${RESOURCES[r].name}</span><b class="${report.gained[r] < 0 ? 'bad-t' : 'good-t'}">${report.gained[r] >= 0 ? '+' : '−'}${num(Math.abs(report.gained[r]))}</b></div>`).join('');
     const h = report.happened || {};
-    const events = [
+    const forces = Object.entries(report.forces || {}).filter(([, d]) => Math.abs(d) >= 1)
+      .map(([k, d]) => `<div class="r"><span>${icon(k)}${FACTORS[k].name}</span><b class="${d < 0 ? 'bad-t' : 'good-t'}">${d > 0 ? '+' : '−'}${num(Math.abs(d))}</b></div>`).join('');
+    const events = forces + [
       ['defense', 'Attacks held', h.held, 'good-t'],
       ['fire', 'Attacks broke through', h.breached, 'bad-t'],
       ['power', 'Sectors taken', h.taken, 'good-t'],

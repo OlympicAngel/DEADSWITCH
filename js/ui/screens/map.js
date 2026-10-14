@@ -463,7 +463,7 @@ function briefing(s, sec) {
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
-    return `${head}<p class="muted">Out of range. Revealed when a neighbouring sector is held.</p>`;
+    return `${head}<p class="muted">Out of range. Revealed when a neighboring sector is held.</p>`;
   }
   const ch = E.chapterOf(sec.chapter);
   const running = s.op && s.op.sector === sec.id;
@@ -478,6 +478,7 @@ function briefing(s, sec) {
       ${postureRow(s, sec)}
       ${fortRow(s, sec)}
       <div class="r"><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
+      ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="text" data-tip-text="Troops leave the wall until the operation lands."><span>${icon('defense')}Defense while out</span><b class="warn-t">${num(E.factors(s).defense)} → ${num(Math.max(0, E.factors(s).defense - E.troopDefense(s)))}</b></div>` : ''}
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
@@ -547,7 +548,7 @@ export function updateMapScreen(s, ui, refs) {
   if (refs.btn) {
     const running = s.op && s.op.sector === sec.id;
     refs.btn.disabled = !E.canLaunch(s, sec);
-    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : `Launch · ${pct(p)}`);
+    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : refs.btn.dataset.armed ? 'Tap again to launch' : `Launch · ${pct(p)}`);
     refs.btn.classList.toggle('risky', p < 0.5);
   }
   if (refs.opbar && s.op) {

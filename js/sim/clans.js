@@ -64,7 +64,11 @@ export function clanContext(s, faction) {
   };
 }
 
-const inRange = (v, [lo, hi = 1]) => v >= lo && v <= hi;
+// Each stance's cell of the matrix as flat [trait, lo, hi] rows, read once: the matrix is asked
+// about every faction many times a step, and offline catch-up runs thousands of steps.
+const CELLS = CLANS.stances.map((st) => [st, Object.entries(st.when).map(([k, [lo, hi = 1]]) => [k, lo, hi])]);
+const FACTION_IDS = Object.keys(FACTIONS);
+const BOUNDS = Object.entries(CLANS.profileBounds).map(([k, [lo, hi]]) => [k, lo, hi]);
 
 /** Every stance whose cell of the matrix the clan currently sits in. */
 export function stanceList(s, faction) {
@@ -75,7 +79,11 @@ export function stanceList(s, faction) {
     return [];
   }
   const ctx = clanContext(s, faction);
-  return CLANS.stances.filter((st) => Object.entries(st.when).every(([k, range]) => inRange(ctx[k], range)));
+  const out = [];
+  for (const [st, cell] of CELLS) {
+    if (cell.every(([k, lo, hi]) => ctx[k] >= lo && ctx[k] <= hi)) out.push(st);
+  }
+  return out;
 }
 
 /** The combined profile: every active stance's numbers multiplied together. */
@@ -88,7 +96,7 @@ export function clanProfile(s, faction) {
     }
     if (st.plunder) out.plunder = true;
   }
-  for (const [k, [lo, hi]] of Object.entries(CLANS.profileBounds)) {
+  for (const [k, lo, hi] of BOUNDS) {
     out[k] = Math.min(hi, Math.max(lo, out[k]));
   }
   return out;
@@ -96,7 +104,9 @@ export function clanProfile(s, faction) {
 
 /** Profiles for every faction at once, so a loop over sectors costs one pass. */
 export function clanProfiles(s) {
-  return Object.fromEntries(Object.keys(FACTIONS).map((f) => [f, clanProfile(s, f)]));
+  const out = {};
+  for (const f of FACTION_IDS) out[f] = clanProfile(s, f);
+  return out;
 }
 
 // A stance that changes my economy holds a buff for as long as it holds (buffs with `hold` never tick down).

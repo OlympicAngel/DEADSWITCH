@@ -54,7 +54,7 @@ export const LESSONS = [
     id: 'war', when: { level: { core: 2 } },
     steps: [
       { say: 'Core two. They can hear us now. Raids come for the Nest, and the clans on our border come for the ground we hold.', done: 'read' },
-      { at: '[data-panel="raid"]', say: 'What is coming, where from, and how it measures against our Defense. Hold chance is the odds, and I do not round them in our favour.', done: 'read' },
+      { at: '[data-panel="raid"]', say: 'What is coming, where from, and how it measures against our Defense. Hold chance is the odds, and I do not round them in our favor.', done: 'read' },
       { at: '[data-nav="map"]', say: 'Every attack has two ends. So does ours.', done: 'tap' },
       { at: '.map-viewport', say: 'Drag the world, pinch to zoom. The number over a sector is what holds it. Tap one next to ours.', done: 'read' },
     ],

@@ -317,10 +317,11 @@ export function buildingStatus(s, b) {
     return 'gated';
   }
   if (s.build) {
-    if (s.build.id === b.id) return 'building';
-    // Room behind the builder, and a level left for it once what is already queued has gone up.
+    // Room behind the builder, and a level left for it once what is already queued has gone up. The
+    // building under way can queue its own next level too: that is the commonest thing to line up.
     const ahead = queued(s, b.id) + (s.build.id === b.id ? 1 : 0);
-    return s.queue.length < queueSlots(s) && level(s, b.id) + ahead < maxLevel(s, b) ? 'queue' : 'busy';
+    if (s.queue.length < queueSlots(s) && level(s, b.id) + ahead < maxLevel(s, b)) return 'queue';
+    return s.build.id === b.id ? 'building' : 'busy';
   }
   const cost = buildingCost(s, b);
   if (exceedsCap(s, cost).length) {

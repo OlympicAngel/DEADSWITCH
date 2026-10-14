@@ -278,7 +278,8 @@ export function updateDomain(s, ui, refs, flows) {
   for (const c of refs.cards) {
     if (!onScreen(c.el)) continue;
     const st = E.buildingStatus(s, c.b);
-    setData(c.el, 'status', st);
+    const building = !!s.build && s.build.id === c.b.id; // its timer shows even while it can queue more
+    setData(c.el, 'status', building ? 'building' : st);
     if (c.btn) {
       setChips(s, c.chips, E.buildingCost(s, c.b));
       const lvl = E.level(s, c.b.id);
@@ -286,7 +287,7 @@ export function updateDomain(s, ui, refs, flows) {
       setStorageLink(s, c.btn, st === 'storage' ? E.buildingCost(s, c.b) : null, 'build');
       put(c.label, LABELS[st] || (lvl ? 'Upgrade' : 'Unlock'));
       const waiting = E.queued(s, c.b.id);
-      put(c.sub, st === 'building' ? clock(s.build.remaining)
+      put(c.sub, building ? clock(s.build.remaining)
         : waiting ? `${waiting} queued`
           : st === 'ready' || st === 'poor' || st === 'queue' ? time(E.buildTime(s, c.b)) : '');
     }
@@ -295,7 +296,7 @@ export function updateDomain(s, ui, refs, flows) {
       put(c.eff, s.paused[c.b.id] ? 'OFF' : pct(eff));
       setCls(c.eff, 'eff ' + (s.paused[c.b.id] ? 'is-paused' : eff < 0.999 ? 'is-low' : 'is-ok'));
     }
-    setW(c.bar, st === 'building' ? pct(1 - s.build.remaining / s.build.total) : '0');
+    setW(c.bar, building ? pct(1 - s.build.remaining / s.build.total) : '0');
     const gv = c.el.querySelector('[data-gate-v]');
     if (gv) {
       const g = E.coreGate(s);

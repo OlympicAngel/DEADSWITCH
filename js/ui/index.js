@@ -317,7 +317,7 @@ export function createUI(root, game) {
           if (game.act.cancel()) sfx.click();
         } else if (!t.dataset.armed || since >= 4000) {
           t.dataset.armed = String(performance.now());
-          put(t.querySelector('span'), 'Tap again: refund 100%');
+          put(t.querySelector('span'), 'Tap again: refund, up to storage');
           sfx.click();
           setTimeout(() => { delete t.dataset.armed; put(t.querySelector('span'), 'Cancel'); }, 4000);
         }
@@ -372,13 +372,30 @@ export function createUI(root, game) {
         }
         break;
       }
-      case 'launch':
+      case 'launch': {
+        // Long odds, or an attack due before the troops are back off the wall: a second tap, a beat later.
+        const sec = E.sectorById(id);
+        const atk = E.nextAttack(s);
+        const risky = sec && (E.opChance(s, sec) < 0.5 || (atk && E.troopDefense(s) > 0 && atk.remaining < E.opTime(sec)));
+        if (risky) {
+          const since = performance.now() - Number(t.dataset.armed || 0);
+          if (!(t.dataset.armed && since > 500 && since < 4000)) {
+            if (!t.dataset.armed || since >= 4000) {
+              t.dataset.armed = String(performance.now());
+              sfx.click();
+              setTimeout(() => { delete t.dataset.armed; }, 4000);
+            }
+            break;
+          }
+          delete t.dataset.armed;
+        }
         if (game.act.launch(id)) {
           sfx.launch();
           vibrate([30, 40, 60]);
           ui.sheet = false;
         }
         break;
+      }
       case 'close-sheet':
         ui.sheet = false;
         break;
