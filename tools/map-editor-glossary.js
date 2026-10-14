@@ -223,7 +223,7 @@ export const GLOSSARY = {
   'stance.icon': { what: 'Icon key from js/ui/icons.js, pinned to the clan\'s hexes on the map.' },
 
   // ---------- FACTIONS ----------
-  'faction.raidFloor': { what: 'The smallest raid this clan ever sends, whatever your Threat is. It is what makes a late chapter dangerous the moment it opens.' },
+  'faction.raidBase': { what: 'What this clan brings to every raid before your Threat is added: Defense has to be built past it. It is what makes a late chapter dangerous the moment it opens.' },
   'faction.mood': { what: 'Where this clan\'s four traits sit when nothing has happened. Traits always drift back here.' },
   'faction.raidName': { what: 'What its raids are called in the log.' },
   'faction.color': { what: 'Its colour on the map, in the legend and on its attack beams.' },

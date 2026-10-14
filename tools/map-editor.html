@@ -893,7 +893,7 @@ function tabClans(host, s) {
     out.append(el('h3', { style: 'margin-top:12px', text: 'On your border now' }));
     outRow(out, 'borders they touch', String(front.length));
     outRow(out, 'strongest assault', strongest ? `${num(strongest.n)} out of ${byId(strongest.from).name}` : '—');
-    outRow(out, 'smallest raid they ever send', num(fac.raidFloor));
+    outRow(out, 'raid base (before Threat and stance)', num(fac.raidBase));
 
     host.append(el('details', { open: front.length ? '' : null }, [
       el('summary', {}, [
@@ -1020,8 +1020,7 @@ function tabScene(host, s) {
   const raiders = g.war.activeRaiders(s);
   outRow(out, 'clans that can raid you', raiders.length ? raiders.map((x) => g.world.FACTIONS[x].short).join(', ') : 'none yet');
   if (raiders.length) {
-    const floor = Math.min(...raiders.map((x) => g.world.FACTIONS[x].raidFloor));
-    outRow(out, 'raid strength', num(Math.max(floor, g.economy.threat(s) * g.world.RAIDS.threatShare)));
+    outRow(out, 'raid strength', raiders.map((x) => `${g.world.FACTIONS[x].short} ${num(g.war.raidSize(s, x))}`).join(', '));
   }
   outRow(out, 'borders under threat', String(g.war.borders(s, true).length));
   outRow(out, 'overrun threshold', num(Math.ceil(f.defense * g.world.NODES.overrunRatio)));

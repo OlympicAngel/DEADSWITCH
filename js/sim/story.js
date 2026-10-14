@@ -193,7 +193,7 @@ function spawn(s, ev, front, big = false) {
     }
     params.faction = pick(s, raiders, 'event');
     const grown = factors(s).defense + projectDefense(s, ev.deadline / 2, eventDrain(s));
-    const floor = FACTIONS[params.faction].raidFloor;
+    const floor = FACTIONS[params.faction].raidBase;
     params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max, 'event'));
   }
   if (ev.border) {

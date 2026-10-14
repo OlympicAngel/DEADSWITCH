@@ -577,9 +577,10 @@ function spawnRaid(s, delay) {
   }
   // A faction with a grudge takes the next raid, active chapter or not, and hits harder.
   const faction = grudge ? grudge.faction : pick(s, raiders, 'raid');
-  const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
-  const base = Math.max(floor, raidThreat(s) * RAIDS.threatShare);
-  const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid') * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
+  // A grudge from a clan whose chapter is not open yet brings no more than the clans that are.
+  const own = raiders.includes(faction) ? FACTIONS[faction].raidBase : Math.min(...raiders.map((f) => FACTIONS[f].raidBase), FACTIONS[faction].raidBase);
+  const strength = Math.ceil((own + raidThreat(s) * RAIDS.threatShare) * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid')
+    * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   // Raids march out of whatever that faction still holds, at the first of ours on the way in.
   const from = attackSource(s, faction);
   const t = warning(s, delay, from);
@@ -590,6 +591,11 @@ function spawnRaid(s, delay) {
 function fmtShort(sec) {
   const m = Math.round(sec / 60);
   return m >= 1 ? m + ' min' : Math.round(sec) + 's';
+}
+
+/** A faction's raid before its clan's state and the spread: its own base plus its share of our Threat. */
+export function raidSize(s, faction) {
+  return FACTIONS[faction].raidBase + raidThreat(s) * RAIDS.threatShare;
 }
 
 /** What a raid is sized on: Threat, with Defense counted at RAIDS.defenseWeight. */
@@ -678,20 +684,21 @@ export function assaultStrength(s, fromId) {
   // Its walls barely carry into its troops (attackFromStrength), and every failure against us adds
   // to the push, so a sector that keeps losing becomes a harder attack and a softer target at once.
   const grit = 1 + (nodeStrength(s, fromId) - 1) * NODES.attackFromStrength;
-  const own = baseAttack(s, fromId) * NODES.assaultMult * grit * nodePush(s, fromId) * stance;
+  const own = baseAttack(s, fromId) * NODES.assaultMult * grit * nodePush(s, fromId);
   if (!sectorOpen(s, sec)) {
     // A clan whose chapter has not opened yet cannot field what its ground is really worth, so it is
     // held near the raid strength the player is already facing. The push rides on top of that cap:
     // hold a sealed neighbour off often enough and the next one is a fight, not a formality.
-    const held = Math.max(FACTIONS.scav.raidFloor, raidThreat(s) * RAIDS.threatShare) * NODES.lockedCap * nodePush(s, fromId);
-    return Math.ceil(Math.min(own, held));
+    const held = raidSize(s, 'scav') * NODES.lockedCap * nodePush(s, fromId);
+    return Math.ceil(Math.min(own * stance, held));
   }
   // An open clan musters against what the player has become, not only what its own ground is worth.
   // Where it musters from still counts: a backwater raises half of what the clan's best ground does.
   const faction = factionOf(s, fromId);
   const share = CLAN_MAX[faction] ? baseAttack(s, fromId) / CLAN_MAX[faction] : 1;
   const reach = NODES.assaultFloorMin + (1 - NODES.assaultFloorMin) * Math.min(1, share);
-  return Math.ceil(Math.max(own, threat(s) * NODES.assaultFloorShare * stance * reach));
+  // Its own ground's attack, plus a share of what we have become, and the clan's mood over both.
+  return Math.ceil((own + threat(s) * NODES.assaultThreatShare * reach) * stance);
 }
 
 /** True when an inbound assault is strong enough to take its target on the first breach. */

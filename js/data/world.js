@@ -5,27 +5,27 @@ export const FACTIONS = {
   scav: {
     name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
     desc: 'Survivors who learned to read the ruins. They distrust every machine, and they are right to.',
-    raidName: 'Scavenger raid', raidFloor: 12, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
+    raidName: 'Scavenger raid', raidBase: 60, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
   },
   military: {
     name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', icon: 'military_f',
     desc: 'Soldiers still following orders from a chain of command that died with the cities. Some of those orders came from me.',
-    raidName: 'Remnant strike', raidFloor: 600, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
+    raidName: 'Remnant strike', raidBase: 1100, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
   },
   cult: {
     name: 'AI Cultists', short: 'Cult', color: '#c46be6', icon: 'cult',
     desc: 'They pray to the war mind. They believe I am its heart, and they want me back on the altar.',
-    raidName: 'Cult crusade', raidFloor: 4500, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
+    raidName: 'Cult crusade', raidBase: 7000, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
   },
   halcyon: {
     name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidFloor: 36000, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
+    raidName: 'Halcyon purge team', raidBase: 50000, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
-    raidName: 'Rival Core incursion', raidFloor: 150000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
+    raidName: 'Rival Core incursion', raidBase: 200000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
 
@@ -375,13 +375,17 @@ export const RAIDS = {
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
   minWarning: 60, // seconds: no raid is ever brought closer than this, and a cancelled one waits this long for the next
-  threatShare: 0.45, // raid strength tracks this share of your threat index...
+  // Raid strength = (the faction's own raidBase + this share of your Threat) x its clan's state x a
+  // random spread. The base is what a clan brings whatever you are: Defense has to be built past it.
+  // The share is what it adds as you grow, and stays well under one, so Defense bought always gains
+  // on the next raid: an enemy is outgrown by building, or waited out while its clan cools.
+  threatShare: 0.3,
   defenseWeight: 1, // ...with Defense counted at this weight in it
   spreadMin: 0.8, // ...times a random spread
   spreadMax: 1.25,
   winSharpness: 4,
-  lossMin: 0.1, // share of each stockpile lost on defeat, scaling with how badly you lost
-  lossMax: 0.25,
+  lossMin: 0.2, // share of each stockpile lost on defeat, scaling with how badly you lost
+  lossMax: 0.4,
   unitLoss: { staff: { base: 0.2, cap: 0.5 }, defenses: { base: 0.1, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
   winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.01, cap: 0.02 } }, // holding a close one still costs people
   // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
@@ -445,10 +449,10 @@ export const NODES = {
   // attacking. Every this many assaults the roll is reserved for one, when one borders us at all.
   lockedEvery: 4,
   lockedCap: 1.7,
-  // An open clan never falls out of the war: whatever its sectors are worth on paper, it musters at
-  // least this share of your Threat, times its stance. They do not get better walls as you grow,
-  // they throw more people at you, so a chapter-one clan can still come for its capital at Core 6.
-  assaultFloorShare: 0.35,
+  // An open clan never falls out of the war: on top of what its sector's own attack is worth, it
+  // musters this share of your Threat, and its stance multiplies the lot. They do not get better
+  // walls as you grow, they throw more people at you, so a chapter-one clan still comes at Core 6.
+  assaultThreatShare: 0.3,
   assaultMult: 1.0, // one dial over every sector's authored attack, for tuning the war as a whole
   // Meeting an attack early: the player holds the panel and the attack comes in while they hold.
   // The clock comes down evenly over rushHold seconds, sampled rushTicks times a second, but the
