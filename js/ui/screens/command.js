@@ -340,7 +340,7 @@ function dailyPanel(s, refs) {
     const t = E.dailyTask(o.id);
     return `<div class="daily${o.done ? ' done' : ''}" data-tip="text" data-tip-text="Pays ${esc(rewardText(E.dailyReward(s, t.weight)))}. Clearing every order on the board pays again on top.">
         <span class="d-ico">${icon(o.done ? 'check' : t.icon)}</span>
-        <div><b>${esc(t.text.replace('{n}', num(o.need)))}</b><span class="t" data-d="${i}"></span></div>
+        <div><b>${esc(E.dailyText(t, o.need, num))}</b><span class="t" data-d="${i}"></span></div>
         <div class="d-bar"><i data-db="${i}"></i></div>
       </div>`;
   }).join('')}</div>`);

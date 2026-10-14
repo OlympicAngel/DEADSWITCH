@@ -376,6 +376,7 @@ export const RAIDS = {
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
   threatShare: 0.3, // raid strength tracks this share of your threat index...
+  defenseWeight: 0.5, // ...with Defense counted at this weight in it, so building walls does not call down raids as heavy as the walls
   spreadMin: 0.8, // ...times a random spread
   spreadMax: 1.25,
   winSharpness: 4,

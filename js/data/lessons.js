@@ -80,7 +80,7 @@ export const LESSONS = [
   {
     id: 'orders', when: { events: 1 },
     steps: [
-      { at: '[data-panel="events"]', say: 'Transmissions are decisions with a clock on them. Every answer costs something.', done: 'read' },
+      { at: '[data-panel="events"]', say: 'Transmissions are decisions with a clock on them.', done: 'read' },
       { say: 'If the clock runs out I answer in your place, with whatever the situation leaves me. Some of them ask what kind of machine you want me to be. I am keeping score.', done: 'read' },
     ],
   },

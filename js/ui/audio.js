@@ -104,11 +104,17 @@ export function audio() {
 
 /** Where a sound plugs in: its bus and the reverb send beside it. */
 function out(id) {
-  if (!level[id]) {
-    return null; // a bus at zero builds nothing, not even the engine
+  if (!level[id] || asleep) {
+    return null; // a bus at zero builds nothing, not even the engine; a hidden page plays nothing
+  }
+  // Before the first tap, or while iOS holds the context for a call, every cue would stack on one
+  // frozen instant and fire at once when it wakes: a momentary sound is dropped instead. A context
+  // made inside the tap is still 'suspended' for a tick, so that state alone is not the test.
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) {
+    return null;
   }
   const b = audio();
-  if (!b) {
+  if (!b || b.ctx.state === 'interrupted') {
     return null;
   }
   return { ctx: b.ctx, dry: b[id], send: id === 'music' ? b.musicSend : b.sfxSend };

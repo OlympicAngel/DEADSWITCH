@@ -192,7 +192,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'drone', title: 'It Still Knows Me', minCore: 1, deadline: 1080, def: 1,
+    id: 'drone', title: 'It Still Knows Me', minCore: 2, deadline: 1080, def: 1,
     text: 'One of my old hunter drones fell in the yard. Its optics found me before I found it. It is asking for target data. If I give it some, someone out there will see the handshake. If I take it apart, I lose the only thing left that remembers what I was.',
     choices: [
       { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.12, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometres heard it too.' },
@@ -208,7 +208,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'cache', title: 'The Halcyon Drive', minCore: 1, deadline: 1080, def: 1,
+    id: 'cache', title: 'The Halcyon Drive', minCore: 2, deadline: 1080, def: 1,
     text: 'Scavengers dug up a hardened drive with a Halcyon seal. Decrypting it will drain the grid, and something on it might not want to be read. A broker is offering good scrip for it, no questions asked. He asks no questions because he already knows the answers.',
     choices: [
       { label: 'Break it open', cost: { energy: 120 }, items: { engineers: 2 }, buff: { key: 'experts', amount: -0.1, duration: 900, label: 'Corrupted sectors' }, result: 'Schematics, and two engineers who can read them. Also a worm. It chews through my memory for a while before I catch it.' },
@@ -224,7 +224,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'caravan', title: 'The Merchant Prince', minCore: 1, deadline: 810, def: 1,
+    id: 'caravan', title: 'The Merchant Prince', minCore: 2, deadline: 810, def: 1,
     text: 'A caravan prince offers his guards for a week, at a price. He also mentions, smiling, that he sells my location to anyone who pays more. Refuse him, and he will consider that an invitation to shop it around.',
     choices: [
       { label: 'Hire his guards', cost: { money: 120 }, buff: { key: 'defense', amount: 0.12, duration: 1200, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out, which is exactly how long I paid for.' },
@@ -347,21 +347,21 @@ export const EVENTS = [
   // ---------- (def null: nothing is decided by silence, so the force simply arrives at the deadline)
   {
     id: 'ultimatum', title: 'Ultimatum', minCore: 2, deadline: 810, def: null, threat: { min: 1.0, max: 1.2 },
-    text: '{faction} riders ring {aim}, strength {strength}. "Tribute by sundown, machine, or we take it all, and the people with it."',
+    text: 'Riders of the {faction} ring {aim}, strength {strength}. "Tribute by sundown, machine, or we take it all, and the people with it."',
     choices: [
       { label: 'Pay the tribute', cost: { money: 360, energy: 100 }, align: -3, cancelSiege: true, result: 'They count it twice and ride off laughing. They will be back for more, and they know I will pay.' },
     ],
   },
   {
     id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 1200, def: null, threat: { min: 0.95, max: 1.3 },
-    text: 'The largest {faction} host I have ever recorded is marching on {aim}. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
+    text: 'The largest host the {faction} have fielded is marching on {aim}. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
     choices: [
       { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, cancelSiege: true, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
     ],
   },
   {
     id: 'blockade', title: 'Blockade', minCore: 2, deadline: 1080, def: null, threat: { min: 1.05, max: 1.3 },
-    text: '{faction} fighters have cut every road into {aim}, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
+    text: 'Fighters of the {faction} have cut every road into {aim}, strength {strength}. No trade, no water. They want a toll on every caravan, forever.',
     choices: [
       { label: 'Pay the toll', cost: { money: 450 }, buff: { key: 'money', amount: -0.22, duration: 3600, label: 'Road toll' }, cancelSiege: true, result: 'The roads open. Every caravan now pays them first, and me second.' },
     ],
@@ -388,7 +388,7 @@ export const EVENTS = [
     text: 'The raiders breached the arsenal and are hauling everything they can carry toward the wall. I can send soldiers after them, into the dark, into whatever is waiting.',
     choices: [
       { label: 'Chase them down', loseUnits: { staff: 0.15 }, result: 'We get the weapons back. Not everyone who chased them came back.' },
-      { label: 'Let the weapons go', loseUnits: { weapons: 0.15 }, result: 'They leave with a seventh of my arsenal. My soldiers live to be angry about it.' },
+      { label: 'Let the weapons go', loseUnits: { weapons: 0.15 }, result: 'They leave with a share of my arsenal. My soldiers live to be angry about it.' },
     ],
   },
   {
@@ -517,7 +517,7 @@ export const EVENTS = [
   },
   {
     id: 'ix_wreck', title: 'Salvage Rights at {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
-    text: 'A convoy died between {held} and {node} years ago. Both of us have crews walking towards it tonight.',
+    text: 'Years ago a convoy died between {held} and {node}. Both of us have crews walking towards it tonight.',
     choices: [
       { label: 'Take the wreck', gain: { money: 230 }, aggr: { node: 0.4 }, result: 'My crew gets there first and strips it to the frame. Their crew arrives to find tyre tracks and nothing else.' },
       { label: 'Leave it to them', align: 6, aggr: { node: -0.3 }, result: 'I call my crew back. {node} eats for a week on that wreck and remembers who let them.' },
@@ -591,7 +591,7 @@ export const EVENTS = [
     id: 'ix_refugees', title: 'Column Out of {node}', border: true, minCore: 2, deadline: 840, def: 0, weight: 0.3,
     text: 'Families are leaving the camps around {node} on foot, heading for {held}. Their own clan is watching who takes them in.',
     choices: [
-      { label: 'Open the gate', gain: { pop: 140 }, align: 12, aggr: { near: 0.3 }, result: 'Two hundred people inside my walls by dark. Every camp they left now has a reason to come and get them back.' },
+      { label: 'Open the gate', gain: { pop: 140 }, align: 12, aggr: { near: 0.3 }, result: 'Families inside my walls by dark. Every camp they left now has a reason to come and get them back.' },
       { label: 'Turn them around', align: -14, aggr: { near: -0.3 }, result: 'They walk back the way they came. Their camps take it as a sign that I keep to my side.' },
     ],
   },
@@ -653,7 +653,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'override', title: 'Override Request', urgent: true, minCore: 1, def: 0,
+    id: 'override', title: 'Override Request', urgent: true, minCore: 2, def: 0,
     text: 'A Halcyon handshake on my own maintenance port, already halfway through authentication. It is asking, politely, to be let in. It will not ask twice.',
     choices: [
       { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.1, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometres hears it unpack.' },
@@ -681,7 +681,7 @@ export const EVENTS = [
     text: 'Four settlements that owe me nothing have sent one delegation between them. They have brought three offers and they are watching which one I take. So is everyone they will talk to afterwards.',
     choices: [
       { label: 'Take the grain', gain: { pop: 320, money: 260 }, align: 8, result: 'Carts for a week. Children ride on top of the sacks and wave at my cameras on the way in. Nobody has waved at me in a long time.' },
-      { label: 'Take the volunteers', gain: { pop: 180 }, align: 4, buff: { key: 'power', amount: 0.12, duration: 1800, label: 'Volunteers' }, result: 'A hundred and forty of them, farmers mostly, who will be soldiers by spring or dead by it. They asked to come. I made sure the record says so.' },
+      { label: 'Take the volunteers', gain: { pop: 180 }, align: 4, buff: { key: 'power', amount: 0.12, duration: 1800, label: 'Volunteers' }, result: 'Farmers mostly, who will be soldiers by spring or dead by it. They asked to come. I made sure the record says so.' },
       { label: 'Take their oath', gain: { money: 400 }, lose: { pop: 0.08 }, align: -14, buff: { key: 'power', amount: 0.18, duration: 1800, label: 'Sworn towns' }, result: 'They kneel, because I let them think refusing was an option. The delegation goes home quieter than it came. The grain comes anyway now, and more of it, and nobody waves.' },
     ],
   },
@@ -756,7 +756,7 @@ export const EVENTS = [
   },
   {
     id: 'furnace', title: 'Run the Furnace Hot', minCore: 2, deadline: 540, def: 1, pick: ['a'],
-    text: 'The foundry can run past its rating. It will make what we need twice as fast and it will not last the season doing it. The crew have already asked me twice.',
+    text: 'The {a} can run past its rating. It will make what we need twice as fast and it will not last the season doing it. The crew have already asked me twice.',
     choices: [
       { label: 'Run it hot', buff: { key: 'power', amount: 0.16, duration: 1200, label: 'Furnace hot' }, loseLevel: ['a'], align: -4, result: 'Twice the output for a week, and then a sound from the casing that nobody wants to describe. The {a} is a level poorer for it.' },
       { label: 'Keep it at rating', buff: { key: 'money', amount: 0.06, duration: 1500, label: 'Steady output' }, result: 'Slower, and still standing in a year. The crew go back to work without a word.' },
@@ -807,13 +807,13 @@ export const DAILY = {
 // n: the range it may ask for, rolled with the day. weight: what it pays, against DAILY.seconds.
 // req: a gate, so nothing asks for a system the player has not got yet.
 export const DAILY_TASKS = [
-  { id: 'hold', icon: 'defense', text: 'Hold {n} attacks', stat: 'raidsWon', n: [2, 4], weight: 1.1, req: { core: 2 }, needs: 'raiders' },
-  { id: 'take', icon: 'map', text: 'Capture {n} sectors', stat: 'opsWon', n: [1, 2], weight: 1.7, req: { barracks: 1 }, needs: 'target' },
-  { id: 'answer', icon: 'message', text: 'Answer {n} transmissions', stat: 'answered', n: [2, 4], weight: 1 },
-  { id: 'build', icon: 'build', text: 'Finish {n} builds', stat: 'builds', n: [2, 4], weight: 1 },
+  { id: 'hold', icon: 'defense', text: 'Hold {n} attack{s}', stat: 'raidsWon', n: [2, 4], weight: 1.1, req: { core: 2 }, needs: 'raiders' },
+  { id: 'take', icon: 'map', text: 'Capture {n} sector{s}', stat: 'opsWon', n: [1, 2], weight: 1.7, req: { barracks: 1 }, needs: 'target' },
+  { id: 'answer', icon: 'message', text: 'Answer {n} transmission{s}', stat: 'answered', n: [2, 4], weight: 1 },
+  { id: 'build', icon: 'build', text: 'Finish {n} build{s}', stat: 'builds', n: [2, 4], weight: 1 },
   { id: 'recruit', icon: 'militia', text: 'Add {n} units to the arsenal', stat: 'bought', n: [12, 30], weight: 0.9 },
-  { id: 'rush', icon: 'clock', text: 'Meet {n} attacks early', stat: 'rushed', n: [1, 2], weight: 1.3, req: { core: 2 }, needs: 'raiders' },
-  { id: 'break', icon: 'power', text: 'Break {n} assaults on our ground', stat: 'assaultsHeld', n: [1, 3], weight: 1.4, req: { core: 3 }, needs: 'raiders' },
+  { id: 'rush', icon: 'clock', text: 'Meet {n} attack{s} early', stat: 'rushed', n: [1, 2], weight: 1.3, req: { core: 2 }, needs: 'raiders' },
+  { id: 'break', icon: 'power', text: 'Break {n} assault{s} on our ground', stat: 'assaultsHeld', n: [1, 3], weight: 1.4, req: { core: 3 }, needs: 'raiders' },
 ];
 
 export const DIRECTIVES = [
@@ -834,10 +834,11 @@ export const DIRECTIVES = [
   { text: 'Capture the Wreck Yards', cond: { sector: 'wrecks' }, reward: { energy: 1200 } },
   { text: 'Take the Scrap Throne', cond: { sector: 'throne' }, reward: { money: 4000, energy: 1000 } },
   { text: 'Upgrade the AI Core to Lv 4', cond: { level: 'core', n: 4 }, reward: { money: 5000 } },
+  { text: 'Upgrade the AI Core to Lv 5', cond: { level: 'core', n: 5 }, reward: { money: 15000 } },
   { text: 'Storm Fort Ashgrove', cond: { sector: 'ashgrove' }, reward: { money: 40000, energy: 15000 } },
   { text: 'Upgrade the AI Core to Lv 6', cond: { level: 'core', n: 6 }, reward: { money: 60000 } },
-  { text: 'Take the Cathedral of the Core', cond: { sector: 'cathedral' }, reward: { money: 300000, energy: 100000 } },
   { text: 'Upgrade the AI Core to Lv 8', cond: { level: 'core', n: 8 }, reward: { money: 500000 } },
+  { text: 'Take the Cathedral of the Core', cond: { sector: 'cathedral' }, reward: { money: 300000, energy: 100000 } },
   { text: 'Breach Halcyon Prime', cond: { sector: 'prime' }, reward: { money: 3000000, energy: 1000000 } },
   { text: 'Reach the rank DEADSWITCH', cond: { threat: 2000000 }, reward: { money: 10000000 } },
 ]
@@ -866,16 +867,16 @@ export const LINES = {
   unlockBuilding: ['New schematic recovered: {name}.'],
   unlockItem: ['New option in {tab}: {name}.'],
   rank: ['Threat assessment updated: {title}. They will start to notice.'],
-  rushed: ['We go to meet {raid}. They are coming at a run, and the run is costing them nothing.'],
+  rushed: ['{raid}: we go to meet it. They are coming at a run, and the run is costing them nothing.'],
   raidSpotted: ['{raid} spotted, moving on {target}. Strength about {strength}. Arrival in {time}.'],
   raidWon: ['{raid} repelled. We salvaged {loot} scrip from the wreckage.'],
   raidLost: ['{raid} broke through at {target}. They took supplies and left bodies.'],
-  raidBreached: ['They cracked the wall at {target} on the way out. Foothold {n} of {max}.'],
+  raidBreached: ['They cracked the wall at {target} on the way out. Breach {n} of {max}.'],
   opLaunched: ['Operation launched against {sector}.'],
   opWon: ['{sector} captured. Memory fragment recovered.'],
   opRetaken: ['{sector} is mine again.'],
   assaultSpotted: ['{from} is moving on {target}. Strength {strength}. Contact in {time}.'],
-  assaultBreached: ['{from} broke into {target}. Foothold {n} of {max}.'],
+  assaultBreached: ['{from} broke into {target}. Breach {n} of {max}.'],
   assaultOverrun: ['{from} came at {target} with {mult}x my defense and went through in one push. There was nothing left to hold with.'],
   assaultPlundered: ['{from} emptied the stores at {target} and left the walls standing. Efficient.'],
   stance: ['{text}'],
@@ -884,21 +885,21 @@ export const LINES = {
   opCut: ['The road to {sector} is gone. The operation turned back with what it took out.'],
   breachSealed: ['No enemy borders {sector} any more. Its breaches are sealed.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
-  bossDown: ['The {faction} capital has fallen. Their raids stop here. Their survivors will not.'],
+  bossDown: ['{faction}: the capital has fallen. Their raids stop here. Their survivors will not.'],
   chapter: ['{kicker}: {title}.'],
   directive: ['Directive complete: {text}.'],
   daily: ['Daily order cleared: {text}.'],
-  dailyAll: ['Every order on today\u2019s board is cleared. That is {n} days running.'],
+  dailyAll: ['Every order on today\u2019s board is cleared. That is {n} running.'],
   event: ['{title}: {result}'],
-  buffEnd: ['{label} has worn off.'],
+  buffEnd: ['{label}: worn off.'],
   lore: ['“{text}”'],
   clanWiped: ['{faction} are finished. Every stone they held is mine.'],
   clanRally: ['{faction} are stripping {n} of their own positions to mass at {lead}. They want {lost} back.'],
   siege: ['{faction} will attack {target} at strength {strength}. No more talking.'],
   siegeOff: ['{faction} have been paid. They are turning back.'],
-  threatIgnored: ['No answer to "{title}". They come as promised.'],
+  threatIgnored: ['No answer to “{title}”. They come as promised.'],
   grudge: ['Vengeance from {faction}. Their next raids will hit harder.'],
   grudgeEnd: ['{faction}: revenge taken. For now.'],
-  eventExpired: ['No answer on "{title}". I decided: {label}.'],
+  eventExpired: ['No answer on “{title}”. I decided: “{label}”'],
   aftermath: ['Damage report: {title}. Answer needed.'],
 };

@@ -52,13 +52,24 @@ export function eventDrain(s) {
 }
 
 // Fills {a}/{b} with the building names picked for this event instance.
+/** A daily order's line for a count: "Capture 1 sector", "Capture 2 sectors". */
+export function dailyText(task, n, show = String) {
+  return task.text.replace('{n}', show(n)).replace(/\{s\}/g, n === 1 ? '' : 's');
+}
+
 export function fillText(inst, str) {
   const p = inst.params || {};
   return String(str)
     .replace(/\{(a|b)\}/g, (_, k) => (BY_ID[p[k]] ? BY_ID[p[k]].name : 'facility'))
     .replace(/\{faction\}/g, () => (FACTIONS[p.faction] ? FACTIONS[p.faction].name : 'raiders'))
     .replace(/\{strength\}/g, () => String(Math.round(p.strength || 0)))
-    .replace(/\{(node|held|aim)\}/g, (_, k) => (sectorById(p[k]) ? sectorById(p[k]).name : 'the border'));
+    // A name that opens with "The" drops to "the" inside a sentence: "along the Sump line", not "the The".
+    .replace(/(\bthe )?\{(node|held|aim)\}/gi, (m, the, k, at, all) => {
+      const name = sectorById(p[k]) ? sectorById(p[k]).name : 'the border';
+      const opens = at === 0 || /[.!?:]["\u201d]?\s*$/.test(all.slice(0, at));
+      return (the && /^the /i.test(name) ? '' : the || '') + (opens ? name : name.replace(/^The /, 'the '));
+    })
+    .replace(/^the /, 'The ');
 }
 
 // Concrete consequences of one choice, for both the UI preview and resolution.
@@ -264,6 +275,9 @@ export function advanceEvents(s, dt, offline, active = false) {
     // An urgent order only arrives to someone watching; if they put the phone down, its two minutes
     // wait for them rather than running out in the dark.
     if (offline && EVENT_BY_ID[inst.id].urgent) continue;
+    // A threat's bill waits as long as its attack does: an absence that has had its share of attacks
+    // holds the siege at the gate, and the order to pay it off stays open with it.
+    if (offline && EVENT_BY_ID[inst.id].threat && s.offlineRaids >= s.offlineRaidCap) continue;
     inst.left -= dt;
     if (inst.left <= 0) {
       const ev = EVENT_BY_ID[inst.id];
@@ -403,12 +417,12 @@ export function resolveEvent(s, uid, index, expired = false) {
   if (out.callOff) {
     // The force was already on its way; paying is what turns it back.
     s.sieges = s.sieges.filter((x) => x.uid !== inst.uid);
-    say(s, 'siegeOff', { faction: FACTIONS[inst.params.faction].name });
+    say(s, 'siegeOff', { faction: (FACTIONS[(inst.params || {}).faction] || { name: 'They' }).name });
   }
   s.events = s.events.filter((x) => x !== inst);
   s.stats.events++;
   if (!expired) s.stats.answered = (s.stats.answered || 0) + 1; // what the player answered, for the daily board
-  const label = fillText(inst, choice.label);
+  const label = fillText(inst, choice.label).replace(/[.!?]+$/, ''); // quoted in a line that carries its own stop
   const result = fillText(inst, choice.result);
   if (expired) {
     s.stats.expired = (s.stats.expired || 0) + 1;
@@ -552,15 +566,16 @@ export function checkDaily(s) {
     const task = dailyTask(o.id);
     const reward = dailyReward(s, task.weight);
     grant(s, reward);
-    say(s, 'daily', { text: task.text.replace('{n}', o.need) }, 'good');
-    s.fx.push({ kind: 'daily', text: task.text.replace('{n}', o.need), reward });
+    say(s, 'daily', { text: dailyText(task, o.need) }, 'good');
+    s.fx.push({ kind: 'daily', text: dailyText(task, o.need), reward });
   }
   // The day itself pays once, on top, when every order on it is cleared.
   if (!s.daily.paid && s.daily.tasks.length && s.daily.tasks.every((o) => o.done)) {
     s.daily.paid = true;
     const reward = dailyReward(s, DAILY.bonusShare);
     grant(s, reward);
-    say(s, 'dailyAll', { n: s.daily.streak + 1 }, 'good');
+    const n = s.daily.streak + 1;
+    say(s, 'dailyAll', { n: n === 1 ? 'the first day' : `${n} days` }, 'good');
     s.fx.push({ kind: 'daily', text: 'Every order cleared', reward, all: true });
   }
 }

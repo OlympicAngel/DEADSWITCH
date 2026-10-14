@@ -256,7 +256,8 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         reveal();
       };
       // The prose is the AI talking; the > lines are readouts, and stay silent.
-      talking = speak(b.say, () => { talking = false; go(); });
+      // The beat moves on when the line has been both spoken and typed, whichever finishes last.
+      talking = speak(b.say, () => { talking = false; if (!typing) go(); });
       // Typing is paced to be read; speech takes as long as it takes. The segment fills over
       // whichever is longer, and the beat ends on whichever finishes last.
       const typed = lines.length ? typeDuration(lines) : 0;
@@ -753,7 +754,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     const t = E.threat(s);
     const lines = [
       `DEADSWITCH — ${s.name || 'Unnamed'}, ${RANKS[E.rankIndex(t)].title}`,
-      `Threat ${num(t)} · ${s.sectors.length - 1} sectors held · ${time(s.playTime)} awake`,
+      `Threat ${num(t)} · ${s.sectors.length - 1} sector${s.sectors.length === 2 ? '' : 's'} held · ${time(s.playTime)} awake`,
       `${s.stats.raidsWon} attacks repelled, ${s.stats.opsWon} taken, ${E.alignmentLabel(s.align)}`,
     ];
     navigator.share({ title: 'DEADSWITCH', text: lines.join('\n'), url: location.origin + location.pathname })
@@ -796,7 +797,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     open(`
       <span class="kicker">${icon('alert')}Fault</span>
       <h2>Something in me stopped working</h2>
-      <p class="muted">Your progress is saved up to a few seconds ago. Reloading usually fixes it; take a copy of the save first if you want to be sure.</p>
+      <p class="muted">Your progress is saved up to a few seconds ago.</p>
       <p class="ev-text result">${esc(String(detail || 'unknown fault')).slice(0, 300)}</p>
       <div class="menu-actions">
         <button class="btn" id="cCopy">${icon('export')}<span>Copy save</span></button>
@@ -807,7 +808,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     dialog.querySelector('#cCopy').onclick = async () => {
       try {
         await navigator.clipboard.writeText(game.act.exportSave());
-        msg.textContent = 'Copied. Keep it somewhere safe.';
+        msg.textContent = 'Copied.';
       } catch {
         msg.textContent = 'Could not reach the clipboard. Reload and export from Settings.';
       }
@@ -855,14 +856,19 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     const $ = (q) => dialog.querySelector(q);
     const msg = $('#mMsg');
     const text = $('#mText');
+    let clicked = 0;
     for (const el of dialog.querySelectorAll('[data-vol]')) {
       el.oninput = () => {
         const id = el.dataset.vol;
         setVolume(id, el.value / 100);
         el.previousElementSibling.firstElementChild.outerHTML = icon(volume(id) ? 'sound' : 'mute');
         if (id === 'sfx') {
-          sfx.click(); // each slider plays what it is setting
+          if (performance.now() - clicked > 80) {
+            clicked = performance.now();
+            sfx.click(); // each slider plays what it is setting
+          }
         } else if (id === 'music') {
+          duckAmbient(false); // heard at the level being set, not under the dialog's duck
           startAmbient(game.state); // raised from zero: the bed comes back now, not on the next visit
         }
       };

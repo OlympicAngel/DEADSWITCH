@@ -209,6 +209,7 @@ p {
 }
 
 .topbar .icon-btn {
+  flex: none; /* Settings never leaves the screen, however wide the numbers get */
   width: 32px;
   height: 32px;
   font-size: 16px;
@@ -259,8 +260,8 @@ p {
 }
 
 .ident {
-  flex: 1 1 60px;
-  min-width: 60px; /* the callsign and rank never shrink to nothing beside wide numbers */
+  flex: 0 1 24%; /* the callsign gives way first; the numbers are what the bar is for */
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -331,8 +332,10 @@ p {
 }
 
 .tb-res {
+  flex: 1 1 0;
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 15px;
   padding-left: 11px;
 }
@@ -342,10 +345,22 @@ p {
     gap: 11px;
     padding-left: 8px;
   }
+
+  .pill-body b {
+    font-size: 12px;
+  }
+}
+
+/* A narrow phone gives the bar to the numbers: the rank is on the Command reactor anyway. */
+@media (max-width: 420px) {
+  .ident {
+    display: none;
+  }
 }
 
 .pill {
   position: relative;
+  min-width: 0;
   display: flex;
   align-items: center;
   cursor: pointer;

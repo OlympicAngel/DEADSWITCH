@@ -167,7 +167,7 @@ export function startAmbient(s) {
   const now = read(s);
   bed = {
     ctx: b.ctx, pad, now, bar: -1, chord: now.mood.chords[0].map((n) => semitone(now.root, n)),
-    step: 0, next: b.ctx.currentTime + 0.1, since: b.ctx.currentTime, timer: setInterval(pump, 90), duck: 1,
+    step: 0, next: b.ctx.currentTime + 0.1, since: b.ctx.currentTime, timer: setInterval(pump, 90), duck: ducked ? 0.12 : 1,
   };
 }
 
@@ -202,7 +202,10 @@ export function ambientTick(s) {
 }
 
 /** The music ducks while a dialog is telling a story, then comes back. */
+let ducked = false; // kept while no bed plays, so one started under a dialog starts down
+
 export function duckAmbient(on) {
+  ducked = on;
   if (!bed) {
     return;
   }

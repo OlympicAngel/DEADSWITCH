@@ -579,7 +579,7 @@ function spawnRaid(s, delay) {
   // A faction with a grudge takes the next raid, active chapter or not, and hits harder.
   const faction = grudge ? grudge.faction : pick(s, raiders, 'raid');
   const floor = raiders.includes(faction) ? FACTIONS[faction].raidFloor : Math.min(...raiders.map((f) => FACTIONS[f].raidFloor), FACTIONS[faction].raidFloor);
-  const base = Math.max(floor, threat(s) * RAIDS.threatShare);
+  const base = Math.max(floor, raidThreat(s) * RAIDS.threatShare);
   const strength = Math.ceil(base * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid') * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   // Raids march out of whatever that faction still holds, at the first of ours on the way in.
   const from = attackSource(s, faction);
@@ -591,6 +591,11 @@ function spawnRaid(s, delay) {
 function fmtShort(sec) {
   const m = Math.round(sec / 60);
   return m >= 1 ? m + ' min' : Math.round(sec) + 's';
+}
+
+/** What a raid is sized on: Threat, with Defense counted at RAIDS.defenseWeight. */
+export function raidThreat(s, f = factors(s)) {
+  return threat(s, { ...f, defense: f.defense * RAIDS.defenseWeight });
 }
 
 // Positive pushes the next raid back; negative brings it closer (never under a minute of warning).
@@ -679,7 +684,7 @@ export function assaultStrength(s, fromId) {
     // A clan whose chapter has not opened yet cannot field what its ground is really worth, so it is
     // held near the raid strength the player is already facing. The push rides on top of that cap:
     // hold a sealed neighbour off often enough and the next one is a fight, not a formality.
-    const held = Math.max(FACTIONS.scav.raidFloor, threat(s) * RAIDS.threatShare) * NODES.lockedCap * nodePush(s, fromId);
+    const held = Math.max(FACTIONS.scav.raidFloor, raidThreat(s) * RAIDS.threatShare) * NODES.lockedCap * nodePush(s, fromId);
     return Math.ceil(Math.min(own, held));
   }
   // An open clan musters against what the player has become, not only what its own ground is worth.

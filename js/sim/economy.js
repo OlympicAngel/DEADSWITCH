@@ -311,7 +311,9 @@ export function buildingStatus(s, b) {
   if (level(s, b.id) >= maxLevel(s, b)) {
     return 'maxed';
   }
-  if (b.id === 'core' && !s.build && !coreGate(s).open) {
+  // The gate holds whether or not the builder is busy: a Core queued behind a closed gate would sit
+  // in its slot and never start.
+  if (b.id === 'core' && !coreGate(s).open && !(s.build && s.build.id === 'core')) {
     return 'gated';
   }
   if (s.build) {

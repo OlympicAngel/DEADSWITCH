@@ -71,7 +71,7 @@ export function newState(seed = 1) {
     buffs: [],
     align: 0,
     directive: 0,
-    directives: 2, // which edition of DIRECTIVES the index above counts in (migrate() moves older ones)
+    directives: 3, // which edition of DIRECTIVES the index above counts in (migrate() moves older ones)
     chapter: 0,
     ending: null,
     stats: { raidsWon: 0, raidsLost: 0, opsWon: 0, opsLost: 0, events: 0, expired: 0, answered: 0 },
@@ -158,7 +158,11 @@ export function migrate(raw) {
   if ((raw.directives || 1) < 2 && s.directive > TUTORIAL.directive) {
     s.directive += 3;
   }
-  s.directives = 2;
+  // Edition 3 asks for AI Core 5 before Fort Ashgrove and Core 8 before the Cathedral.
+  if ((raw.directives || 1) < 3) {
+    s.directive = { 17: 18, 18: 19, 19: 21, 21: 22, 22: 23 }[s.directive] ?? s.directive;
+  }
+  s.directives = 3;
   s.sectors = Array.isArray(raw.sectors) ? raw.sectors : base.sectors;
   s.buffs = (Array.isArray(raw.buffs) ? raw.buffs : []).filter((b) => b && typeof b.key === 'string'
     && Number.isFinite(b.amount) && Number.isFinite(b.remaining));
@@ -280,8 +284,10 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
   checkChapters(s);
   checkDirectives(s);
   checkDaily(s);
-  if (s.inbox.length > INBOX_LIMIT) {
-    s.inbox.splice(0, s.inbox.length - INBOX_LIMIT);
+  // Too many queued: the oldest reports go, never a cut scene (a chapter that has opened cannot open again).
+  for (let i = 0; s.inbox.length > INBOX_LIMIT && i < s.inbox.length;) {
+    if (['raid', 'op', 'expired'].includes(s.inbox[i].kind)) s.inbox.splice(i, 1);
+    else i++;
   }
   s.playTime += dt;
   return flows;

@@ -734,27 +734,30 @@ export function createUI(root, game) {
   }
 
   function drainFx(s) {
+    // A long absence comes back with a pile of these: each kind of cue sounds once, not once each.
+    const heard = new Set();
+    const cue = (fn) => { if (!heard.has(fn)) { heard.add(fn); fn(); } };
     for (const fx of s.fx.splice(0)) {
       if (fx.kind === 'built') {
-        sfx.build();
+        cue(sfx.build);
         vibrate(25);
         const card = view.querySelector(`[data-card="${fx.id}"]`);
         flash(card);
         burst(card, 'var(--hud)');
       } else if (fx.kind === 'damaged') {
-        sfx.fall();
+        cue(sfx.fall);
         shake();
         toast(`${icon('fire')}<b>${esc(BUILDINGS.find((b) => b.id === fx.id).name)}</b> lost a level`, 'bad');
       } else if (fx.kind === 'event') {
         ui.unseen.add(fx.uid);
       } else if (fx.kind === 'unlocked') {
-        sfx.unlock();
+        cue(sfx.unlock);
       } else if (fx.kind === 'directive') {
-        sfx.win();
+        cue(sfx.win);
         vibrate(30);
         toast(`${icon('check')}<b>Directive complete</b> ${esc(fx.text)}`, 'good');
       } else if (fx.kind === 'daily') {
-        sfx.unlock();
+        cue(sfx.unlock);
         vibrate(fx.all ? 30 : 15);
         toast(`${icon('check')}<b>${fx.all ? 'Board cleared' : 'Order cleared'}</b> ${esc(fx.text)} ${tags(fx.reward, '+')}`, 'good');
       }
@@ -767,8 +770,9 @@ export function createUI(root, game) {
     setCls(el, 'toast tone-' + tone);
     el.innerHTML = html;
     box.appendChild(el);
+    // Three at most; routine news makes way before bad news does.
     while (box.children.length > 3) {
-      box.firstChild.remove();
+      ([...box.children].find((x) => !x.classList.contains('tone-bad')) || box.firstChild).remove();
     }
     setTimeout(() => el.classList.add('out'), 3600);
     setTimeout(() => el.remove(), 4200);

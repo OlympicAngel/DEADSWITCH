@@ -79,7 +79,8 @@ export const sayLength = (text) => (text ? 0.5 + String(text).length / 14 : 0);
 export function say(text, done) {
   const s = synth();
   const vol = volume('voice');
-  if (!s || !vol || !text) {
+  // Nothing is said into a hidden page: a cut scene's timers can still run in a background tab.
+  if (!s || !vol || !text || document.visibilityState === 'hidden') {
     return false;
   }
   stopVoice();
@@ -101,6 +102,7 @@ export function say(text, done) {
   const hiss = Math.min(9, 0.4 + text.length * 0.055); // roughly how long the line will take
   air('sfx', hiss, { vol: 0.012 * vol, freq: 1800, q: 0.7, type: 'bandpass', wet: 0.2 });
   const finish = () => {
+    clearTimeout(watchdog);
     if (speaking !== u) {
       return; // it was cut off, and whoever cut it has already moved on
     }
@@ -112,6 +114,9 @@ export function say(text, done) {
   };
   u.onend = finish;
   u.onerror = finish; // an engine that gives up must not leave the scene waiting on it
+  // Some engines take a line and never say when they are done (no voices, a backgrounded iOS, a
+  // cancel that swallowed it). The scene does not wait past how long the line could take.
+  const watchdog = setTimeout(finish, sayLength(text) * 1000 + 2500);
   speaking = u;
   try {
     s.speak(u);

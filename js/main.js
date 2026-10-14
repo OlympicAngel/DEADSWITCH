@@ -12,6 +12,7 @@ import { scheduleAlerts, refreshAlerts, cancelAlerts, setBadge, clearBadge, askF
 import { startAmbient, stopAmbient, ambientTick } from './ui/ambient.js';
 import { sleepAudio } from './ui/audio.js';
 import { stopVoice } from './ui/voice.js';
+import { stopScore } from './ui/score.js';
 import { keepAwake, regainAwake, needsAwake } from './host/awake.js';
 
 const OFFLINE_REPORT_SECONDS = 60; // a shorter absence is caught up quietly
@@ -325,6 +326,13 @@ async function start() {
   presence = createPresence({
     onLeave: () => {
       stopLoop();
+      // Silence first, whatever state the run is in: nothing plays or speaks in a hidden page.
+      try {
+        stopAmbient();
+        stopScore();
+        stopVoice();
+        sleepAudio(true);
+      } catch { /* nothing was playing */ }
       if (crashed || retired) {
         return;
       }
@@ -332,9 +340,6 @@ async function start() {
       save(true);
       store.flush();
       try {
-        stopAmbient();
-        sleepAudio(true); // cut scene scores, static and anything else still ringing
-        stopVoice();
         keepAwake(false);
         scheduleAlerts(game.state);
         setBadge(game.state);

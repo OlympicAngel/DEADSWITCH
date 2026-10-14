@@ -26,7 +26,7 @@ export function num(n) {
 // Whole units with thousands separators (header stockpiles); compact suffixes only past 99,999.
 export function whole(n) {
   const a = Math.floor(n);
-  return Math.abs(a) < 1e5 ? a.toLocaleString('en-US') : num(a);
+  return Math.abs(a) < 1e4 ? a.toLocaleString('en-US') : num(a); // five characters at most in a pill
 }
 
 export function rate(n) {
