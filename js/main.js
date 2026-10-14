@@ -282,7 +282,9 @@ function claimRun() {
     const ch = new BroadcastChannel('deadswitch');
     ch.onmessage = (e) => {
       if (e.data !== 'mine' || retired) return;
-      save(true);
+      // A hidden tab saved on the way out; saving again would stamp that old state as fresh and the
+      // newcomer would count no time away.
+      if (presence.here()) save(true);
       store.flush();
       retired = true;
       stopLoop();

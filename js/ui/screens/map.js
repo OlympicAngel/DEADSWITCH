@@ -73,13 +73,15 @@ function shownBounds(shown) {
 }
 
 // Moves the world so that pan stays inside the revealed area; writes the transform.
+let cover = 0; // how much of the view the open briefing sheet hides: the map may pan that much further up
+
 function applyPan(view, world) {
   const [x0, y0, x1, y1] = world.dataset.bounds.split(',').map(Number);
   const vw = view.clientWidth;
   const vh = view.clientHeight;
   const clamp = (v, lo, hi) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
   pan.x = clamp(pan.x, vw - x1 * zoom, -x0 * zoom);
-  pan.y = clamp(pan.y, vh - y1 * zoom, -y0 * zoom);
+  pan.y = clamp(pan.y, vh - cover - y1 * zoom, -y0 * zoom);
   world.style.transform = `translate3d(${Math.round(pan.x)}px, ${Math.round(pan.y)}px, 0) scale(${zoom})`;
 }
 
@@ -101,7 +103,10 @@ export function centerOn(root, id, animate = true) {
   if (!view || !world || !sec) return;
   const sheet = root.querySelector('.sheet.open');
   const vr = view.getBoundingClientRect();
-  const room = sheet ? Math.max(120, sheet.getBoundingClientRect().top - vr.top) : view.clientHeight;
+  // Where the sheet will rest, not where its slide-in has got to: its layout box ignores the transform.
+  const rest = sheet && sheet.offsetParent ? sheet.offsetParent.getBoundingClientRect().bottom - sheet.offsetHeight : 0;
+  const room = sheet ? Math.max(90, rest - vr.top) : view.clientHeight;
+  cover = view.clientHeight - Math.min(view.clientHeight, room);
   const p = px(sec);
   pan = { x: view.clientWidth / 2 - p.x * zoom, y: Math.min(view.clientHeight, room) / 2 - p.y * zoom };
   // Glide there, so it is clear the map moved rather than cut. Dragging never gets the transition.
@@ -118,6 +123,7 @@ function bindPan(root) {
   const view = root.querySelector('[data-mapview]');
   const world = root.querySelector('[data-world]');
   if (!view || !world) return;
+  if (!root.querySelector('.sheet.open')) cover = 0;
   if (!pan) {
     pan = { x: 0, y: 0 };
     centerOn(root, MAP.home, false);

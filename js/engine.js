@@ -79,6 +79,7 @@ export function newState(seed = 1) {
     // board has never been dealt, which is what rollDaily looks for on a first run.
     daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false },
     taught: [], // lessons already given (data/lessons.js)
+    lessonAt: null, // { id, at }: the step a running lesson had reached
     scripted: {}, // one-off scripted moments that have already played (js/sim/war.js)
     inbox: [{ kind: 'boot' }],
     fx: [],
@@ -204,6 +205,8 @@ export function migrate(raw) {
   s.taught = Array.isArray(raw.taught)
     ? raw.taught.filter((x) => typeof x === 'string')
     : LESSONS.filter((l) => reached(s, l.when)).map((l) => l.id);
+  const la = raw.lessonAt;
+  s.lessonAt = la && typeof la.id === 'string' && Number.isInteger(la.at) && la.at >= 0 ? { id: la.id, at: la.at } : null;
   // A run already past the opening is not owed the scripted loss; it would read as a random mugging.
   s.scripted = (raw.scripted && typeof raw.scripted === 'object') ? { ...raw.scripted } : {};
   if (s.scripted.retake === undefined && ((s.levels.core || 0) > TUTORIAL.retakeCore || s.directive > TUTORIAL.directive + 1)) {

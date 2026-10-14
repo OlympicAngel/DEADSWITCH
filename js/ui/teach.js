@@ -43,7 +43,19 @@ export function createTutor(root, game, onChange) {
 
   function start(l) {
     lesson = l;
+    // A lesson cut off by a reload picks up where it was, from the last step that sends the player to
+    // the right screen, so the step it resumes on has something on screen to point at.
+    const was = game.state.lessonAt;
     at = 0;
+    if (was && was.id === l.id) {
+      at = Math.min(was.at, l.steps.length - 1);
+      for (let j = at; j >= 0; j--) {
+        if (l.steps[j].at && l.steps[j].at.startsWith('[data-nav')) {
+          at = j;
+          break;
+        }
+      }
+    }
     tapped = false;
     shown = '';
   }
@@ -64,6 +76,9 @@ export function createTutor(root, game, onChange) {
     at++;
     if (at >= lesson.steps.length) {
       finish();
+    } else {
+      E.markLessonStep(game.state, lesson.id, at);
+      game.act.save(); // a reload mid-lesson comes back to this step
     }
   }
 

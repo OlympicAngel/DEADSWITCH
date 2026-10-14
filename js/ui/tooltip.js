@@ -27,7 +27,13 @@ export function createTips(game) {
     if (b.tech) out.push(row(`${icon('research')}Tech`, '+' + pct(b.tech)));
     if (b.sectors) out.push(row(`${icon('map')}Territory`, '+' + pct(b.sectors)));
     if (b.alignment) out.push(row(`${icon('heart')}Alignment`, '+' + pct(b.alignment)));
-    if (b.effects) out.push(row(`${icon('spark')}Effects`, (b.effects > 0 ? '+' : '−') + pct(Math.abs(b.effects)), b.effects < 0 ? 'neg' : ''));
+    if (b.effects) {
+      // Each effect by name and how long it has left; the total is what they add up to after the floor.
+      const live = s.buffs.filter((x) => x.key === key);
+      const sign = (v) => (v > 0 ? '+' : '−') + pct(Math.abs(v));
+      for (const x of live) out.push(row(`${icon('spark')}${esc(x.label)}`, `${sign(x.amount)}${x.remaining > 0 && !x.clan ? ` · ${time(x.remaining)}` : ''}`, x.amount < 0 ? 'neg' : ''));
+      if (live.length !== 1) out.push(row(`${icon('spark')}Effects`, sign(b.effects), b.effects < 0 ? 'neg' : ''));
+    }
     return out.join('');
   }
 
@@ -51,13 +57,14 @@ export function createTips(game) {
       }
     }
     let eta = '';
+    const full = Number.isFinite(c) && s.res[r] >= c * 0.999;
     if (Number.isFinite(c)) {
-      if (s.res[r] >= c * 0.999) eta = row('Storage', 'FULL: expand it', 'warn');
+      if (full) eta = row('Storage', 'Full', 'warn');
       else if (net > 0) eta = row('Full in', time((c - s.res[r]) / net));
     }
     if (net < 0 && s.res[r] > 0) eta += row('Empty in', time(s.res[r] / -net), 'neg');
     return head(r, RESOURCES[r].name, Number.isFinite(c) ? `${num(s.res[r])} / ${num(c)}` : num(s.res[r]))
-      + `<p>${RESOURCES[r].desc}</p>` + row('Net', rate(net), net < 0 ? 'neg' : '') + eta
+      + `<p>${RESOURCES[r].desc}</p>` + row('Net', full && net > 0 ? `${rate(0)} · full` : rate(net), net < 0 ? 'neg' : '') + eta
       + (lines.length ? `<div class="tip-sec">Sources</div>${lines.join('')}` : '')
       + (mult !== 1 ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, r)}` : '');
   }

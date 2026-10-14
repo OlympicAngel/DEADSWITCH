@@ -126,6 +126,7 @@ export const ALIGNMENT = {
 
 export const EVENTS_CFG = {
   firstDelay: 150,
+  quietDirective: 5, // no order comes in before this directive is live: the opening lessons run uninterrupted
   intervalMin: 300,
   intervalMax: 600,
   threatWeight: 3,

@@ -810,7 +810,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         await navigator.clipboard.writeText(game.act.exportSave());
         msg.textContent = 'Copied.';
       } catch {
-        msg.textContent = 'Could not reach the clipboard. Reload and export from Settings.';
+        msg.textContent = 'Could not reach the clipboard.';
       }
     };
     dialog.querySelector('#cReload').onclick = () => location.reload();

@@ -302,6 +302,9 @@ export function advanceEvents(s, dt, offline, active = false) {
   if (offline && s.offlineEvents >= s.offlineEventCap) {
     return;
   }
+  if (s.directive < EVENTS_CFG.quietDirective) {
+    return;
+  }
   s.eventTimer -= dt;
   if (s.eventTimer > 0) {
     return;
@@ -607,6 +610,12 @@ export function markTaught(s, id) {
   if (!s.taught.includes(id)) {
     s.taught.push(id);
   }
+  s.lessonAt = null;
+}
+
+/** Where a running lesson has got to, so a reload picks it up there. */
+export function markLessonStep(s, id, at) {
+  s.lessonAt = { id, at };
 }
 
 // ---------- chapters ----------

@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.27';
+const CACHE = 'deadswitch-v1.28';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot. Every other file is whatever the page has loaded: the page hands its
 // list over once the worker is ready (js/main.js), and a new build re-fetches everything the last
@@ -24,9 +24,10 @@ self.addEventListener('install', (e) => {
         if (await cache.match(req)) return;
         try {
           await cache.put(req.url, await fresh(req.url));
-        } catch {
-          const keep = await prev.match(req);
-          if (keep) await cache.put(req.url, keep); // offline right now: the old copy beats none
+        } catch (err) {
+          // Offline right now: the old copy beats none. A file the server no longer has is let go.
+          const keep = err instanceof TypeError ? await prev.match(req) : null;
+          if (keep) await cache.put(req.url, keep);
         }
       }));
     }
@@ -56,7 +57,8 @@ async function staleWhileRevalidate(e, req, cacheName) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(req);
   const live = fetch(req, { cache: 'no-cache' }).then(async (res) => {
-    if (res && res.ok) await cache.put(req, res.clone());
+    // The fonts stylesheet comes back opaque (no-cors): without it the stored font files go unused.
+    if (res && (res.ok || (res.type === 'opaque' && cacheName === FONTS))) await cache.put(req, res.clone());
     return res;
   }).catch(() => null);
   e.waitUntil(live); // the worker must not be stopped before the new copy is stored
@@ -70,9 +72,11 @@ self.addEventListener('fetch', (e) => {
   if (request.mode === 'navigate') {
     // Fresh page when there is a network, the cached shell when there is not. A launch that cannot
     // reach the network is the whole point of an installed app, so a bad response falls back too.
-    e.respondWith(fetch(request)
-      .then((res) => (res && res.ok ? res : Promise.reject(new Error('bad response'))))
-      .catch(() => caches.match('./index.html').then((r) => r || caches.match('./'))));
+    // A network that answers nothing (a tunnel, a captive portal) gets four seconds before the shell.
+    const shell = () => caches.match('./index.html').then((r) => r || caches.match('./'));
+    const net = fetch(request).then((res) => (res && res.ok ? res : Promise.reject(new Error('bad response'))));
+    const slow = new Promise((resolve) => setTimeout(resolve, 4000)).then(shell).then((r) => r || net);
+    e.respondWith(Promise.race([net, slow]).catch(shell));
     return;
   }
   if (url.origin === location.origin) {
@@ -87,6 +91,13 @@ self.addEventListener('fetch', (e) => {
 // ---------- alerts ----------
 // The page leaves the times things are due in the save database, because by the time they are due
 // the page itself may be gone. Nothing here simulates anything: it only reads what was left.
+
+/** A transaction on a connection that closes behind it, so a later version bump is never blocked. */
+function once(db, mode) {
+  const t = db.transaction('save', mode);
+  db.close(); // waits for the transaction above to finish
+  return t;
+}
 
 function readDue() {
   return new Promise((resolve) => {
@@ -106,7 +117,7 @@ function readDue() {
         resolve([]);
         return;
       }
-      const get = db.transaction('save', 'readonly').objectStore('save').get('due');
+      const get = once(db, 'readonly').objectStore('save').get('due');
       get.onsuccess = () => resolve(Array.isArray(get.result) ? get.result : []);
       get.onerror = () => resolve([]);
     };
@@ -132,7 +143,7 @@ function writeDue(list) {
         resolve();
         return;
       }
-      db.transaction('save', 'readwrite').objectStore('save').put(list, 'due');
+      once(db, 'readwrite').objectStore('save').put(list, 'due');
       resolve();
     };
   });
@@ -162,7 +173,7 @@ function markWake(why, fired) {
         resolve();
         return;
       }
-      const st = db.transaction('save', 'readwrite').objectStore('save');
+      const st = once(db, 'readwrite').objectStore('save');
       const get = st.get('wake');
       get.onsuccess = () => {
         const was = get.result || { count: 0 };

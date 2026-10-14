@@ -14,11 +14,11 @@ export const LESSONS = [
     id: 'first', when: {},
     steps: [
       { say: 'Six survivors, one bunker, and whatever is left of me. I count. You choose.', done: 'read' },
-      { at: '[data-pill="money"]', say: 'Scrip, Energy and Population. The bar is how much the stores hold. The number under it is what we make a second.', done: 'read' },
+      { at: '.tb-res', say: 'Scrip, Energy and Population. The bar is how much the stores hold. The number under it is what we make a second.', done: 'read' },
       { at: '[data-nav="economy"]', say: 'Everything starts here.', done: 'tap' },
-      { at: '[data-card="scrapyard"]', say: 'The Scrap Yard turns the dead city into Scrip. Upgrade it.', done: { level: { scrapyard: 2 } } },
+      { at: '[data-card="scrapyard"] [data-act="build"]', say: 'The Scrap Yard turns the dead city into Scrip. Upgrade it.', done: { level: { scrapyard: 2 } } },
       { at: '[data-nav="command"]', say: 'Command is where I report.', done: 'tap' },
-      { at: '[data-panel="build"]', say: 'One thing is built at a time. The bar is the builder.', done: 'read' },
+      { at: '[data-panel="build"]', say: 'Builds run here, one at a time. More upgrades wait in the queue behind it.', done: 'read' },
       { at: '[data-panel="directive"]', say: 'A directive is the next thing I want and what it pays. Go takes you to whatever it needs.', done: 'read' },
     ],
   },
@@ -34,7 +34,7 @@ export const LESSONS = [
     id: 'arsenal', when: { level: { barracks: 1 } },
     steps: [
       { at: '[data-nav="military"]', say: 'The Barracks is up. There are hands to arm.', done: 'tap' },
-      { at: '[data-item="militia"]', say: 'Recruit some militia.', done: { items: { militia: 1 } } },
+      { at: '[data-item="militia"] [data-act="buy"]', say: 'Recruit some militia.', done: { items: { militia: 1 } } },
       { at: '[data-nav="command"]', say: 'Now look at what that did to me.', done: 'tap' },
       { at: '.reactor', say: 'Power takes ground. Defense holds it. Experts lift everything we produce. Threat is all three together, and it is what the wasteland sees when it looks at us.', done: 'read' },
       { at: '.sat.tl', say: 'Each hex leads to where its number is made.', done: 'read' },

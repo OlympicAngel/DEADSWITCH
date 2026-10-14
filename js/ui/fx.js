@@ -7,7 +7,7 @@ try {
   // Storage blocked: keep haptics on.
 }
 
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export const hapticsOn = () => haptics;
 

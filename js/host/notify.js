@@ -44,7 +44,7 @@ export const notifySupported = () => typeof Notification !== 'undefined' && 'ser
  *  A page that has been closed can only be woken by periodic background sync, which browsers grant
  *  to installed apps, so a plain tab gets alerts only while it is still in the background. */
 export function notifyState() {
-  const installed = (matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const installed = (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
   return {
     supported: notifySupported(),
     wanted: notifyWanted(),
@@ -107,7 +107,12 @@ export async function setNotify(on) {
     cancelAlerts();
     return false;
   }
-  const granted = Notification.permission === 'granted' || (await Notification.requestPermission()) === 'granted';
+  let granted = Notification.permission === 'granted';
+  if (!granted) {
+    try {
+      granted = (await Notification.requestPermission()) === 'granted';
+    } catch { /* an old callback-only API, or refused outright: no alerts */ }
+  }
   try {
     localStorage.setItem(KEY, granted ? '1' : '0');
   } catch { /* nothing to do */ }

@@ -2598,7 +2598,7 @@ button:focus-visible,
   bottom: 0;
   z-index: 8;
   padding: 14px 14px calc(16px + var(--nav-h) + env(safe-area-inset-bottom));
-  max-height: 78%;
+  max-height: 66%;
   overflow-y: auto;
   background: var(--brackets), linear-gradient(180deg, #18222a, #0d1216);
   background-color: #0d1216;
@@ -2618,10 +2618,6 @@ button:focus-visible,
 
 .app[data-screen='map'] .view {
   position: static;
-}
-
-.mapscreen:has(.sheet.open) {
-  padding-bottom: 60vh;
 }
 
 .brief-head {
@@ -2769,6 +2765,17 @@ button:focus-visible,
   gap: 10px;
 }
 
+/* A briefing taller than the sheet scrolls under the launch row, which stays in reach. */
+.sheet .launch-row {
+  position: sticky;
+  bottom: calc(-16px - var(--nav-h) - env(safe-area-inset-bottom));
+  z-index: 1;
+  margin: 0 -14px calc(-16px - var(--nav-h) - env(safe-area-inset-bottom));
+  padding: 10px 14px calc(16px + var(--nav-h) + env(safe-area-inset-bottom));
+  background: #0d1216;
+  border-top: 1px solid var(--line);
+}
+
 .launch-row .btn {
   flex: none;
   min-width: 140px;
@@ -2888,9 +2895,9 @@ button:focus-visible,
 }
 
 .nav-lbl {
-  font: 700 9.5px var(--font-hud);
+  font: 700 10.5px var(--font-hud);
   text-transform: uppercase;
-  letter-spacing: .12em;
+  letter-spacing: .06em;
 }
 
 .nav-btn[aria-current='true'] {
@@ -3352,8 +3359,7 @@ dialog[open] {
 }
 
 dialog::backdrop {
-  background: rgba(1, 4, 6, .82);
-  backdrop-filter: blur(4px);
+  background: rgba(1, 4, 6, .88);
 }
 
 .modal-body {
@@ -5869,6 +5875,7 @@ dialog.report:has(.battle.def.loss) {
 }
 
 .fl-x {
+  position: relative;
   flex: none;
   display: grid;
   place-items: center;
@@ -6553,6 +6560,8 @@ dialog.report:has(.battle.def.loss) {
   position: fixed;
   left: 12px;
   right: 12px;
+  max-width: 456px;
+  margin-inline: auto;
   pointer-events: auto;
   padding: 14px 16px;
   border: 1px solid var(--hud);
@@ -6583,8 +6592,9 @@ dialog.report:has(.battle.def.loss) {
 
 .teach-foot .btn.link {
   width: auto;
+  min-height: 40px;
   margin: 0;
-  padding: 4px 2px;
+  padding: 4px 14px 4px 2px;
   border: 0;
   box-shadow: none;
   background: none;
@@ -6982,4 +6992,19 @@ dialog.report:has(.battle.def.loss) {
   font-style: normal;
   letter-spacing: .1em;
   text-transform: uppercase;
+}
+
+/* Small controls keep their look but take a finger-sized tap. */
+.icon-btn.small,
+.topbar .icon-btn {
+  position: relative;
+}
+
+.fl-x::after,
+.icon-btn.small::after,
+.topbar .icon-btn::after,
+.core-badge::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
 }

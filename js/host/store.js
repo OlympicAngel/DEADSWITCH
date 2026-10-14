@@ -18,7 +18,7 @@ let timer = 0;
 let lastWrite = 0;
 let spilled = false; // a write fell back to localStorage this session; clear it once IndexedDB takes one again
 
-function open() {
+function open(retry = true) {
   if (db || broken) {
     return Promise.resolve(db);
   }
@@ -38,8 +38,17 @@ function open() {
       db.onclose = () => { db = null; };
       resolve(db);
     };
-    req.onerror = () => { broken = true; resolve(null); };
-    req.onblocked = () => { broken = true; resolve(null); };
+    // One refusal is often a passing one (a busy disk, another tab mid-upgrade): ask once more first.
+    const refused = () => {
+      if (retry) {
+        setTimeout(() => resolve(open(false)), 150);
+      } else {
+        broken = true;
+        resolve(null);
+      }
+    };
+    req.onerror = refused;
+    req.onblocked = refused;
   });
 }
 
@@ -49,6 +58,7 @@ function tx(mode, run) {
     try {
       t = d.transaction(STORE, mode);
     } catch {
+      db = null; // a lost connection stays lost: the next call opens a new one
       resolve(null);
       return;
     }
@@ -116,18 +126,20 @@ export async function read() {
     rec = await tx('readonly', (st) => st.get(KEY)); // a dropped connection usually answers twice
   }
   const failed = rec === null && !broken;
+  if (failed) {
+    return { failed: true }; // whatever localStorage holds cannot be weighed against a run we could not read
+  }
   const old = local.read();
   // localStorage holds either a pre-IndexedDB save or what a session wrote after IndexedDB refused a
-  // write. Either way the newer record is the run.
-  if (old && old.state && (!rec || (old.savedAt || 0) > (rec.savedAt || 0))) {
-    if (!broken && !failed) {
+  // write. Either way the newer record is the run, but only if it is the same run: a session that
+  // could not open the database started a fresh game there, and that must never replace the real one.
+  const same = rec && rec.state && old && old.state && old.state.rng === rec.state.rng;
+  if (old && old.state && (!rec || (same && (old.savedAt || 0) > (rec.savedAt || 0)))) {
+    if (!broken) {
       const ok = await tx('readwrite', (st) => st.put(old, KEY));
       if (ok !== null) local.clear(); // one source of truth from here on, once the copy has landed
     }
     return old;
-  }
-  if (failed) {
-    return { failed: true };
   }
   return rec || null;
 }

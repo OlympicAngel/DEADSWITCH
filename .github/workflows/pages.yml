@@ -42,6 +42,10 @@ jobs:
           mkdir _site && cp -r index.html .nojekyll manifest.webmanifest sw.js icon.svg icons css js _site/
           # Every deploy gets its own offline cache, whether or not anyone remembered to bump it in sw.js.
           sed -i "s/const CACHE = '[^']*'/const CACHE = 'deadswitch-v${GITHUB_SHA::12}'/" _site/sw.js
+          # And it installs with every file of this build, so an offline launch right after an update
+          # never asks for a module the old build did not have.
+          FILES=$(cd _site && find css js icons -type f | sort | sed "s|^|'./|; s|$|'|" | paste -sd, -)
+          sed -i "s|^const SHELL = \[.*\];|const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', ${FILES}];|" _site/sw.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
 

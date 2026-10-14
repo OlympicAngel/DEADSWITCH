@@ -10,7 +10,9 @@ export function num(n) {
     if (a === 0 || a >= 100 || Number.isInteger(a)) {
       return sign + Math.floor(a);
     }
-    return sign + (a < 10 ? a.toFixed(2) : a.toFixed(1)).replace(/\.?0+$/, '');
+    // Floored like the suffixed amounts below: 99.96 is not 100. The epsilon keeps 1.15 from reading 1.14.
+    const d = a < 10 ? 2 : 1;
+    return sign + (Math.floor(a * 10 ** d + 1e-9) / 10 ** d).toFixed(d).replace(/\.?0+$/, '');
   }
   const tier = Math.floor(Math.log10(a) / 3);
   if (tier >= SUFFIXES.length) {
@@ -20,7 +22,7 @@ export function num(n) {
   const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
   // Floor so a displayed amount never looks affordable when it is not.
   const p = Math.pow(10, digits);
-  return sign + (Math.floor(scaled * p) / p).toFixed(digits) + SUFFIXES[tier];
+  return sign + (Math.floor(scaled * p + 1e-9) / p).toFixed(digits) + SUFFIXES[tier];
 }
 
 // Whole units with thousands separators (header stockpiles); compact suffixes only past 99,999.
@@ -58,7 +60,8 @@ export function time(seconds) {
 // One decimal under 10%, where rounding to whole points lies most: half a percent is not one.
 export function pct(x) {
   const v = x * 100;
-  return (Math.abs(v) < 10 ? Math.round(v * 10) / 10 : Math.round(v)) + '%';
+  const r = Math.abs(v) < 10 ? Math.round(v * 10) / 10 : Math.round(v);
+  return (r === 100 && v < 100 ? 99 : r) + '%'; // short of certain never reads as certain
 }
 
 export function esc(str) {
