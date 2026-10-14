@@ -389,10 +389,10 @@ function defLabel(s, x, r) {
 // and the ratio is the whole point of the stat, so it is named here rather than left to be inferred.
 function attackRow(s, sec) {
   const atk = E.baseAttack(s, sec.id);
-  const def = E.baseDefense(s, sec.id);
+  const def = E.baseDefense(s, sec.id) * OPS.defenseScale; // on the scale the briefing shows it
   const ratio = atk / Math.max(1, def);
-  const kind = ratio >= 1.2 ? ['bad-t', 'Sends more than it holds'] : ratio >= 0.6 ? ['bad-t', 'Lightly held, heavily armed']
-    : ratio >= 0.35 ? ['', 'Front line'] : ['', 'A wall with few behind it'];
+  const kind = ratio >= 2.4 ? ['bad-t', 'Sends more than it holds'] : ratio >= 1.2 ? ['bad-t', 'Lightly held, heavily armed']
+    : ratio >= 0.7 ? ['', 'Front line'] : ['', 'A wall with few behind it'];
   return `<div class="r" data-tip="text" data-tip-text="Attack ${num(atk)} against defense ${num(def)}: ${pct(ratio)} of it."><span>${icon('power')}Its attack</span><b class="${kind[0]}">${num(atk)}<em class="atk-kind">${esc(kind[1])}</em></b></div>`;
 }
 
@@ -400,7 +400,7 @@ function attackRow(s, sec) {
 function strengthRow(s, sec) {
   const m = E.nodeStrength(s, sec.id);
   if (Math.abs(m - 1) < 0.005) return '';
-  return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(sec.defense)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain)} for each operation it repels, −${pct(NODES.defendWinCut)} for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
+  return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(E.baseDefense(s, sec.id) * OPS.defenseScale)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain - NODES.opDefenderCut)} for each operation it repels, and loses strength for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
 }
 
 // The four things a clan feels, drawn as filled pips rather than numbers: the player cannot read the
@@ -437,7 +437,7 @@ function fortRow(s, sec) {
   const f = E.flank(s, sec);
   if (!f.approaches) return '';
   const left = f.approaches - f.held;
-  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus)} while every linked ${esc(FACTIONS[E.factionOf(s, sec.id)].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${left}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
+  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus * E.clanProfile(s, E.factionOf(s, sec.id)).support)} while every linked ${esc(FACTIONS[E.factionOf(s, sec.id)].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${left}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
 }
 
 // A faint glow of each faction's colour under its sectors (territories interlock).
@@ -483,7 +483,7 @@ function briefing(s, sec) {
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${attackRow(s, sec)}
-      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="What it actually sends at your bordering sectors: its attack, its strength drift and its clan's stance together."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
+      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="What it actually sends at your bordering sectors: its attack (never under ${pct(NODES.assaultFloorShare)} of our Threat), its strength drift and its clan's stance together."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
     </div>
@@ -548,7 +548,7 @@ export function updateMapScreen(s, ui, refs) {
   if (refs.btn) {
     const running = s.op && s.op.sector === sec.id;
     refs.btn.disabled = !E.canLaunch(s, sec);
-    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : `Launch · ${pct(p)}`);
+    put(refs.label, running ? `Under way · ${time(s.op.remaining)}` : s.op ? 'Another op running' : !(power > 0) ? 'No Power' : 'Launch');
     refs.btn.classList.toggle('risky', p < 0.5);
   }
   if (refs.opbar && s.op) {

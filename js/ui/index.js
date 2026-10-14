@@ -250,7 +250,7 @@ export function createUI(root, game) {
     render();
   }, { passive: true });
 
-  // Holding the armed button walks the attack in, NODES.rushTicks steps a second: the panel shakes
+  // Holding the button walks the attack in, NODES.rushTicks steps a second: the panel shakes
   // and the phone buzzes for each one, and letting go leaves it wherever the hold got to.
   let holding = null;
   function endHold() {
@@ -259,12 +259,11 @@ export function createUI(root, game) {
     }
     clearInterval(holding.timer);
     holding.btn.classList.remove('holding');
-    holding.btn.dataset.arm = '0';
     holding = null;
     render();
   }
   root.addEventListener('pointerdown', (e) => {
-    const btn = e.target.closest('[data-act="rush"][data-arm="1"]');
+    const btn = e.target.closest('[data-act="rush"]');
     if (!btn || holding) {
       return;
     }
@@ -334,15 +333,6 @@ export function createUI(root, game) {
         }
         break;
       }
-      // Meeting an attack early is one tap to arm, then a hold: it cannot be done by accident, and
-      // how far it goes is how long the hold lasts (the hold itself is wired below).
-      case 'rush':
-        if (t.dataset.arm !== '1') {
-          t.dataset.arm = '1';
-          sfx.click();
-          setTimeout(() => { if (!holding) t.dataset.arm = '0'; }, 5000);
-        }
-        break;
       case 'fl-open':
         if (ui.floats[t.dataset.key]) ui.floats[t.dataset.key] = { since: performance.now(), collapsed: false };
         if (t.dataset.key.startsWith('atk:')) setFocus('attack', 'next');
@@ -765,11 +755,12 @@ export function createUI(root, game) {
       } else if (fx.kind === 'directive') {
         cue(sfx.win);
         vibrate(30);
-        toast(`${icon('check')}<b>Directive complete</b> ${esc(fx.text)}`, 'good');
+        toast(`${icon('check')}<b>Directive complete</b> ${esc(fx.text)} ${fx.reward ? tags(fx.reward, '+') : ''}`, 'good');
       } else if (fx.kind === 'daily') {
         cue(sfx.unlock);
         vibrate(fx.all ? 30 : 15);
-        toast(`${icon('check')}<b>${fx.all ? 'Board cleared' : 'Order cleared'}</b> ${esc(fx.text)} ${tags(fx.reward, '+')}`, 'good');
+        toast(fx.auto ? `${icon('check')}<b>Orders paid</b> at the turn of the day ${tags(fx.reward, '+')}`
+          : `${icon('check')}<b>${fx.all ? 'Board cleared' : 'Order cleared'}</b> ${esc(fx.text)} · ready to collect`, 'good');
       }
     }
   }

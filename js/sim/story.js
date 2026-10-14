@@ -550,7 +550,9 @@ export function rollDaily(s, day) {
     return false;
   }
   const cleared = s.daily.tasks.length && s.daily.tasks.every((o) => o.done);
-  claimDaily(s, 'all'); // nothing earned is lost to the turn of the day: what was left uncollected pays now
+  // Nothing earned is lost to the turn of the day: what was left uncollected pays now, and says so.
+  const left = claimDaily(s, 'all');
+  if (left) s.fx.push({ kind: 'daily', auto: true, reward: left });
   s.daily.streak = s.daily.day && cleared && gap > 0 && gap <= DAILY.grace + 1 ? s.daily.streak + 1 : 0;
   s.daily.best = Math.max(s.daily.best || 0, s.daily.streak);
   s.daily.day = day;

@@ -173,29 +173,28 @@ function raidPanel(s, refs) {
     </div>
     <div class="bars">
       <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense${E.troopsOut(s) ? ' <em class="away-tag">troops out</em>' : ''}</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
-      <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
+      <div class="vs-row them" data-tip="text" data-tip-text="Fixed when the attack set out. Units bought now raise our Defense against it; the next one is sized on the Threat they add."><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
     </div>
-    <div class="inc-foot"><span class="hold" data-hold></span>
-      <button class="btn ghost tiny" data-act="rush" data-arm="0" data-tip="text" data-tip-text="Tap, then hold: the attack is walked in while held and lands sooner. The % is how much stronger it arrives if held all the way in."><i data-rushfill></i><span data-rush></span></button>
+    <div class="inc-foot"><span class="hold" data-hold data-tip="text" data-tip-text="The chance our Defense holds it, from Defense against its strength."></span>
+      <button class="btn ghost tiny" data-act="rush" data-tip="text" data-tip-text="Hold: the attack is walked in while held and lands sooner. The % is how much stronger it arrives if held all the way in."><i data-rushfill></i><span data-rush></span></button>
       <button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
     <div class="timebar"><i data-tbar></i></div>`);
   const p = E.raidChance(s, raid);
   const def = E.factors(s).defense;
   // Meeting them early: the bill for holding it all the way in, so the choice is made with the
-  // number in view, and once armed the fill shows how much of that bill the hold has paid.
+  // number in view, and the fill shows how much of that bill the hold has paid so far.
   const rush = el.querySelector('[data-rush]');
   if (rush) {
     const price = E.rushPrice(s, raid);
     const btn = rush.closest('[data-act="rush"]');
     btn.hidden = !price;
     if (price) {
-      const armed = btn.dataset.arm === '1';
-      const after = E.raidChance(s, { ...raid, strength: price.strength });
-      putHtml(rush, armed
-        ? `${icon('alert')}Hold · ${pct(after)}`
-        : `${icon('clock')}Meet early <em>+${pct(price.strength / raid.strength - 1)} strength</em>`);
-      btn.classList.toggle('danger', armed);
-      setW(el.querySelector('[data-rushfill]'), pct(price.held));
+      const held = btn.classList.contains('holding');
+      putHtml(rush, held
+        ? `${icon('alert')}<span class="rl">Walking it in<em>${num(raid.strength)} strength</em></span>`
+        : `${icon('clock')}<span class="rl">Hold: meet early<em>+${pct(price.strength / raid.strength - 1)} strength</em></span>`);
+      btn.classList.toggle('danger', held);
+      setW(el.querySelector('[data-rushfill]'), pct(E.rushEase(price.held)));
     }
   }
   const max = Math.max(def, raid.strength, 1);
@@ -337,7 +336,7 @@ function dailyPanel(s, refs) {
   const key = s.daily.day + ':' + s.daily.streak + ':' + s.daily.paid + ':' + list.map((o) => o.id + o.need + state(o)).join(',');
   const collect = (which) => `<button class="btn primary small d-claim" data-act="claim-daily" data-id="${which}">${icon('check')}Collect</button>`;
   const el = slot(refs, 'daily', key, !list.length ? '' : `
-    <header>${icon('clock')}Today's orders${s.daily.streak ? `<span class="streak">${icon('spark')}${s.daily.streak} day${s.daily.streak === 1 ? '' : 's'} running</span>` : ''}</header>
+    <header>${icon('clock')}Today's orders${s.daily.streak ? `<span class="streak" data-tip="text" data-tip-text="Orders pay ${pct(DAILY.streakStep)} more for every day in a row cleared, up to ${DAILY.streakMax} days. Now +${pct(Math.min(s.daily.streak, DAILY.streakMax) * DAILY.streakStep)}.">${icon('spark')}${s.daily.streak} day${s.daily.streak === 1 ? '' : 's'} running</span>` : ''}</header>
     <div class="dailies">${list.map((o, i) => {
     const t = E.dailyTask(o.id);
     return `<div class="daily is-${state(o)}">

@@ -156,6 +156,7 @@ function mergeAway(into, add) {
   into.efficiency = add.efficiency;
   for (const k of Object.keys(add.gained)) into.gained[k] = (into.gained[k] || 0) + add.gained[k];
   for (const k of Object.keys(add.happened)) into.happened[k] = (into.happened[k] || 0) + add.happened[k];
+  for (const k of Object.keys(add.forces || {})) into.forces = { ...into.forces, [k]: ((into.forces || {})[k] || 0) + add.forces[k] };
   into.happened.pending = add.happened.pending; // what is waiting now, not the two counts added up
   into.answered = [...(into.answered || []), ...(add.answered || [])];
   into.fell = [...(into.fell || []), ...(add.fell || [])];

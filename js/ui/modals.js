@@ -531,7 +531,10 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     }
     const sname = (id) => esc((E.sectorById(id) || { name: '?' }).name);
     if (out.strength) {
-      p.push(`<span class="tag ${out.strength.delta < 0 ? 't-good' : 't-bad'}">${icon('defense')}${sname(out.strength.id)} strength ${out.strength.delta > 0 ? '+' : '−'}${pct(Math.abs(out.strength.delta))}</span>`);
+      // Strength is a multiplier on the sector's defense, so it reads as one: ×1.50 → ×1.66.
+      const m = E.nodeStrength(game.state, out.strength.id);
+      const to = Math.min(NODES.strengthMax, Math.max(NODES.strengthMin, m + out.strength.delta));
+      p.push(`<span class="tag ${out.strength.delta < 0 ? 't-good' : 't-bad'}">${icon('defense')}${sname(out.strength.id)} strength ×${m.toFixed(2)} → ×${to.toFixed(2)}</span>`);
     }
     if (out.clearMarks) {
       p.push(`<span class="tag t-good">${icon('check')}${sname(out.clearMarks)} breaches cleared</span>`);
@@ -774,6 +777,16 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
 
   // ---------- system ----------
 
+  // What the base actually produced: the grace at full output, then the Watch Daemon's share for as
+  // long as it covers. The war runs longer than that, and is reported below.
+  const produced = (r) => {
+    const paid = r.paid ?? r.seconds;
+    const grace = Math.min(paid, BALANCE.offline.graceSeconds);
+    return paid > grace
+      ? `Produced for ${time(paid)}: the first ${time(grace)} at full output, the rest at ${pct(r.efficiency ?? 1)}.`
+      : `Produced for ${time(paid)} at full output.`;
+  };
+
   function showOffline(report, then) {
     setFocus('screen', 'away');
     const gains = Object.keys(RESOURCES).map((r) => `<div class="r"><span>${icon(r)}${RESOURCES[r].name}</span><b class="${report.gained[r] < 0 ? 'bad-t' : 'good-t'}">${report.gained[r] >= 0 ? '+' : '−'}${num(Math.abs(report.gained[r]))}</b></div>`).join('');
@@ -799,7 +812,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       <h2>While you were away</h2>
       <p class="muted">Away ${time(report.away ?? report.seconds)}. ${report.dark
         ? `The war ran for ${time(report.seconds)}. Nothing was produced past the first ${time(BALANCE.offline.graceSeconds)}.`
-        : `Counted ${time(report.seconds)} at ${pct(report.efficiency ?? 1)} output.`}</p>
+        : produced(report)}</p>
       ${report.dark ? '' : `<div class="rows">${gains}</div>`}
       ${events ? `<div class="rows away-log">${events}</div>` : ''}
       ${report.dark ? `<p class="muted away-tip">${icon('daemon')}The ${esc(BY_ID.daemon.name)} runs the base while you are gone.</p>` : ''}

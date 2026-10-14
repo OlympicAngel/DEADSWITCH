@@ -26,7 +26,7 @@ export function createTips(game) {
     }
     if (b.tech) out.push(row(`${icon('research')}Tech`, '+' + pct(b.tech)));
     if (b.sectors) out.push(row(`${icon('map')}Territory`, '+' + pct(b.sectors)));
-    if (b.alignment) out.push(row(`${icon('heart')}Alignment`, '+' + pct(b.alignment)));
+    if (b.alignment) out.push(row(`${icon('heart')}Alignment`, (b.alignment > 0 ? '+' : '−') + pct(Math.abs(b.alignment)), b.alignment < 0 ? 'neg' : ''));
     if (b.effects) {
       // Each effect by name and how long it has left; the total is what they add up to after the floor.
       const live = s.buffs.filter((x) => x.key === key);
@@ -112,12 +112,14 @@ export function createTips(game) {
 
   function alignTip(s) {
     const a = Math.round(s.align);
-    const g = ['pop', 'experts'].map((k) => E.alignBonus(s, k)).filter(Boolean);
-    const o = ['power', 'energy'].map((k) => E.alignBonus(s, k)).filter(Boolean);
+    // Every key the current alignment touches, with its sign: Overlord's penalties count as much as its gains.
+    const NAMES = { pop: 'Population', experts: 'Experts', money: 'Scrip', power: 'Power', energy: 'Energy' };
+    const side = a > 0 ? ALIGNMENT.guardian : a < 0 ? ALIGNMENT.overlord : {};
+    const live = Object.keys(side).map((k) => [k, E.alignBonus(s, k)]).filter(([, v]) => v)
+      .map(([k, v]) => row(NAMES[k] || k, (v > 0 ? '+' : '−') + pct(Math.abs(v)), v < 0 ? 'neg' : 'ok')).join('');
     return head('heart', 'Humanity', `${E.alignmentLabel(a)} (${a > 0 ? '+' : ''}${a})`)
       + `<p>Shifted by your answers. Guardian: up to +${pct(ALIGNMENT.guardian.pop)} Population and Experts, +${pct(ALIGNMENT.guardian.money)} Scrip. Overlord: up to +${pct(ALIGNMENT.overlord.power)} Power, +${pct(ALIGNMENT.overlord.energy)} Energy, −${pct(-ALIGNMENT.overlord.pop)} Population, −${pct(-ALIGNMENT.overlord.money)} Scrip.</p>`
-      + (g.length ? row('Guardian bonus', '+' + pct(g[0]) + ' Pop & Experts', 'ok') : '')
-      + (o.length ? row('Overlord bonus', '+' + pct(o[0]) + ' Power, +' + pct(o[1] || 0) + ' Energy', 'neg') : '');
+      + (live ? `<div class="tip-sec">${a > 0 ? 'Guardian' : 'Overlord'} now</div>${live}` : '');
   }
 
   function content(el) {

@@ -6938,7 +6938,15 @@ dialog.report:has(.battle.def.loss) {
   color: var(--warn);
 }
 
-.inc-foot [data-act="rush"][data-arm="1"] {
+.inc-foot [data-act="rush"] .rl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.inc-foot [data-act="rush"].holding {
   animation: arm-pulse .5s ease-in-out infinite alternate;
 }
 

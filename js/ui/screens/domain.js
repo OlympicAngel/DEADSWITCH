@@ -127,7 +127,7 @@ function effectHtml(s, b, lvl, max) {
       + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('') + '<em>/s</em>';
     return `<div class="nn conv">
         <span class="nn-lbl">Per second</span>
-        ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff></span></div>` : ''}
+        ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff data-tip="text" data-tip-text="How hard it is running: below 100% its input is short or its output store is full. OFF while paused."></span></div>` : ''}
         ${lvl < max ? `<div class="nn-row nxt"><small>${lvl ? 'Next' : 'Unlock'}</small><b>${flow(next)}</b></div>` : ''}
       </div>`;
   }
@@ -138,7 +138,7 @@ function effectHtml(s, b, lvl, max) {
   }
   if (b.kind === 'offline') {
     const away = (n) => { const o = E.offlineLimits(s, n); return `${icon('clock')}${time(o.seconds)}<em>at</em>${pct(o.efficiency)}`; };
-    return nowNext('Time away', away(lvl), away(next), lvl, max);
+    return nowNext(`<span data-tip="text" data-tip-text="How long the base keeps producing while you are away, and at what share of its output. The first ${time(BALANCE.offline.graceSeconds)} always run at full output.">Time away</span>`, away(lvl), away(next), lvl, max);
   }
   if (b.kind === 'core') {
     const cap = BALANCE.levelCapPerCoreLevel;
@@ -155,7 +155,8 @@ function effectHtml(s, b, lvl, max) {
   if (!lvl) {
     return nowNext('Opens', '', `${icon(SHOP_ICONS[b.shop] || 'hex')}${shop.name}`, lvl, max, unl);
   }
-  return nowNext(`${shop.name} prices`, lvl ? `<span class="good-t">−${pct(disc(lvl))}</span>` : 'Closed', `<span class="good-t">−${pct(disc(next))}</span>`, lvl, max, unl);
+  const cut = (n) => (disc(n) > 0 ? `<span class="good-t">−${pct(disc(n))}</span>` : 'Full price');
+  return nowNext(`${shop.name} prices`, lvl ? cut(lvl) : 'Closed', cut(next), lvl, max, unl);
 }
 
 // ---------- shop ----------
