@@ -152,7 +152,8 @@ export function createUI(root, game) {
       else setFocus('clan', card.dataset.clan);
     }
     const t = e.target.closest('[data-act], [data-nav], [data-go], [data-inner], [data-mode], [data-sector], [data-req]');
-    if (!t || t.disabled || t.closest('dialog')) {
+    // Inside a dialog only a jump elsewhere is ours (a report's "Rebuild" / "Recruit"): it closes the dialog first.
+    if (!t || t.disabled || (t.closest('dialog') && !t.dataset.go)) {
       return;
     }
     const s = game.state;
@@ -171,6 +172,7 @@ export function createUI(root, game) {
     }
     if (t.dataset.go) {
       const [screen, inner] = t.dataset.go.split(':');
+      if (t.closest('dialog')) modals.close();
       sfx.click();
       go(screen, inner);
       // A report that names what was lost can hand the player straight to the thing that rebuilds it.

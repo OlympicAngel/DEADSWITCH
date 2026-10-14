@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG,
+  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG, OPS,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -89,7 +89,7 @@ function bonusTotal(s, key) {
   return b.tech + b.sectors + b.alignment + b.effects;
 }
 
-/** Defense sitting in the Troops tab: it holds the wall only while nobody is out attacking. */
+/** The Defense that marches out with an operation: OPS.troopsMarch of what the Troops tab holds. */
 export function troopDefense(s) {
   let d = 0;
   for (const item of ITEMS) {
@@ -97,7 +97,7 @@ export function troopDefense(s) {
       d += item.gives.defense * owned(s, item.id);
     }
   }
-  return Math.max(0, Math.floor(d * (1 + bonusTotal(s, 'defense'))));
+  return Math.max(0, Math.floor(d * OPS.troopsMarch * (1 + bonusTotal(s, 'defense'))));
 }
 
 /** True while an operation has the troops: they cannot be on the road and on the wall at once. */
@@ -110,8 +110,9 @@ export function rawFactors(s) {
     const n = owned(s, item.id);
     if (n && item.gives) {
       for (const k of FACTOR_KEYS) {
-        if (away && k === 'defense' && item.tab === 'staff') continue;
-        raw[k] += (item.gives[k] || 0) * n;
+        // Troops on an operation take OPS.troopsMarch of their Defense with them; the rest holds the wall.
+        const share = away && k === 'defense' && item.tab === 'staff' ? 1 - OPS.troopsMarch : 1;
+        raw[k] += (item.gives[k] || 0) * n * share;
       }
     }
   }

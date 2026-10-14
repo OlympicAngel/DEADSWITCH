@@ -173,7 +173,7 @@ function raidPanel(s, refs) {
     </div>
     <div class="bars">
       <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense${E.troopsOut(s) ? ' <em class="away-tag">troops out</em>' : ''}</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
-      <div class="vs-row them" data-tip="text" data-tip-text="Fixed when the attack set out. Units bought now raise our Defense against it; the next one is sized on the Threat they add."><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
+      <div class="vs-row them" data-tip="attack"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
     </div>
     <div class="inc-foot"><span class="hold" data-hold data-tip="text" data-tip-text="The chance our Defense holds it, from Defense against its strength."></span>
       <button class="btn ghost tiny" data-act="rush" data-tip="text" data-tip-text="Hold: the attack is walked in while held and lands sooner. The % is how much stronger it arrives if held all the way in."><i data-rushfill></i><span data-rush></span></button>

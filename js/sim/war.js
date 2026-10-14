@@ -92,14 +92,20 @@ export function opCost(sec) {
   };
 }
 
+/** How long an attack out of a sector takes to march on us: the part of its warning that is the road. */
+export function marchTime(sec) {
+  return (OPS.timeBase + Math.sqrt(sec.defense) * OPS.timePerSqrtDefense) * WARN.travel;
+}
+
+/** How long our operation takes to reach it: OPS.marchShare of the time their attacks take the other way. */
 export function opTime(sec) {
-  return OPS.timeBase + Math.sqrt(sec.defense) * OPS.timePerSqrtDefense;
+  return marchTime(sec) * OPS.marchShare;
 }
 
 /** How long an attack out of `fromId` is visible before it lands (data/world.js). */
 export function warning(s, base, fromId) {
   const from = SECTOR_BY_ID[fromId];
-  const march = from ? opTime(from) * WARN.travel : 0;
+  const march = from ? marchTime(from) : 0;
   return Math.max(WARN.floor, base * WARN.share + march);
 }
 
@@ -679,27 +685,39 @@ export function borders(s, withLocked = false) {
   return out;
 }
 
-export function assaultStrength(s, fromId) {
+/** Every term an assault out of a sector is made of, so the number can be shown adding up. */
+export function assaultParts(s, fromId) {
   const sec = SECTOR_BY_ID[fromId];
-  const stance = clanProfile(s, factionOf(s, fromId)).strength;
+  const faction = factionOf(s, fromId);
+  const stance = clanProfile(s, faction).strength;
   // Its walls barely carry into its troops (attackFromStrength), and every failure against us adds
   // to the push, so a sector that keeps losing becomes a harder attack and a softer target at once.
   const grit = 1 + (nodeStrength(s, fromId) - 1) * NODES.attackFromStrength;
-  const own = baseAttack(s, fromId) * NODES.assaultMult * grit * nodePush(s, fromId);
+  const push = nodePush(s, fromId);
+  const attack = baseAttack(s, fromId);
+  const own = attack * NODES.assaultMult * grit * push;
   if (!sectorOpen(s, sec)) {
     // A clan whose chapter has not opened yet cannot field what its ground is really worth, so it is
     // held near the raid strength the player is already facing. The push rides on top of that cap:
     // hold a sealed neighbour off often enough and the next one is a fight, not a formality.
-    const held = raidSize(s, 'scav') * NODES.lockedCap * nodePush(s, fromId);
-    return Math.ceil(Math.min(own * stance, held));
+    const cap = raidSize(s, 'scav') * NODES.lockedCap * push;
+    return { attack, grit, push, own, threatPart: 0, reach: 0, stance, cap, total: Math.ceil(Math.min(own * stance, cap)) };
   }
   // An open clan musters against what the player has become, not only what its own ground is worth.
   // Where it musters from still counts: a backwater raises half of what the clan's best ground does.
-  const faction = factionOf(s, fromId);
-  const share = CLAN_MAX[faction] ? baseAttack(s, fromId) / CLAN_MAX[faction] : 1;
+  const share = CLAN_MAX[faction] ? attack / CLAN_MAX[faction] : 1;
   const reach = NODES.assaultFloorMin + (1 - NODES.assaultFloorMin) * Math.min(1, share);
+  const threatPart = threat(s) * NODES.assaultThreatShare * reach;
   // Its own ground's attack, plus a share of what we have become, and the clan's mood over both.
-  return Math.ceil((own + threat(s) * NODES.assaultThreatShare * reach) * stance);
+  return { attack, grit, push, own, threatPart, reach, stance, cap: 0, total: Math.ceil((own + threatPart) * stance) };
+}
+
+export const assaultStrength = (s, fromId) => assaultParts(s, fromId).total;
+
+/** Every term a sector's defense is made of: base x defenseScale x strength x (1 + clan support). */
+export function defenseParts(s, sec) {
+  const base = baseDefense(s, sec.id) * OPS.defenseScale;
+  return { base, strength: nodeStrength(s, sec.id), support: flank(s, sec).bonus, total: sectorDefense(s, sec) };
 }
 
 /** True when an inbound assault is strong enough to take its target on the first breach. */

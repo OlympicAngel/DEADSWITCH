@@ -1,6 +1,6 @@
 // Tooltips for anything marked data-tip. Hover on desktop, tap on touch. Content is built live from state.
 import {
-  RESOURCES, FACTORS, BUILDINGS, BY_ID, BALANCE, RANKS, RAIDS, ALIGNMENT,
+  RESOURCES, FACTORS, BUILDINGS, BY_ID, BALANCE, RANKS, RAIDS, ALIGNMENT, FACTIONS, NODES,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, rate, time, pct, esc } from '../format.js';
@@ -99,6 +99,52 @@ export function createTips(game) {
     return head(r, RESOURCES[r].name) + `<p>${RESOURCES[r].desc}</p>` + row('Cost', num(amt)) + row('You have', num(have)) + status;
   }
 
+  // The numbers an enemy is made of, each term on its own row, so the total is seen adding up.
+  const times = (v) => `×${v.toFixed(2)}`;
+
+  function sectorDefTip(s, id) {
+    const sec = E.sectorById(id);
+    const d = E.defenseParts(s, sec);
+    const built = Math.ceil(d.base * d.strength * (1 + d.support));
+    return head('defense', `${sec.name}: defense`, num(d.total))
+      + row('Base defense', num(d.base))
+      + row('Strength', times(d.strength), d.strength > 1 ? 'neg' : '')
+      + (d.support ? row('Clan support', '+' + pct(d.support), 'neg') : '')
+      + row('Holds with', num(d.total))
+      + (built !== d.total ? '<p>Held at a fixed number while the directive that names it stands.</p>' : '');
+  }
+
+  function assaultTip(s, id) {
+    const sec = E.sectorById(id);
+    const a = E.assaultParts(s, id);
+    return head('power', `${sec.name}: assaults`, num(a.total))
+      + row('Its attack', num(a.attack))
+      + row('War dial', times(NODES.assaultMult))
+      + (Math.abs(a.grit - 1) > 0.005 ? row('From its strength', times(a.grit), a.grit > 1 ? 'neg' : '') : '')
+      + (Math.abs(a.push - 1) > 0.005 ? row('Push after failed assaults', times(a.push), 'neg') : '')
+      + (a.threatPart ? row(`+ ${pct(NODES.assaultThreatShare)} of our Threat × ${pct(a.reach)} reach`, '+' + num(a.threatPart), 'neg') : '')
+      + row('Clan stance', times(a.stance), a.stance > 1 ? 'neg' : '')
+      + (a.cap ? row('Sealed clan: capped at', num(a.cap)) : '')
+      + row('Sends', num(a.total));
+  }
+
+  // The attack on its way: an assault reads its sector's terms; a raid its faction's, as they stand now.
+  function attackTip(s) {
+    const atk = E.nextAttack(s);
+    if (!atk) return '<p>Nothing inbound.</p>';
+    if (atk.assault && atk.from) return assaultTip(s, atk.from) + `<p>This one set out at ${num(atk.strength)}.</p>`;
+    const f = atk.faction;
+    const share = E.raidThreat(s) * RAIDS.threatShare;
+    return head('power', E.attackName(atk), num(atk.strength))
+      + row(`${FACTIONS[f].short} base`, num(FACTIONS[f].raidBase))
+      + row(`+ ${pct(RAIDS.threatShare)} of our Threat`, '+' + num(share), 'neg')
+      + row('Clan state', times(E.clanProfile(s, f).raid), E.clanProfile(s, f).raid > 1 ? 'neg' : '')
+      + row('Spread', `×${RAIDS.spreadMin}–${RAIDS.spreadMax}`)
+      + (atk.grudge ? row('Vengeance', 'harder', 'neg') : '')
+      + row('Set out at', num(atk.strength))
+      + '<p>Fixed when it set out: Defense bought now counts against it; the Threat it adds sizes the next one.</p>';
+  }
+
   function threatTip(s) {
     const f = E.factors(s);
     const t = E.threat(s, f);
@@ -131,6 +177,9 @@ export function createTips(game) {
     if (kind === 'cost') return costTip(s, a, Number(el.dataset.amt));
     if (kind === 'threat') return threatTip(s);
     if (kind === 'align') return alignTip(s);
+    if (kind === 'secdef') return sectorDefTip(s, a);
+    if (kind === 'assault') return assaultTip(s, a);
+    if (kind === 'attack') return attackTip(s);
     return `<p>${esc(el.dataset.tipText || '')}</p>`;
   }
 

@@ -377,12 +377,17 @@ function stancePin(s, x, r) {
     <circle r="15"/><use href="#i-${st.icon}" x="-9" y="-9" width="18" height="18"/></g>`;
 }
 
+const defText = (s, x) => {
+  const m = E.nodeStrength(s, x.id);
+  return `${num(E.sectorDefense(s, x))}${E.flank(s, x).bonus ? ' ▲' : ''}${m > 1.005 ? ' ↑' : m < 0.995 ? ' ↓' : ''}`;
+};
+
 // Defense above an enemy sector: ▲ fortified by approaches, ↑/↓ stronger/weaker than its base.
 function defLabel(s, x, r) {
   const fort = E.flank(s, x).bonus;
   const m = E.nodeStrength(s, x.id);
   const drift = m > 1.005 ? ' ↑' : m < 0.995 ? ' ↓' : '';
-  return `<text class="def ${fort ? 'fort' : ''} ${drift ? (m > 1 ? 'up' : 'down') : ''}" dy="${-r - 10}">${num(E.sectorDefense(s, x))}${fort ? ' ▲' : ''}${drift}</text>`;
+  return `<text class="def ${fort ? 'fort' : ''} ${drift ? (m > 1 ? 'up' : 'down') : ''}" dy="${-r - 10}" data-def-for="${x.id}">${defText(s, x)}</text>`;
 }
 
 // What a sector sends out, against what it costs to take. Walls and barracks are not the same thing,
@@ -400,7 +405,7 @@ function attackRow(s, sec) {
 function strengthRow(s, sec) {
   const m = E.nodeStrength(s, sec.id);
   if (Math.abs(m - 1) < 0.005) return '';
-  return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(E.baseDefense(s, sec.id) * OPS.defenseScale)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain - NODES.opDefenderCut)} for each operation it repels, and loses strength for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}">×${m.toFixed(2)}</b></div>`;
+  return `<div class="r" data-tip="text" data-tip-text="Base defense ${num(E.baseDefense(s, sec.id) * OPS.defenseScale)}. Grows ${pct(NODES.growthPerHour)} an hour up to ×${NODES.strengthMax}, +${pct(NODES.opLossGain - NODES.opDefenderCut)} for each operation it repels, and loses strength for each assault of its that fails."><span>${icon('trend')}Strength</span><b class="${m > 1 ? 'bad-t' : 'good-t'}" data-str></b></div>`;
 }
 
 // The four things a clan feels, drawn as filled pips rather than numbers: the player cannot read the
@@ -437,7 +442,7 @@ function fortRow(s, sec) {
   const f = E.flank(s, sec);
   if (!f.approaches) return '';
   const left = f.approaches - f.held;
-  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus * E.clanProfile(s, E.factionOf(s, sec.id)).support)} while every linked ${esc(FACTIONS[E.factionOf(s, sec.id)].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}">${left}/${f.approaches} · ${f.bonus ? '+' + pct(f.bonus) + ' defense' : 'no bonus'}</b></div>`;
+  return `<div class="r" data-tip="text" data-tip-text="Defense +${pct(OPS.flankBonus * E.clanProfile(s, E.factionOf(s, sec.id)).support)} while every linked ${esc(FACTIONS[E.factionOf(s, sec.id)].short)} sector stands, falling to 0 as you take them."><span>${icon('defense')}Clan support</span><b class="${f.bonus ? 'bad-t' : 'good-t'}" data-flank>${left}/${f.approaches}</b></div>`;
 }
 
 // A faint glow of each faction's colour under its sectors (territories interlock).
@@ -471,19 +476,19 @@ function briefing(s, sec) {
     <div class="duel">
       <div data-tip="text" data-tip-text="Our Power, against their defense."><small>${icon('power')}Strike power</small><b data-power></b></div>
       <div class="odds-ring" data-tip="text" data-tip-text="Chance the operation takes the sector, from strike power against their defense."><b data-chance></b><small>odds</small></div>
-      <div data-tip="text" data-tip-text="What holds the sector: its base defense, how far it has grown, and support from its clan's sectors next to it."><small>${icon('defense')}Their defense</small><b>${num(E.sectorDefense(s, sec))}</b></div>
+      <div data-tip="secdef:${sec.id}"><small>${icon('defense')}Their defense</small><b data-def></b></div>
     </div>
     <div class="oddsbar"><i data-odds></i></div>
     <div class="rows">
       ${postureRow(s, sec)}
       ${fortRow(s, sec)}
       <div class="r" data-tip="text" data-tip-text="Time from launch until the operation lands and the roll is made."><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
-      ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="text" data-tip-text="Troops leave the wall until the operation lands."><span>${icon('defense')}Defense while out</span><b class="warn-t">${num(E.factors(s).defense)} → ${num(Math.max(0, E.factors(s).defense - E.troopDefense(s)))}</b></div>` : ''}
+      ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="text" data-tip-text="An operation takes ${pct(OPS.troopsMarch)} of the Troops' Defense with it until it lands."><span>${icon('defense')}Defense while out</span><b class="warn-t" data-out></b></div>` : ''}
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
       ${attackRow(s, sec)}
-      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="text" data-tip-text="What it actually sends at your bordering sectors: its attack plus ${pct(NODES.assaultThreatShare)} of our Threat, its strength drift and its clan's stance together."><span>${icon('power')}Its assaults</span><b class="bad-t">~${num(E.assaultStrength(s, sec.id))}</b></div>` : ''}
+      ${E.borders(s).some((b) => b.from === sec.id) ? `<div class="r" data-tip="assault:${sec.id}"><span>${icon('power')}Its assaults</span><b class="bad-t" data-asl></b></div>` : ''}
       ${sec.boss ? `<div class="r"><span>${icon('stop')}Capital</span><b class="good-t">Ends ${f.short} raids</b></div>` : ''}
       <div class="r"><span>${icon('skull')}If it fails</span><b class="bad-t" data-loss data-tip="text" data-tip-text="Share of troops and weapons lost if the operation fails. Grows with their defense over your power. Durability lowers it per unit."></b></div>
     </div>
@@ -501,6 +506,8 @@ export function bindMapScreen(panel) {
     factors: [...panel.querySelectorAll('[data-factor]')],
     nodeOdds: [...panel.querySelectorAll('[data-odds-for]')],
     power: q('[data-power]'), loss: q('[data-loss]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
+    def: q('[data-def]'), out: q('[data-out]'), asl: q('[data-asl]'), str: q('[data-str]'), flank: q('[data-flank]'),
+    defLabels: [...panel.querySelectorAll('[data-def-for]')],
     chips: [...panel.querySelectorAll('.sheet .chip')], btn: q('.launch'), label: q('.launch [data-l]'), opbar: q('[data-opbar]'),
     optimer: q('[data-optimer]'), asltimer: q('[data-asltimer]'), opbanner: q('[data-opbanner]'), opbannerbar: q('[data-opbannerbar]'),
   };
@@ -511,6 +518,8 @@ export function updateMapScreen(s, ui, refs) {
   for (const el of refs.factors) {
     put(el, num(f[el.dataset.factor]));
   }
+  // Each enemy's defense over its hex moves as it grows, not only when the map is rebuilt.
+  for (const t of refs.defLabels || []) put(t, defText(s, E.sectorById(t.dataset.defFor)));
   // The odds under every sector that can be attacked, so targets compare at a glance.
   for (const t of refs.nodeOdds) {
     const p = E.opChance(s, E.sectorById(t.dataset.oddsFor));
@@ -531,6 +540,15 @@ export function updateMapScreen(s, ui, refs) {
   }
   const sec = E.sectorById(ui.sector);
   const p = E.opChance(s, sec);
+  // Every number in the briefing is read again each frame, not frozen at the moment it opened.
+  if (refs.def) put(refs.def, num(E.sectorDefense(s, sec)));
+  if (refs.out) put(refs.out, `${num(f.defense)} → ${num(Math.max(0, f.defense - E.troopDefense(s)))}`);
+  if (refs.asl) put(refs.asl, `~${num(E.assaultStrength(s, sec.id))}`);
+  if (refs.str) put(refs.str, `×${E.nodeStrength(s, sec.id).toFixed(2)}`);
+  if (refs.flank) {
+    const fl = E.flank(s, sec);
+    put(refs.flank, `${fl.approaches - fl.held}/${fl.approaches} · ${fl.bonus ? '+' + pct(fl.bonus) + ' defense' : 'no bonus'}`);
+  }
   // The power an operation actually strikes with, which is what the odds and the report both use.
   const power = E.opPower(s, f);
   put(refs.power, num(power));

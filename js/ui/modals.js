@@ -459,13 +459,6 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     }, then);
   }
 
-  /** A held attack is news, not a decision: a line that goes by, not a dialog to dismiss. */
-  function heldNote(r, then) {
-    const salvage = r.loot && r.loot.money ? ` · +${num(r.loot.money)} Scrip` : '';
-    notify(`${icon('defense')}<b>Held: ${esc(r.name || FACTIONS[r.faction].raidName)}</b> ${pct(r.chance)} odds${salvage}`, 'good');
-    then();
-  }
-
   /** What went into a lost battle, as facts: the numbers it was decided on and what moved them. */
   function whyLines(r) {
     const w = r.why || {};
@@ -1001,7 +994,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         return cut(CUTS.memory, { name: sec.name, text: sec.lore, at: sec.id }, next);
       },
       away: () => showOffline(item.report, next),
-      op: () => showOp(item, next), raid: () => (item.win ? heldNote(item, next) : showRaid(item, next)), expired: () => showExpired(item, next) }[item.kind];
+      op: () => showOp(item, next), raid: () => showRaid(item, next), expired: () => showExpired(item, next) }[item.kind];
     if (!show) {
       next();
       return true;

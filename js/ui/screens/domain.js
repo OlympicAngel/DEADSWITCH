@@ -1,7 +1,7 @@
 // Domain screens (Economy, Military, Research): inner tabs of buildings and the units they unlock.
 // Lists show everything unlocked plus only the next locked entry, faded, so progress is visible but calm.
 import {
-  RESOURCES, FACTORS, BUILDINGS, BY_ID, ITEMS, SHOP_TABS, BALANCE,
+  RESOURCES, FACTORS, BUILDINGS, BY_ID, ITEMS, SHOP_TABS, BALANCE, OPS,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
@@ -178,7 +178,7 @@ function shopList(s, ui, tab) {
     </div>
     ${tab.shop === 'staff' && open.length ? `<p class="shop-note ${E.troopsOut(s) ? 'on' : ''}">${icon('defense')}${E.troopsOut(s)
       ? `Out on the operation: \u2212${num(E.troopDefense(s))} Defense until they are back.`
-      : 'Troops add no Defense while an operation is running.'}</p>` : ''}
+      : `An operation takes ${pct(OPS.troopsMarch)} of the Troops' Defense with it.`}</p>` : ''}
     ${open.map((i) => itemRow(s, i)).join('')}
     ${next ? lockedCard(next.id, next.name, next.req) : ''}`;
 }

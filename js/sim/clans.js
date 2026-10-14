@@ -109,8 +109,19 @@ export function clanProfiles(s) {
   return out;
 }
 
-// A stance that changes my economy holds a buff for as long as it holds (buffs with `hold` never tick down).
-function syncBuffs(s, faction, ids) {
+const SECTOR_AT = Object.fromEntries(SECTORS.map((x) => [x.id, x]));
+
+/** True while a sector of theirs touches one of ours: a clan with no border cannot close our roads. */
+export function bordersUs(s, faction) {
+  const owner = s.owner || {};
+  return s.sectors.some((id) => SECTOR_AT[id] && SECTOR_AT[id].links.some((l) => !s.sectors.includes(l)
+    && (owner[l] || (SECTOR_AT[l] && SECTOR_AT[l].faction)) === faction));
+}
+
+// A stance that changes my economy holds a buff for as long as it holds (buffs with `hold` never tick
+// down), and only while the clan's ground touches ours: a stance far away is their business.
+function syncBuffs(s, faction, stances) {
+  const ids = bordersUs(s, faction) ? stances : [];
   s.buffs = s.buffs.filter((b) => b.clan !== faction || ids.includes(b.stance));
   for (const id of ids) {
     const st = STANCE_BY_ID[id];

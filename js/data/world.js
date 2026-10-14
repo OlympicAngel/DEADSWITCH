@@ -344,9 +344,11 @@ export const OPS = {
   // Sector defense is authored on the scale its loot, price and march time are sized from; what it
   // holds against our Power (one for one, no multiplier on either side) is this share of it.
   defenseScale: 0.5,
+  troopsMarch: 0.25, // share of the Troops tab's Defense that leaves the wall while an operation is out
   flankBonus: 0.75, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,
+  marchShare: 0.7, // our operation takes this share of the time their attacks march from that sector
   timeBase: 20,
   timePerSqrtDefense: 1.4,
   // Capture loot (first capture only), sized from a sector's base defense D: amount = a x D^b + c x D,
@@ -593,7 +595,7 @@ export const CLANS = {
     },
     {
       id: 'blockade', name: 'Blockade', icon: 'stop', when: { greed: [0.55], order: [0.5], held: [0.15] },
-      desc: 'Scrip production −15% while it holds.', buff: { key: 'money', amount: -0.15 },
+      desc: 'Scrip production −30% while it holds and their ground borders ours.', buff: { key: 'money', amount: -0.3 },
       line: 'The {faction} have closed the roads around me. The traders are not coming today.',
     },
     {
