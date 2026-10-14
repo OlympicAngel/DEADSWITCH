@@ -11,8 +11,7 @@
 // - runs a converter only on an input that is going spare, since every conversion loses on the trade
 // - buys what is short: Defense as an attack closes, Power when the map is out of reach, best value
 //   otherwise, and never more than a share of the bank on one scare
-// - launches operations on the best ground it can hold, meets an attack early rather than leave it
-//   to land while the troops are away, and never marches out on a wall that cannot hold alone
+// - launches operations on the best ground it can hold
 // - weighs every transmission answer, Humanity included, at what it is worth to this base
 // It does not play towards the daily board: the orders are cleared or not by how it plays anyway,
 // which is what they are for, and chasing them would measure the bot rather than the game.
@@ -38,7 +37,6 @@ function dice(seed) {
 // ---------- what things are worth to this player, right now ----------
 
 const SAFE_ODDS = 0.92; // reinforce until an inbound attack looks survivable
-const RUSH_ODDS = 0.9; // and only call one in early if it still looks survivable afterwards
 const SHOP_EVERY = 10; // seconds of game time between shopping trips
 const THINK_EVERY = 30; // and between the slower decisions: what to build, what to run, where to attack
 const PANIC_WINDOW = 180; // seconds before an attack lands that the player starts reinforcing
@@ -319,15 +317,6 @@ function wantsMost(s, atk) {
 
 // ---------- the map: take the ground worth taking ----------
 
-/** The odds of holding an inbound attack once the troops have marched out with an operation. */
-function holdsAlone(s, atk) {
-  const was = s.op;
-  s.op = was || { sector: 'x', remaining: 1, total: 1 };
-  const p = E.raidChance(s, atk);
-  s.op = was;
-  return p;
-}
-
 /** What a sector is worth having, against what the attempt risks. */
 function opScore(s, sec) {
   const odds = E.opChance(s, sec);
@@ -442,21 +431,11 @@ function play(seed) {
         const b = nextBuild(s);
         if (b) E.startBuild(s, b.id);
       }
-      // Troops march out with an operation, so the wall has to hold without them before one goes --
-      // but only against an attack that would actually land while they are away.
+      // An operation takes nothing off the wall, so the only question is whether the target is worth it.
       const target = !s.op && bestTarget(s);
-      const lands = target && atk && atk.remaining < E.opTime(target);
-      if (target && (!lands || holdsAlone(s, atk) >= SAFE_ODDS)) {
+      if (target) {
         E.launchOp(s, target.id);
         tally.ops++;
-      } else if (target) {
-        // The attack is in the way: call it in now, while the troops are still home, rather than
-        // leave it on the clock to land while they are away.
-        const rush = E.rushPrice(s, atk);
-        if (rush && E.raidChance(s, { ...atk, strength: rush.strength }) >= RUSH_ODDS) {
-          E.rushAttack(s, atk);
-          tally.rushed++;
-        }
       }
     }
     // Shopping, the way a player shops: not every second, and not the cheapest thing on the shelf.

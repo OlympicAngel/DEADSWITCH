@@ -344,7 +344,6 @@ export const OPS = {
   // Sector defense is authored on the scale its loot, price and march time are sized from; what it
   // holds against our Power (one for one, no multiplier on either side) is this share of it.
   defenseScale: 0.5,
-  troopsMarch: 0.25, // share of the Troops tab's Defense that leaves the wall while an operation is out
   flankBonus: 0.75, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,
@@ -421,6 +420,8 @@ export const NODES = {
   opDefenderCut: 0.04, // removed at the same time: what repelling you cost the defenders
   defendWinCut: 0.03, // removed when its assault on you is held
   breachCut: 0.01, // removed even when its assault breaks through
+  defenseThreatShare: 0.1, // an enemy sector raises this share of our Threat on top of its own garrison
+  attackingDefenseCut: 0.1, // and holds this much weaker while an attack of its own is out against us
   attritionCap: 2.5, // a clan that bleeds (its attrition stance) loses strength faster, but never more than this many times over
   plunderShare: 0.2, // a plundering clan takes this much of what a lost raid would have taken
   takenMax: 2, // a sector they take is held as hard as they took it, up to this x its base defense

@@ -2,7 +2,7 @@
 import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
-  level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve, troopsOut, troopDefense,
+  level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
 } from './economy.js';
 import { clanProfile, clanProfiles, stirClan } from './clans.js';
 import { rand, range, pick, odds } from './rng.js';
@@ -244,7 +244,7 @@ export function sectorDefense(s, sec) {
   if (sec.id === TUTORIAL.target && s.directive >= TUTORIAL.directive && (s.scripted.retake || 0) < 2) {
     return TUTORIAL.defense;
   }
-  return Math.ceil(baseDefense(s, sec.id) * OPS.defenseScale * nodeStrength(s, sec.id) * (1 + flank(s, sec).bonus));
+  return defenseParts(s, sec).total;
 }
 
 /** What we hit a sector with: our Power, as it reads everywhere else. */
@@ -740,9 +740,17 @@ export function assaultParts(s, fromId) {
 export const assaultStrength = (s, fromId) => assaultParts(s, fromId).total;
 
 /** Every term a sector's defense is made of: base x defenseScale x strength x (1 + clan support). */
+/** Every term a sector's defense is made of: its garrison, grown or worn by the war, plus what it
+ *  has raised against how strong we have become, helped by its clan's neighbours, and thinner while
+ *  its own troops are out attacking us. */
 export function defenseParts(s, sec) {
   const base = baseDefense(s, sec.id) * OPS.defenseScale;
-  return { base, strength: nodeStrength(s, sec.id), support: flank(s, sec).bonus, total: sectorDefense(s, sec) };
+  const strength = nodeStrength(s, sec.id);
+  const raised = threat(s) * NODES.defenseThreatShare;
+  const support = flank(s, sec).bonus;
+  const out = attacks(s).some((a) => a.from === sec.id) ? NODES.attackingDefenseCut : 0;
+  const total = Math.ceil((base * strength + raised) * (1 + support) * (1 - out));
+  return { base, strength, raised, support, out, total };
 }
 
 /** True when an inbound assault is strong enough to take its target on the first breach. */
@@ -958,7 +966,6 @@ function resolveAttack(s, raid, offline) {
   Object.assign(report, { assault: !!raid.assault, from: raid.from, target: raid.target });
   // What went into the numbers, so a report can say why as well as what: facts, not advice.
   report.why = {
-    troops: troopsOut(s) ? troopDefense(s) : 0, // Defense that was out on an operation
     stance: Math.round(prof.strength * 100) / 100, // the clan's mood on their strength (assaults)
     grudge: !!raid.grudge,
     rushed: !!raid.rush,

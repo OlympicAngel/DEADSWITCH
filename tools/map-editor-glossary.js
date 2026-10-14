@@ -253,7 +253,7 @@ export const GLOSSARY = {
   'sim.owner': { what: 'Pretend another clan has taken this sector off you. Their rebuild standard (NODES.foreignShare) then decides what it is worth.' },
   'sim.held': { what: 'Pretend the player holds this sector. Ctrl-click a hex on the map.' },
   'sim.units': { what: 'Unit counts. Power, Defense and Experts are whatever these add up to through sim/economy.js factors() — the same function the game uses.' },
-  'sim.troopsOut': { what: 'An operation is away, so staff units stop counting toward Defense (sim/economy.js, rawFactors).' },
+  'sim.troopsOut': { what: 'An operation is away. It takes nothing off our wall; the enemy sector it came from holds weaker while its own attack on us is out (sim/war.js, sectorDefense).' },
   'sim.tutorial': { what: 'The opening directive still stands, so TUTORIAL.target sits at its soft defense.' },
 };
 

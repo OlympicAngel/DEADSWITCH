@@ -1,7 +1,7 @@
 // Dialogs: boot, chapters, endings, battle reports, forced events, missed orders, offline report, settings.
 import {
   RESOURCES, FACTIONS, BOOT, CUTS, WIPE_TEXT, CHAPTER_TEXT, CHAPTERS, ENDINGS, ITEM_BY_ID, BALANCE, VERSION, BY_ID, SHOP_TABS, SECTORS, NODES, RANKS,
-  RESOURCE_KEYS, FACTORS, CORE_MEMORIES, MAP,
+  RESOURCE_KEYS, FACTORS, CORE_MEMORIES, MAP, OPS,
 } from '../data.js';
 import * as E from '../engine.js';
 import { num, time, pct, rate, esc } from '../format.js';
@@ -453,18 +453,25 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       spoils: `${r.win
         ? `${r.retaken ? `<div class="r"><span>${icon('check')}Retaken</span><b class="muted">No spoils</b></div>` : `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>`}
            ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}`
-        : `${r.strength ? `<div class="r"><span>${icon('trend')}${esc(sec.name)} strength</span><b class="bad-t">×${r.strength.toFixed(2)}</b></div>` : ''}`}
+        : `${r.strength ? dugIn(sec.id, r.strength, 'bad-t') : ''}`}
         ${lossRows(r, 'defense')}
         ${r.win && !r.retaken ? `<blockquote class="lore">${esc(sec.lore)}</blockquote>` : ''}`,
     }, then);
   }
 
+  /** How far a sector stands from its original garrison after a battle, as defense gained or lost. */
+  function dugIn(id, m, cls) {
+    const sec = E.sectorById(id);
+    const moved = E.baseDefense(game.state, id) * OPS.defenseScale * (m - 1);
+    if (Math.abs(moved) < 0.5) return '';
+    return `<div class="r"><span>${icon('trend')}${esc(sec.name)}: ${moved > 0 ? 'dug in' : 'worn down'}</span><b class="${cls}">${moved > 0 ? '+' : '\u2212'}${num(Math.abs(moved))}</b></div>`;
+  }
+
   /** What went into a lost battle, as facts: the numbers it was decided on and what moved them. */
   function whyLines(r) {
     const w = r.why || {};
-    const lines = [`Their ${num(r.strength)} against your ${num(r.defense)}: ${(r.strength / Math.max(1, r.defense)).toFixed(1)}×, odds ${pct(r.chance)}.`];
-    if (w.troops) lines.push(`Troops were out on an operation: −${num(w.troops)} Defense.`);
-    if (r.assault && w.stance && w.stance !== 1) lines.push(`Their clan's stance: ×${w.stance} strength.`);
+    const lines = [`They came with ${num(r.strength)} against our ${num(r.defense)}. We had a ${pct(r.chance)} chance of holding.`];
+    if (r.assault && w.stance && w.stance > 1) lines.push('Their clan was in a mood to hit hard.');
     if (w.grudge) lines.push('Vengeance: they came heavier.');
     if (w.rushed) lines.push('Met early: they arrived heavier for the forced march.');
     return lines.map((l) => `<li>${esc(l)}</li>`).join('');
@@ -483,7 +490,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       themLabel: 'Their strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
       spoils: `${r.win ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>` : ''}
-        ${r.assault && r.strengthAfter ? `<div class="r"><span>${icon('trend')}${esc(E.sectorById(r.from).name)} strength</span><b class="${r.win ? 'good-t' : 'bad-t'}">×${r.strengthAfter.toFixed(2)}</b></div>` : ''}
+        ${r.assault && r.strengthAfter ? dugIn(r.from, r.strengthAfter, r.win ? 'good-t' : 'bad-t') : ''}
         ${!r.win && r.assault && !r.plundered ? `<div class="r"><span>${icon('map')}${place}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}
         ${lossRows(r, 'strength')}`,
       note: r.win ? '' : r.overrun

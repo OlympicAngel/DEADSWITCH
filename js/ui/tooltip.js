@@ -75,8 +75,7 @@ export function createTips(game) {
     const extra = k === 'experts' ? row('Production bonus', '+' + pct(val * BALANCE.expertProductionBonus)) : '';
     const what = { power: 'Attack strength in operations.', defense: 'Strength against raids.', experts: `+${pct(BALANCE.expertProductionBonus)} production each.` }[k];
     // Troops cannot be on the road and on the wall at once, so say what is missing while they are out.
-    const away = k === 'defense' && E.troopsOut(s) ? row('Troops on the operation', '\u2212' + num(E.troopDefense(s)), 'neg') : '';
-    return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw)) + away + extra
+    return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw)) + extra
       + (val !== raw ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, k)}` : '');
   }
 
@@ -99,50 +98,65 @@ export function createTips(game) {
     return head(r, RESOURCES[r].name) + `<p>${RESOURCES[r].desc}</p>` + row('Cost', num(amt)) + row('You have', num(have)) + status;
   }
 
-  // The numbers an enemy is made of, each term on its own row, so the total is seen adding up.
-  const times = (v) => `×${v.toFixed(2)}`;
+  // What an enemy is made of, told as what happened to it: each row is an amount it gained or lost,
+  // and they add up to the number on the screen. No multipliers, no shares of our Threat.
+  const whose = (name) => name + (/s$/.test(name) ? '\u2019' : '\u2019s');
+  const delta = (label, v, bad = v > 0) => (Math.abs(v) >= 0.5 ? row(label, (v > 0 ? '+' : '\u2212') + num(Math.abs(v)), bad ? 'neg' : 'ok') : '');
 
   function sectorDefTip(s, id) {
     const sec = E.sectorById(id);
     const d = E.defenseParts(s, sec);
-    const built = Math.ceil(d.base * d.strength * (1 + d.support));
-    return head('defense', `${sec.name}: defense`, num(d.total))
-      + row('Base defense', num(d.base))
-      + row('Strength', times(d.strength), d.strength > 1 ? 'neg' : '')
-      + (d.support ? row('Clan support', '+' + pct(d.support), 'neg') : '')
-      + row('Holds with', num(d.total))
-      + (built !== d.total ? '<p>Held at a fixed number while the directive that names it stands.</p>' : '');
+    const clan = FACTIONS[E.factionOf(s, id)];
+    const grown = d.base * d.strength;
+    const before = grown + d.raised;
+    const helped = before * (1 + d.support);
+    if (d.total !== Math.ceil(helped * (1 - d.out))) {
+      return head('defense', sec.name, num(d.total)) + '<p>Held soft while the directive that names it stands.</p>';
+    }
+    return head('defense', `${sec.name}: what holds it`, num(d.total))
+      + row('Original garrison', num(d.base))
+      + delta(d.strength >= 1 ? 'Dug in since' : 'Worn down by the war', grown - d.base)
+      + delta('Drafted as we grew', d.raised)
+      + delta(`Help from neighboring ${clan ? clan.short : ''} ground`, helped - before)
+      + delta('Troops away, attacking us', -helped * d.out, false)
+      + row('Holds with', num(d.total));
   }
 
   function assaultTip(s, id) {
     const sec = E.sectorById(id);
     const a = E.assaultParts(s, id);
+    const clan = FACTIONS[E.factionOf(s, id)];
+    const start = a.attack * NODES.assaultMult;
+    const hard = start * a.grit;
+    const own = hard * a.push;
+    const massed = own + a.threatPart;
+    const moody = massed * a.stance;
     return head('power', `${sec.name}: its attack on us`, num(a.total))
-      + row('Its own attack stat', num(a.attack))
-      + row('War dial', times(NODES.assaultMult))
-      + (Math.abs(a.grit - 1) > 0.005 ? row('From its strength', times(a.grit), a.grit > 1 ? 'neg' : '') : '')
-      + (Math.abs(a.push - 1) > 0.005 ? row('Push after failed assaults', times(a.push), 'neg') : '')
-      + (a.threatPart ? row(`+ ${pct(NODES.assaultThreatShare)} of our Threat × ${pct(a.reach)} reach`, '+' + num(a.threatPart), 'neg') : '')
-      + row('Clan stance', times(a.stance), a.stance > 1 ? 'neg' : '')
-      + (a.cap ? row('Sealed clan: capped at', num(a.cap)) : '')
+      + row('Initial attack', num(start))
+      + delta(a.grit >= 1 ? 'Hardened as it grew' : 'Thinned by its losses', hard - start)
+      + delta('Angrier after failed assaults', own - hard)
+      + delta('Mustered against our rise', a.threatPart)
+      + delta(`${whose(clan ? clan.short : 'The clan')} mood`, moody - massed, moody > massed)
+      + (a.cap && a.total < Math.ceil(moody) ? delta('Held back: its chapter has not opened', a.total - moody, false) : '')
       + row('Sends', num(a.total));
   }
 
-  // The attack on its way: an assault reads its sector's terms; a raid its faction's, as they stand now.
+  // The attack on its way: an assault reads its sector; a raid its war band, as they stand now.
   function attackTip(s) {
     const atk = E.nextAttack(s);
     if (!atk) return '<p>Nothing inbound.</p>';
-    if (atk.assault && atk.from) return assaultTip(s, atk.from) + `<p>This one set out at ${num(atk.strength)}.</p>`;
+    if (atk.assault && atk.from) return assaultTip(s, atk.from) + `<p>This one set out with ${num(atk.strength)}.</p>`;
     const f = atk.faction;
-    const share = E.raidThreat(s) * RAIDS.threatShare;
+    const band = FACTIONS[f].raidBase;
+    const massed = band + E.raidThreat(s) * RAIDS.threatShare;
+    const moody = massed * E.clanProfile(s, f).raid;
     return head('power', E.attackName(atk), num(atk.strength))
-      + row(`${FACTIONS[f].short} base`, num(FACTIONS[f].raidBase))
-      + row(`+ ${pct(RAIDS.threatShare)} of our Threat`, '+' + num(share), 'neg')
-      + row('Clan state', times(E.clanProfile(s, f).raid), E.clanProfile(s, f).raid > 1 ? 'neg' : '')
-      + row('Spread', `×${RAIDS.spreadMin}–${RAIDS.spreadMax}`)
-      + (atk.grudge ? row('Vengeance', 'harder', 'neg') : '')
-      + row('Set out at', num(atk.strength))
-      + '<p>Fixed when it set out: Defense bought now counts against it; the Threat it adds sizes the next one.</p>';
+      + row(`${FACTIONS[f].short} war band`, num(band))
+      + delta('Mustered against our rise', massed - band)
+      + delta(`${whose(FACTIONS[f].short)} mood`, moody - massed, moody > massed)
+      + delta(atk.grudge ? 'Vengeance, and the road' : 'What the road made of it', atk.strength - moody)
+      + row('Set out with', num(atk.strength))
+      + '<p>What it brings was settled when it set out. Defense raised now meets it; what we raise is what the next one musters against.</p>';
   }
 
   function threatTip(s) {
@@ -151,7 +165,7 @@ export function createTips(game) {
     const ri = E.rankIndex(t);
     const next = RANKS[ri + 1];
     return head('threat', 'Threat index', RANKS[ri].title)
-      + `<p>Power + Defense + Experts × ${BALANCE.threatExpertWeight}. Raid strength scales with it.</p>`
+      + '<p>What the wasteland sees when it looks at us: our Power, our Defense, and our Experts, who count for more than any gun. Every clan musters against it.</p>'
       + row('Power', num(f.power)) + row('Defense', num(f.defense)) + row(`Experts × ${BALANCE.threatExpertWeight}`, num(f.experts * BALANCE.threatExpertWeight))
       + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) + row('Needs', '+' + num(next.at - t)) : '');
   }
