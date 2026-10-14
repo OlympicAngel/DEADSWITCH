@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.22.0';
+export const VERSION = '1.23.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -11,9 +11,9 @@ export const RESOURCES = {
 export const RESOURCE_KEYS = ['money', 'energy', 'pop'];
 
 export const FACTORS = {
-  power: { name: 'AI Power', desc: 'Attack strength in operations.' },
-  defense: { name: 'AI Defense', desc: 'Strength against raids.' },
-  experts: { name: 'AI Experts', desc: 'Human specialists. Each adds +0.5% to all production.' },
+  power: { name: 'Power', desc: 'Attack strength in operations.' },
+  defense: { name: 'Defense', desc: 'Strength against raids.' },
+  experts: { name: 'Experts', desc: 'Specialists who think for me. Each adds +0.5% to all production.' },
 };
 export const FACTOR_KEYS = ['power', 'defense', 'experts'];
 
@@ -146,7 +146,7 @@ export const BUILDINGS = [
   // --- Unlockers (open the arsenal; every level after the first also discounts that shop tab) ---
   {
     id: 'barracks', name: 'Barracks', kind: 'unlocker', req: { core: 1 }, shop: 'staff',
-    desc: 'Trains the humans who fight for you. Unlocks Military Staff.',
+    desc: 'Trains the humans who fight for you. Unlocks Troops.',
     cost: { money: 80, pop: 5 }, growth: 1.5, time: 6, timeGrowth: 1.6,
   },
   {
@@ -174,7 +174,7 @@ export const BUILDINGS = [
 export const SHOP_TABS = [
   { id: 'weapons', name: 'Weapons', unlocker: 'armory' },
   { id: 'defenses', name: 'Defenses', unlocker: 'works' },
-  { id: 'staff', name: 'Military Staff', unlocker: 'barracks' },
+  { id: 'staff', name: 'Troops', unlocker: 'barracks' },
   { id: 'experts', name: 'Experts', unlocker: 'thinktank' },
   { id: 'tech', name: 'Tech', unlocker: 'lab' },
 ];

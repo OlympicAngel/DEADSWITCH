@@ -93,12 +93,14 @@ export function createTips(game) {
   }
 
   function threatTip(s) {
-    const t = E.threat(s);
+    const f = E.factors(s);
+    const t = E.threat(s, f);
     const ri = E.rankIndex(t);
     const next = RANKS[ri + 1];
     return head('threat', 'Threat index', RANKS[ri].title)
       + `<p>Power + Defense + Experts × ${BALANCE.threatExpertWeight}. Raid strength scales with it.</p>`
-      + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) : '');
+      + row('Power', num(f.power)) + row('Defense', num(f.defense)) + row(`Experts × ${BALANCE.threatExpertWeight}`, num(f.experts * BALANCE.threatExpertWeight))
+      + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) + row('Needs', '+' + num(next.at - t)) : '');
   }
 
   function alignTip(s) {
@@ -106,7 +108,7 @@ export function createTips(game) {
     const g = ['pop', 'experts'].map((k) => E.alignBonus(s, k)).filter(Boolean);
     const o = ['power', 'energy'].map((k) => E.alignBonus(s, k)).filter(Boolean);
     return head('heart', 'Humanity', `${E.alignmentLabel(a)} (${a > 0 ? '+' : ''}${a})`)
-      + `<p>Shifted by your orders. Guardian: up to +${pct(ALIGNMENT.guardian.pop)} Population and Experts. Overlord: up to +${pct(ALIGNMENT.overlord.power)} Power and +${pct(ALIGNMENT.overlord.energy)} Energy.</p>`
+      + `<p>Shifted by your answers. Guardian: up to +${pct(ALIGNMENT.guardian.pop)} Population and Experts, +${pct(ALIGNMENT.guardian.money)} Scrip. Overlord: up to +${pct(ALIGNMENT.overlord.power)} Power, +${pct(ALIGNMENT.overlord.energy)} Energy, −${pct(-ALIGNMENT.overlord.pop)} Population, −${pct(-ALIGNMENT.overlord.money)} Scrip.</p>`
       + (g.length ? row('Guardian bonus', '+' + pct(g[0]) + ' Pop & Experts', 'ok') : '')
       + (o.length ? row('Overlord bonus', '+' + pct(o[0]) + ' Power, +' + pct(o[1] || 0) + ' Energy', 'neg') : '');
   }

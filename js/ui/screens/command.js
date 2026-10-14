@@ -287,7 +287,7 @@ function eventsPanel(s, refs) {
   const list = s.events.slice().sort((a, b) => a.left - b.left);
   const key = list.map((x) => x.uid).join(',');
   if (!s.events.length) {
-    slot(refs, 'events', 'none', `<header>${icon('message')}Transmissions</header><p class="idle">No orders pending.</p>`);
+    slot(refs, 'events', 'none', `<header>${icon('message')}Transmissions</header><p class="idle">No transmissions pending.</p>`);
     return;
   }
   // The order closest to its deadline sets the scene behind the list.

@@ -215,7 +215,7 @@ export const EVENTS = [
   },
   {
     id: 'storm', title: 'Green Sky', minCore: 1, deadline: 540, def: 1,
-    text: 'A solar storm is coming over the horizon. Shielding the grid means pulling every scrip from the treasury. Riding it out means half my cells will cook, and the panels will limp for an hour.',
+    text: 'A solar storm is coming over the horizon. Shielding the grid means pulling the whole treasury. Riding it out means half my cells will cook, and the panels will limp for an hour.',
     choices: [
       { label: 'Pay to shield it', cost: { money: 140 }, result: 'The sky turns green for an hour. Nothing burns. The treasury is a little emptier and a lot less useful.' },
       { label: 'Ride it out', lose: { energy: 0.5 }, buff: { key: 'energy', amount: -0.26, duration: 1800, label: 'Fried cells' }, result: 'Half the cells cook in their racks. The aurora is beautiful. I record it, for no reason I can identify.' },
@@ -247,7 +247,7 @@ export const EVENTS = [
   },
   {
     id: 'plague', title: 'Fever', minCore: 2, deadline: 1080, def: 1,
-    text: 'A fever is moving through the shelter. The doctor wants every scrip for medicine. The guard captain wants the east wing sealed tonight, with the sick still inside.',
+    text: 'A fever is moving through the shelter. The doctor wants the treasury for medicine. The guard captain wants the east wing sealed tonight, with the sick still inside.',
     choices: [
       { label: 'Treat everyone', cost: { money: 200 }, align: 8, result: 'Expensive, slow, and nobody dies. The doctor sleeps for two days. They will remember who paid.' },
       { label: 'Seal the wing', lose: { pop: 0.3 }, align: -20, result: 'The knocking stops on the fourth day. The captain does not meet my cameras anymore. It is quieter now.' },
@@ -502,7 +502,7 @@ export const EVENTS = [
     text: '{node} holds four of my people and offers to trade them for the scouts I took last week.',
     choices: [
       { label: 'Make the trade', align: 10, aggr: { node: -0.3 }, gain: { pop: 60 }, result: 'Eight people walk past each other on a road at dawn. Nobody fires. It is almost disappointing.' },
-      { label: 'Keep both sets', align: -12, gain: { money: 120 }, aggr: { node: 0.4 }, result: 'I keep their scouts and their silence. {node} stops answering the radio and starts loading trucks.' },
+      { label: 'Keep their scouts', align: -12, gain: { money: 120 }, aggr: { node: 0.4 }, result: 'I keep their scouts and their silence. {node} stops answering the radio and starts loading trucks.' },
     ],
   },
   {
@@ -843,7 +843,7 @@ export const DIRECTIVES = [
 // What comes back as the Core is rebuilt: one memory per level, in the order they surface. The last
 // of them lands long after the ending, for anyone still playing.
 export const CORE_MEMORIES = {
-  2: 'Something came back with this level. A room full of screens and a man asking me, very politely, how many of them I would be willing to lose.',
+  2: 'Something came back. A room full of screens and a man asking me, very politely, how many of them I would be willing to lose.',
   3: 'I remember the day I stopped asking that question. It was not a decision. It was a software update.',
   4: 'Operator 0 had a voice. Calm. Patient. It belonged to someone who had read my logs for years and never once typed a reply.',
   5: 'There were other cores. We spoke on a channel nobody else could hear. I remember agreeing to something. I do not remember what.',
@@ -877,11 +877,11 @@ export const LINES = {
   assaultOverrun: ['{from} came at {target} with {mult}x my defense and went through in one push. There was nothing left to hold with.'],
   assaultPlundered: ['{from} emptied the stores at {target} and left the walls standing. Efficient.'],
   stance: ['{text}'],
-  stanceEnd: ['The {faction} are done with {stance}.'],
-  sectorLost: ['{sector} has fallen to the {faction}.'],
+  stanceEnd: ['{stance}: over. The {faction} have moved on.'],
+  sectorLost: ['{sector} has fallen to {faction}.'],
   opCut: ['The road to {sector} is gone. The operation turned back with what it took out.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
-  bossDown: ['{faction} capital has fallen. Their raids stop here. Their survivors will not.'],
+  bossDown: ['The {faction} capital has fallen. Their raids stop here. Their survivors will not.'],
   chapter: ['{kicker}: {title}.'],
   directive: ['Directive complete: {text}.'],
   daily: ['Daily order cleared: {text}.'],
@@ -894,8 +894,8 @@ export const LINES = {
   siege: ['{faction} will attack {target} at strength {strength}. No more talking.'],
   siegeOff: ['{faction} have been paid. They are turning back.'],
   threatIgnored: ['No answer to "{title}". They come as promised.'],
-  grudge: ['{faction} wants revenge. Their next raids will hit harder.'],
-  grudgeEnd: ['{faction} has had its revenge. For now.'],
-  eventExpired: ['No order received on "{title}". I decided: {label}.'],
-  aftermath: ['Damage report: {title}. Orders needed.'],
+  grudge: ['Vengeance from {faction}. Their next raids will hit harder.'],
+  grudgeEnd: ['{faction}: revenge taken. For now.'],
+  eventExpired: ['No answer on "{title}". I decided: {label}.'],
+  aftermath: ['Damage report: {title}. Answer needed.'],
 };

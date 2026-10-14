@@ -55,8 +55,10 @@ export function time(seconds) {
   return Math.floor(h / 24) + 'd' + (h % 24 ? ' ' + (h % 24) + 'h' : '');
 }
 
+// One decimal under 10%, where rounding to whole points lies most: half a percent is not one.
 export function pct(x) {
-  return Math.round(x * 100) + '%';
+  const v = x * 100;
+  return (Math.abs(v) < 10 ? Math.round(v * 10) / 10 : Math.round(v)) + '%';
 }
 
 export function esc(str) {

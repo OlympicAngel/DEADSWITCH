@@ -124,7 +124,7 @@ export function advanceClans(s, dt) {
       if (!c.stances.includes(id) && announce) say(s, 'stance', { text: STANCE_BY_ID[id].line.replace('{faction}', fac.short) }, 'bad');
     }
     for (const id of c.stances) {
-      if (!now.includes(id) && announce) say(s, 'stanceEnd', { faction: fac.short, stance: STANCE_BY_ID[id].name.toLowerCase() });
+      if (!now.includes(id) && announce) say(s, 'stanceEnd', { faction: fac.short, stance: STANCE_BY_ID[id].name });
     }
     c.stances = now;
     syncBuffs(s, f, now);

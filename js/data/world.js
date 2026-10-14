@@ -24,7 +24,7 @@ export const FACTIONS = {
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
-    desc: 'Other fragments of the war mind, awake and hungry. They know exactly what you are.',
+    desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
     raidName: 'Rival Core incursion', raidFloor: 60000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
@@ -201,7 +201,7 @@ export const SECTORS = [
   {
     id: 'pilgrim', name: 'Pilgrim Road', faction: 'cult', chapter: 3, x: -783, y: 281,
     links: ['citadel', 'reliquary', 'choir', 'ossuary'], defense: 13000, attack: 9750, bonus: { pop: 0.08 },
-    lore: 'The pilgrims walk toward a signal. I traced it. It is broadcast from inside my own core.',
+    lore: 'The pilgrims walk towards a signal. It carries my handshake. It is not coming from me.',
   },
   {
     id: 'candle', name: 'Candle Fields', faction: 'cult', chapter: 3, x: -534, y: 240,
@@ -300,9 +300,10 @@ export const SECTORS = [
     core: 10,
   },
   {
-    id: 'sewerage', name: 'Sewerage Hideout', faction: 'scav', chapter: 2, x: -753, y: -620,
+    id: 'sewerage', name: 'Sewer Hideout', faction: 'scav', chapter: 2, x: -753, y: -620,
     links: ['throne'], defense: 600, attack: 90,
     bonus: { money: 0.04 },
+    lore: 'A dry trunk sewer the Clans use as a back door to the Throne. The walls are scratched with tallies. They were counting my patrols.',
   },
   {
     id: 'atrium', name: 'The Atrium', faction: 'halcyon', chapter: 4, x: 1027, y: -593,
@@ -537,10 +538,10 @@ export const CLANS = {
   //   plunder  a breach takes stockpiles instead of ground    buff    a standing effect on me
   stances: [
     {
-      id: 'doom', name: 'Doom.', icon: 'power', when: { fury: [0.9], order: [0, 0.4], fear: [0.7] },
-      desc: 'Total chaos. population flees, army marches.', weight: 2, strength: 4, tempo: 0.5, attrition: 10,
+      id: 'doom', name: 'Doom', icon: 'power', when: { fury: [0.9], order: [0, 0.4], fear: [0.7] },
+      desc: 'Their people flee. Their army marches.', weight: 2, strength: 4, tempo: 0.5, attrition: 10,
       buff: { key: 'pop', amount: 0.3 }, support: 0,
-      line: '{faction} army executes DOOMSDAY plan! their population flees, hold this one and they might be gone.',
+      line: 'The {faction} have stopped planning to survive. Their people are leaving. Their army is not.',
     },
     {
       id: 'retaliate', name: 'Retaliation', icon: 'power', when: { fury: [0.62], order: [0.3] },
@@ -570,7 +571,7 @@ export const CLANS = {
     {
       id: 'plunder', name: 'Plunder', icon: 'money', when: { greed: [0.72], fury: [0, 0.55] },
       desc: 'A breach takes stockpiles instead of ground.', weight: 1.3, strength: 0.85, plunder: true, buff: { key: 'money', amount: -0.05 },
-      line: 'The {faction} are here for the stores, not the walls. Cheaper, in a sense..?',
+      line: 'The {faction} are here for the stores, not the walls. Cheaper, for both of us.',
     },
     {
       id: 'conscript', name: 'Conscription', icon: 'militia', when: { fury: [0.45], order: [0.6] },

@@ -85,7 +85,7 @@ function bonusTotal(s, key) {
   return b.tech + b.sectors + b.alignment + b.effects;
 }
 
-/** Defense sitting in the Military Staff tab: it holds the wall only while nobody is out attacking. */
+/** Defense sitting in the Troops tab: it holds the wall only while nobody is out attacking. */
 export function troopDefense(s) {
   let d = 0;
   for (const item of ITEMS) {

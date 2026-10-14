@@ -555,7 +555,7 @@ export function createModals(dialog, game, onChange) {
         <div class="choices">${choices}</div>
         <p class="default-note">${ev.def === null
     ? `${icon('alert')}They attack when this runs out.`
-    : `${icon('alert')}No order in time and I choose: <b>${esc(E.fillText(inst, ev.choices[ev.def].label))}</b>`}</p>
+    : `${icon('alert')}No answer in time and I choose: <b>${esc(E.fillText(inst, ev.choices[ev.def].label))}</b>`}</p>
         ${ev.urgent ? '' : `<button class="btn ghost wide" data-close>${icon(ev.def === null ? 'close' : 'hourglass')}${ev.def === null ? 'Ignore' : 'Decide later'}</button>`}
       </div>`, { cls: 'event-modal' + (ev.aftermath ? ' crisis' : '') + (ev.urgent ? ' urgent locked' : '') });
     if (ev.aftermath || ev.urgent) {
@@ -677,7 +677,7 @@ export function createModals(dialog, game, onChange) {
   function showExpired(m, then) {
     open(`
       <div class="event crisis">
-        <span class="kicker">${icon('alert')}No order received</span>
+        <span class="kicker">${icon('alert')}No answer received</span>
         <h2>${esc(m.title)}</h2>
         <p class="ev-text">You were silent, so I decided: <b>${esc(m.label)}</b>.</p>
         <p class="ev-text result">${esc(m.result)}</p>
@@ -703,7 +703,7 @@ export function createModals(dialog, game, onChange) {
       ['map', 'Sectors held', `${s.sectors.length - 1} / ${SECTORS.length - 1}`],
       ['power', 'Operations won / lost', `${st.opsWon} / ${st.opsLost}`],
       ['defense', 'Raids repelled / suffered', `${st.raidsWon} / ${st.raidsLost}`],
-      ['message', 'Orders given / missed', `${st.events - (st.expired || 0)} / ${st.expired || 0}`],
+      ['message', 'Transmissions answered / missed', `${st.events - (st.expired || 0)} / ${st.expired || 0}`],
       ['heart', 'Alignment', `${E.alignmentLabel(s.align)} (${s.align > 0 ? '+' : ''}${Math.round(s.align)})`],
     ].map(([ic, k, v]) => `<div class="r"><span>${icon(ic)}${k}</span><b>${v}</b></div>`).join('');
     return `

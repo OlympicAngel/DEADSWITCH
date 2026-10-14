@@ -452,7 +452,7 @@ function briefing(s, sec) {
   if (st === 'owned') {
     const br = E.breaches(s, sec.id);
     return `${head}${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
-      ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}, or on the first breach by an attack ${NODES.overrunRatio} times your AI Defense."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
+      ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}, or on the first breach by an attack ${NODES.overrunRatio} times your Defense."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
