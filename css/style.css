@@ -2409,6 +2409,16 @@ button:focus-visible,
   stroke: none;
 }
 
+.node .odds {
+  fill: currentColor;
+  font: 700 22px var(--font-num);
+  text-anchor: middle;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #0a0d10;
+  stroke-width: 6px;
+}
+
 .node .hex {
   fill: #10171c;
   stroke: var(--fc);

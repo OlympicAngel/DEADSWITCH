@@ -6,7 +6,7 @@ import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
 import { costChips, setChips, tags, bonusText, bonusChips, chanceClass, clock } from '../common.js';
-import { put, setCls, setW } from '../dom.js';
+import { put, setAttr, setCls, setW } from '../dom.js';
 
 const P = (x) => ({ x: x.x, y: x.y });
 const REVEAL_DEPTH = 2; // rings of sectors shown beyond held territory
@@ -317,6 +317,7 @@ function renderTheater(s, ui) {
         <polygon class="hex" points="${hex(r)}"/>
         <use href="#i-${ic}" x="${-r * 0.5}" y="${-r * 0.5}" width="${r}" height="${r}" class="node-ico"/>
         <text class="name" dy="${r + 34}">${esc(label)}</text>
+        ${st === 'target' ? `<text class="odds" dy="${r + 60}" data-odds-for="${x.id}"></text>` : ''}
         ${known && st !== 'owned' ? defLabel(s, x, r) + stancePin(s, x, r) : ''}
         ${st === 'owned' && E.breaches(s, x.id) ? `<text class="def breach" dy="${-r - 10}">${E.breaches(s, x.id)}/${NODES.breachesToFall}</text>` : ''}
       </g>`;
@@ -491,6 +492,7 @@ export function bindMapScreen(panel) {
   bindPan(panel);
   return {
     factors: [...panel.querySelectorAll('[data-factor]')],
+    nodeOdds: [...panel.querySelectorAll('[data-odds-for]')],
     power: q('[data-power]'), loss: q('[data-loss]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
     chips: [...panel.querySelectorAll('.sheet .chip')], btn: q('.launch'), label: q('.launch [data-l]'), opbar: q('[data-opbar]'),
     optimer: q('[data-optimer]'), asltimer: q('[data-asltimer]'), opbanner: q('[data-opbanner]'), opbannerbar: q('[data-opbannerbar]'),
@@ -501,6 +503,12 @@ export function updateMapScreen(s, ui, refs) {
   const f = E.factors(s);
   for (const el of refs.factors) {
     put(el, num(f[el.dataset.factor]));
+  }
+  // The odds under every sector that can be attacked, so targets compare at a glance.
+  for (const t of refs.nodeOdds) {
+    const p = E.opChance(s, E.sectorById(t.dataset.oddsFor));
+    put(t, pct(p));
+    setAttr(t, 'class', 'odds chance-' + chanceClass(p));
   }
   if (s.op) {
     const left = clock(s.op.remaining);
