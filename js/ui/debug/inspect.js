@@ -35,7 +35,7 @@ function sector(s, id) {
       ['live defense', () => E.sectorDefense(s, sec)],
       ['strength ×', () => n2(E.nodeStrength(s, id))],
       ['push ×', () => `${n2(E.nodePush(s, id))} of ${NODES.pushMax} · resets on a breach or an order`],
-      ['stood down for', () => { const n = s.nodes[id]; const left = n ? NODES.reattackGap - (s.playTime - (n.last || 0)) : 0; return left > 0 ? secs(left) : 'ready to attack'; }],
+      ['stood down for', () => { const n = s.nodes[id]; const left = n && n.until ? n.until - s.playTime : 0; return left > 0 ? secs(left) : 'ready to attack'; }],
       ['clan support', () => `${n2(E.flank(s, sec).bonus)} (${E.flank(s, sec).held}/${E.flank(s, sec).approaches} taken)`],
       ['aggression', () => `${n2(E.aggression(s, id))} (stored ${n2(node().a || 0)})`],
       ['looks taken', () => node().seen || 0],

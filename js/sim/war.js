@@ -403,10 +403,24 @@ export function activeRaiders(s) {
 
 // Where an attack comes from: a sector of that faction, the frontier first so it is somewhere the
 // player can see, and the keenest of those. A faction with no ground left attacks from nowhere.
-export function attackSource(s, faction) {
-  const own = clanSectors(s, faction).filter((x) => !s.sectors.includes(x.id));
+/** True once a sector's last attack has stood down: NODES.cooldownShare of the time it took to reach us. */
+export const rested = (s, id) => !(s.nodes[id] && s.nodes[id].until > s.playTime);
+
+/** Puts a sector that just attacked on its cooldown. */
+function standDown(s, id, t) {
+  if (id && SECTOR_BY_ID[id]) node(s, id).until = s.playTime + t * NODES.cooldownShare;
+}
+
+/** Where a clan could march from: its frontier first, then anything it holds. A fresh attack only
+ *  comes out of a sector that has stood down (`any` lets one already on the road re-route anywhere). */
+export function sourcePool(s, faction, any = false) {
+  const own = clanSectors(s, faction).filter((x) => !s.sectors.includes(x.id) && (any || rested(s, x.id)));
   const front = own.filter((x) => x.links.some((l) => s.sectors.includes(l)));
-  const pool = front.length ? front : own;
+  return front.length ? front : own;
+}
+
+export function attackSource(s, faction, any = false) {
+  const pool = sourcePool(s, faction, any);
   if (!pool.length) return null;
   const w = (x) => 1 + aggression(s, x.id) - AGGR.min;
   let r = rand(s, 'source') * pool.reduce((a, x) => a + w(x), 0);
@@ -501,8 +515,10 @@ function settleGrudge(s, raid, won) {
 
 // `uid` ties the siege to the order that announced it, so paying that order calls this attack off.
 export function startSiege(s, faction, strength, delay, uid = 0) {
-  const from = attackSource(s, faction);
+  // An order already announced it, so it comes whatever is standing down; its sector then stands down too.
+  const from = attackSource(s, faction, true);
   const t = Math.max(0, delay);
+  standDown(s, from, t);
   const sg = { faction, strength, remaining: t, total: Math.max(t, 1), siege: true, uid, from, target: raidTarget(s, from) };
   s.sieges.push(sg);
   return sg;
@@ -517,7 +533,7 @@ export function advanceSieges(s, dt, offline) {
     }
     if (s.sectors.includes(sg.from)) {
       // The ground it marched out of is ours now: it comes from wherever they still hold.
-      sg.from = attackSource(s, sg.faction);
+      sg.from = attackSource(s, sg.faction, true);
       sg.target = raidTarget(s, sg.from);
     } else if (!s.sectors.includes(sg.target)) {
       sg.target = raidTarget(s, sg.from);
@@ -582,8 +598,16 @@ function spawnRaid(s, delay) {
     s.raidTimer = RAIDS.minWarning;
     return;
   }
-  // A faction with a grudge takes the next raid, active chapter or not, and hits harder.
-  const faction = grudge ? grudge.faction : pick(s, raiders, 'raid');
+  // A faction with a grudge takes the next raid, active chapter or not, and hits harder. A clan whose
+  // every sector is still standing down from its last attack has nothing to send: one that has goes,
+  // and if none has, nothing comes for now and the next look is a minute away.
+  const ready = raiders.filter((f) => sourcePool(s, f).length);
+  const faction = grudge && sourcePool(s, grudge.faction).length ? grudge.faction : ready.length ? pick(s, ready, 'raid') : null;
+  if (!faction) {
+    s.raid = null;
+    s.raidTimer = RAIDS.minWarning;
+    return;
+  }
   // A grudge from a clan whose chapter is not open yet brings no more than the clans that are.
   const own = raiders.includes(faction) ? FACTIONS[faction].raidBase : Math.min(...raiders.map((f) => FACTIONS[f].raidBase), FACTIONS[faction].raidBase);
   const strength = Math.ceil((own + raidThreat(s) * RAIDS.threatShare) * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid')
@@ -591,6 +615,7 @@ function spawnRaid(s, delay) {
   // Raids march out of whatever that faction still holds, at the first of ours on the way in.
   const from = attackSource(s, faction);
   const t = warning(s, delay, from);
+  standDown(s, from, t);
   s.raid = { faction, strength, remaining: t, total: t, grudge: !!grudge, from, target: raidTarget(s, from) };
   say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, target: SECTOR_BY_ID[s.raid.target].name, strength, time: fmtShort(t) }, 'bad');
 }
@@ -644,7 +669,7 @@ export function advanceRaids(s, dt, offline) {
   // Ground they were marching on can fall out from under them; they keep coming, further in. And if
   // we took the ground they marched out of, they come from what they still hold.
   if (s.sectors.includes(s.raid.from)) {
-    s.raid.from = attackSource(s, s.raid.faction);
+    s.raid.from = attackSource(s, s.raid.faction, true);
     s.raid.target = raidTarget(s, s.raid.from);
   } else if (!s.sectors.includes(s.raid.target)) {
     s.raid.target = raidTarget(s, s.raid.from);
@@ -743,10 +768,9 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
     // An open border out-weighs a sealed one many times over, so on its own a sealed clan can watch
     // for hours and never come. Every lockedEvery-th assault is reserved for one that borders us.
     s.assaultSeq = (s.assaultSeq || 0) + 1;
-    // Whoever attacked last stands down for a while: one angry neighbour must not hold the whole
-    // front while every other border waits its turn.
-    const rested = all.filter((b) => s.playTime - ((s.nodes[b.from] && s.nodes[b.from].last) || -Infinity) >= NODES.reattackGap);
-    const ready = rested.length ? rested : all;
+    // A sector that attacked stands down until NODES.cooldownShare of the time its attack took to
+    // reach us has passed. With every border standing down nothing comes this time: a quiet spell.
+    const ready = all.filter((b) => rested(s, b.from));
     const sealed = ready.filter((b) => b.locked);
     const theirTurn = sealed.length > 0 && s.assaultSeq % NODES.lockedEvery === 0;
     const pool = theirTurn ? sealed : ready;
@@ -769,14 +793,20 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
     // On their turn they come whatever the odds would have been; otherwise a thin front often rolls
     // nothing at all, which is what keeps the map quiet while the player is still small.
     if (!theirTurn && rand(s, 'assault') >= Math.min(1, total)) return null;
-    let r = rand(s, 'assault') * total;
-    p = pool.find((b) => (r -= w(b)) <= 0) || pool[pool.length - 1];
+    // The angriest clan must not hold the whole front: NODES.clanSpread of the pick is shared evenly
+    // between the clans on the border, the rest goes by weight as before.
+    const clans = [...new Set(pool.map((b) => factionOf(s, b.from)))];
+    const per = (b) => pool.filter((x) => factionOf(s, x.from) === factionOf(s, b.from)).length;
+    const mix = (b) => (1 - NODES.clanSpread) * (w(b) / total) + NODES.clanSpread / (clans.length * per(b));
+    let r = rand(s, 'assault');
+    p = pool.find((b) => (r -= mix(b)) <= 0) || pool[pool.length - 1];
   }
   const from = SECTOR_BY_ID[p.from];
   const locked = !sectorOpen(s, from);
   const strength = force || Math.ceil(assaultStrength(s, p.from) * range(s, NODES.spreadMin, NODES.spreadMax, 'assault'));
   const t = delay === null ? warning(s, range(s, NODES.warningMin, NODES.warningMax, 'assault'), p.from) : delay;
   node(s, p.from).last = s.playTime; // they have had their turn
+  standDown(s, p.from, t);
   s.stats.assaults = (s.stats.assaults || 0) + 1;
   if (locked) s.stats.sealedAssaults = (s.stats.sealedAssaults || 0) + 1;
   s.assault = { faction: factionOf(s, p.from), strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
@@ -937,7 +967,7 @@ function resolveAttack(s, raid, offline) {
   takeLosses(s, report, report.win ? RAIDS.winLoss : RAIDS.unitLoss, defense, raid.strength);
   report.theirLoss = Math.min(raid.strength, Math.round(raid.strength * (report.win ? RAIDS.enemyLoss.win : RAIDS.enemyLoss.loss) * prof.attrition));
   if (raid.assault) {
-    shiftStrength(s, raid.from, -(report.win ? NODES.defendWinCut : NODES.breachCut) * prof.attrition);
+    shiftStrength(s, raid.from, -(report.win ? NODES.defendWinCut : NODES.breachCut) * Math.min(prof.attrition, NODES.attritionCap));
     // Failing against the same wall makes them throw more at it next time, not less.
     if (report.win) {
       shiftPush(s, raid.from, NODES.pushPerLoss);

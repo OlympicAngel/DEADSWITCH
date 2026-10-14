@@ -414,13 +414,14 @@ export const TUTORIAL = {
 };
 
 export const NODES = {
-  strengthMin: 0.8, // nothing is ever ground below this share of its base defense: the spiral costs them troops, not walls
+  strengthMin: 0.9, // nothing is ever ground below this share of its base defense: the spiral costs them troops, not walls
   strengthMax: 3, // hard ceiling, passive growth included
   growthPerHour: 0.03,
   opLossGain: 0.16, // added when your operation against it fails (morale), before its own casualties
-  opDefenderCut: 0.06, // removed at the same time: what repelling you cost the defenders
-  defendWinCut: 0.05, // removed when its assault on you is held
-  breachCut: 0.02, // removed even when its assault breaks through
+  opDefenderCut: 0.04, // removed at the same time: what repelling you cost the defenders
+  defendWinCut: 0.03, // removed when its assault on you is held
+  breachCut: 0.01, // removed even when its assault breaks through
+  attritionCap: 2.5, // a clan that bleeds (its attrition stance) loses strength faster, but never more than this many times over
   plunderShare: 0.2, // a plundering clan takes this much of what a lost raid would have taken
   takenMax: 2, // a sector they take is held as hard as they took it, up to this x its base defense
   // Ground a clan takes that was never theirs becomes theirs, and they rebuild it to their own
@@ -480,7 +481,8 @@ export const NODES = {
   pushMax: 1.5,
   // ...and a sector that just attacked stands down for a while, so the same one cannot hold the
   // whole front hostage while the rest of the map watches.
-  reattackGap: 900,
+  cooldownShare: 1.15, // a sector that attacked can be picked again once this share of its attack's travel time has passed
+  clanSpread: 0.15, // share of each assault pick spread evenly over the clans on the border, so the angriest does not hold it alone
   assaultFloorMin: 0.1, // ...and a sector raises that share of it in proportion to its own attack stat, so
   // the floor keeps a clan in the war without flattening the difference between its walls and its barracks
   spreadMin: 0.8,

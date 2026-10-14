@@ -424,7 +424,7 @@ function play(seed) {
   const mark = (key, t) => {
     if (marks[key] === undefined) marks[key] = t;
   };
-  const tally = { dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
+  const tally = { byClan: {}, dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
   const ignored = new Set(); // threats the bot decided to take on the chin, counted once each
 
   for (let t = 0; t < HOURS * 3600; t++) {
@@ -502,6 +502,7 @@ function play(seed) {
         if (m.win) tally.assaultsHeld++; else tally.assaultsBreached++;
       }
       if (m.kind === 'raid' && !m.assault && m.breaches) tally.raidBreaches++;
+      if (m.kind === 'raid') tally.byClan[m.faction] = (tally.byClan[m.faction] || 0) + 1;
       if (m.fell) tally.sectorsLost++;
       if (m.kind === 'op' && m.win) mark('op:' + m.sector, t);
       if (m.kind === 'ending') mark('ending', t);
@@ -559,6 +560,13 @@ const share = (w, l) => (w + l ? `${Math.round((100 * w) / (w + l))}% held` : '-
 }
 console.log(`  Operations won ${mean((r) => r.stats.opsWon).toFixed(1)}  lost ${mean((r) => r.stats.opsLost).toFixed(1)}`);
 console.log(`  Assaults held ${mean((r) => r.tally.assaultsHeld).toFixed(1)}  breached ${mean((r) => r.tally.assaultsBreached).toFixed(1)}  (${share(mean((r) => r.tally.assaultsHeld), mean((r) => r.tally.assaultsBreached))})  raids that cracked a wall ${mean((r) => r.tally.raidBreaches).toFixed(1)}  sectors lost ${mean((r) => r.tally.sectorsLost).toFixed(1)}`);
+{
+  // Who the attacks came from, as a share of all of them: one clan should not hold the whole war.
+  const by = {};
+  for (const r of runs) for (const [f, n] of Object.entries(r.tally.byClan)) by[f] = (by[f] || 0) + n;
+  const all = Object.values(by).reduce((a, b) => a + b, 0) || 1;
+  console.log(`  Attacks by clan ${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([f, n]) => `${f} ${Math.round((100 * n) / all)}%`).join('  ')}`);
+}
 console.log(`  Capture loot ${mean((r) => avg(r.tally.lootMin) || 0).toFixed(1)} min of Scrip income, held-attack salvage ${mean((r) => avg(r.tally.salvageMin) || 0).toFixed(1)} min`);
 console.log(`  Humanity from choices ${mean((r) => r.tally.align).toFixed(0)} over ${mean((r) => r.tally.picked).toFixed(0)} answers, ${mean((r) => r.tally.pricedOut).toFixed(0)} options unaffordable`);
 console.log('  levels ' + JSON.stringify(runs[0].levels));
