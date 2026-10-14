@@ -226,8 +226,8 @@ export function priceFactor(growth, n, k) {
   return BALANCE.priceMult * Math.pow(priceGrowth(growth, k), n) * Math.pow(n + 1, BALANCE.pricePower);
 }
 
-export function buildingCost(s, b) {
-  const n = level(s, b.id);
+/** The price of a building's next level, or of level `n` + 1 (a level waiting behind others). */
+export function buildingCost(s, b, n = level(s, b.id)) {
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
     out[k] = Math.ceil(v * econMult(b, k) * (BALANCE.buildingPriceMult[k] || 1)
@@ -323,8 +323,13 @@ export function buildingStatus(s, b) {
   if (s.build) {
     // Room behind the builder, and a level left for it once what is already queued has gone up. The
     // building under way can queue its own next level too: that is the commonest thing to line up.
+    // A build only joins the queue if the stores could pay for it now; it is paid when it starts.
     const ahead = queued(s, b.id) + (s.build.id === b.id ? 1 : 0);
-    if (s.queue.length < queueSlots(s) && level(s, b.id) + ahead < maxLevel(s, b)) return 'queue';
+    if (s.queue.length < queueSlots(s) && level(s, b.id) + ahead < maxLevel(s, b)) {
+      const price = buildingCost(s, b, level(s, b.id) + ahead);
+      if (exceedsCap(s, price).length) return 'storage';
+      return canAfford(s, price) ? 'queue' : 'poor';
+    }
     return s.build.id === b.id ? 'building' : 'busy';
   }
   const cost = buildingCost(s, b);
@@ -391,19 +396,19 @@ export function dequeue(s, i) {
   return true;
 }
 
-// The first waiting build the stores can pay for starts; one that can never go up (maxed, or its
-// requirement lost) leaves the queue. The rest wait their turn without holding the others up.
+// The builder takes the queue in order. A waiting build it cannot start the moment its turn comes
+// (the stores were raided, a store shrank, the Core's gate closed) leaves the queue rather than
+// sitting in it waiting for the money: the queue holds what was affordable, not what is wished for.
 function startQueued(s) {
-  for (let i = 0; i < s.queue.length && !s.build;) {
-    const b = BY_ID[s.queue[i]];
+  while (s.queue.length && !s.build) {
+    const id = s.queue.shift();
+    const b = BY_ID[id];
     const st = b ? buildingStatus(s, b) : 'gone';
     if (st === 'ready') {
-      s.queue.splice(i, 1);
-      startBuild(s, b.id);
-    } else if (st === 'maxed' || st === 'locked' || st === 'gone') {
-      s.queue.splice(i, 1);
-    } else {
-      i++;
+      startBuild(s, id);
+    } else if (b && st !== 'maxed' && st !== 'locked') {
+      say(s, 'queueDropped', { building: b.name }, 'bad');
+      s.fx.push({ kind: 'dropped', id });
     }
   }
 }

@@ -758,6 +758,8 @@ export function createUI(root, game) {
         toast(`${icon('fire')}<b>${esc(BUILDINGS.find((b) => b.id === fx.id).name)}</b> lost a level`, 'bad');
       } else if (fx.kind === 'event') {
         ui.unseen.add(fx.uid);
+      } else if (fx.kind === 'dropped') {
+        toast(`${icon('close')}<b>${esc(BUILDINGS.find((b) => b.id === fx.id).name)}</b> left the queue: not enough in the stores`, 'bad');
       } else if (fx.kind === 'unlocked') {
         cue(sfx.unlock);
       } else if (fx.kind === 'directive') {

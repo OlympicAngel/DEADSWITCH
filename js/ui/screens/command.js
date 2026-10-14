@@ -176,7 +176,7 @@ function raidPanel(s, refs) {
       <div class="vs-row them"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
     </div>
     <div class="inc-foot"><span class="hold" data-hold></span>
-      <button class="btn ghost tiny" data-act="rush" data-arm="0"><i data-rushfill></i><span data-rush></span></button>
+      <button class="btn ghost tiny" data-act="rush" data-arm="0" data-tip="text" data-tip-text="Tap, then hold: the attack is walked in while held and lands sooner. The % is how much stronger it arrives if held all the way in."><i data-rushfill></i><span data-rush></span></button>
       <button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
     <div class="timebar"><i data-tbar></i></div>`);
   const p = E.raidChance(s, raid);
@@ -193,7 +193,7 @@ function raidPanel(s, refs) {
       const after = E.raidChance(s, { ...raid, strength: price.strength });
       putHtml(rush, armed
         ? `${icon('alert')}Hold · ${pct(after)}`
-        : `${icon('clock')}Meet now <em>raid +${pct(price.strength / raid.strength - 1)}</em>`);
+        : `${icon('clock')}Meet early <em>+${pct(price.strength / raid.strength - 1)} strength</em>`);
       btn.classList.toggle('danger', armed);
       setW(el.querySelector('[data-rushfill]'), pct(price.held));
     }
