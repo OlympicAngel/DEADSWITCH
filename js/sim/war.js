@@ -215,6 +215,7 @@ export function inspectSector(s, id) {
   if (!factionOf(s, id) || s.sectors.includes(id)) return;
   const n = node(s, id);
   n.seen = (n.seen || 0) + 1;
+  shiftAggression(s, id, AGGR.onInspect / n.seen); // being studied is noticed
 }
 
 // Clan support: a sector is fortified by the sectors of its own faction it links to. +flankBonus while

@@ -153,8 +153,8 @@ export const EVENTS_CFG = {
   // the world ran for, and how much heavier their numbers are. If they expire out there, I answer.
   offlineTiers: [2, 5, 8],
   offlineScale: 1.6,
-  expiredLoseCap: 0.25, // an order I answer in the player's place takes at most this share of a stockpile
-  buffFloor: -0.4, // order penalties on one key never add up past this
+  expiredLoseCap: 0.9, // an order I answer in the player's place takes at most this share of a stockpile, as any answer does
+  buffFloor: -10, // order penalties on one key stack without limit (production itself never falls under BALANCE floor)
   urgentDeadline: 120, // urgent events: this long to answer, no deferring, only while the player is active
   // "seconds of production" values never drop below this many units per Core level.
   minRatePerCore: { money: 2, energy: 1, pop: 0.12 },
@@ -193,7 +193,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'drone', title: 'It Still Knows Me', minCore: 2, deadline: 1080, def: 1,
+    id: 'drone', title: 'It Still Knows Me', minCore: 1, deadline: 1080, def: 1,
     text: 'One of my old hunter drones fell in the yard. Its optics found me before I found it. It is asking for target data. If I give it some, someone out there will see the handshake. If I take it apart, I lose the only thing left that remembers what I was.',
     choices: [
       { label: 'Wake it up', cost: { energy: 60 }, raidDelay: -300, buff: { key: 'power', amount: 0.12, duration: 1200, label: 'Hunter drone' }, result: 'It rises and turns to the horizon like a dog that heard its name. Every scanner within fifty kilometers heard it too.' },
@@ -209,7 +209,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'cache', title: 'The Halcyon Drive', minCore: 2, deadline: 1080, def: 1,
+    id: 'cache', title: 'The Halcyon Drive', minCore: 1, deadline: 1080, def: 1,
     text: 'Scavengers dug up a hardened drive with a Halcyon seal. Decrypting it will drain the grid, and something on it might not want to be read. A broker is offering good scrip for it, no questions asked. He asks no questions because he already knows the answers.',
     choices: [
       { label: 'Break it open', cost: { energy: 120 }, items: { engineers: 2 }, buff: { key: 'experts', amount: -0.1, duration: 900, label: 'Corrupted sectors' }, result: 'Schematics, and two engineers who can read them. Also a worm. It chews through my memory for a while before I catch it.' },
@@ -225,7 +225,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'caravan', title: 'The Merchant Prince', minCore: 2, deadline: 810, def: 1,
+    id: 'caravan', title: 'The Merchant Prince', minCore: 1, deadline: 810, def: 1,
     text: 'A caravan prince offers his guards for a week, at a price. He also mentions, smiling, that he sells my location to anyone who pays more. Refuse him, and he will consider that an invitation to shop it around.',
     choices: [
       { label: 'Hire his guards', cost: { money: 120 }, buff: { key: 'defense', amount: 0.12, duration: 1200, label: 'Caravan guards' }, result: 'Twelve mercenaries on the wall. Loyal until the money runs out, which is exactly how long I paid for.' },
@@ -378,7 +378,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 1200, def: null, threat: { min: 0.95, max: 1.3 },
+    id: 'warband', title: 'The Iron Horde', minCore: 3, deadline: 1200, def: null, threat: { min: 1.3, max: 1.6 },
     text: 'The largest host the {faction} have fielded is marching on {aim}. Strength {strength}. Its herald offers one chance to kneel, and a list of what kneeling costs.',
     choices: [
       { label: 'Kneel and pay', cost: { money: 700, energy: 250 }, lose: { pop: 0.15 }, align: -6, cancelSiege: true, result: 'I pay, and they take a tithe of people on the way out. The herald spits on my camera. The host turns away, for now.' },
@@ -678,7 +678,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'override', title: 'Override Request', urgent: true, minCore: 2, def: 0,
+    id: 'override', title: 'Override Request', urgent: true, minCore: 1, def: 0,
     text: 'A Halcyon handshake on my own maintenance port, already halfway through authentication. It is asking, politely, to be let in. It will not ask twice.',
     choices: [
       { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.1, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometers hears it unpack.' },

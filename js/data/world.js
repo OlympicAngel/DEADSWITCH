@@ -379,7 +379,7 @@ export const RAIDS = {
   // random spread. The base is what a clan brings whatever you are: Defense has to be built past it.
   // The share is what it adds as you grow, and stays well under one, so Defense bought always gains
   // on the next raid: an enemy is outgrown by building, or waited out while its clan cools.
-  threatShare: 0.3,
+  threatShare: 0.45,
   defenseWeight: 1, // ...with Defense counted at this weight in it
   spreadMin: 0.8, // ...times a random spread
   spreadMax: 1.25,
@@ -405,7 +405,7 @@ export const RAIDS = {
 export const TUTORIAL = {
   target: 'rust',
   directive: 4, // index of "Capture Rust Market" in DIRECTIVES
-  defense: 1.5, // what it holds with while that directive stands: three militia (the directive before) take it at 94%
+  defense: 4, // what it holds with while that directive stands
   retakeCore: 2, // the Core level that brings them back for it
   retakeDelay: 150, // seconds of visible warning before the assault lands
   retakeMargin: 1.25, // x the overrun threshold, so the first breach takes it
@@ -452,8 +452,8 @@ export const NODES = {
   // An open clan never falls out of the war: on top of what its sector's own attack is worth, it
   // musters this share of your Threat, and its stance multiplies the lot. They do not get better
   // walls as you grow, they throw more people at you, so a chapter-one clan still comes at Core 6.
-  assaultThreatShare: 0.3,
-  assaultMult: 1.0, // one dial over every sector's authored attack, for tuning the war as a whole
+  assaultThreatShare: 0.35,
+  assaultMult: 1.2, // one dial over every sector's authored attack, for tuning the war as a whole
   // Meeting an attack early: the player holds the panel and the attack comes in while they hold.
   // The clock comes down evenly over rushHold seconds, sampled rushTicks times a second, but the
   // strength it gains does not: most of the bill is paid in the first second, so shaving a little
@@ -508,6 +508,7 @@ export const AGGR = {
   pressure: 0.75, // added as your Power catches up with its defense...
   pressureFrom: 0.7, // ...from this share of it, full once you match it
   onOp: { node: 0.5, clan: 0.2, near: 0.1 }, // launching an operation against it
+  onInspect: 0.1, // opening its briefing; each look after the first counts for less
   onFall: { node: 0.3, clan: 0.4, near: 0.25 }, // a sector of mine falling emboldens the front around it
 };
 
@@ -524,7 +525,7 @@ export const CLANS = {
   interceptShare: 0.3, // share of an order's clan-wide aggression that also lands as fury
   // Stances multiply together, and a clan deep in a bad mood can sit in four at once. The product is
   // held inside these bounds, so the worst day of a war is the worst single stance, not their product.
-  profileBounds: { weight: [0.1, 4], retake: [1, 6], strength: [0.5, 4], tempo: [0.5, 2], growth: [0, 3], support: [0, 2], raid: [0.5, 2], attrition: [0.2, 10] },
+  profileBounds: {}, // none: a clan in four bad moods at once is as bad as all four
   // What the war does to a clan. Applied to the faction that owns the sector involved.
   stir: {
     sectorTaken: { fury: 0.24, fear: 0.15, order: -0.06 }, // I took one of theirs

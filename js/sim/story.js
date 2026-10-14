@@ -77,9 +77,8 @@ export function choiceOutcome(s, inst, choice, expired = false) {
   // An order that came in while nobody was listening asks for more and pays more. An answer that
   // costs me Humanity is cheap by nature, so the one that buys it back is discounted and pays better.
   const big = inst.big ? EVENTS_CFG.offlineScale : 1;
-  // What I decide in the player's place never does more harm than the order said: no away premium
-  // on what is lost, and a stockpile loss held to EVENTS_CFG.expiredLoseCap.
-  const harm = expired ? 1 : big;
+  // What came in while nobody was listening hits as hard as it pays, answered or not.
+  const harm = big;
   const good = choice.align > 0;
   const lose = {};
   for (const [r, share] of Object.entries(choice.lose || {})) {
@@ -376,8 +375,8 @@ export function resolveEvent(s, uid, index, expired = false) {
   for (const id of out.levels) {
     loseLevel(s, id);
   }
-  // The same share the preview showed: the away premium on an answered order, none on an expired one.
-  const harm = inst.big && !expired ? EVENTS_CFG.offlineScale : 1;
+  // The same share the preview showed: the away premium on anything that came in while away.
+  const harm = inst.big ? EVENTS_CFG.offlineScale : 1;
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
     loseUnits(s, tab, share * harm);
   }
