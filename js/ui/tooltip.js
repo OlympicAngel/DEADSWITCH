@@ -37,6 +37,19 @@ export function createTips(game) {
     return out.join('');
   }
 
+  // Converters that make or use a resource, each with its switch, so a shortfall can be answered from
+  // wherever it is noticed rather than only from the Converters tab.
+  function convRows(s, r) {
+    const built = BUILDINGS.filter((b) => b.kind === 'converter' && E.level(s, b.id) > 0);
+    const sw = (b) => `<button class="tip-switch ${s.paused[b.id] ? 'off' : 'on'}" data-act="pause" data-id="${b.id}" aria-label="${b.name} power">${s.paused[b.id] ? 'OFF' : 'ON'}</button>`;
+    const line = (b) => `<div class="tip-row conv"><span>${icon(b.id)}${b.name}</span>${sw(b)}</div>`;
+    const make = built.filter((b) => b.produces[r]);
+    const use = built.filter((b) => b.consumes[r]);
+    const name = RESOURCES[r] ? RESOURCES[r].short : r;
+    return (make.length ? `<div class="tip-sec">Converters making ${name}</div>${make.map(line).join('')}` : '')
+      + (use.length ? `<div class="tip-sec">Converters using ${name}</div>${use.map(line).join('')}` : '');
+  }
+
   function resTip(s, r) {
     const c = E.caps(s)[r];
     const f = game.flows;
@@ -66,7 +79,8 @@ export function createTips(game) {
     return head(r, RESOURCES[r].name, Number.isFinite(c) ? `${num(s.res[r])} / ${num(c)}` : num(s.res[r]))
       + `<p>${RESOURCES[r].desc}</p>` + row('Net', full && net > 0 ? `${rate(0)} · full` : rate(net), net < 0 ? 'neg' : '') + eta
       + (lines.length ? `<div class="tip-sec">Sources</div>${lines.join('')}` : '')
-      + (mult !== 1 ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, r)}` : '');
+      + (mult !== 1 ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, r)}` : '')
+      + convRows(s, r);
   }
 
   function factorTip(s, k) {
@@ -95,7 +109,8 @@ export function createTips(game) {
     } else {
       status = row('Short by', num(amt - have), 'neg') + row('Ready in', 'never at this rate', 'neg');
     }
-    return head(r, RESOURCES[r].name) + `<p>${RESOURCES[r].desc}</p>` + row('Cost', num(amt)) + row('You have', num(have)) + status;
+    return head(r, RESOURCES[r].name) + `<p>${RESOURCES[r].desc}</p>` + row('Cost', num(amt)) + row('You have', num(have)) + status
+      + (have < amt ? convRows(s, r) : '');
   }
 
   // What an enemy is made of, told as what happened to it: each row is an amount it gained or lost,
@@ -241,6 +256,7 @@ export function createTips(game) {
 
   document.addEventListener('pointerover', (e) => {
     if (e.pointerType !== 'mouse') return;
+    if (e.target.closest('.tip')) return; // reaching into the tip keeps it open
     const el = e.target.closest('[data-tip]');
     if (el && el !== target) show(el);
     else if (!el && target) hide();
@@ -264,7 +280,18 @@ export function createTips(game) {
     labelTimer = setTimeout(() => label.classList.remove('on'), 1600);
   }
 
+  // A switch inside the tip acts on press, before the tip's twice-a-second refresh can replace it.
+  document.addEventListener('pointerdown', (e) => {
+    const sw = e.target.closest && e.target.closest('.tip [data-act="pause"]');
+    if (!sw) return;
+    e.preventDefault();
+    e.stopPropagation();
+    game.act.toggle(sw.dataset.id);
+    if (target) tip.innerHTML = content(target);
+  }, true);
+
   document.addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('.tip')) return; // a tap inside the tip is not a tap away from it
     const lbl = e.target.closest && e.target.closest('[data-label]');
     if (lbl && !e.target.closest('button, .topbar')) {
       e.stopPropagation();

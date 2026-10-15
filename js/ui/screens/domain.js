@@ -53,7 +53,25 @@ function visibleBuildings(s, kinds) {
 
 function kindList(s, tab) {
   const { open, next } = visibleBuildings(s, tab.kinds);
-  return open.map((b) => buildingCard(s, b)).join('') + (next ? lockedCard(next.id, next.name, next.req) : '');
+  return (tab.id === 'conversion' ? switchboard(s) : '')
+    + open.map((b) => buildingCard(s, b)).join('') + (next ? lockedCard(next.id, next.name, next.req) : '');
+}
+
+// Every converter in one list: what goes in and comes out, and whether it is running, switched off,
+// waiting to be built, or still locked, so the whole board reads at a glance and switches in one tap.
+function switchboard(s) {
+  const rows = BUILDINGS.filter((b) => b.kind === 'converter').map((b) => {
+    const lvl = E.level(s, b.id);
+    const open = E.meetsReq(s, b.req);
+    const flow = `${Object.keys(b.consumes).map((r) => icon(r)).join('')}<span class="sb-arrow">${icon('next')}</span>${Object.keys(b.produces).map((r) => icon(r)).join('')}`;
+    const state = !open ? `<span class="sb-state locked">${icon('lock')}${reqText(b.req)}</span>`
+      : !lvl ? `<button class="sb-state unbuilt" data-go="economy:conversion" data-focus-card="${b.id}">${icon('unlock')}Not built</button>`
+        : `<button class="tip-switch ${s.paused[b.id] ? 'off' : 'on'}" data-act="pause" data-id="${b.id}" aria-label="${b.name} power">${s.paused[b.id] ? 'OFF' : 'ON'}</button>`;
+    return `<div class="sb-row ${!open ? 'is-locked' : !lvl ? 'is-unbuilt' : s.paused[b.id] ? 'is-off' : 'is-on'}">
+      <span class="sb-name">${icon(b.id)}<b>${b.name}</b>${lvl ? `<small>Lv ${lvl}</small>` : ''}</span>
+      <span class="sb-flow">${flow}</span>${state}</div>`;
+  }).join('');
+  return `<section class="panel switchboard"><header>${icon('exchange')}Switchboard</header>${rows}</section>`;
 }
 
 // Locked entries link to whatever they wait on: tapping one jumps there and highlights it.

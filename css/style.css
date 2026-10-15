@@ -3177,6 +3177,32 @@ button:focus-visible,
 .tip.on {
   opacity: 1;
   transform: none;
+  pointer-events: auto; /* its converter switches take taps */
+}
+
+.tip-row.conv span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tip-switch {
+  min-width: 46px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .04);
+  font: 700 11px var(--font-hud);
+  letter-spacing: .08em;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tip-switch.on {
+  border-color: rgba(95, 211, 141, .6);
+  background: rgba(95, 211, 141, .14);
+  color: var(--ok);
 }
 
 .tip p {
@@ -5804,13 +5830,86 @@ dialog.report:has(.battle.def.loss) {
   color: var(--bad);
 }
 
-.card.switched-off .tile,
-.card.switched-off .nn {
+.card.switched-off .tile {
   filter: grayscale(.8) brightness(.65);
 }
 
 .card.switched-off .desc {
-  opacity: .5;
+  opacity: .7;
+}
+
+/* Conversion tab: every converter on one board. */
+.switchboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sb-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 4px 0;
+  border-top: 1px solid var(--line);
+}
+
+.sb-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sb-name b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 600 13px var(--font-hud);
+}
+
+.sb-name small {
+  color: var(--muted);
+  font: 11px var(--font-num);
+}
+
+.sb-flow {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sb-arrow {
+  color: var(--muted);
+}
+
+.sb-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 600 11px var(--font-hud);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.sb-state.unbuilt {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px dashed rgba(255, 176, 61, .5);
+  border-radius: 6px;
+  background: none;
+  color: var(--warn);
+  cursor: pointer;
+}
+
+.sb-state.locked {
+  color: var(--dim);
+}
+
+.sb-row.is-locked .sb-name,
+.sb-row.is-locked .sb-flow {
+  opacity: .45;
 }
 
 /* Floating alerts (incoming attacks we may not hold, pending orders) */
