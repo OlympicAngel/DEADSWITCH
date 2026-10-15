@@ -592,7 +592,8 @@ export function raidChance(s, raid = s.raid) {
 }
 
 // ---------- reinforcements: our own ground sends help to a sector under attack ----------
-// Each of our sectors next to the one under attack sends NODES.reinforceShare of its strength. They
+// Each of our sectors next to the one under attack sends help: it is NODES.reinforceShare thinner while
+// the help is away, and the target gains NODES.reinforceGain per sender while it stands. They
 // march as long as an operation there would take, hold until the attack is decided (or called off),
 // and march home again. The ground they leave is thinner from the moment they go until they are back.
 

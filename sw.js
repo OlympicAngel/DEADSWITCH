@@ -1,6 +1,6 @@
 // Service worker: makes the game load and play with no network, and fires the alerts the page left
 // behind if the browser ever wakes us. Deliberately self-contained (no imports, no build step).
-const CACHE = 'deadswitch-v1.35';
+const CACHE = 'deadswitch-v1.35.2';
 const FONTS = 'deadswitch-fonts-v1';
 // The shell is enough to boot. Every other file is whatever the page has loaded: the page hands its
 // list over once the worker is ready (js/main.js), and a new build re-fetches everything the last
@@ -52,6 +52,20 @@ self.addEventListener('activate', (e) => {
     .then(() => fireDue('activate')));
 });
 
+/** The game's own files: the network's copy when it answers within a few seconds, so an update shows
+ *  on the launch after it is deployed rather than the one after that; the stored copy otherwise. */
+async function networkFirst(e, req, cacheName) {
+  const cache = await caches.open(cacheName);
+  const live = fetch(req, { cache: 'no-cache' }).then(async (res) => {
+    if (res && res.ok) await cache.put(req, res.clone());
+    return res && res.ok ? res : Promise.reject(new Error('bad response'));
+  });
+  e.waitUntil(live.catch(() => {})); // the copy lands in the store even if the slow path answered first
+  const stored = () => cache.match(req);
+  const slow = new Promise((resolve) => setTimeout(resolve, 4000)).then(stored).then((r) => r || live);
+  return Promise.race([live, slow]).catch(async () => (await stored()) || new Response('', { status: 504 }));
+}
+
 /** Serve what we have, then quietly replace it, so the next launch has the newest build. */
 async function staleWhileRevalidate(e, req, cacheName) {
   const cache = await caches.open(cacheName);
@@ -80,7 +94,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   if (url.origin === location.origin) {
-    e.respondWith(staleWhileRevalidate(e, request, CACHE));
+    e.respondWith(networkFirst(e, request, CACHE));
     return;
   }
   if (/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) {

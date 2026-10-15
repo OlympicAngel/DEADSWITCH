@@ -53,13 +53,19 @@ export const hex = (r) => Array.from({ length: 6 }, (_, i) => {
 // An attack beam between two sectors: a glowing dashed line with pulses running along it. The strip is
 // rotated into place and its dashes and pulses only move by transform, so nothing repaints per frame.
 const BEAM_DASH = 46; // px of one dash plus gap: how far the dashes slide per cycle
-function beam(a, b, color) {
+function beam(a, b, color, cls = '') {
   const pa = px(a);
   const pb = px(b);
   const len = Math.hypot(pb.x - pa.x, pb.y - pa.y);
   const ang = (Math.atan2(pb.y - pa.y, pb.x - pa.x) * 180) / Math.PI;
+  // Help that has arrived and stands: a still line with arrowheads pointing from giver to taker.
+  if (cls === 'held') {
+    const heads = [0.38, 0.62].map((t) => `<polygon class="beam-head" points="${len * t - 7},-6 ${len * t + 5},0 ${len * t - 7},6"/>`).join('');
+    return `<div class="fx-beam held" style="left:${pa.x}px;top:${pa.y}px;width:${len}px;transform:rotate(${ang}deg);--fc:${color}">
+      <svg viewBox="0 -9 ${len} 18" style="width:${len}px" aria-hidden="true"><line x1="0" y1="0" x2="${len}" y2="0" class="beam-line"/>${heads}</svg></div>`;
+  }
   const dots = [0, 0.4, 0.8].map((d) => `<i style="animation-delay:${d}s"></i>`).join('');
-  return `<div class="fx-beam" style="left:${pa.x}px;top:${pa.y}px;width:${len}px;transform:rotate(${ang}deg);--fc:${color};--run:${len}px">
+  return `<div class="fx-beam ${cls}" style="left:${pa.x}px;top:${pa.y}px;width:${len}px;transform:rotate(${ang}deg);--fc:${color};--run:${len}px">
     <svg viewBox="${-BEAM_DASH} -9 ${len + BEAM_DASH} 18" style="width:${len + BEAM_DASH}px;margin-left:${-BEAM_DASH}px;--slide:${BEAM_DASH}px" aria-hidden="true">
       <line x1="${-BEAM_DASH}" y1="0" x2="${len}" y2="0" class="beam-glow"/>
       <line x1="${-BEAM_DASH}" y1="0" x2="${len}" y2="0" class="beam-line"/>
@@ -286,7 +292,13 @@ function renderTheater(s, ui) {
   // Your strike comes from every held sector linked to the target.
   const opTarget = s.op ? E.sectorById(s.op.sector) : null;
   const beams = (opTarget ? opTarget.links.filter((l) => s.sectors.includes(l)).map((id) => beam(P(E.sectorById(id)), P(opTarget), 'var(--warn)')).join('') : '')
-    + inbound.map((a) => beam(P(a.from), P(a.target), a.color)).join('');
+    + inbound.map((a) => beam(P(a.from), P(a.target), a.color)).join('')
+    // Help between our own sectors: marching like a strike on the way there and back, and a still
+    // arrow from giver to taker while it stands.
+    + (s.reinforce || []).flatMap((r) => r.from.filter((f) => isShown(f) && isShown(r.target)).map((f) => {
+      const [a, b] = r.phase === 'back' ? [r.target, f] : [f, r.target];
+      return beam(P(E.sectorById(a)), P(E.sectorById(b)), 'var(--ok)', r.phase === 'there' ? 'held' : r.phase === 'back' ? 'help back' : 'help');
+    })).join('');
   // Pulses and the reticle ring live in small HTML layers over/under the SVG, animated with
   // transform/opacity on the GPU; animating them inside the SVG repaints the whole map every frame.
   const W = WORLD.w;

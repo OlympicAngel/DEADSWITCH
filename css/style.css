@@ -6266,6 +6266,20 @@ dialog.report:has(.battle.def.loss) {
   stroke-linecap: round;
 }
 
+.fx-beam.held svg {
+  animation: none;
+}
+
+.beam-head {
+  fill: var(--fc);
+  opacity: .9;
+}
+
+/* Help marching home: the same march, quieter. */
+.fx-beam.back {
+  opacity: .55;
+}
+
 .fx-beam i {
   position: absolute;
   left: 0;
