@@ -5859,18 +5859,16 @@ dialog.report:has(.battle.def.loss) {
 }
 
 .keep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font: 600 10px var(--font-hud);
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--dim);
 }
 
-.keep b {
-  font: 700 11px var(--font-num);
-  color: var(--text);
-}
-
-/* A converter's trade per level: inputs > outputs, then the share of value kept. */
+/* A converter's exchange ratio: inputs > outputs, smallest amount scaled to 1. */
 .conv-rate {
   display: inline-flex;
   flex-wrap: wrap;

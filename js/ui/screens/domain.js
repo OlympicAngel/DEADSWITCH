@@ -1,13 +1,13 @@
 // Domain screens (Economy, Military, Research): inner tabs of buildings and the units they unlock.
 // Lists show everything unlocked plus only the next locked entry, faded, so progress is visible but calm.
 import {
-  RESOURCES, FACTORS, BUILDINGS, BY_ID, ITEMS, SHOP_TABS, BALANCE, CONVERSION,
+  RESOURCES, FACTORS, BUILDINGS, BY_ID, ITEMS, SHOP_TABS, BALANCE,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon, labeled } from '../icons.js';
 import {
-  resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
+  resTag, factorTag, convRate, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
 import { DOMAINS, sortedTabs, tabReq, readyCount } from '../layout.js';
 import { put, putHtml, setCls, setData, setW } from '../dom.js';
@@ -124,9 +124,8 @@ function effectHtml(s, b, lvl, max) {
     const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n, '−')).join('')
       + `<span class="arrow">${icon('next')}</span>`
       + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n, '+')).join('') + '<em>/s</em>';
-    const keep = b.efficiency || CONVERSION.efficiency;
     return `<div class="nn conv">
-        <div class="nn-head"><span class="nn-lbl">Per second</span><span class="keep" data-tip="text" data-tip-text="Share of the input's worth that comes out the other side. The rest is lost in the trade.">Keeps <b>${pct(keep)}</b></span></div>
+        <div class="nn-head"><span class="nn-lbl">Per second</span><span class="keep">Ratio ${convRate(b)}</span></div>
         ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff data-tip="text" data-tip-text="Share of its full rate it is running at. Less when its input runs short or its output store is full."></span></div>` : ''}
         ${lvl < max ? `<div class="nn-row nxt"><small>${lvl ? 'Next' : 'Lv 1'}</small><b>${flow(next)}</b></div>` : ''}
       </div>`;

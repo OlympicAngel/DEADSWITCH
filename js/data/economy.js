@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.37.1';
+export const VERSION = '1.38.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -132,19 +132,19 @@ export const BUILDINGS = [
     id: 'beacon', name: 'Beacon Tower', kind: 'converter', req: { core: 4 },
     desc: 'A radio voice promising food and safety. Half of it is true.',
     cost: { money: 3000, energy: 1200 }, growth: 1.4, time: 20, timeGrowth: 1.3,
-    consumes: { energy: 8 }, produces: { pop: 0 }, efficiency: 0.92,
+    consumes: { energy: 8 }, produces: { pop: 0 }, efficiency: 0.95,
   },
   {
     id: 'reactor', name: 'Fission Reactor', kind: 'converter', req: { core: 5 },
     desc: 'Pre-war tech, poorly shielded. Expensive to feed.',
     cost: { money: 15000, energy: 3000, pop: 40 }, growth: 1.6, time: 30, timeGrowth: 1.3,
-    consumes: { money: 40 }, produces: { energy: 0 }, efficiency: 0.95,
+    consumes: { money: 40 }, produces: { energy: 0 }, efficiency: 0.97,
   },
   {
     id: 'foundry', name: 'Autofoundry', kind: 'converter', req: { core: 6 },
     desc: 'A self-running factory floor. Needs power and hands to watch it.',
     cost: { money: 80000, energy: 25000, pop: 80 }, growth: 1.4, time: 45, timeGrowth: 1.3,
-    consumes: { energy: 60, pop: 0.5 }, produces: { money: 0 }, efficiency: 0.97,
+    consumes: { energy: 60, pop: 0.5 }, produces: { money: 0 }, efficiency: 0.98,
   },
   // --- Unlockers (open the arsenal; every level after the first also discounts that shop tab) ---
   {
@@ -239,7 +239,7 @@ export const RANKS = [
 // Conversion always loses value, so no chain of converters creates resources from nothing.
 // Each converter's output = value of its inputs x efficiency / value of the output resource. The later
 // converters carry their own, better efficiency (still under 1): worth building over the early ones.
-export const CONVERSION = { worth: { money: 1, energy: 1.5, pop: 16 }, efficiency: 0.85 };
+export const CONVERSION = { worth: { money: 1, energy: 1.5, pop: 16 }, efficiency: 0.92 };
 for (const b of BUILDINGS) {
   if (b.kind === 'converter') {
     const value = Object.entries(b.consumes).reduce((v, [r, n]) => v + n * CONVERSION.worth[r], 0);
