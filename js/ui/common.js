@@ -1,9 +1,19 @@
 // Shared render helpers: resource tags, cost chips, requirement text, odds colours.
-import { RESOURCES, FACTORS, BY_ID } from '../data.js';
+import { RESOURCES, FACTORS, BY_ID, CONVERSION } from '../data.js';
 import { caps } from '../engine.js';
 import { num, pct } from '../format.js';
 import { icon, labeled } from './icons.js';
 import { put } from './dom.js';
+
+// A converter's trade for one level each second, and the share of value it keeps.
+// `plain` drops the tap-to-name icons, for use inside a tooltip.
+export function convRate(b, plain = false) {
+  const ic = plain ? icon : labeled;
+  const side = (o) => Object.entries(o).map(([r, v]) => `<span class="cr t-${r}">${ic(r)}${num(v)}</span>`).join('');
+  const words = (o) => Object.entries(o).map(([r, v]) => `${num(v)} ${RESOURCES[r].short}`).join(' + ');
+  const eff = b.efficiency || CONVERSION.efficiency;
+  return `<span class="conv-rate" data-tip="text" data-tip-text="Each level, each second: ${words(b.consumes)} in, ${words(b.produces)} out. Keeps ${pct(eff)} of the value.">${side(b.consumes)}<span class="cr-arrow">${icon('next')}</span>${side(b.produces)}<small>${pct(eff)}</small></span>`;
+}
 
 // "+120 [coins]" coloured by resource.
 export function resTag(r, amount, sign = '') {

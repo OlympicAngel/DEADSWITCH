@@ -5,6 +5,7 @@ import {
 import * as E from '../engine.js';
 import { num, rate, time, pct, esc } from '../format.js';
 import { icon } from './icons.js';
+import { convRate } from './common.js';
 
 export function createTips(game) {
   const tip = document.createElement('div');
@@ -42,7 +43,7 @@ export function createTips(game) {
   function convRows(s, r) {
     const built = BUILDINGS.filter((b) => b.kind === 'converter' && E.level(s, b.id) > 0);
     const sw = (b) => `<button class="tip-switch ${s.paused[b.id] ? 'off' : 'on'}" data-act="pause" data-id="${b.id}" aria-label="${b.name} power">${s.paused[b.id] ? 'OFF' : 'ON'}</button>`;
-    const line = (b) => `<div class="tip-row conv"><span>${icon(b.id)}${b.name}</span>${sw(b)}</div>`;
+    const line = (b) => `<div class="tip-row conv"><span class="tc-name">${icon(b.id)}<b>${b.name}</b>${convRate(b, true)}</span>${sw(b)}</div>`;
     const make = built.filter((b) => b.produces[r]);
     const use = built.filter((b) => b.consumes[r]);
     const name = RESOURCES[r] ? RESOURCES[r].short : r;
@@ -218,8 +219,22 @@ export function createTips(game) {
     if (el.parentNode !== host) host.appendChild(el);
   }
 
+  // A screen that rebuilds (a converter switched from inside this tip restyles its card) replaces the
+  // element the tip hangs from; follow it to its replacement rather than closing under the finger.
+  const cardOf = (el) => { const c = el.closest('[data-card], [data-id]'); return c ? c.dataset.card || c.dataset.id : ''; };
+  function successor(old) {
+    if (!old || !old.dataset) return null;
+    const { tip: spec, amt } = old.dataset;
+    const card = old.__card;
+    const next = [...document.querySelectorAll('[data-tip]')].find((el) => el.dataset.tip === spec
+      && el.dataset.amt === amt && cardOf(el) === card && el.getClientRects().length);
+    if (next) next.__card = card;
+    return next || null;
+  }
+
   function place() {
-    if (!target || !document.body.contains(target)) {
+    if (target && !document.body.contains(target)) target = successor(target);
+    if (!target) {
       hide();
       return;
     }
@@ -242,6 +257,7 @@ export function createTips(game) {
 
   function show(el) {
     target = el;
+    el.__card = cardOf(el);
     tip.classList.add('on');
     place();
     clearInterval(timer);
@@ -281,13 +297,25 @@ export function createTips(game) {
   }
 
   // A switch inside the tip acts on press, before the tip's twice-a-second refresh can replace it.
+  // The click that follows is swallowed: its button is gone by then, so it would read as a tap
+  // outside the tip (closing it) or reach the screen's own switch handler and flip it back.
+  let pressedAt = -1;
   document.addEventListener('pointerdown', (e) => {
     const sw = e.target.closest && e.target.closest('.tip [data-act="pause"]');
     if (!sw) return;
     e.preventDefault();
     e.stopPropagation();
+    pressedAt = e.timeStamp;
     game.act.toggle(sw.dataset.id);
     if (target) tip.innerHTML = content(target);
+  }, true);
+  window.addEventListener('click', (e) => {
+    if (pressedAt < 0) return;
+    const fresh = e.timeStamp - pressedAt < 1000;
+    pressedAt = -1;
+    if (!fresh) return;
+    e.preventDefault();
+    e.stopPropagation();
   }, true);
 
   document.addEventListener('click', (e) => {
@@ -306,7 +334,7 @@ export function createTips(game) {
       if (e.pointerType !== 'mouse' || !el) hide();
     }
   });
-  window.addEventListener('scroll', hide, { passive: true, capture: true });
+  window.addEventListener('scroll', (e) => { if (!(e.target.closest && e.target.closest('.tip'))) hide(); }, { passive: true, capture: true });
 
   return { hide };
 }

@@ -3180,16 +3180,32 @@ button:focus-visible,
   pointer-events: auto; /* its converter switches take taps */
 }
 
-.tip-row.conv span {
-  display: inline-flex;
+.tip-row.conv {
   align-items: center;
-  gap: 6px;
+}
+
+.tip-row.conv .tc-name {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 6px;
+  min-width: 0;
+}
+
+.tip-row.conv .tc-name b {
+  font: 600 12px var(--font-hud);
+  color: var(--text);
+}
+
+.tip-row.conv .conv-rate {
+  grid-column: 2;
 }
 
 .tip-switch {
-  min-width: 46px;
-  min-height: 30px;
-  padding: 0 8px;
+  flex: none;
+  min-width: 42px;
+  min-height: 28px;
+  padding: 0 7px;
   border: 1px solid var(--line-2);
   border-radius: 6px;
   background: rgba(255, 255, 255, .04);
@@ -5842,60 +5858,80 @@ dialog.report:has(.battle.def.loss) {
 .switchboard {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+}
+
+.switchboard > header {
+  margin-bottom: 2px;
 }
 
 .sb-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name state" "flow state";
   align-items: center;
-  gap: 10px;
-  min-height: 38px;
+  column-gap: 8px;
   padding: 4px 0;
   border-top: 1px solid var(--line);
 }
 
 .sb-name {
+  grid-area: name;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
+}
+
+.sb-name .i {
+  width: 14px;
+  height: 14px;
 }
 
 .sb-name b {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font: 600 13px var(--font-hud);
+  font: 600 12px var(--font-hud);
 }
 
 .sb-name small {
   color: var(--muted);
-  font: 11px var(--font-num);
+  font: 10.5px var(--font-num);
 }
 
 .sb-flow {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
+  grid-area: flow;
+  min-width: 0;
 }
 
-.sb-arrow {
-  color: var(--muted);
+.sb-row > .tip-switch,
+.sb-row > .sb-state {
+  grid-area: state;
+}
+
+.sb-row .tip-switch,
+.sb-state.unbuilt {
+  min-width: 40px;
+  min-height: 26px;
 }
 
 .sb-state {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font: 600 11px var(--font-hud);
+  font: 600 10.5px var(--font-hud);
   letter-spacing: .04em;
   text-transform: uppercase;
 }
 
+.sb-state .i {
+  width: 12px;
+  height: 12px;
+}
+
 .sb-state.unbuilt {
-  min-height: 30px;
-  padding: 0 8px;
+  justify-content: center;
+  padding: 0 7px;
   border: 1px dashed rgba(255, 176, 61, .5);
   border-radius: 6px;
   background: none;
@@ -5910,6 +5946,38 @@ dialog.report:has(.battle.def.loss) {
 .sb-row.is-locked .sb-name,
 .sb-row.is-locked .sb-flow {
   opacity: .45;
+}
+
+/* A converter's trade per level: inputs > outputs, then the share of value kept. */
+.conv-rate {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px 6px;
+  font: 11px var(--font-num);
+  color: var(--text);
+}
+
+.conv-rate .cr {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.conv-rate .i {
+  width: 12px;
+  height: 12px;
+}
+
+.conv-rate .cr-arrow {
+  display: inline-flex;
+  color: var(--muted);
+  margin: 0 -2px;
+}
+
+.conv-rate small {
+  color: var(--muted);
+  font-size: 10px;
 }
 
 /* Floating alerts (incoming attacks we may not hold, pending orders) */
