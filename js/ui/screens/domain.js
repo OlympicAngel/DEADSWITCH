@@ -1,13 +1,13 @@
 // Domain screens (Economy, Military, Research): inner tabs of buildings and the units they unlock.
 // Lists show everything unlocked plus only the next locked entry, faded, so progress is visible but calm.
 import {
-  RESOURCES, FACTORS, BUILDINGS, BY_ID, ITEMS, SHOP_TABS, BALANCE,
+  RESOURCES, FACTORS, BUILDINGS, BY_ID, ITEMS, SHOP_TABS, BALANCE, CONVERSION,
 } from '../../data.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon, labeled } from '../icons.js';
 import {
-  resTag, factorTag, convRate, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
+  resTag, factorTag, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
 import { DOMAINS, sortedTabs, tabReq, readyCount } from '../layout.js';
 import { put, putHtml, setCls, setData, setW } from '../dom.js';
@@ -53,24 +53,7 @@ function visibleBuildings(s, kinds) {
 
 function kindList(s, tab) {
   const { open, next } = visibleBuildings(s, tab.kinds);
-  return (tab.id === 'conversion' ? switchboard(s) : '')
-    + open.map((b) => buildingCard(s, b)).join('') + (next ? lockedCard(next.id, next.name, next.req) : '');
-}
-
-// Every converter in one list: what goes in and comes out, and whether it is running, switched off,
-// waiting to be built, or still locked, so the whole board reads at a glance and switches in one tap.
-function switchboard(s) {
-  const rows = BUILDINGS.filter((b) => b.kind === 'converter').map((b) => {
-    const lvl = E.level(s, b.id);
-    const open = E.meetsReq(s, b.req);
-    const state = !open ? `<span class="sb-state locked">${icon('lock')}${reqText(b.req)}</span>`
-      : !lvl ? `<button class="sb-state unbuilt" data-go="economy:conversion" data-focus-card="${b.id}">${icon('unlock')}Not built</button>`
-        : `<button class="tip-switch ${s.paused[b.id] ? 'off' : 'on'}" data-act="pause" data-id="${b.id}" aria-label="${b.name} power">${s.paused[b.id] ? 'OFF' : 'ON'}</button>`;
-    return `<div class="sb-row ${!open ? 'is-locked' : !lvl ? 'is-unbuilt' : s.paused[b.id] ? 'is-off' : 'is-on'}">
-      <span class="sb-name">${icon(b.id)}<b>${b.name}</b>${lvl ? `<small>Lv ${lvl}</small>` : ''}</span>
-      <span class="sb-flow">${convRate(b)}</span>${state}</div>`;
-  }).join('');
-  return `<section class="panel switchboard"><header>${icon('exchange')}Switchboard</header>${rows}</section>`;
+  return open.map((b) => buildingCard(s, b)).join('') + (next ? lockedCard(next.id, next.name, next.req) : '');
 }
 
 // Locked entries link to whatever they wait on: tapping one jumps there and highlights it.
@@ -93,11 +76,11 @@ function buildingCard(s, b) {
   const res = Object.keys(b.produces || b.storage || {})[0]; // tints the card by the resource it makes or stores
   return `
     <article class="card k-${b.kind} ${unbuilt ? 'unbuilt' : ''} ${conv && s.paused[b.id] ? 'switched-off' : ''}" data-card="${b.id}" ${res ? `data-res="${res}"` : ''}>
-      ${unbuilt ? `<span class="unbuilt-tag">${icon('unlock')}Not built</span>` : ''}
+      ${unbuilt ? `<span class="unbuilt-tag">Not built</span>` : ''}
       ${b.kind === 'unlocker' ? `<span class="facility-tag">${icon('economy')}Facility</span>` : ''}
       ${core ? '<div class="core-glow"></div>' : ''}
       <div class="card-top">
-        <div class="tile">${core ? '<i class="tile-ring"></i>' : ''}${icon(b.id)}${unbuilt ? `<span class="badge lockb">${icon('unlock')}</span>` : `<span class="badge">${lvl}</span>`}</div>
+        <div class="tile">${core ? '<i class="tile-ring"></i>' : ''}${icon(b.id)}${unbuilt ? '' : `<span class="badge">${lvl}</span>`}</div>
         <div class="body">
           <h3>${b.name} ${unbuilt ? '' : `<small>Lv ${lvl}<span>/${max}</span></small>`}</h3>
           <p class="desc">${esc(b.desc)}</p>
@@ -107,7 +90,7 @@ function buildingCard(s, b) {
       </div>
       ${effectHtml(s, b, lvl, max)}
       ${lvl < max ? `<div class="card-bot"><div class="costs">${costChips(E.buildingCost(s, b))}</div>
-        <button class="btn primary ${unbuilt ? 'unlock' : ''}" data-act="build" data-id="${b.id}">${unbuilt ? icon('unlock') : ''}<span data-l></span><small data-s></small></button></div>`
+        <button class="btn primary ${unbuilt ? 'unlock' : ''}" data-act="build" data-id="${b.id}">${unbuilt ? icon('up') : ''}<span data-l></span><small data-s></small></button></div>`
         : `<div class="card-bot"><p class="req">${core ? 'Maximum level' : `${icon('core')}Level capped by the AI Core`}</p></div>`}
       <div class="progress"><i></i></div>
     </article>`;
@@ -142,10 +125,11 @@ function effectHtml(s, b, lvl, max) {
     const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n * cm, '−')).join('')
       + `<span class="arrow">${icon('next')}</span>`
       + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('') + '<em>/s</em>';
+    const keep = b.efficiency || CONVERSION.efficiency;
     return `<div class="nn conv">
-        <span class="nn-lbl">Per second</span>
-        ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff data-tip="text" data-tip-text="How hard it is running: below 100% its input is short or its output store is full. OFF while paused."></span></div>` : ''}
-        ${lvl < max ? `<div class="nn-row nxt"><small>${lvl ? 'Next' : 'Unlock'}</small><b>${flow(next)}</b></div>` : ''}
+        <div class="nn-head"><span class="nn-lbl">Per second</span><span class="keep" data-tip="text" data-tip-text="Share of the input's worth that comes out the other side. The rest is lost in the trade.">Keeps <b>${pct(keep)}</b></span></div>
+        ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff data-tip="text" data-tip-text="Share of its full rate it is running at. Less when its input runs short or its output store is full."></span></div>` : ''}
+        ${lvl < max ? `<div class="nn-row nxt"><small>${lvl ? 'Next' : 'Lv 1'}</small><b>${flow(next)}</b></div>` : ''}
       </div>`;
   }
   if (b.kind === 'storage') {
@@ -294,7 +278,7 @@ export function updateDomain(s, ui, refs, flows) {
       const lvl = E.level(s, c.b.id);
       c.btn.disabled = st !== 'ready' && st !== 'storage' && st !== 'queue';
       setStorageLink(s, c.btn, st === 'storage' ? E.buildingCost(s, c.b) : null, 'build');
-      put(c.label, LABELS[st] || (lvl ? 'Upgrade' : 'Unlock'));
+      put(c.label, LABELS[st] || (lvl ? 'Upgrade' : 'Build'));
       const waiting = E.queued(s, c.b.id);
       put(c.sub, building ? clock(s.build.remaining)
         : waiting ? `${waiting} queued`
@@ -302,7 +286,7 @@ export function updateDomain(s, ui, refs, flows) {
     }
     if (c.eff && flows) {
       const eff = flows.eff[c.b.id] ?? 0;
-      put(c.eff, s.paused[c.b.id] ? 'OFF' : pct(eff));
+      put(c.eff, s.paused[c.b.id] ? 'Off' : eff < 0.999 ? `At ${pct(eff)}` : 'Running');
       setCls(c.eff, 'eff ' + (s.paused[c.b.id] ? 'is-paused' : eff < 0.999 ? 'is-low' : 'is-ok'));
     }
     setW(c.bar, building ? pct(1 - s.build.remaining / s.build.total) : '0');
