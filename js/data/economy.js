@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.39.1';
+export const VERSION = '1.40.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -19,7 +19,7 @@ export const FACTOR_KEYS = ['power', 'defense', 'experts'];
 
 export const BALANCE = {
   // Per-second output of a producer or converter: level 1 gives its listed rate, every level after
-  // adds levelStep x that rate.
+  // adds levelStep x that rate (a building's own levelStep wins).
   levelStep: 1.5,
   start: { money: 60, energy: 20, pop: 6 },
   startLevels: { core: 1, scrapyard: 1, solar: 1, shelter: 1 },
@@ -129,7 +129,7 @@ export const BUILDINGS = [
     id: 'exchange', name: 'Labor Exchange', kind: 'converter', req: { core: 3 },
     desc: 'Rents your people to the warlords. They do not always come back.',
     cost: { money: 800, pop: 20 }, growth: 1.3, time: 12, timeGrowth: 1.3,
-    consumes: { pop: 0.5 }, produces: { money: 0 },
+    consumes: { pop: 0.5 }, produces: { money: 0 }, levelStep: 2, // people-burning converters grow faster a level
   },
   {
     id: 'beacon', name: 'Beacon Tower', kind: 'converter', req: { core: 4 },
@@ -147,7 +147,7 @@ export const BUILDINGS = [
     id: 'foundry', name: 'Autofoundry', kind: 'converter', req: { core: 6 },
     desc: 'A self-running factory floor. Needs power and hands to watch it.',
     cost: { money: 80000, energy: 25000, pop: 80 }, growth: 1.4, time: 45, timeGrowth: 1.3,
-    consumes: { energy: 60, pop: 0.5 }, produces: { money: 0 }, efficiency: 0.98,
+    consumes: { energy: 60, pop: 0.5 }, produces: { money: 0 }, efficiency: 0.98, levelStep: 2,
   },
   // --- Unlockers (open the arsenal; every level after the first also discounts that shop tab) ---
   {

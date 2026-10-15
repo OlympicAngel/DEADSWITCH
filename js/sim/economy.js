@@ -11,8 +11,9 @@ const EPS = 1e-9;
 
 export const level = (s, id) => s.levels[id] || 0;
 
-/** How many times its listed per-second rate a producer or converter runs at, at level `lvl`. */
-export const levelRate = (lvl) => (lvl > 0 ? 1 + (lvl - 1) * BALANCE.levelStep : 0);
+/** How many times its listed per-second rate building `b` runs at, at level `lvl`. */
+export const levelStep = (b) => (b && b.levelStep) || BALANCE.levelStep;
+export const levelRate = (lvl, b) => (lvl > 0 ? 1 + (lvl - 1) * levelStep(b) : 0);
 export const owned = (s, id) => s.items[id] || 0;
 
 export function meetsReq(s, req) {
@@ -143,7 +144,7 @@ export function grossRate(s, r) {
   for (const b of BUILDINGS) {
     const lvl = level(s, b.id);
     if (lvl && b.produces && b.produces[r]) {
-      total += b.produces[r] * levelRate(lvl) * (b.kind === 'converter' ? 1 : mult);
+      total += b.produces[r] * levelRate(lvl, b) * (b.kind === 'converter' ? 1 : mult);
     }
   }
   return total;
@@ -550,7 +551,7 @@ export function produce(s, dt, speed = 1) {
       continue;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      const amount = rate * levelRate(lvl) * mult[r] * speed;
+      const amount = rate * levelRate(lvl, b) * mult[r] * speed;
       s.res[r] += amount * dt;
       flows.prod[r] += amount;
     }
@@ -569,7 +570,7 @@ export function produce(s, dt, speed = 1) {
     // Production bonuses (experts, tech, territory, effects) are for producers: a converter runs at its
     // listed rate whatever they say, so a bonus never speeds a trade that loses value.
     const m = speed;
-    const k = levelRate(lvl);
+    const k = levelRate(lvl, b);
     // Nothing moves at a standstill (the unpaid part of an absence runs at speed 0), and asking how
     // much of nothing fits in a full store is 0/0: it used to answer NaN and poison the save.
     if (!(m > 0) || !(dt > 0)) {

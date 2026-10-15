@@ -45,7 +45,7 @@ export function createTips(game) {
     // What it moves each second at its level, as its card's Now row shows it.
     const flow = (b) => {
       const lvl = E.level(s, b.id);
-      const side = (o, sign) => Object.entries(o).map(([k, v]) => `<span class="cr t-${k}">${icon(k)}${sign}${num(v * E.levelRate(lvl))}</span>`).join('');
+      const side = (o, sign) => Object.entries(o).map(([k, v]) => `<span class="cr t-${k}">${icon(k)}${sign}${num(v * E.levelRate(lvl, b))}</span>`).join('');
       return `<span class="conv-rate">${side(b.consumes, '\u2212')}<span class="cr-arrow">${icon('next')}</span>${side(b.produces, '+')}<em>/s</em></span>`;
     };
     const line = (b) => `<div class="tip-row conv"><span class="tc-name">${icon(b.id)}<b>${b.name}</b>${flow(b)}</span>${sw(b)}</div>`;
@@ -68,11 +68,11 @@ export function createTips(game) {
       if (b.produces && b.produces[r]) {
         const eff = b.kind === 'converter' ? (f && f.eff[b.id]) ?? 0 : 1;
         const m = b.kind === 'converter' ? 1 : mult;
-        lines.push(eff > 0.001 ? row(`${icon(b.id)}${b.name}`, '+' + num(b.produces[r] * E.levelRate(lvl) * m * eff) + '/s') : row(`${icon(b.id)}${b.name}`, s.paused[b.id] ? 'paused' : 'idle', 'warn'));
+        lines.push(eff > 0.001 ? row(`${icon(b.id)}${b.name}`, '+' + num(b.produces[r] * E.levelRate(lvl, b) * m * eff) + '/s') : row(`${icon(b.id)}${b.name}`, s.paused[b.id] ? 'paused' : 'idle', 'warn'));
       }
       if (b.consumes && b.consumes[r]) {
         const eff = (f && f.eff[b.id]) ?? 0;
-        if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * E.levelRate(lvl) * eff) + '/s', 'neg'));
+        if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * E.levelRate(lvl, b) * eff) + '/s', 'neg'));
       }
     }
     let eta = '';

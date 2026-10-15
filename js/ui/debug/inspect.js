@@ -93,7 +93,7 @@ function building(s, id) {
       ['build time', () => secs(E.buildTime(s, b))],
       ['produces', () => JSON.stringify(b.produces || {})],
       ['consumes', () => JSON.stringify(b.consumes || {})],
-      ['rate x listed', () => `${E.levelRate(E.level(s, id)).toFixed(2)} (level 1 = 1, +${BALANCE.levelStep} a level)`],
+      ['rate x listed', () => `${E.levelRate(E.level(s, id), b).toFixed(2)} (level 1 = 1, +${E.levelStep(b)} a level)`],
       ['paused', () => !!s.paused[id]],
       ['queued', () => `${E.queued(s, id)} of this · ${s.queue.length} / ${E.queueSlots(s)} slots: ${s.queue.join(', ') || '-'}`],
     ],
