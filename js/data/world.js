@@ -380,7 +380,7 @@ export const RAIDS = {
   // random spread. The base is what a clan brings whatever you are: Defense has to be built past it.
   // The share is what it adds as you grow, and stays well under one, so Defense bought always gains
   // on the next raid: an enemy is outgrown by building, or waited out while its clan cools.
-  threatShare: 0.45,
+  threatShare: 0.4,
   defenseWeight: 1, // ...with Defense counted at this weight in it
   spreadMin: 0.8, // ...times a random spread
   spreadMax: 1.25,
@@ -459,7 +459,7 @@ export const NODES = {
   // An open clan never falls out of the war: on top of what its sector's own attack is worth, it
   // musters this share of your Threat, and its stance multiplies the lot. They do not get better
   // walls as you grow, they throw more people at you, so a chapter-one clan still comes at Core 6.
-  assaultThreatShare: 0.35,
+  assaultThreatShare: 0.3,
   assaultMult: 1.2, // one dial over every sector's authored attack, for tuning the war as a whole
   // Meeting an attack early: the player holds the panel and the attack comes in while they hold.
   // The clock comes down evenly over rushHold seconds, sampled rushTicks times a second, but the
