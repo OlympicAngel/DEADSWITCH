@@ -10,6 +10,9 @@ const EPS = 1e-9;
 // ---------- queries ----------
 
 export const level = (s, id) => s.levels[id] || 0;
+
+/** How many times its listed per-second rate a producer or converter runs at, at level `lvl`. */
+export const levelRate = (lvl) => (lvl > 0 ? 1 + (lvl - 1) * BALANCE.levelStep : 0);
 export const owned = (s, id) => s.items[id] || 0;
 
 export function meetsReq(s, req) {
@@ -140,7 +143,7 @@ export function grossRate(s, r) {
   for (const b of BUILDINGS) {
     const lvl = level(s, b.id);
     if (lvl && b.produces && b.produces[r]) {
-      total += b.produces[r] * lvl * (b.kind === 'converter' ? 1 : mult);
+      total += b.produces[r] * levelRate(lvl) * (b.kind === 'converter' ? 1 : mult);
     }
   }
   return total;
@@ -547,7 +550,7 @@ export function produce(s, dt, speed = 1) {
       continue;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      const amount = rate * lvl * mult[r] * speed;
+      const amount = rate * levelRate(lvl) * mult[r] * speed;
       s.res[r] += amount * dt;
       flows.prod[r] += amount;
     }
@@ -566,6 +569,7 @@ export function produce(s, dt, speed = 1) {
     // Production bonuses (experts, tech, territory, effects) are for producers: a converter runs at its
     // listed rate whatever they say, so a bonus never speeds a trade that loses value.
     const m = speed;
+    const k = levelRate(lvl);
     // Nothing moves at a standstill (the unpaid part of an absence runs at speed 0), and asking how
     // much of nothing fits in a full store is 0/0: it used to answer NaN and poison the save.
     if (!(m > 0) || !(dt > 0)) {
@@ -575,19 +579,19 @@ export function produce(s, dt, speed = 1) {
     let eff = 1;
     const share = (have, want) => (want > 0 ? Math.max(0, have) / want : 0);
     for (const [r, rate] of Object.entries(b.consumes)) {
-      eff = Math.min(eff, share(s.res[r], rate * lvl * m * dt));
+      eff = Math.min(eff, share(s.res[r], rate * k * m * dt));
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      eff = Math.min(eff, share(c[r] - s.res[r], rate * lvl * m * dt));
+      eff = Math.min(eff, share(c[r] - s.res[r], rate * k * m * dt));
     }
     eff = Math.max(0, Math.min(1, eff));
     for (const [r, rate] of Object.entries(b.consumes)) {
-      s.res[r] -= rate * lvl * m * dt * eff;
-      flows.cons[r] += rate * lvl * m * eff;
+      s.res[r] -= rate * k * m * dt * eff;
+      flows.cons[r] += rate * k * m * eff;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      s.res[r] += rate * lvl * m * dt * eff;
-      flows.prod[r] += rate * lvl * m * eff;
+      s.res[r] += rate * k * m * dt * eff;
+      flows.prod[r] += rate * k * m * eff;
     }
     flows.eff[b.id] = eff;
   }

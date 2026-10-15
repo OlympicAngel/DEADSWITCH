@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.38.1';
+export const VERSION = '1.39.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -18,6 +18,9 @@ export const FACTORS = {
 export const FACTOR_KEYS = ['power', 'defense', 'experts'];
 
 export const BALANCE = {
+  // Per-second output of a producer or converter: level 1 gives its listed rate, every level after
+  // adds levelStep x that rate.
+  levelStep: 1.2,
   start: { money: 60, energy: 20, pop: 6 },
   startLevels: { core: 1, scrapyard: 1, solar: 1, shelter: 1 },
   baseEnergyCap: 150,

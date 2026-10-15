@@ -2,7 +2,7 @@
 // Rows are [label, read(s)] so the panel can patch their values every frame instead of rebuilding.
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
-import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN, EVENTS, DAILY } from '../../data.js';
+import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN, EVENTS, DAILY, BALANCE } from '../../data.js';
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
@@ -93,6 +93,7 @@ function building(s, id) {
       ['build time', () => secs(E.buildTime(s, b))],
       ['produces', () => JSON.stringify(b.produces || {})],
       ['consumes', () => JSON.stringify(b.consumes || {})],
+      ['rate x listed', () => `${E.levelRate(E.level(s, id)).toFixed(2)} (level 1 = 1, +${BALANCE.levelStep} a level)`],
       ['paused', () => !!s.paused[id]],
       ['queued', () => `${E.queued(s, id)} of this · ${s.queue.length} / ${E.queueSlots(s)} slots: ${s.queue.join(', ') || '-'}`],
     ],

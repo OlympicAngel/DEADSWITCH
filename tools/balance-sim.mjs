@@ -72,14 +72,14 @@ const costSeconds = (s, b) => price(E.buildingCost(s, b)) / Math.max(1, income(s
 
 /** Seconds for a producer level to pay back what it costs. Lower is better; Infinity never pays. */
 function payback(s, b) {
-  const gain = worth(Object.fromEntries(Object.entries(b.produces || {}).map(([r, v]) => [r, v * E.prodMultiplier(s, r)])));
+  const gain = worth(Object.fromEntries(Object.entries(b.produces || {}).map(([r, v]) => [r, v * E.prodMultiplier(s, r) * (E.level(s, b.id) ? BALANCE.levelStep : 1)])));
   return gain > 0 ? price(E.buildingCost(s, b)) / gain : Infinity;
 }
 
 /** A converter always loses on the trade, so it pays back only on income that would otherwise spill. */
 function converterPayback(s, b) {
   const full = choking(s);
-  const saved = Object.entries(b.consumes || {}).reduce((a, [r, v]) => a + (full.includes(r) ? worth({ [r]: v * E.level(s, b.id) || v }) : 0), 0);
+  const saved = Object.entries(b.consumes || {}).reduce((a, [r, v]) => a + (full.includes(r) ? worth({ [r]: v * E.levelRate(E.level(s, b.id)) || v }) : 0), 0);
   return saved > 0 ? price(E.buildingCost(s, b)) / (saved * CONVERSION.efficiency) : Infinity;
 }
 

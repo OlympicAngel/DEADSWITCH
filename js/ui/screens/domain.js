@@ -118,12 +118,12 @@ function effectHtml(s, b, lvl, max) {
   const next = lvl + 1;
   if (b.kind === 'producer') {
     const [[r, per]] = Object.entries(b.produces);
-    return nowNext('Output', lvl ? `${resTag(r, per * lvl * mult(r), '+')}<em>/s</em>` : '—', `${resTag(r, per * next * mult(r), '+')}<em>/s</em>`, lvl, max);
+    return nowNext('Output', lvl ? `${resTag(r, per * E.levelRate(lvl) * mult(r), '+')}<em>/s</em>` : '—', `${resTag(r, per * E.levelRate(next) * mult(r), '+')}<em>/s</em>`, lvl, max);
   }
   if (b.kind === 'converter') {
-    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n, '−')).join('')
+    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * E.levelRate(n), '−')).join('')
       + `<span class="arrow">${icon('next')}</span>`
-      + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n, '+')).join('') + '<em>/s</em>';
+      + Object.entries(b.produces).map(([r, v]) => resTag(r, v * E.levelRate(n), '+')).join('') + '<em>/s</em>';
     return `<div class="nn conv">
         <div class="nn-head"><span class="nn-lbl">Per second</span><span class="keep">Ratio ${convRate(b)}</span></div>
         ${lvl ? `<div class="nn-row"><small>Now</small><b>${flow(lvl)}</b><span class="eff" data-eff data-tip="text" data-tip-text="Share of its full rate it is running at. Less when its input runs short or its output store is full."></span></div>` : ''}
