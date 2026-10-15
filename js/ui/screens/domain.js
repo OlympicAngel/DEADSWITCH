@@ -121,10 +121,9 @@ function effectHtml(s, b, lvl, max) {
     return nowNext('Output', lvl ? `${resTag(r, per * lvl * mult(r), '+')}<em>/s</em>` : '—', `${resTag(r, per * next * mult(r), '+')}<em>/s</em>`, lvl, max);
   }
   if (b.kind === 'converter') {
-    const cm = mult(Object.keys(b.produces)[0]);
-    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n * cm, '−')).join('')
+    const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * n, '−')).join('')
       + `<span class="arrow">${icon('next')}</span>`
-      + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n * mult(r), '+')).join('') + '<em>/s</em>';
+      + Object.entries(b.produces).map(([r, v]) => resTag(r, v * n, '+')).join('') + '<em>/s</em>';
     const keep = b.efficiency || CONVERSION.efficiency;
     return `<div class="nn conv">
         <div class="nn-head"><span class="nn-lbl">Per second</span><span class="keep" data-tip="text" data-tip-text="Share of the input's worth that comes out the other side. The rest is lost in the trade.">Keeps <b>${pct(keep)}</b></span></div>

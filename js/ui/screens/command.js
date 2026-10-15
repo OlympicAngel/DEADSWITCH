@@ -159,7 +159,7 @@ function raidPanel(s, refs) {
   const sub = raid.assault
     ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches`
     : place ? `${fac.name} · out of ${esc(E.sectorById(place[0]).name)}` : fac.name;
-  const el = slot(refs, 'raid', raid.faction + (place || []).join() + (raid.assault ? E.breaches(s, raid.target) : ''), () => `
+  const el = slot(refs, 'raid', [raid.faction, raid.target, raid.uid || '', raid.assault ? 'a' : raid.siege ? 's' : 'r', (place || []).join(), raid.assault ? E.breaches(s, raid.target) : ''].join('|'), () => `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     ${place ? mapBackdrop(s, [place[1], place[0]], { beam: place, cls: 'panel' }) : ''}
     <div class="inc-main">

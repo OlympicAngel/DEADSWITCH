@@ -62,12 +62,12 @@ export function createTips(game) {
       if (!lvl) continue;
       if (b.produces && b.produces[r]) {
         const eff = b.kind === 'converter' ? (f && f.eff[b.id]) ?? 0 : 1;
-        lines.push(eff > 0.001 ? row(`${icon(b.id)}${b.name}`, '+' + num(b.produces[r] * lvl * mult * eff) + '/s') : row(`${icon(b.id)}${b.name}`, s.paused[b.id] ? 'paused' : 'idle', 'warn'));
+        const m = b.kind === 'converter' ? 1 : mult;
+        lines.push(eff > 0.001 ? row(`${icon(b.id)}${b.name}`, '+' + num(b.produces[r] * lvl * m * eff) + '/s') : row(`${icon(b.id)}${b.name}`, s.paused[b.id] ? 'paused' : 'idle', 'warn'));
       }
       if (b.consumes && b.consumes[r]) {
         const eff = (f && f.eff[b.id]) ?? 0;
-        const cm = E.prodMultiplier(s, Object.keys(b.produces)[0]);
-        if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * lvl * cm * eff) + '/s', 'neg'));
+        if (eff > 0.001) lines.push(row(`${icon(b.id)}${b.name}`, '−' + num(b.consumes[r] * lvl * eff) + '/s', 'neg'));
       }
     }
     let eta = '';

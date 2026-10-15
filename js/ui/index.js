@@ -423,7 +423,7 @@ export function createUI(root, game) {
       // (and the drag under the player's finger not cut) every time some sector gains a hundredth.
       const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(1)}${n.marks}`).join();
       const postures = Object.values(s.clans).map((c) => c.stances.join('')).join('|');
-      const beams = E.attacks(s).map((a) => (E.attackPlace(s, a) || []).join()).join('|');
+      const beams = E.attacks(s).map((a) => a.target + ':' + (E.attackPlace(s, a) || []).join()).join('|');
       const help = (s.reinforce || []).map((r) => r.target + r.phase + r.from.join()).join('|');
       return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, help, s.chapter, s.ending, E.level(s, 'core')]);
     }

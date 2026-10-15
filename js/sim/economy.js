@@ -140,7 +140,7 @@ export function grossRate(s, r) {
   for (const b of BUILDINGS) {
     const lvl = level(s, b.id);
     if (lvl && b.produces && b.produces[r]) {
-      total += b.produces[r] * lvl * mult;
+      total += b.produces[r] * lvl * (b.kind === 'converter' ? 1 : mult);
     }
   }
   return total;
@@ -563,8 +563,9 @@ export function produce(s, dt, speed = 1) {
       flows.eff[b.id] = 0;
       continue;
     }
-    // Bonuses speed a converter up (input and output alike); they never improve its loss ratio.
-    const m = mult[Object.keys(b.produces)[0]] * speed;
+    // Production bonuses (experts, tech, territory, effects) are for producers: a converter runs at its
+    // listed rate whatever they say, so a bonus never speeds a trade that loses value.
+    const m = speed;
     // Nothing moves at a standstill (the unpaid part of an absence runs at speed 0), and asking how
     // much of nothing fits in a full store is 0/0: it used to answer NaN and poison the save.
     if (!(m > 0) || !(dt > 0)) {
@@ -577,7 +578,7 @@ export function produce(s, dt, speed = 1) {
       eff = Math.min(eff, share(s.res[r], rate * lvl * m * dt));
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      eff = Math.min(eff, share(c[r] - s.res[r], rate * lvl * mult[r] * speed * dt));
+      eff = Math.min(eff, share(c[r] - s.res[r], rate * lvl * m * dt));
     }
     eff = Math.max(0, Math.min(1, eff));
     for (const [r, rate] of Object.entries(b.consumes)) {
@@ -585,8 +586,8 @@ export function produce(s, dt, speed = 1) {
       flows.cons[r] += rate * lvl * m * eff;
     }
     for (const [r, rate] of Object.entries(b.produces)) {
-      s.res[r] += rate * lvl * mult[r] * speed * dt * eff;
-      flows.prod[r] += rate * lvl * mult[r] * speed * eff;
+      s.res[r] += rate * lvl * m * dt * eff;
+      flows.prod[r] += rate * lvl * m * eff;
     }
     flows.eff[b.id] = eff;
   }

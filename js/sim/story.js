@@ -624,7 +624,8 @@ export function reached(s, cond) {
   if (cond.coreReady && buildingStatus(s, BY_ID.core) !== 'ready') return false;
   if (cond.scripted && !Object.entries(cond.scripted).every(([k, n]) => (s.scripted[k] || 0) >= n)) return false;
   if (cond.directive !== undefined && s.directive !== cond.directive) return false;
-  if (cond.reinforceable && !attacks(s).some((a) => !reinforceBlock(s, a.target))) return false;
+  // The lesson points at the reinforce button on the attack shown first, so that one has to be able to take help.
+  if (cond.reinforceable && (!attacks(s)[0] || reinforceBlock(s, attacks(s)[0].target))) return false;
   return true;
 }
 
