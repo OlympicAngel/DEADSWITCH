@@ -173,10 +173,12 @@ function raidPanel(s, refs) {
     </div>
     <div class="inc-foot"><span class="hold" data-hold data-tip="text" data-tip-text="The chance our Defense holds it, from Defense against its strength."></span>
       <button class="btn ghost tiny" data-act="rush" data-tip="text" data-tip-text="Hold: the attack is walked in while held and lands sooner. The % is how much stronger it arrives if held all the way in."><i data-rushfill></i><span data-rush></span></button>
-      <button class="btn danger" data-go="military:defense">${icon('defense')}Reinforce</button></div>
+      <button class="btn danger" data-go="military:defense">${icon('defense')}Buy defense</button>
+      <button class="btn ghost small reinf" data-act="reinforce" data-id="${raid.target}" data-tip="text" data-tip-text="Our sectors next to it each send ${pct(NODES.reinforceShare)} of our Defense there. They march as long as an operation there would take, hold until the attack is decided, then march home. The ground they leave is thinner until they are back."><span data-reinf></span></button></div>
     <div class="timebar"><i data-tbar></i></div>`);
   const p = E.raidChance(s, raid);
-  const def = E.factors(s).defense;
+  const def = E.defenseAt(s, raid.target);
+  reinforceButton(s, raid, el.querySelector('[data-reinf]'));
   // Meeting them early: the bill for holding it all the way in, so the choice is made with the
   // number in view, and the fill shows how much of that bill the hold has paid so far.
   const rush = el.querySelector('[data-rush]');
@@ -206,6 +208,20 @@ function raidPanel(s, refs) {
   putHtml(hold, `Hold chance <b>${pct(p)}</b>`);
   setCls(hold, 'hold chance-' + chanceClass(p));
   setW(el.querySelector('[data-tbar]'), pct(1 - raid.remaining / raid.total));
+}
+
+/** The reinforce button names what it would do, what is under way, or why help cannot go. */
+export function reinforceButton(s, atk, label) {
+  if (!label) return;
+  const btn = label.closest('button');
+  const why = E.reinforceBlock(s, atk.target);
+  const r = (s.reinforce || []).find((x) => x.target === atk.target);
+  btn.hidden = why === 'no neighbors' || why === 'not ours';
+  btn.disabled = !!why;
+  const n = E.reinforcers(s, atk.target).length;
+  putHtml(label, r ? (r.phase === 'going' ? `${icon('clock')}Help arrives ${clock(r.remaining)}` : `${icon('defense')}Help holding +${pct(NODES.reinforceShare * r.from.length)}`)
+    : why === 'too far' ? `${icon('clock')}Help too far · ${clock(E.reinforceTime(atk.target))}`
+      : `${icon('defense')}Reinforce +${pct(NODES.reinforceShare * n)} · ${clock(E.reinforceTime(atk.target))}`);
 }
 
 // Later attacks as cards tucked under the closest one: icon, name and timer only.

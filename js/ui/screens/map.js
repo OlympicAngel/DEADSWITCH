@@ -2,6 +2,7 @@
 import {
   SECTORS, FACTIONS, MAP, CHAPTERS, OPS, NODES,
 } from '../../data.js';
+import { reinforceButton } from './command.js';
 import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon } from '../icons.js';
@@ -325,6 +326,7 @@ function renderTheater(s, ui) {
         <text class="name" dy="${r + 34}">${esc(label)}</text>
         ${st === 'target' ? `<text class="odds" dy="${r + 60}" data-odds-for="${x.id}"></text>` : ''}
         ${known && st !== 'owned' ? defLabel(s, x, r) + stancePin(s, x, r) : ''}
+        ${st === 'owned' ? shiftLabel(s, x, r) : ''}
         ${st === 'owned' && E.breaches(s, x.id) ? `<text class="def breach" dy="${-r - 10}">${E.breaches(s, x.id)}/${NODES.breachesToFall}</text>` : ''}
       </g>`;
   }).join('');
@@ -381,6 +383,14 @@ const defText = (s, x) => {
   const m = E.nodeStrength(s, x.id);
   return `${num(E.sectorDefense(s, x))}${E.flank(s, x).bonus ? ' ▲' : ''}${m > 1.005 ? ' ↑' : m < 0.995 ? ' ↓' : ''}`;
 };
+
+// Over our own ground: help it has taken in (+) or sent away (−), as a share of our Defense.
+function shiftLabel(s, x, r) {
+  const m = E.defenseShift(s, x.id);
+  if (Math.abs(m) < 0.001) return '';
+  // Under the name, where an attack's clock or a breach count over the hex cannot cover it.
+  return `<text class="def shift ${m > 0 ? 'help' : 'thin'}" dy="${r + 58}">${m > 0 ? '+' : '\u2212'}${pct(Math.abs(m))} defense</text>`;
+}
 
 // Defense above an enemy sector: ▲ fortified by approaches, ↑/↓ stronger/weaker than its base.
 function defLabel(s, x, r) {
@@ -465,8 +475,15 @@ function briefing(s, sec) {
     </header>`;
   if (st === 'owned') {
     const br = E.breaches(s, sec.id);
+    const atk = E.attackOn(s, sec.id);
+    const shift = E.defenseShift(s, sec.id);
     return `${head}${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}
-      ${sec.id !== MAP.home ? `<div class="rows"><div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}, or on the first breach by an attack ${NODES.overrunRatio} times your Defense."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div></div>` : ''}
+      <div class="rows">
+      <div class="r" data-tip="text" data-tip-text="What an attack here meets: our Defense, plus help it has taken in, less help it has sent away."><span>${icon('defense')}Defense here</span><b class="${shift > 0 ? 'good-t' : shift < 0 ? 'bad-t' : ''}" data-here></b></div>
+      ${sec.id !== MAP.home ? `<div class="r" data-tip="text" data-tip-text="Breached assaults on this sector. It falls at ${NODES.breachesToFall}, or on the first breach by an attack ${NODES.overrunRatio} times your Defense."><span>${icon('alert')}Breaches</span><b class="${br ? 'bad-t' : 'good-t'}">${br} / ${NODES.breachesToFall}</b></div>` : ''}
+      </div>
+      ${atk && E.reinforcers(s, sec.id).length + (s.reinforce || []).filter((r) => r.target === sec.id).length
+        ? `<button class="btn primary wide reinf" data-act="reinforce" data-id="${sec.id}"><span data-reinf></span></button>` : ''}
       <blockquote class="lore">${esc(sec.lore)}</blockquote>`;
   }
   if (st === 'far') {
@@ -506,6 +523,7 @@ export function bindMapScreen(panel) {
     factors: [...panel.querySelectorAll('[data-factor]')],
     nodeOdds: [...panel.querySelectorAll('[data-odds-for]')],
     power: q('[data-power]'), loss: q('[data-loss]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
+    here: q('[data-here]'), reinf: q('.sheet [data-reinf]'),
     def: q('[data-def]'), asl: q('[data-asl]'), str: q('[data-str]'), flank: q('[data-flank]'),
     defLabels: [...panel.querySelectorAll('[data-def-for]')],
     chips: [...panel.querySelectorAll('.sheet .chip')], btn: q('.launch'), label: q('.launch [data-l]'), opbar: q('[data-opbar]'),
@@ -534,6 +552,13 @@ export function updateMapScreen(s, ui, refs) {
   }
   if (refs.asltimer && s.assault) {
     put(refs.asltimer, clock(s.assault.remaining));
+  }
+  if (ui.sheet && refs.here) {
+    // Our own ground: what an attack here would meet, and help on the way in or out.
+    const shift = E.defenseShift(s, ui.sector);
+    put(refs.here, `${num(E.defenseAt(s, ui.sector, f))}${shift ? ` (${shift > 0 ? '+' : '\u2212'}${pct(Math.abs(shift))})` : ''}`);
+    const atk = E.attackOn(s, ui.sector);
+    if (atk && refs.reinf) reinforceButton(s, atk, refs.reinf);
   }
   if (!refs.power || !ui.sheet) {
     return;

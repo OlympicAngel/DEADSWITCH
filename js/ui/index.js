@@ -317,7 +317,7 @@ export function createUI(root, game) {
           sfx.buy();
           vibrate(20);
           floatText(t, tags(paid, '+'));
-          burst(t, 'var(--good)', 14);
+          burst(t, 'var(--ok)', 14);
         }
         break;
       }
@@ -369,6 +369,13 @@ export function createUI(root, game) {
         }
         break;
       }
+      case 'reinforce':
+        if (game.act.reinforce(id)) {
+          sfx.launch();
+          vibrate([20, 30, 20]);
+          flash(t, 'pop');
+        }
+        break;
       case 'close-sheet':
         ui.sheet = false;
         break;
@@ -417,7 +424,8 @@ export function createUI(root, game) {
       const nodes = Object.entries(s.nodes).map(([id, n]) => `${id}${n.m.toFixed(1)}${n.marks}`).join();
       const postures = Object.values(s.clans).map((c) => c.stances.join('')).join('|');
       const beams = E.attacks(s).map((a) => (E.attackPlace(s, a) || []).join()).join('|');
-      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, s.chapter, s.ending, E.level(s, 'core')]);
+      const help = (s.reinforce || []).map((r) => r.target + r.phase + r.from.join()).join('|');
+      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, help, s.chapter, s.ending, E.level(s, 'core')]);
     }
     return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align), !!s.op]);
   }

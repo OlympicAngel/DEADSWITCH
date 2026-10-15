@@ -455,7 +455,7 @@ p {
 
 /* Over the brim: what a capture or an order paid, waiting to be spent. */
 .pill.over small {
-  color: var(--good);
+  color: var(--ok);
   font-weight: 700;
   letter-spacing: .06em;
 }
@@ -2020,6 +2020,24 @@ button:focus-visible,
   flex: 1 1 0;
 }
 
+/* Sending help gets its own line under the two buttons. */
+.inc-foot .reinf {
+  flex: 1 0 100%;
+}
+
+.btn.reinf[hidden] {
+  display: none;
+}
+
+/* Over our own ground on the map: help taken in, or sent away. */
+.node .def.shift.help {
+  fill: var(--ok);
+}
+
+.node .def.shift.thin {
+  fill: var(--bad);
+}
+
 .hold {
   font: 600 12px var(--font-hud);
   text-transform: uppercase;
@@ -2300,12 +2318,12 @@ button:focus-visible,
 
 .daily.is-ready .d-ico,
 .daily.is-claimed .d-ico {
-  color: var(--good);
+  color: var(--ok);
 }
 
 .daily.is-ready .d-bar i,
 .daily.is-claimed .d-bar i {
-  background: var(--good);
+  background: var(--ok);
 }
 
 .panel > header .streak {
@@ -2313,7 +2331,7 @@ button:focus-visible,
   align-items: center;
   gap: 4px;
   margin-left: auto;
-  color: var(--good);
+  color: var(--ok);
 }
 
 .buffs {
@@ -5843,11 +5861,11 @@ dialog.report:has(.battle.def.loss) {
 .fl-green {
   border-color: rgba(76, 214, 140, .6);
   background: rgba(12, 36, 24, .94);
-  color: var(--good);
+  color: var(--ok);
 }
 
 .fl-green .fl-body b {
-  color: var(--good);
+  color: var(--ok);
 }
 
 .fl-red {

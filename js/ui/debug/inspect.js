@@ -47,6 +47,9 @@ function sector(s, id) {
       ['op odds / cost', () => `${pc(E.opChance(s, sec))} · ${JSON.stringify(E.opCost(sec))}`],
       ['op time', () => secs(E.opTime(sec))],
       ['links', () => sec.links.join(' ')],
+      ['defense here (ours)', () => (mine() ? `${E.defenseAt(s, id)} (shift ${n2(E.defenseShift(s, id))})` : '-')],
+      ['reinforce', () => (mine() ? `${E.reinforceBlock(s, id) || 'can go'} · ${E.reinforcers(s, id).length} neighbors · ${secs(E.reinforceTime(id))}` : '-')],
+      ['help on the road', () => (s.reinforce || []).map((r) => `${r.target}<-${r.from.join(',')} ${r.phase} ${secs(r.remaining)}`).join(' · ') || 'none'],
     ],
     json: () => ({ sector: sec, node: s.nodes[id] || null }),
     actions: [
@@ -58,6 +61,12 @@ function sector(s, id) {
       ['aggr +0.5', (g) => E.shiftAggression(g.state, id, 0.5)],
       ['aggr −0.5', (g) => E.shiftAggression(g.state, id, -0.5)],
       ['clear breaches', (g) => { if (g.state.nodes[id]) g.state.nodes[id].marks = 0; }],
+      ['send help here (any attack)', (g) => {
+        // Forces an assault on this sector if none is inbound, then sends what its neighbors can spare.
+        if (!E.attackOn(g.state, id)) { const b = E.borders(g.state, true).find((x) => x.target === id); if (b) E.spawnAssault(g.state, b, 900); }
+        E.startReinforce(g.state, id);
+      }],
+      ['help arrives now', (g) => { for (const r of g.state.reinforce || []) if (r.phase === 'going') r.remaining = 0.001; }],
       ['lose it to another clan', (g) => {
         // Hands the sector to the next clan along, which is the only way it ever changes hands.
         const now = E.factionOf(g.state, id);

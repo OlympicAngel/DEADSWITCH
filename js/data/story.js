@@ -910,6 +910,8 @@ export const LINES = {
   sectorLost: ['{sector} has fallen to {faction}.'],
   opCut: ['The road to {sector} is gone. The operation turned back with what it took out.'],
   breachSealed: ['No enemy borders {sector} any more. Its breaches are sealed.'],
+  reinforceSent: ['{n} of our sectors send help to {target}. They are thinner until it is home.'],
+  reinforceArrived: ['Help reaches {target}. The wall there is thicker for it.'],
   queueDropped: ['{building} left the build queue: the stores could not pay for it when its turn came.'],
   opLost: ['Operation against {sector} failed. We lost people.'],
   bossDown: ['{faction}: the capital has fallen. Their raids stop here. Their survivors will not.'],

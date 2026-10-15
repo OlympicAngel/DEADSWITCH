@@ -1,7 +1,7 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS, ALIGNMENT, BUILDINGS, ENDINGS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, maxLevel, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT, factors } from './sim/economy.js';
-import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, sectorById } from './sim/war.js';
+import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, advanceReinforce, sectorById } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, checkDaily, dailyTask, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
 
@@ -80,6 +80,7 @@ export function newState(seed = 1) {
     daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false, cleared: false }, // paid: the board's bonus collected
     taught: [], // lessons already given (data/lessons.js)
     lessonAt: null, // { id, at }: the step a running lesson had reached
+    reinforce: [], // help on the road between our sectors: { target, from[], phase going|there|back, remaining, total }
     scripted: {}, // one-off scripted moments that have already played (js/sim/war.js)
     inbox: [{ kind: 'boot' }],
     fx: [],
@@ -207,6 +208,9 @@ export function migrate(raw) {
   s.taught = Array.isArray(raw.taught)
     ? raw.taught.filter((x) => typeof x === 'string')
     : LESSONS.filter((l) => reached(s, l.when)).map((l) => l.id);
+  s.reinforce = (Array.isArray(raw.reinforce) ? raw.reinforce : []).filter((r) => r && typeof r.target === 'string' && Array.isArray(r.from)
+    && ['going', 'there', 'back'].includes(r.phase) && Number.isFinite(r.remaining) && Number.isFinite(r.total))
+    .map((r) => ({ target: r.target, from: r.from.filter((x) => typeof x === 'string'), phase: r.phase, remaining: r.remaining, total: r.total }));
   const la = raw.lessonAt;
   s.lessonAt = la && typeof la.id === 'string' && Number.isInteger(la.at) && la.at >= 0 ? { id: la.id, at: la.at } : null;
   // A run already past the opening is not owed the scripted loss; it would read as a random mugging.
@@ -282,6 +286,7 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
   advanceRaids(s, dt, offline);
   advanceAssaults(s, dt, offline);
   advanceNodes(s, dt);
+  advanceReinforce(s, dt);
   advanceClans(s, dt);
   advanceEvents(s, dt, offline, active && !offline);
   advanceSieges(s, dt, offline);

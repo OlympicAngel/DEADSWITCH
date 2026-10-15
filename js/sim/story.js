@@ -6,7 +6,7 @@ import {
   level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
   buildingStatus,
 } from './economy.js';
-import { delayRaid, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
+import { delayRaid, reinforceBlock, attacks, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
 import { stirClan } from './clans.js';
 import { range, pick, rand, mix } from './rng.js';
 
@@ -624,6 +624,7 @@ export function reached(s, cond) {
   if (cond.coreReady && buildingStatus(s, BY_ID.core) !== 'ready') return false;
   if (cond.scripted && !Object.entries(cond.scripted).every(([k, n]) => (s.scripted[k] || 0) >= n)) return false;
   if (cond.directive !== undefined && s.directive !== cond.directive) return false;
+  if (cond.reinforceable && !attacks(s).some((a) => !reinforceBlock(s, a.target))) return false;
   return true;
 }
 

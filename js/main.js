@@ -54,6 +54,7 @@ game.act = {
   },
   buy: (id, n) => E.buyItem(game.state, id, n),
   launch: (id) => commit(E.launchOp(game.state, id)),
+  reinforce: (id) => commit(E.startReinforce(game.state, id)),
   inspect: (id) => E.inspectSector(game.state, id),
   choose: (uid, i) => {
     const res = E.resolveEvent(game.state, uid, i);

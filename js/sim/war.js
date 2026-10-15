@@ -449,8 +449,9 @@ export function raidTarget(s, from) {
       }
     }
     if (held.length) {
-      // Cracked first, then angriest, and the Nest last: they would rather take an outpost.
-      return held.sort((a, b) => breaches(s, b) - breaches(s, a)
+      // Ground thinned by sending help elsewhere first, then cracked, then angriest, and the Nest
+      // last: they would rather take an outpost, and they watch who leaves.
+      return held.sort((a, b) => defenseShift(s, a) - defenseShift(s, b) || breaches(s, b) - breaches(s, a)
         || (a === MAP.home ? 1 : 0) - (b === MAP.home ? 1 : 0)
         || aggression(s, b) - aggression(s, a) || (a < b ? -1 : 1))[0];
     }
@@ -587,7 +588,80 @@ export function rushAttack(s, atk = nextAttack(s)) {
 }
 
 export function raidChance(s, raid = s.raid) {
-  return odds(factors(s).defense, raid.strength, RAIDS.winSharpness);
+  return odds(defenseAt(s, raid.target), raid.strength, RAIDS.winSharpness);
+}
+
+// ---------- reinforcements: our own ground sends help to a sector under attack ----------
+// Each of our sectors next to the one under attack sends NODES.reinforceShare of its strength. They
+// march as long as an operation there would take, hold until the attack is decided (or called off),
+// and march home again. The ground they leave is thinner from the moment they go until they are back.
+
+/** The attack inbound on one of our sectors, or null. */
+export const attackOn = (s, id) => attacks(s).find((a) => a.target === id) || null;
+
+/** How far a sector's own Defense stands from ours as a whole: contingents it has out, and in. */
+export function defenseShift(s, id) {
+  let m = 0;
+  for (const r of s.reinforce || []) {
+    if (r.from.includes(id)) m -= NODES.reinforceShare;
+    if (r.target === id && r.phase === 'there') m += NODES.reinforceShare * r.from.length;
+  }
+  return m;
+}
+
+/** Our Defense where an attack lands: the whole wall, with what that sector sent out or took in. */
+export const defenseAt = (s, id, f = factors(s)) => Math.max(0, Math.round(f.defense * (1 + defenseShift(s, id))));
+
+/** Our ground next to `id` with a contingent free to send. */
+export function reinforcers(s, id) {
+  const sec = SECTOR_BY_ID[id];
+  const busy = new Set((s.reinforce || []).flatMap((r) => r.from));
+  return sec ? sec.links.filter((l) => s.sectors.includes(l) && l !== id && !busy.has(l)) : [];
+}
+
+/** How long a contingent takes to reach `id`: as long as an operation there would. */
+export const reinforceTime = (id) => opTime(SECTOR_BY_ID[id]);
+
+/** Why help cannot go to `id` now, or '' when it can. */
+export function reinforceBlock(s, id) {
+  if (!s.sectors.includes(id)) return 'not ours';
+  const atk = attackOn(s, id);
+  if (!atk) return 'no attack';
+  if ((s.reinforce || []).some((r) => r.target === id)) return 'sent';
+  if (!reinforcers(s, id).length) return 'no neighbors';
+  if (reinforceTime(id) >= atk.remaining) return 'too far';
+  return '';
+}
+
+export function startReinforce(s, id) {
+  if (reinforceBlock(s, id)) return false;
+  const t = reinforceTime(id);
+  const from = reinforcers(s, id);
+  s.reinforce = [...(s.reinforce || []), { target: id, from, phase: 'going', remaining: t, total: t }];
+  say(s, 'reinforceSent', { n: from.length, target: SECTOR_BY_ID[id].name });
+  return true;
+}
+
+export function advanceReinforce(s, dt) {
+  if (!s.reinforce || !s.reinforce.length) return;
+  for (const r of s.reinforce) {
+    // The fight is over (decided or called off), or the ground is gone: they turn for home, from
+    // wherever they have got to.
+    if (r.phase !== 'back' && (!attackOn(s, r.target) || !s.sectors.includes(r.target))) {
+      r.remaining = r.phase === 'going' ? r.total - r.remaining : r.total;
+      r.phase = 'back';
+    }
+    r.remaining -= dt;
+    if (r.remaining > 0) continue;
+    if (r.phase === 'going') {
+      r.phase = 'there';
+      r.remaining = 0;
+      say(s, 'reinforceArrived', { target: SECTOR_BY_ID[r.target].name });
+    } else if (r.phase === 'back') {
+      r.phase = 'done';
+    }
+  }
+  s.reinforce = s.reinforce.filter((r) => r.phase !== 'done');
 }
 
 function spawnRaid(s, delay) {
@@ -755,7 +829,7 @@ export function defenseParts(s, sec) {
 
 /** True when an inbound assault is strong enough to take its target on the first breach. */
 export function overrunRisk(s, atk) {
-  return !!(atk && atk.assault && atk.strength >= factors(s).defense * NODES.overrunRatio);
+  return !!(atk && atk.assault && atk.strength >= defenseAt(s, atk.target) * NODES.overrunRatio);
 }
 
 // How fast assaults come: the keenest clan on my borders sets the pace for all of them.
@@ -794,7 +868,9 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
         : 1 + a;
       // Ground of theirs that I hold pulls them back to it.
       const back = SECTOR_BY_ID[b.target].faction === factionOf(s, b.from) ? prof.retake : 1;
-      return Math.max(0, base) * prof.weight * back;
+      // Ground of ours thinned by sending help elsewhere draws them like blood.
+      const thin = defenseShift(s, b.target) < 0 ? NODES.thinPull : 1;
+      return Math.max(0, base) * prof.weight * back * thin;
     };
     const total = pool.reduce((a, b) => a + w(b), 0);
     if (!total) return null;
@@ -957,7 +1033,7 @@ function takeStock(s, chance, scale = 1) {
 }
 
 function resolveAttack(s, raid, offline) {
-  const defense = factors(s).defense;
+  const defense = defenseAt(s, raid.target);
   const chance = odds(defense, raid.strength, RAIDS.winSharpness);
   const roll = rand(s, 'battle');
   const name = attackName(raid);

@@ -51,6 +51,14 @@ export const LESSONS = [
     ],
   },
   {
+    // Only while help can actually make it: an attack on ground of ours that has neighbors of ours.
+    id: 'reinforce', when: { reinforceable: true },
+    steps: [
+      { at: '[data-nav="command"]', say: 'Something is coming for ground that has ours on either side of it.', done: 'tap' },
+      { at: '.inc-foot [data-act="reinforce"]', say: 'Reinforce: each sector of ours next to it sends a fifth of our strength. They march there and back, and the ground they leave is thinner until they are home.', done: 'tap' },
+    ],
+  },
+  {
     id: 'war', when: { level: { core: 2 } },
     steps: [
       { say: 'Core two. They can hear us now. Raids come for the Nest, and the clans on our border come for the ground we hold.', done: 'read' },
