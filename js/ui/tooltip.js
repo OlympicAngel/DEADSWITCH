@@ -5,7 +5,6 @@ import {
 import * as E from '../engine.js';
 import { num, rate, time, pct, esc } from '../format.js';
 import { icon } from './icons.js';
-import { convRate } from './common.js';
 
 export function createTips(game) {
   const tip = document.createElement('div');
@@ -43,7 +42,13 @@ export function createTips(game) {
   function convRows(s, r) {
     const built = BUILDINGS.filter((b) => b.kind === 'converter' && E.level(s, b.id) > 0);
     const sw = (b) => `<button class="tip-switch ${s.paused[b.id] ? 'off' : 'on'}" data-act="pause" data-id="${b.id}" aria-label="${b.name} power">${s.paused[b.id] ? 'OFF' : 'ON'}</button>`;
-    const line = (b) => `<div class="tip-row conv"><span class="tc-name">${icon(b.id)}<b>${b.name}</b>${convRate(b, true)}</span>${sw(b)}</div>`;
+    // What it moves each second at its level, as its card's Now row shows it.
+    const flow = (b) => {
+      const lvl = E.level(s, b.id);
+      const side = (o, sign) => Object.entries(o).map(([k, v]) => `<span class="cr t-${k}">${icon(k)}${sign}${num(v * lvl)}</span>`).join('');
+      return `<span class="conv-rate">${side(b.consumes, '\u2212')}<span class="cr-arrow">${icon('next')}</span>${side(b.produces, '+')}<em>/s</em></span>`;
+    };
+    const line = (b) => `<div class="tip-row conv"><span class="tc-name">${icon(b.id)}<b>${b.name}</b>${flow(b)}</span>${sw(b)}</div>`;
     const make = built.filter((b) => b.produces[r]);
     const use = built.filter((b) => b.consumes[r]);
     const name = RESOURCES[r] ? RESOURCES[r].short : r;

@@ -5895,6 +5895,12 @@ dialog.report:has(.battle.def.loss) {
   margin: 0 -2px;
 }
 
+.conv-rate em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--dim);
+}
+
 .conv-rate small {
   color: var(--muted);
   font-size: 10px;

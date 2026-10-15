@@ -6,9 +6,9 @@ import { icon, labeled } from './icons.js';
 import { put } from './dom.js';
 
 // A converter's exchange ratio: what goes in for what comes out, scaled so the smallest amount is 1.
-// The same at any level or speed. `plain` drops the tap-to-name icons, for use inside a tooltip.
-export function convRate(b, plain = false) {
-  const ic = plain ? icon : labeled;
+// The same at any level or speed.
+export function convRate(b) {
+  const ic = labeled;
   const unit = Math.min(...Object.values(b.consumes), ...Object.values(b.produces));
   const side = (o) => Object.entries(o).map(([r, v]) => `<span class="cr t-${r}">${ic(r)}${num(v / unit)}</span>`).join('');
   const words = (o) => Object.entries(o).map(([r, v]) => `${num(v / unit)} ${RESOURCES[r].short}`).join(' + ');
