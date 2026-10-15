@@ -604,7 +604,7 @@ export function defenseShift(s, id) {
   let m = 0;
   for (const r of s.reinforce || []) {
     if (r.from.includes(id)) m -= NODES.reinforceShare;
-    if (r.target === id && r.phase === 'there') m += NODES.reinforceShare * r.from.length;
+    if (r.target === id && r.phase === 'there') m += NODES.reinforceGain * r.from.length;
   }
   return m;
 }

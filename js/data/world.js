@@ -420,7 +420,8 @@ export const NODES = {
   opDefenderCut: 0.04, // removed at the same time: what repelling you cost the defenders
   defendWinCut: 0.03, // removed when its assault on you is held
   breachCut: 0.01, // removed even when its assault breaks through
-  reinforceShare: 0.2, // a sector sending help gives this share of our Defense there, and is that much thinner until it is back
+  reinforceShare: 0.2, // a sector sending help is this much thinner from the moment it leaves until it is back
+  reinforceGain: 0.05, // and the sector it reaches gains this much per sender: most of it is spent on the road
   thinPull: 3, // an assault is this many times as likely to pick ground of ours thinned by sending help
   defenseThreatShare: 0.1, // an enemy sector raises this share of our Threat on top of its own garrison
   attackingDefenseCut: 0.1, // and holds this much weaker while an attack of its own is out against us

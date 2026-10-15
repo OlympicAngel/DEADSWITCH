@@ -55,7 +55,7 @@ export const LESSONS = [
     id: 'reinforce', when: { reinforceable: true },
     steps: [
       { at: '[data-nav="command"]', say: 'Something is coming for ground that has ours on either side of it.', done: 'tap' },
-      { at: '.inc-foot [data-act="reinforce"]', say: 'Reinforce: each sector of ours next to it sends a fifth of our strength. They march there and back, and the ground they leave is thinner until they are home.', done: 'tap' },
+      { at: '.inc-foot [data-act="reinforce"]', say: 'Reinforce: each sector of ours next to it sends help. Each is a fifth thinner while its help is away, and adds a twentieth here when it arrives. They march there and back.', done: 'tap' },
     ],
   },
   {
