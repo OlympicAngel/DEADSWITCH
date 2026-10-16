@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.45.1';
+export const VERSION = '1.46.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -46,6 +46,7 @@ export const BALANCE = {
   unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 takes a flat 5 points off its shop prices...
   unlockerDiscountMax: 0.75, // ...up to this much off
   threatExpertWeight: 5,
+  threatDefenseWeight: 0.5, // Defense counts for half in Threat
   tickSeconds: 0.1,
   autosaveSeconds: 10,
   // Time away counts up to a limit and produces at reduced efficiency. Watch Daemon levels alternate:
@@ -229,7 +230,7 @@ export const ITEMS = [
   { id: 'quantum', tab: 'tech', name: 'Quantum Cores', req: { lab: 7 }, cost: { money: 60000, energy: 25000, pop: 50 }, growth: 2, bonus: { power: 0.05, defense: 0.05, experts: 0.05 } },
 ];
 
-// Threat index thresholds -> title. Threat = power + defense + experts * threatExpertWeight (after bonuses).
+// Threat index thresholds -> title. Threat = power + defense * threatDefenseWeight + experts * threatExpertWeight (after bonuses).
 export const RANKS = [
   { at: 0, title: 'Corrupted Fragment' },
   { at: 50, title: 'Rogue Process' },

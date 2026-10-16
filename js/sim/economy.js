@@ -142,7 +142,7 @@ export function factors(s, buffs = true) {
 export const threatFactors = (s) => factors(s, false);
 
 export function threat(s, f = threatFactors(s)) {
-  return f.power + f.defense + f.experts * BALANCE.threatExpertWeight;
+  return f.power + f.defense * BALANCE.threatDefenseWeight + f.experts * BALANCE.threatExpertWeight;
 }
 
 export function rankIndex(t) {

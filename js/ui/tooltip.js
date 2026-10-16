@@ -192,7 +192,7 @@ export function createTips(game) {
     const next = RANKS[ri + 1];
     return head('threat', 'Threat index', RANKS[ri].title)
       + '<p>What the wasteland sees when it looks at us: our Power, our Defense, and our Experts, who count for more than any gun. Every clan musters against it.</p>'
-      + row('Power', num(f.power)) + row('Defense', num(f.defense)) + row(`Experts × ${BALANCE.threatExpertWeight}`, num(f.experts * BALANCE.threatExpertWeight))
+      + row('Power', num(f.power)) + row(`Defense × ${BALANCE.threatDefenseWeight}`, num(f.defense * BALANCE.threatDefenseWeight)) + row(`Experts × ${BALANCE.threatExpertWeight}`, num(f.experts * BALANCE.threatExpertWeight))
       + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) + row('Needs', '+' + num(next.at - t)) : '');
   }
 
