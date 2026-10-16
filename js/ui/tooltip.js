@@ -38,10 +38,8 @@ export function createTips(game) {
     const mult = isRes ? E.prodMultiplier(s, key) : E.bonusMult(s, key);
     const name = isRes ? RESOURCES[key].name : FACTORS[key].name;
     const per = isRes ? '/s' : '';
-    const effects = !isRes && s.buffs.some((b) => b.key === key);
     return head(key, name, `${num(base * mult)}${per}`)
-      + row('Base', num(base) + per) + bonusRows(s, key) + row('With bonuses', num(base * mult) + per)
-      + (effects ? '<p>Running effects are not counted in Threat.</p>' : '');
+      + row('Base', num(base) + per) + bonusRows(s, key) + row('With bonuses', num(base * mult) + per);
   }
 
   // Converters that make or use a resource, each with its switch, so a shortfall can be answered from
@@ -193,7 +191,7 @@ export function createTips(game) {
     const ri = E.rankIndex(t);
     const next = RANKS[ri + 1];
     return head('threat', 'Threat index', RANKS[ri].title)
-      + '<p>What the wasteland sees when it looks at us: our Power, our Defense, and our Experts, who count for more than any gun. Every clan musters against it. Running effects are not counted.</p>'
+      + '<p>What the wasteland sees when it looks at us: our Power, our Defense, and our Experts, who count for more than any gun. Every clan musters against it.</p>'
       + row('Power', num(f.power)) + row('Defense', num(f.defense)) + row(`Experts × ${BALANCE.threatExpertWeight}`, num(f.experts * BALANCE.threatExpertWeight))
       + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) + row('Needs', '+' + num(next.at - t)) : '');
   }
