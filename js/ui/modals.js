@@ -384,7 +384,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   function battle(r, then) {
     const max = Math.max(r.you, r.them, 1);
     open(`
-      <div class="battle ${r.mode} ${r.win ? 'win' : 'loss'} ${r.shot ? 'has-map' : ''}">
+      <div class="battle ${r.mode} ${r.win ? 'win' : 'loss'} ${r.shot ? 'has-map' : ''} ${r.quick ? 'quick' : ''}">
         ${r.shot || ''}
         <div class="battle-banner">${icon(r.mode === 'op' ? 'power' : 'defense')}<span>${r.kicker}</span></div>
         <div class="modal-head"><h2>${esc(r.title)}</h2></div>
@@ -399,8 +399,15 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         <div class="spoils">${r.spoils}</div>
         ${r.note ? `<p class="note">${r.note}</p>` : ''}
         ${r.why ? `<ul class="why">${r.why}</ul>` : ''}
-        <button class="btn primary wide" data-close>Continue</button>
+        <button class="btn primary wide" data-close>${r.back ? 'Back' : 'Continue'}</button>
       </div>`, { cls: 'report locked', then });
+    // Opened from a summary it is a look back, not the news: fast, and without the alarm.
+    if (r.quick) {
+      setTimeout(() => {
+        if (dialog.open && dialog.querySelector('.battle.quick')) (r.win ? sfx.win : sfx.lose)();
+      }, 400);
+      return;
+    }
     sfx.launch();
     setTimeout(() => {
       if (!dialog.open) {
@@ -449,7 +456,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       shot: mapBackdrop(s, [sec.id, from].filter(Boolean), { beam: from ? [from, sec.id] : null }),
       youLabel: 'Your power', youIcon: 'power', you: r.power,
       themLabel: 'Their defense', themIcon: 'defense', them: r.defense,
-      chance: r.chance, roll: r.roll, win: r.win,
+      chance: r.chance, roll: r.roll, win: r.win, quick: r.quick, back: r.back,
       spoils: `${r.win
         ? `${r.retaken ? `<div class="r"><span>${icon('check')}Retaken</span><b class="muted">No spoils</b></div>` : `<div class="r"><span>${icon('spark')}Spoils</span><b>${tags(r.loot, '+')}</b></div>`}
            ${sec.bonus ? `<div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>` : ''}`
@@ -488,7 +495,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       shot: r.assault ? mapBackdrop(game.state, [r.target, r.from], { beam: [r.from, r.target], faction: r.faction }) : '',
       youLabel: 'Your defense', youIcon: 'defense', you: r.defense,
       themLabel: 'Their strength', themIcon: 'power', them: r.strength,
-      chance: r.chance, roll: r.roll, win: r.win,
+      chance: r.chance, roll: r.roll, win: r.win, quick: r.quick, back: r.back,
       spoils: `${r.win ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>` : ''}
         ${r.assault && r.strengthAfter ? dugIn(r.from, r.strengthAfter, r.win ? 'good-t' : 'bad-t') : ''}
         ${!r.win && r.assault && !r.plundered ? `<div class="r"><span>${icon('map')}${place}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}
@@ -722,10 +729,63 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         <p class="ev-text">You were silent, so I decided: <b>${esc(m.label)}</b>.</p>
         <p class="ev-text result">${esc(m.result)}</p>
         ${outcome(m)}
-        <button class="btn primary wide" data-close>Understood</button>
+        <button class="btn primary wide" data-close>${m.back ? 'Back' : 'Understood'}</button>
       </div>`, { cls: 'event-modal crisis locked', then });
+    if (m.quick) return;
     sfx.lose();
     vibrate(150);
+  }
+
+  // ---------- report summaries ----------
+  // One line per battle or order answered for them: what it was, how it went, the numbers it turned on
+  // and what it took. A tap opens the full report, played fast, and Back returns to the list.
+  function reportRows(items) {
+    return items.map((m, i) => {
+      let ic; let color = ''; let title; let sub; let chip; let good;
+      if (m.kind === 'expired') {
+        ic = 'message'; title = esc(m.title); sub = `Answered for you: ${esc(m.label)}`; chip = 'Decided'; good = false;
+      } else if (m.kind === 'op') {
+        const sec = E.sectorById(m.sector) || { name: '?' };
+        ic = 'power'; title = esc(sec.name); sub = `Our offensive · ${num(m.power)} vs ${num(m.defense)}`; chip = m.win ? 'Captured' : 'Repelled'; good = m.win;
+      } else {
+        const f = FACTIONS[m.faction] || {};
+        const where = E.sectorById(m.target);
+        ic = f.icon || 'alert'; color = f.color || ''; title = esc(m.name || f.raidName || 'Attack');
+        sub = `${where ? `${esc(where.name)} · ` : ''}${num(m.strength)} vs ${num(m.defense)}`;
+        chip = m.win ? 'Held' : m.overrun ? 'Overrun' : m.fell ? 'Lost' : m.plundered ? 'Plundered' : 'Breached'; good = m.win;
+      }
+      const lost = m.kind === 'expired' ? '' : losses(m);
+      return `<button class="ar ${good ? 'ok' : 'bad'}" data-ar="${i}">
+        <span class="ar-ico"${color ? ` style="--fc:${color}"` : ''}>${icon(ic)}</span>
+        <span class="ar-main"><b>${title}</b><small>${sub}</small>${lost && lost !== 'None' ? `<span class="ar-loss">${lost}</span>` : ''}</span>
+        <em class="ar-chip">${chip}</em><span class="ar-go">${icon('next')}</span></button>`;
+    }).join('');
+  }
+
+  /** Wires a summary's rows: each opens its report fast, and closing that report reopens `reopen`. */
+  function wireRows(items, reopen) {
+    dialog.querySelectorAll('[data-ar]').forEach((b) => {
+      b.onclick = () => {
+        const m = { ...items[Number(b.dataset.ar)], quick: true, back: true };
+        const back = () => setTimeout(reopen, 60);
+        if (m.kind === 'raid') showRaid(m, back);
+        else if (m.kind === 'op') showOp(m, back);
+        else showExpired(m, back);
+      };
+    });
+  }
+
+  /** Several reports at once (the attacks held at the gate landing as the player comes back): one list. */
+  function showBatch(items, then) {
+    setFocus('screen', 'reports');
+    const held = items.filter((m) => m.kind !== 'expired' && m.win).length;
+    open(`
+      <span class="kicker">${icon('alert')}Reports</span>
+      <h2 tabindex="-1" autofocus>${items.length} reports</h2>
+      <p class="muted">${held} of ${items.filter((m) => m.kind !== 'expired').length} battles held.</p>
+      <div class="away-reports">${reportRows(items)}</div>
+      <button class="btn primary wide" data-close>Continue</button>`, { then });
+    wireRows(items, () => showBatch(items, then));
   }
 
   // The archive: chapters read so far, the memories each sector gave up, and the service record.
@@ -798,6 +858,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
 
   function showOffline(report, then) {
     setFocus('screen', 'away');
+    const items = report.reports || [];
     const gains = Object.keys(RESOURCES).map((r) => `<div class="r"><span>${icon(r)}${RESOURCES[r].name}</span><b class="${report.gained[r] < 0 ? 'bad-t' : 'good-t'}">${report.gained[r] >= 0 ? '+' : '−'}${num(Math.abs(report.gained[r]))}</b></div>`).join('');
     const h = report.happened || {};
     const forces = Object.entries(report.forces || {}).filter(([, d]) => Math.abs(d) >= 1)
@@ -812,20 +873,23 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       ['message', 'Still waiting for you', h.pending, 'warn-t'],
     ].filter(([, , n]) => n > 0)
       .map(([ic, label, n, cls]) => `<div class="r"><span>${icon(ic)}${label}</span><b class="${cls}">${num(n)}</b></div>`).join('')
-      + (report.fell || []).map((name) => `<div class="r"><span>${icon('map')}${esc(name)}</span><b class="bad-t">Lost</b></div>`).join('')
-      + (report.answered || []).map((a) => `<div class="r"><span>${icon('core')}${esc(a.title)}</span><b class="bad-t">${esc(a.label)}</b></div>`).join('');
+      // Older reports carry names only; newer ones list every battle and answer in full below.
+      + (items.length ? '' : (report.fell || []).map((name) => `<div class="r"><span>${icon('map')}${esc(name)}</span><b class="bad-t">Lost</b></div>`).join('')
+        + (report.answered || []).map((a) => `<div class="r"><span>${icon('core')}${esc(a.title)}</span><b class="bad-t">${esc(a.label)}</b></div>`).join(''));
     // Nothing was produced in the dark, so there is nothing to list: only what the war did, and what
     // would have been running if the Watch Daemon were up.
     open(`
       <span class="kicker">${icon('clock')}Welcome back</span>
-      <h2>While you were away</h2>
+      <h2 tabindex="-1" autofocus>While you were away</h2>
       <p class="muted">Away ${time(report.away ?? report.seconds)}. ${report.dark
         ? `The war ran for ${time(report.seconds)}. Nothing was produced past the first ${time(BALANCE.offline.graceSeconds)}.`
         : produced(report)}</p>
       ${report.dark ? '' : `<div class="rows">${gains}</div>`}
       ${events ? `<div class="rows away-log">${events}</div>` : ''}
+      ${items.length ? `<span class="kicker away-kicker">${icon('alert')}Reports</span><div class="away-reports">${reportRows(items)}</div>` : ''}
       ${report.dark ? `<p class="muted away-tip">${icon('daemon')}The ${esc(BY_ID.daemon.name)} runs the base while you are gone.</p>` : ''}
       <button class="btn primary wide" data-close>Resume command</button>`, { then });
+    wireRows(items, () => showOffline(report, then));
   }
 
   // Something threw where it should not have. Say so plainly and keep the save within reach.
@@ -995,6 +1059,19 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       return false;
     }
     const item = s.inbox[0];
+    // Two or more reports in a row (attacks held at the gate landing as the player comes back) open
+    // as one list rather than one long dialog after another.
+    const REPORTS = ['raid', 'op', 'expired'];
+    let run = 0;
+    while (run < s.inbox.length && REPORTS.includes(s.inbox[run].kind)) run++;
+    if (run >= 2) {
+      const batch = s.inbox.slice(0, run);
+      showBatch(batch, () => {
+        game.state.inbox = game.state.inbox.filter((m) => !batch.includes(m));
+        setTimeout(pump, 250);
+      });
+      return true;
+    }
     const next = () => {
       if (game.state.inbox[0] === item) {
         game.state.inbox.shift();
@@ -1026,5 +1103,5 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     return true;
   }
 
-  return { open, close, pump, showEvent, showOffline, showArchive, showCrash, showRetired, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
+  return { open, close, pump, showEvent, showOffline, showBatch, showArchive, showCrash, showRetired, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
 }

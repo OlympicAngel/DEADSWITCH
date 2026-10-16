@@ -3,6 +3,15 @@
 // Actions are [label, run(game)] and may change state freely.
 import * as E from '../../engine.js';
 import { FACTIONS, BY_ID, ITEM_BY_ID, MAP, NODES, CLANS, LESSONS, SECTORS, TUTORIAL, CORE_MEMORIES, RALLY, RAIDS, WARN, EVENTS, DAILY, BALANCE } from '../../data.js';
+
+/** Stand-in battle and order reports for forcing the summary views. */
+function sampleReports(s) {
+  const at = s.sectors[s.sectors.length - 1] || MAP.home;
+  const raid = (win, extra = {}) => ({ kind: 'raid', faction: 'scav', name: FACTIONS.scav.raidName, strength: 1400, defense: win ? 1900 : 900,
+    chance: win ? 0.7 : 0.3, roll: win ? 0.4 : 0.6, win, offline: true, assault: false, from: null, target: at, lost: win ? {} : { money: 420 }, units: {}, cost: {}, theirLoss: 120, ...extra });
+  return [raid(true), raid(false), { kind: 'op', sector: at, power: 1200, defense: 800, chance: 0.66, roll: 0.3, win: true, loot: { money: 300 }, units: {}, cost: {} },
+    { kind: 'expired', id: 'ultimatum', choice: 0, title: 'Ultimatum', label: 'Pay the tribute', result: 'They count it twice and ride off laughing.' }];
+}
 import { ambientMood, moodOf } from '../ambient.js';
 import { volume } from '../audio.js';
 import { voiceName, say as speak } from '../voice.js';
@@ -316,7 +325,9 @@ function screen(s, id) {
       ['cut: away report', (g) => g.state.inbox.push({ kind: 'away', report: { away: 21600, seconds: E.awaySeconds(g.state, 21600),
         paid: Math.min(21600, E.offlineLimits(g.state).seconds),
         efficiency: E.offlineLimits(g.state).efficiency, dark: !!E.offlineLimits(g.state).dark,
-        gained: Object.fromEntries(Object.keys(g.state.res).map((r) => [r, 1234])), happened: { held: 2, breached: 1, taken: 0, lost: 1 } } })],
+        gained: Object.fromEntries(Object.keys(g.state.res).map((r) => [r, 1234])), happened: { held: 2, breached: 1, taken: 0, lost: 1 },
+        reports: sampleReports(g.state) } })],
+      ['reports burst on return', (g) => g.state.inbox.push(...sampleReports(g.state))],
       ['say a line', () => speak('All stations. This is the Nest. Hold what you have.')],
       ['fire a test alert', () => testAlert()],
       ['re-read alert plumbing', () => notifyDiagnosis().then((d) => { diag.at = d; })],

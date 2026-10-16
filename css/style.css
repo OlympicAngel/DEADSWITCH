@@ -7179,3 +7179,119 @@ dialog.report:has(.battle.def.loss) {
   position: absolute;
   inset: -4px;
 }
+
+/* Report summaries (away, or a burst on the way back): one tappable line per battle or answer. */
+.away-kicker {
+  display: flex;
+  margin-top: 12px;
+}
+
+.away-reports {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 12px;
+}
+
+.ar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--bad);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, .25);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ar.ok {
+  border-left-color: var(--ok);
+}
+
+h2[autofocus] {
+  outline: none; /* holds the dialog's first focus so no row opens looking selected */
+}
+
+.ar-ico {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--fc, var(--line-2));
+  color: var(--fc, var(--muted));
+}
+
+.ar-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.ar-main b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 600 12.5px var(--font-hud);
+}
+
+.ar-main small {
+  font: 11px var(--font-num);
+  color: var(--muted);
+}
+
+.ar-loss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.ar-loss .tag {
+  font-size: 10.5px;
+  padding: 0 4px;
+}
+
+.ar-chip {
+  font: 700 10px var(--font-hud);
+  font-style: normal;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--bad);
+}
+
+.ar.ok .ar-chip {
+  color: var(--ok);
+}
+
+.ar-go {
+  color: var(--dim);
+}
+
+/* A report opened from a summary plays in under half a second. */
+.battle.quick .side .vbar i {
+  animation-duration: .25s;
+}
+
+.battle.quick .roll .needle {
+  animation-duration: .35s;
+}
+
+.battle.quick .stamp {
+  animation-delay: .35s;
+  animation-duration: .2s;
+}
+
+.battle.quick .spoils,
+.battle.quick .why,
+.battle.quick .note,
+.battle.quick>.btn {
+  animation-delay: .4s;
+  animation-duration: .2s;
+}

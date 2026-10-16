@@ -149,6 +149,8 @@ addEventListener('unhandledrejection', (e) => ours(String((e.reason && e.reason.
 // Without a Watch Daemon nothing was produced, so the report only comes up when the war did something.
 /** Two stretches away with a look in between are one absence to the player: add the second into the
  *  first instead of queueing a second report. */
+const AWAY_REPORTS = 40; // the most an away summary keeps in full; the counts above them stay exact
+
 function mergeAway(into, add) {
   into.away += add.away;
   into.seconds += add.seconds;
@@ -161,6 +163,7 @@ function mergeAway(into, add) {
   into.happened.pending = add.happened.pending; // what is waiting now, not the two counts added up
   into.answered = [...(into.answered || []), ...(add.answered || [])];
   into.fell = [...(into.fell || []), ...(add.fell || [])];
+  into.reports = [...(into.reports || []), ...(add.reports || [])].slice(-AWAY_REPORTS);
 }
 
 function catchUp(seconds) {
@@ -179,6 +182,8 @@ function catchUp(seconds) {
     // coming back is one dialog and not one per thing that happened.
     keep.answered = queued.filter((m) => m.kind === 'expired').map((m) => ({ title: m.title, label: m.label }));
     keep.fell = queued.filter((m) => m.kind === 'raid' && m.fell && E.sectorById(m.target)).map((m) => E.sectorById(m.target).name);
+    // Each battle and each order answered for them, whole, so the summary can open any of them.
+    keep.reports = queued.filter((m) => m.kind === 'raid' || m.kind === 'op' || m.kind === 'expired').slice(-AWAY_REPORTS);
     const quiet = queued.filter((m) => m.kind !== 'raid' && m.kind !== 'op' && m.kind !== 'expired');
     s.inbox.length = mark;
     s.inbox.push(...quiet);
