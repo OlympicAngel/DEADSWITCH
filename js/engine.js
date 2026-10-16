@@ -55,6 +55,7 @@ export function newState(seed = 1) {
     raid: null,
     assault: null,
     assaultTimer: null,
+    attackSeq: 0,
     assaultSeq: 0, // assaults rolled so far: every lockedEvery-th is a sealed clan's turn
     sieges: [],
     grudges: [],
@@ -246,6 +247,7 @@ export function migrate(raw) {
   s.assault = a && sectorById(a.from) && sectorById(a.target) && FACTIONS[a.faction] && Number.isFinite(a.remaining) ? a : null;
   s.assaultTimer = Number.isFinite(raw.assaultTimer) ? raw.assaultTimer : null;
   s.assaultSeq = Number.isFinite(raw.assaultSeq) ? Math.max(0, Math.floor(raw.assaultSeq)) : 0;
+  s.attackSeq = Number.isFinite(raw.attackSeq) ? Math.max(0, Math.floor(raw.attackSeq)) : 0;
   // Budgets for one absence: derived, reset at the start of every catch-up, never carried over.
   s.offlineRaidCap = 1;
   s.offlineEvents = 0;

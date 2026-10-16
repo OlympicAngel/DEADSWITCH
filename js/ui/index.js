@@ -425,7 +425,7 @@ export function createUI(root, game) {
       const postures = Object.values(s.clans).map((c) => c.stances.join('')).join('|');
       const beams = E.attacks(s).map((a) => a.target + ':' + (E.attackPlace(s, a) || []).join()).join('|');
       const help = (s.reinforce || []).map((r) => r.target + r.phase + r.from.join()).join('|');
-      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.op && s.op.sector, beams, nodes, postures, help, s.chapter, s.ending, E.level(s, 'core')]);
+      return JSON.stringify([...base, ui.sector, ui.sheet, s.sectors, s.owner, s.op && s.op.sector, beams, nodes, postures, help, s.chapter, s.ending, E.level(s, 'core')]);
     }
     return JSON.stringify([...base, ui.buyMode, s.levels, s.items, s.paused, s.build && s.build.id, Math.round(s.align), !!s.op]);
   }
@@ -612,7 +612,7 @@ export function createUI(root, game) {
 
   // One attack, one signature: strength is not part of it, because holding an attack in changes
   // its strength every step and each step would otherwise read as a fresh attack.
-  const sig = (a) => a.faction + (a.from || '') + Math.round(a.total) + (a.assault ? 'a' : a.siege ? 's' : 'r');
+  const sig = (a) => (a.id ? '#' + a.id : a.faction + (a.from || '') + Math.round(a.total) + (a.assault ? 'a' : a.siege ? 's' : 'r'));
 
   function updateAlerts(s) {
     const box = root.querySelector('[data-floats]');
@@ -624,8 +624,9 @@ export function createUI(root, game) {
     if (atk) {
       const p = E.raidChance(s, atk);
       const more = threats.length - 1;
+      // Keyed on the attack shown first, so a second one joining (the +N) does not re-open a folded alert.
       items.push({
-        key: 'atk:' + threats.map(sig).join(','), level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
+        key: 'atk:' + sig(atk), more, level: p < 0.5 ? 'red' : 'amber', ico: 'alert',
         body: `<button class="fl-body" data-go="command"><span>${E.attackName(atk)}${more ? ` +${more}` : ''}</span><b data-t></b><em data-h></em></button>`,
         time: clock(atk.remaining), hold: `hold ${pct(p)}`, holdCls: 'chance-' + chanceClass(p),
       });
@@ -647,11 +648,14 @@ export function createUI(root, game) {
         body: `<button class="fl-body" data-act="claim-daily" data-id="all"><span>${ready} order${ready > 1 ? 's' : ''} to collect</span><b>Collect</b></button>`,
       });
     }
-    for (const k of Object.keys(ui.floats)) {
-      if (!items.some((x) => x.key === k)) delete ui.floats[k];
+    // Command hides the floats without them going away: what was folded stays folded when the player leaves it.
+    if (!quiet) {
+      for (const k of Object.keys(ui.floats)) {
+        if (!items.some((x) => x.key === k)) delete ui.floats[k];
+      }
     }
     // Rebuild only when the set of alerts changes; everything else is patched in place so taps land.
-    const structure = items.map((x) => x.key + x.level).join('|');
+    const structure = items.map((x) => x.key + x.level + (x.more || '')).join('|');
     if (box.dataset.k !== structure) {
       box.dataset.k = structure;
       box.innerHTML = items.map((x) => `<div class="fl fl-${x.level}" data-fl="${x.key}">
@@ -669,14 +673,16 @@ export function createUI(root, game) {
         setCls(h, x.holdCls);
       }
     }
-    const imminent = !!atk && atk.remaining < 60;
-    app.classList.toggle('imminent', imminent);
-    if (imminent && !ui.imminent && atk.remaining < 30) {
-      ui.imminent = true;
+    // The last-seconds alarm follows the attacks themselves, not which screen is open, so walking off
+    // Command does not sound it a second time.
+    const next = E.attacks(s).find((a) => E.raidChance(s, a) < WARN.safeHold) || null;
+    app.classList.toggle('imminent', !!atk && atk.remaining < 60);
+    if (next && next.remaining < 30 && ui.imminent !== sig(next)) {
+      ui.imminent = sig(next);
       sfx.alarm();
       vibrate([200, 100, 200]);
     }
-    if (!atk) {
+    if (!next) {
       ui.imminent = false;
     }
     const key = E.attacks(s).map(sig).join(',');
@@ -743,6 +749,13 @@ export function createUI(root, game) {
     }
   }
 
+  /** True when `el` is on the page, inside the viewport, and no dialog covers the screen. */
+  function inSight(el) {
+    if (!el || !el.isConnected || document.querySelector('dialog[open]')) return false;
+    const r = el.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth && r.height > 0;
+  }
+
   function drainFx(s) {
     // A long absence comes back with a pile of these: each kind of cue sounds once, not once each.
     const heard = new Set();
@@ -754,6 +767,11 @@ export function createUI(root, game) {
         const card = view.querySelector(`[data-card="${fx.id}"]`);
         flash(card);
         burst(card, 'var(--hud)');
+        // The buzz says something finished; when its card is not in sight, say what.
+        if (!inSight(card)) {
+          const b = BUILDINGS.find((x) => x.id === fx.id);
+          toast(`${icon(fx.id)}<b>${esc(b.name)}</b> Lv ${E.level(s, fx.id)} built`, 'good');
+        }
       } else if (fx.kind === 'damaged') {
         cue(sfx.fall);
         shake();

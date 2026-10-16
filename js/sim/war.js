@@ -474,7 +474,11 @@ export function attacks(s) {
 
 export const nextAttack = (s) => attacks(s)[0] || null;
 
+/** Every attack gets a number of its own, so the screen can tell one from the next however it re-routes. */
+const nextAttackId = (s) => (s.attackSeq = (s.attackSeq || 0) + 1);
+
 export function attackName(atk) {
+  if (atk.name) return atk.name; // brought on by an order: it goes by that order's name
   if (atk.assault) return `Assault from ${SECTOR_BY_ID[atk.from].name}`;
   if (atk.siege) return `${FACTIONS[atk.faction].short} siege`;
   if (atk.grudge) return `${FACTIONS[atk.faction].short} vengeance`;
@@ -515,12 +519,13 @@ function settleGrudge(s, raid, won) {
 }
 
 // `uid` ties the siege to the order that announced it, so paying that order calls this attack off.
-export function startSiege(s, faction, strength, delay, uid = 0) {
+export function startSiege(s, faction, strength, delay, uid = 0, name = '') {
   // An order already announced it, so it comes whatever is standing down; its sector then stands down too.
   const from = attackSource(s, faction, true);
   const t = Math.max(0, delay);
   standDown(s, from, t);
-  const sg = { faction, strength, remaining: t, total: Math.max(t, 1), siege: true, uid, from, target: raidTarget(s, from) };
+  const sg = { id: nextAttackId(s), faction, strength, remaining: t, total: Math.max(t, 1), siege: true, uid, from, target: raidTarget(s, from) };
+  if (name) sg.name = name;
   s.sieges.push(sg);
   return sg;
 }
@@ -691,7 +696,7 @@ function spawnRaid(s, delay) {
   const from = attackSource(s, faction);
   const t = warning(s, delay, from);
   standDown(s, from, t);
-  s.raid = { faction, strength, remaining: t, total: t, grudge: !!grudge, from, target: raidTarget(s, from) };
+  s.raid = { id: nextAttackId(s), faction, strength, remaining: t, total: t, grudge: !!grudge, from, target: raidTarget(s, from) };
   say(s, 'raidSpotted', { raid: FACTIONS[faction].raidName, target: SECTOR_BY_ID[s.raid.target].name, strength, time: fmtShort(t) }, 'bad');
 }
 
@@ -710,15 +715,33 @@ export function raidThreat(s, f = factors(s)) {
   return threat(s, { ...f, defense: f.defense * RAIDS.defenseWeight });
 }
 
-// Positive pushes the next raid back; negative brings it closer (never under a minute of warning).
-export function delayRaid(s, seconds) {
-  if (s.raid) {
-    const before = s.raid.remaining;
-    s.raid.remaining = Math.max(Math.min(before, RAIDS.minWarning), before + seconds);
-    s.raid.total += s.raid.remaining - before;
+/** How soon a raid an order brought on lands: a share of its march, never under RAIDS.soonFloor. */
+export const soonTime = (from) => Math.max(RAIDS.soonFloor, SECTOR_BY_ID[from] ? marchTime(SECTOR_BY_ID[from]) * RAIDS.soonShare : 0);
+
+/** How much later an order that buys time pushes the next raid: its listed delay, stretched. */
+export const laterTime = (seconds) => seconds * RAIDS.laterStretch;
+
+// An order that brings the next raid closer sends it now, a share of its march out (soonTime); one
+// that buys time pushes it back by laterTime, and the ground it marches from stands down until it
+// lands. Either way the raid goes by the order's name.
+export function delayRaid(s, seconds, name = '') {
+  if (seconds < 0) {
+    if (!s.raid) spawnRaid(s, 0);
+    if (!s.raid) return;
+    const soon = soonTime(s.raid.from);
+    if (s.raid.remaining > soon) {
+      s.raid.total -= s.raid.remaining - soon;
+      s.raid.remaining = soon;
+    }
+  } else if (s.raid) {
+    s.raid.remaining += laterTime(seconds);
+    s.raid.total += laterTime(seconds);
+    standDown(s, s.raid.from, s.raid.remaining);
   } else {
-    s.raidTimer = Math.max(0, s.raidTimer + seconds);
+    s.raidTimer = Math.max(0, s.raidTimer + laterTime(seconds));
+    return;
   }
+  if (name) s.raid.name = name;
 }
 
 // Raids only ever arrive once per offline stretch, so being away is never punished repeatedly.
@@ -763,8 +786,9 @@ function resolveRaid(s, offline) {
   if (offline) {
     s.offlineRaids++;
   }
-  s.raidTimer = 0;
-  spawnRaid(s, range(s, RAIDS.intervalMin, RAIDS.intervalMax, 'raid'));
+  // A quiet spell before the next one is even spotted, as long as this one took to come (RAIDS.restShare
+  // of its march and warning): the far end of the map rests longer than the Scavengers' back yard.
+  s.raidTimer = raid.total * RAIDS.restShare;
 }
 
 // ---------- assaults: bordering enemy sectors try to take yours ----------
@@ -894,7 +918,7 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
   standDown(s, p.from, t);
   s.stats.assaults = (s.stats.assaults || 0) + 1;
   if (locked) s.stats.sealedAssaults = (s.stats.sealedAssaults || 0) + 1;
-  s.assault = { faction: factionOf(s, p.from), strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
+  s.assault = { id: nextAttackId(s), faction: factionOf(s, p.from), strength, remaining: t, total: t, assault: true, from: p.from, target: p.target, locked };
   say(s, 'assaultSpotted', { from: from.name, target: SECTOR_BY_ID[p.target].name, strength, time: fmtShort(t) }, 'bad');
   return s.assault;
 }
@@ -948,6 +972,8 @@ export function advanceAssaults(s, dt, offline) {
   s.assault = null;
   resolveAttack(s, atk, offline);
   if (offline) s.offlineRaids++;
+  // The next one waits out its interval plus a rest scaled to how long this one marched.
+  s.assaultTimer = Math.max(s.assaultTimer || 0, 0) + atk.total * NODES.restShare;
 }
 
 /** Taking a sector can cost the clan more than the sector: if nobody next door could take it back

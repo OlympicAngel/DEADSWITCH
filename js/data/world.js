@@ -372,9 +372,16 @@ export const RAIDS = {
   firstDelay: 300, // seconds of warning before the very first raid
   intervalMin: 480,
   intervalMax: 840,
+  restShare: 1, // after a raid lands, nothing is spotted for this share of the time it took to come
   // A raid that lands this far over our Defense does not just rob the place, it cracks it: the
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
+  // An order that brings the next raid sooner sends it at once, landing in this share of its march
+  // (never under soonFloor seconds: about 2 min from the Scavengers, 15 from Halcyon's far end); one
+  // that buys time pushes it back by its listed delay x laterStretch, and its sector stands down meanwhile.
+  soonShare: 0.3,
+  soonFloor: 120,
+  laterStretch: 3,
   minWarning: 60, // seconds: no raid is ever brought closer than this, and a cancelled one waits this long for the next
   // Raid strength = (the faction's own raidBase + this share of your Threat) x its clan's state x a
   // random spread. The base is what a clan brings whatever you are: Defense has to be built past it.
@@ -439,6 +446,7 @@ export const NODES = {
   overrunRatio: 1.5,
   startAtCore: 2,
   firstDelay: 420,
+  restShare: 0.75, // after an assault lands, the next waits this share of its march on top of the interval
   intervalMin: 700, // between assaults (on top of raids)
   intervalMax: 1200,
   warningMin: 140, // an assault is spotted this long before it lands

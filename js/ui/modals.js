@@ -485,7 +485,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       mode: 'def', stamp: r.win ? 'Held' : r.overrun ? 'Overrun' : r.plundered ? 'Plundered' : 'Breached',
       stampCls: r.overrun ? 'overrun' : '',
       kicker: r.offline ? 'Attacked while away' : 'Under attack', title: r.name || f.raidName,
-      shot: r.assault ? mapBackdrop(game.state, [r.target, r.from], { beam: [r.from, r.target] }) : '',
+      shot: r.assault ? mapBackdrop(game.state, [r.target, r.from], { beam: [r.from, r.target], faction: r.faction }) : '',
       youLabel: 'Your defense', youIcon: 'defense', you: r.defense,
       themLabel: 'Their strength', themIcon: 'power', them: r.strength,
       chance: r.chance, roll: r.roll, win: r.win,
@@ -504,13 +504,20 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
   // ---------- events ----------
 
   function preview(out, ch, inst) {
+    const s = game.state;
     const p = [];
     p.push(tags(out.cost, '−'), tags(out.lose, '−'), tags(out.gain, '+'));
+    // A lost level is named with what that level cost to build; lost troops with what they fought for.
     for (const id of out.levels) {
-      p.push(`<span class="tag t-bad">${icon(id)}−1 Lv ${BY_ID[id].name}</span>`);
+      const lvl = E.level(s, id);
+      const paid = Object.entries(lvl > 0 ? E.buildingCost(s, BY_ID[id], lvl - 1) : {}).map(([r, v]) => `${num(v)} ${RESOURCES[r].short}`).join(' + ');
+      p.push(`<span class="tag t-bad" data-tip="text" data-tip-text="What Lv ${lvl} of ${esc(BY_ID[id].name)} cost to build: ${paid}.">${icon(id)}−1 Lv ${BY_ID[id].name} <em>(cost ${paid})</em></span>`);
     }
     for (const [tab, n] of Object.entries(out.units)) {
-      if (n) p.push(`<span class="tag t-bad">${icon(tab === 'staff' ? 'militia' : tab === 'weapons' ? 'power' : 'defense')}−${num(n)} ${SHOP_TABS.find((t) => t.id === tab).name.toLowerCase()}</span>`);
+      if (!n) continue;
+      const w = (out.unitWorth || {})[tab] || {};
+      const worth = ['power', 'defense', 'experts'].filter((k) => w[k] >= 0.5).map((k) => `${icon(k)}−${num(Math.round(w[k]))}`).join(' ');
+      p.push(`<span class="tag t-bad">${icon(tab === 'staff' ? 'militia' : tab === 'weapons' ? 'power' : 'defense')}−${num(n)} ${SHOP_TABS.find((t) => t.id === tab).name.toLowerCase()}${worth ? ` <em>(${worth})</em>` : ''}</span>`);
     }
     if (ch.items) {
       p.push(Object.entries(ch.items).map(([id, n]) => `<span class="tag t-good">${icon(id)}+${n} ${ITEM_BY_ID[id].name}</span>`).join(''));
@@ -523,7 +530,9 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       p.push(`<span class="tag t-good">${icon('check')}Attack called off</span>`);
     }
     if (ch.raidDelay) {
-      p.push(`<span class="tag ${ch.raidDelay > 0 ? 't-good' : 't-bad'}">${icon('threat')}Next raid ${ch.raidDelay > 0 ? 'later' : 'sooner'} (${time(Math.abs(ch.raidDelay))})</span>`);
+      p.push(ch.raidDelay > 0
+        ? `<span class="tag t-good">${icon('threat')}Next raid ${time(E.laterTime(ch.raidDelay))} later${s.raid ? `, ${esc(E.sectorById(s.raid.from).name)} quiet till then` : ''}</span>`
+        : `<span class="tag t-bad">${icon('threat')}Raid sent now${s.raid ? `, lands in ${time(Math.min(s.raid.remaining, E.soonTime(s.raid.from)))}` : ''}</span>`);
     }
     if (out.grudge) {
       const f = FACTIONS[out.grudge.faction];

@@ -3,7 +3,7 @@ import {
   EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, DAILY, DAILY_TASKS, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS, SECTORS,
 } from '../data.js';
 import {
-  level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, projectDefense,
+  level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, lossPlan, lossValue, projectDefense,
   buildingStatus,
 } from './economy.js';
 import { delayRaid, reinforceBlock, attacks, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
@@ -89,8 +89,10 @@ export function choiceOutcome(s, inst, choice, expired = false) {
   const c = caps(s);
   const levels = (choice.loseLevel || []).map((k) => inst.params && inst.params[k]).filter((id) => id && level(s, id) > 0);
   const units = {};
+  const unitWorth = {}; // what those troops are worth as Power / Defense, so the order can say so
   for (const [tab, share] of Object.entries(choice.loseUnits || {})) {
     units[tab] = unitsLost(s, tab, share * harm);
+    unitWorth[tab] = lossValue(s, lossPlan(s, tab, share * harm));
   }
   const callOff = choice.cancelSiege && s.sieges.some((x) => x.uid === inst.uid);
   // A price can never exceed storage, or the choice could not exist.
@@ -119,7 +121,7 @@ export function choiceOutcome(s, inst, choice, expired = false) {
       gain[r] = (gain[r] || 0) + Math.ceil(v * EVENTS_CFG.cedeShare);
     }
   }
-  return { cost, gain, lose, levels, units, callOff, align, grudge: choice.grudge || null, buff, strength, assault, cede, clearMarks: choice.clearMarks && p.held ? p.held : null };
+  return { cost, gain, lose, levels, units, unitWorth, callOff, align, grudge: choice.grudge || null, buff, strength, assault, cede, clearMarks: choice.clearMarks && p.held ? p.held : null };
 }
 
 export function canChoose(s, inst, choice) {
@@ -231,7 +233,7 @@ function spawn(s, ev, front, big = false) {
   // attacks with its own countdown, and only paying turns it back.
   if (ev.threat) {
     // The force picks its target now, so the announcement can name the place it is walking to.
-    inst.params.aim = startSiege(s, inst.params.faction, inst.params.strength, ev.deadline, inst.uid).target;
+    inst.params.aim = startSiege(s, inst.params.faction, inst.params.strength, ev.deadline, inst.uid, ev.title).target;
     say(s, 'siege', { faction: FACTIONS[inst.params.faction].name, target: sectorById(inst.params.aim).name, strength: inst.params.strength }, 'bad');
   }
   s.recentEvents.push(ev.id);
@@ -414,7 +416,7 @@ export function resolveEvent(s, uid, index, expired = false) {
     loseSector(s, out.cede, factionOf(s, inst.params.node) || sectorById(inst.params.node).faction);
   }
   if (choice.raidDelay) {
-    delayRaid(s, choice.raidDelay);
+    delayRaid(s, choice.raidDelay, ev.title);
   }
   if (out.callOff) {
     // The force was already on its way; paying is what turns it back.

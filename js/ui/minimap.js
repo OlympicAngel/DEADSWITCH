@@ -35,7 +35,7 @@ const ANCHOR = { modal: { right: 270, top: 450 }, panel: { right: 250, top: 172 
 const WIDE = 2.1; // a cut scene is the whole screen, so it shows more of the theater than a panel does
 
 /** @param {object} opts beam: [fromId, toId]; cls: which host it sits in: modal, panel or scene. */
-export function mapBackdrop(s, ids, { beam = null, cls = 'modal' } = {}) {
+export function mapBackdrop(s, ids, { beam = null, cls = 'modal', faction = null } = {}) {
   const scene = cls === 'scene';
   const focus = ids.map((id) => E.sectorById(id)).filter(Boolean);
   if (!focus.length) {
@@ -66,7 +66,8 @@ export function mapBackdrop(s, ids, { beam = null, cls = 'modal' } = {}) {
   }
   const from = beam && E.sectorById(beam[0]);
   const to = beam && E.sectorById(beam[1]);
-  const fromFac = from && E.factionOf(s, from.id);
+  // The attacker's colour when it is known: ground can change hands under an attack on the road.
+  const fromFac = faction || (from && E.factionOf(s, from.id));
   const color = fromFac ? FACTIONS[fromFac].color : 'var(--bad)';
   const arrow = from && to
     ? `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" class="mini-beam" style="--fc:${color}"/>${ring(to, nodeR(to) + 22, color)}`
