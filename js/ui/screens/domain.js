@@ -118,8 +118,7 @@ function effectHtml(s, b, lvl, max) {
   const next = lvl + 1;
   if (b.kind === 'producer') {
     const [[r, per]] = Object.entries(b.produces);
-    // Output with every bonus in; a star opens the base and each bonus on it.
-    const out = (n) => boostTag(r, per * E.levelRate(n, b), per * E.levelRate(n, b) * mult(r), Math.abs(mult(r) - 1) > 1e-6);
+    const out = (n) => boostTag(r, per * E.levelRate(n, b), mult(r));
     return nowNext('Output', lvl ? `${out(lvl)}<em>/s</em>` : '—', `${out(next)}<em>/s</em>`, lvl, max);
   }
   if (b.kind === 'converter') {
@@ -187,8 +186,7 @@ function givesHtml(s, item, n = 1) {
   if (item.bonus) {
     return Object.entries(item.bonus).map(([k, v]) => `<span class="tag t-${k}">${labeled(k)}+${pct(v * n)}</span>`).join('') + per;
   }
-  // Troops are shown as they are, before bonuses: a star opens what the bonuses make of them.
-  return Object.entries(item.gives).map(([k, v]) => boostTag(k, v * n, v * n, Math.abs(E.bonusMult(s, k) - 1) > 1e-6)).join('') + per;
+  return Object.entries(item.gives).map(([k, v]) => boostTag(k, v * n, E.bonusMult(s, k))).join('') + per;
 }
 
 function itemRow(s, item) {

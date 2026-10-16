@@ -28,10 +28,12 @@ export function factorTag(k, amount, sign = '+') {
   return `<span class="tag t-${k}">${labeled(k)}${sign}${num(amount)}</span>`;
 }
 
-/** A number bonuses act on, starred when any do; the star's tooltip lists them (tooltip.js boostTip).
- *  `base` is before the bonuses, `shown` is the number printed (the base for troops, the result for production). */
-export function boostTag(k, base, shown, starred, sign = '+') {
-  return `<span class="tag t-${k}${starred ? ' boosted' : ''}"${starred ? ` data-tip="boost:${k}" data-base="${base}"` : ''}>${labeled(k)}${sign}${num(shown)}${starred ? '<sup class="star">*</sup>' : ''}</span>`;
+/** A number bonuses act on, shown with them applied and starred; the star's tooltip lists the base and
+ *  each bonus (tooltip.js boostTip). A net penalty colours it. */
+export function boostTag(k, base, mult, sign = '+') {
+  const starred = Math.abs(mult - 1) > 1e-6;
+  const cls = starred ? ` boosted${mult < 1 ? ' debuffed' : ''}` : '';
+  return `<span class="tag t-${k}${cls}"${starred ? ` data-tip="boost:${k}" data-base="${base}"` : ''}>${labeled(k)}${sign}${num(base * mult)}${starred ? '<sup class="star">*</sup>' : ''}</span>`;
 }
 
 // Name with its icon, used everywhere a building or unit is mentioned.
