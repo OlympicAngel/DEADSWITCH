@@ -372,7 +372,7 @@ export const RAIDS = {
   firstDelay: 300, // seconds of warning before the very first raid
   intervalMin: 480,
   intervalMax: 840,
-  restShare: 1, // after a raid lands, nothing is spotted for this share of the time it took to come
+  restShare: 0.4, // after a raid lands, nothing is spotted for this share of the time it took to come
   // A raid that lands this far over our Defense does not just rob the place, it cracks it: the
   // sector takes a breach like an assault would leave, and two of those still lose it.
   breachRatio: 1.4,
@@ -446,7 +446,7 @@ export const NODES = {
   overrunRatio: 1.5,
   startAtCore: 2,
   firstDelay: 420,
-  restShare: 0.75, // after an assault lands, the next waits this share of its march on top of the interval
+  restShare: 0.3, // after an assault lands, the next waits this share of its march on top of the interval
   intervalMin: 700, // between assaults (on top of raids)
   intervalMax: 1200,
   warningMin: 140, // an assault is spotted this long before it lands
