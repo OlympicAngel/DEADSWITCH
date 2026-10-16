@@ -88,9 +88,29 @@ export function bonusBreakdown(s, key) {
   };
 }
 
-function bonusTotal(s, key) {
-  const b = bonusBreakdown(s, key);
-  return b.tech + b.sectors + b.alignment + b.effects;
+/** Every % source on one key, each its own multiplier: experts (production only), tech, territory,
+ *  alignment, then every effect running on it. `buffs = false` leaves the effects out, which is what
+ *  Threat is counted on: a passing boost is not something the clans muster against. */
+export function bonusParts(s, key, f = null, buffs = true) {
+  const out = [];
+  const add = (src, label, amount) => {
+    if (amount) out.push({ src, label, amount });
+  };
+  if (RESOURCE_KEYS.includes(key)) add('experts', 'Experts', (f || factors(s)).experts * BALANCE.expertProductionBonus);
+  add('tech', 'Tech', techBonus(s, key));
+  add('sectors', 'Territory', sectorBonus(s, key));
+  add('alignment', 'Alignment', alignBonus(s, key));
+  if (buffs) {
+    for (const b of s.buffs) {
+      if (b.key === key) add('effects', b.label, b.amount);
+    }
+  }
+  return out;
+}
+
+/** The sources multiplied together: +20% and +10% and -10% is 1.2 x 1.1 x 0.9, never below nothing. */
+export function bonusMult(s, key, f = null, buffs = true) {
+  return bonusParts(s, key, f, buffs).reduce((m, p) => m * Math.max(0, 1 + p.amount), 1);
 }
 
 export function rawFactors(s) {
@@ -106,16 +126,19 @@ export function rawFactors(s) {
   return raw;
 }
 
-export function factors(s) {
+export function factors(s, buffs = true) {
   const raw = rawFactors(s);
   const out = {};
   for (const k of FACTOR_KEYS) {
-    out[k] = Math.max(0, Math.floor(raw[k] * (1 + bonusTotal(s, k))));
+    out[k] = Math.max(0, Math.floor(raw[k] * bonusMult(s, k, null, buffs)));
   }
   return out;
 }
 
-export function threat(s, f = factors(s)) {
+/** What Threat is counted on: our troops with every lasting bonus, but no running effect. */
+export const threatFactors = (s) => factors(s, false);
+
+export function threat(s, f = threatFactors(s)) {
   return f.power + f.defense + f.experts * BALANCE.threatExpertWeight;
 }
 
@@ -129,11 +152,11 @@ export function rankIndex(t) {
   return idx;
 }
 
-// Production multiplier for one resource.
-// Penalties stack, but never past a tenth of the base rate: a producer that ran backwards would eat
-// the stores it exists to fill.
+// Production multiplier for one resource: every source multiplied in (bonusMult), before any
+// converter takes its share. Never under a tenth of the base rate: a producer that ran backwards
+// would eat the stores it exists to fill.
 export function prodMultiplier(s, res, f = factors(s)) {
-  return Math.max(0.1, 1 + f.experts * BALANCE.expertProductionBonus + bonusTotal(s, res));
+  return Math.max(0.1, bonusMult(s, res, f));
 }
 
 // Theoretical gross output per second at full converter efficiency (used to scale event rewards).
@@ -466,7 +489,7 @@ export function lossValue(s, plan) {
     }
   }
   for (const k of Object.keys(out)) {
-    out[k] = Math.round(out[k] * (1 + bonusTotal(s, k)));
+    out[k] = Math.round(out[k] * bonusMult(s, k));
   }
   return out;
 }

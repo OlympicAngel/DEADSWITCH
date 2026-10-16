@@ -3,7 +3,7 @@ import {
   EVENTS, EVENTS_CFG, RAIDS, FACTORS, DIRECTIVES, DAILY, DAILY_TASKS, CHAPTERS, CHAPTER_TEXT, ALIGNMENT, BUILDINGS, BY_ID, ITEMS, FACTIONS, CLANS, LESSONS, RESOURCE_KEYS, FACTOR_KEYS, SECTORS,
 } from '../data.js';
 import {
-  level, factors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, lossPlan, lossValue, projectDefense,
+  level, factors, threatFactors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, lossPlan, lossValue, projectDefense,
   buildingStatus,
 } from './economy.js';
 import { delayRaid, reinforceBlock, attacks, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
@@ -193,7 +193,7 @@ function spawn(s, ev, front, big = false) {
       return false;
     }
     params.faction = pick(s, raiders, 'event');
-    const grown = factors(s).defense + projectDefense(s, ev.deadline / 2, eventDrain(s));
+    const grown = threatFactors(s).defense + projectDefense(s, ev.deadline / 2, eventDrain(s));
     const floor = FACTIONS[params.faction].raidBase;
     params.strength = Math.ceil(Math.max(floor, grown) * range(s, ev.threat.min, ev.threat.max, 'event'));
   }

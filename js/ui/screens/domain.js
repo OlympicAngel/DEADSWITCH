@@ -7,7 +7,7 @@ import * as E from '../../engine.js';
 import { num, time, pct, esc } from '../../format.js';
 import { icon, labeled } from '../icons.js';
 import {
-  resTag, factorTag, convRate, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
+  resTag, factorTag, boostTag, convRate, costChips, setChips, reqText, named, clock, chanceClass, bonusText,
 } from '../common.js';
 import { DOMAINS, sortedTabs, tabReq, readyCount } from '../layout.js';
 import { put, putHtml, setCls, setData, setW } from '../dom.js';
@@ -118,7 +118,9 @@ function effectHtml(s, b, lvl, max) {
   const next = lvl + 1;
   if (b.kind === 'producer') {
     const [[r, per]] = Object.entries(b.produces);
-    return nowNext('Output', lvl ? `${resTag(r, per * E.levelRate(lvl, b) * mult(r), '+')}<em>/s</em>` : '—', `${resTag(r, per * E.levelRate(next, b) * mult(r), '+')}<em>/s</em>`, lvl, max);
+    // Output with every bonus in; a star opens the base and each bonus on it.
+    const out = (n) => boostTag(r, per * E.levelRate(n, b), per * E.levelRate(n, b) * mult(r), Math.abs(mult(r) - 1) > 1e-6);
+    return nowNext('Output', lvl ? `${out(lvl)}<em>/s</em>` : '—', `${out(next)}<em>/s</em>`, lvl, max);
   }
   if (b.kind === 'converter') {
     const flow = (n) => Object.entries(b.consumes).map(([r, v]) => resTag(r, v * E.levelRate(n, b), '−')).join('')
@@ -185,9 +187,8 @@ function givesHtml(s, item, n = 1) {
   if (item.bonus) {
     return Object.entries(item.bonus).map(([k, v]) => `<span class="tag t-${k}">${labeled(k)}+${pct(v * n)}</span>`).join('') + per;
   }
-  const f = E.factors(s);
-  const raw = E.rawFactors(s);
-  return Object.entries(item.gives).map(([k, v]) => factorTag(k, Math.round(v * n * (raw[k] ? f[k] / raw[k] : 1)))).join('') + per;
+  // Troops are shown as they are, before bonuses: a star opens what the bonuses make of them.
+  return Object.entries(item.gives).map(([k, v]) => boostTag(k, v * n, v * n, Math.abs(E.bonusMult(s, k) - 1) > 1e-6)).join('') + per;
 }
 
 function itemRow(s, item) {

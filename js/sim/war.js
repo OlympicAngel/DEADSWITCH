@@ -2,7 +2,7 @@
 import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
 import { spawnAftermath } from './story.js';
 import {
-  level, factors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
+  level, factors, threatFactors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
 } from './economy.js';
 import { clanProfile, clanProfiles, stirClan } from './clans.js';
 import { rand, range, pick, odds } from './rng.js';
@@ -711,7 +711,7 @@ export function raidSize(s, faction) {
 }
 
 /** What a raid is sized on: Threat, with Defense counted at RAIDS.defenseWeight. */
-export function raidThreat(s, f = factors(s)) {
+export function raidThreat(s, f = threatFactors(s)) {
   return threat(s, { ...f, defense: f.defense * RAIDS.defenseWeight });
 }
 
@@ -941,7 +941,7 @@ export function scriptedRetake(s) {
     return false; // one assault at a time; this one goes out at the next opening
   }
   s.scripted.retake = 1;
-  const strength = Math.ceil(factors(s).defense * NODES.overrunRatio * TUTORIAL.retakeMargin);
+  const strength = Math.ceil(threatFactors(s).defense * NODES.overrunRatio * TUTORIAL.retakeMargin);
   spawnAssault(s, { from, target: sec.id }, TUTORIAL.retakeDelay, strength);
   return true;
 }
@@ -993,7 +993,7 @@ export function rallyClan(s, faction, lostId) {
   }
   // Someone next door who could already assault it off us has no reason to ask anyone for help.
   const near = mine.filter((x) => x.links.includes(lostId));
-  const need = factors(s).defense * RALLY.enough;
+  const need = threatFactors(s).defense * RALLY.enough;
   if (near.some((x) => assaultStrength(s, x.id) >= need)) {
     return null;
   }

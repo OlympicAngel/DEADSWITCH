@@ -17,24 +17,31 @@ export function createTips(game) {
   const row = (k, v, cls = '') => `<div class="tip-row ${cls}"><span>${k}</span><b>${v}</b></div>`;
   const head = (ic, title, sub = '') => `<div class="tip-head">${icon(ic)}<div><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div></div>`;
 
+  // Every % source on a key, each its own multiplier, then what they come to together.
+  const BONUS_ICON = { experts: 'experts', tech: 'research', sectors: 'map', alignment: 'heart', effects: 'spark' };
   function bonusRows(s, key) {
-    const b = E.bonusBreakdown(s, key);
-    const out = [];
-    if (RESOURCES[key]) {
-      const ex = E.factors(s).experts * BALANCE.expertProductionBonus;
-      if (ex) out.push(row(`${icon('experts')}Experts`, '+' + pct(ex)));
-    }
-    if (b.tech) out.push(row(`${icon('research')}Tech`, '+' + pct(b.tech)));
-    if (b.sectors) out.push(row(`${icon('map')}Territory`, '+' + pct(b.sectors)));
-    if (b.alignment) out.push(row(`${icon('heart')}Alignment`, (b.alignment > 0 ? '+' : '−') + pct(Math.abs(b.alignment)), b.alignment < 0 ? 'neg' : ''));
-    if (b.effects) {
-      // Each effect by name and how long it has left; the total is what they add up to after the floor.
-      const live = s.buffs.filter((x) => x.key === key);
-      const sign = (v) => (v > 0 ? '+' : '−') + pct(Math.abs(v));
-      for (const x of live) out.push(row(`${icon('spark')}${esc(x.label)}`, `${sign(x.amount)}${x.remaining > 0 && !x.clan ? ` · ${time(x.remaining)}` : ''}`, x.amount < 0 ? 'neg' : ''));
-      if (live.length !== 1) out.push(row(`${icon('spark')}Effects`, sign(b.effects), b.effects < 0 ? 'neg' : ''));
-    }
+    const parts = E.bonusParts(s, key);
+    const sign = (v) => (v > 0 ? '+' : '−') + pct(Math.abs(v));
+    const out = parts.map((p) => {
+      const b = p.src === 'effects' && s.buffs.find((x) => x.key === key && x.label === p.label);
+      const left = b && b.remaining > 0 && !b.clan ? ` · ${time(b.remaining)}` : '';
+      return row(`${icon(BONUS_ICON[p.src])}${esc(p.label)}`, sign(p.amount) + left, p.amount < 0 ? 'neg' : '');
+    });
+    if (parts.length > 1) out.push(row('Together', '×' + E.bonusMult(s, key).toFixed(3).replace(/\.?0+$/, '')));
     return out.join('');
+  }
+
+  // A number shown with a star: its base, every bonus on it, and what it comes to. On troops the base
+  // is what is shown and counted in Threat; on production the result is.
+  function boostTip(s, key, base) {
+    const isRes = !!RESOURCES[key];
+    const mult = isRes ? E.prodMultiplier(s, key) : E.bonusMult(s, key);
+    const name = isRes ? RESOURCES[key].name : FACTORS[key].name;
+    const per = isRes ? '/s' : '';
+    const effects = !isRes && s.buffs.some((b) => b.key === key);
+    return head(key, name, `${num(base * mult)}${per}`)
+      + row('Base', num(base) + per) + bonusRows(s, key) + row('With bonuses', num(base * mult) + per)
+      + (effects ? '<p>Running effects are not counted in Threat.</p>' : '');
   }
 
   // Converters that make or use a resource, each with its switch, so a shortfall can be answered from
@@ -181,12 +188,12 @@ export function createTips(game) {
   }
 
   function threatTip(s) {
-    const f = E.factors(s);
+    const f = E.threatFactors(s);
     const t = E.threat(s, f);
     const ri = E.rankIndex(t);
     const next = RANKS[ri + 1];
     return head('threat', 'Threat index', RANKS[ri].title)
-      + '<p>What the wasteland sees when it looks at us: our Power, our Defense, and our Experts, who count for more than any gun. Every clan musters against it.</p>'
+      + '<p>What the wasteland sees when it looks at us: our Power, our Defense, and our Experts, who count for more than any gun. Every clan musters against it. Running effects are not counted.</p>'
       + row('Power', num(f.power)) + row('Defense', num(f.defense)) + row(`Experts × ${BALANCE.threatExpertWeight}`, num(f.experts * BALANCE.threatExpertWeight))
       + row('Threat', num(t)) + (next ? row('Next rank', `${next.title} at ${num(next.at)}`) + row('Needs', '+' + num(next.at - t)) : '');
   }
@@ -208,6 +215,7 @@ export function createTips(game) {
     const spec = el.dataset.tip;
     const [kind, a] = spec.split(':');
     if (kind === 'res') return resTip(s, a);
+    if (kind === 'boost') return boostTip(s, a, Number(el.dataset.base));
     if (kind === 'factor') return factorTip(s, a);
     if (kind === 'cost') return costTip(s, a, Number(el.dataset.amt));
     if (kind === 'threat') return threatTip(s);
@@ -226,7 +234,7 @@ export function createTips(game) {
 
   // A screen that rebuilds (a converter switched from inside this tip restyles its card) replaces the
   // element the tip hangs from; follow it to its replacement rather than closing under the finger.
-  const cardOf = (el) => { const c = el.closest('[data-card], [data-id]'); return c ? c.dataset.card || c.dataset.id : ''; };
+  const cardOf = (el) => { const c = el.closest('[data-card], [data-item], [data-id]'); return c ? c.dataset.card || c.dataset.item || c.dataset.id : ''; };
   function successor(old) {
     if (!old || !old.dataset) return null;
     const { tip: spec, amt } = old.dataset;

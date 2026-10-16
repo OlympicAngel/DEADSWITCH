@@ -493,7 +493,7 @@ function play(seed) {
     mark('rank' + s.rank, t);
   }
   const f = E.factors(s);
-  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s, f), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels }, snap };
+  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels }, snap };
 }
 
 const runs = [];

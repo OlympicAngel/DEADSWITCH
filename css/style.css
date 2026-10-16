@@ -7295,3 +7295,14 @@ h2[autofocus] {
   animation-delay: .4s;
   animation-duration: .2s;
 }
+
+/* A number bonuses act on: the star opens the base, each bonus, and the result. */
+.tag.boosted {
+  cursor: help;
+}
+
+.tag .star {
+  margin-left: 1px;
+  font: 700 10px var(--font-num);
+  color: var(--hud-2);
+}

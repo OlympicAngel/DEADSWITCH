@@ -110,7 +110,7 @@ function slot(refs, id, key, html) {
 
 export function updateCommand(s, ui, refs) {
   const f = E.factors(s);
-  const t = E.threat(s, f);
+  const t = E.threat(s);
   const ri = E.rankIndex(t);
   const nx = RANKS[ri + 1];
   const prog = nx ? (t - RANKS[ri].at) / (nx.at - RANKS[ri].at) : 1;
