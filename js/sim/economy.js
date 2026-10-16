@@ -108,9 +108,12 @@ export function bonusParts(s, key, f = null, buffs = true) {
   return out;
 }
 
-/** The sources multiplied together: +20% and +10% and -10% is 1.2 x 1.1 x 0.9, never below nothing. */
+/** What the sources come to: every gain added into one multiplier, then each penalty on top of it on
+ *  its own. +20%, +10%, +5% and -10% is (1 + 0.35) x 0.9; never below nothing. */
 export function bonusMult(s, key, f = null, buffs = true) {
-  return bonusParts(s, key, f, buffs).reduce((m, p) => m * Math.max(0, 1 + p.amount), 1);
+  const parts = bonusParts(s, key, f, buffs);
+  const up = parts.reduce((a, p) => a + Math.max(0, p.amount), 0);
+  return parts.reduce((m, p) => (p.amount < 0 ? m * Math.max(0, 1 + p.amount) : m), 1 + up);
 }
 
 export function rawFactors(s) {
@@ -260,7 +263,7 @@ export function buildTime(s, b) {
 export function shopDiscount(s, item) {
   const tab = SHOP_TABS.find((t) => t.id === item.tab);
   const lvl = level(s, tab.unlocker);
-  return Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, lvl - 1));
+  return 1 - Math.min(BALANCE.unlockerDiscountMax, BALANCE.unlockerDiscountPerLevel * Math.max(0, lvl - 1));
 }
 
 // Total cost of buying `count` more of an item (sum of each unit's price).

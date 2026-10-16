@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.44.0';
+export const VERSION = '1.45.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -43,7 +43,8 @@ export const BALANCE = {
   resourceGrowth: { money: 0.8, energy: 0.62, pop: 0.58 },
   coreGateShare: 0.575, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
-  unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 cuts its shop prices 5% (compounding)
+  unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 takes a flat 5 points off its shop prices...
+  unlockerDiscountMax: 0.75, // ...up to this much off
   threatExpertWeight: 5,
   tickSeconds: 0.1,
   autosaveSeconds: 10,
@@ -86,7 +87,7 @@ export const BUILDINGS = [
     id: 'shelter', name: 'Shelter', kind: 'producer', req: { core: 1 },
     desc: 'Warm, lit, and quiet. Survivors find it on their own.',
     cost: { money: 35, energy: 10 }, growth: 1.2, time: 4, timeGrowth: 1.17,
-    produces: { pop: 0.048 },
+    produces: { pop: 0.032 },
   },
   // --- Storage ---
   {

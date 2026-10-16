@@ -150,7 +150,7 @@ function effectHtml(s, b, lvl, max) {
     return nowNext('Building cap', `Lv ${lvl * cap}`, `Lv ${next * cap}`, lvl, max, gate + unlockLine(BUILDINGS.filter((x) => x.req.core === next), lvl));
   }
   const shop = SHOP_TABS.find((t) => t.id === b.shop);
-  const disc = (l) => 1 - Math.pow(1 - BALANCE.unlockerDiscountPerLevel, Math.max(0, l - 1));
+  const disc = (l) => Math.min(BALANCE.unlockerDiscountMax, BALANCE.unlockerDiscountPerLevel * Math.max(0, l - 1));
   const unl = unlockLine(ITEMS.filter((i) => i.req[b.id] === next), lvl);
   if (!lvl) {
     return nowNext('Opens', '', `${icon(SHOP_ICONS[b.shop] || 'hex')}${shop.name}`, lvl, max, unl);
