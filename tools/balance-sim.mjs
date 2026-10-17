@@ -1,22 +1,62 @@
 // Headless balance simulation: a bot plays several seeded runs and reports averaged milestone times.
-// Usage: node tools/balance-sim.mjs [hours=24] [runs=5]
+// Usage: node tools/balance-sim.mjs [hours=24] [runs=5]   (hours of wall clock, nights included)
 //
-// The bot plays like a thinking player rather than a busy one. Every decision is a number:
+// The bot plays like a person with a life, over real days. It sleeps through the night, and during
+// the day it looks in for a few minutes, puts the phone down for a while and comes back (SCHEDULE).
+// Every absence goes through the engine's own offline path (E.catchUp), exactly as the page hands it
+// one, so whatever the offline rules are, the bot lives with them rather than with a copy of them.
+// Milestones are stamped in wall-clock time when the player sees them, so one reached overnight
+// reads at breakfast.
+//
+// At the console it plays like a thinking player rather than a busy one. Every decision is a number:
 // - prices scrip, energy and people against each other the way the converters do, so costs, rates
 //   and rewards of different shapes compare directly
 // - builds towards the next AI Core: the store that has to hold it first, then the Core, and while
 //   the Core waits on base development, whatever lifts the gate soonest. Everything else is ranked
-//   by how long it takes to pay for itself, with the shops judged on what they put on the shelf
+//   by how long it takes to pay for itself, with the shops judged on what they put on the shelf and
+//   the Watch Daemon on what it adds to the absences this player actually takes
+// - keeps the build queue full rather than starting one build at a time
 // - saves for that step once it is in reach, and lets cheap buys past the reserve meanwhile
 // - runs a converter only on an input that is going spare, since every conversion loses on the trade
-// - buys what is short: Defense as an attack closes, Power when the map is out of reach, best value
-//   otherwise, and never more than a share of the bank on one scare
+// - buys what is short: Defense as an attack closes and until the wall would hold the likeliest raid
+//   (most of them land while it is away), Power when the map is out of reach, best value otherwise,
+//   and never more than a share of the bank on one scare
 // - launches operations on the best ground it can hold
 // - weighs every transmission answer, Humanity included, at what it is worth to this base
+// Before it puts the phone down it does what a sensible player does on the way out: collects the
+// orders, answers what is waiting, walls up against whatever is inbound or likely to come, lifts an
+// operation on the road that would be lost, sets the converters for the stretch away, fills the
+// build queue with what the stores can pay for, and spends what is left. Coming back, it reads what
+// happened and picks up where it left off.
 // It does not play towards the daily board: the orders are cleared or not by how it plays anyway,
 // which is what they are for, and chasing them would measure the bot rather than the game.
-import { BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, SECTORS, RANKS, RESOURCE_KEYS, FACTOR_KEYS, CONVERSION, ALIGNMENT } from '../js/data.js';
+import { BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, SECTORS, RANKS, RESOURCE_KEYS, FACTOR_KEYS, CONVERSION, ALIGNMENT, RAIDS } from '../js/data.js';
 import * as E from '../js/engine.js';
+
+// ---------- the player's day: every number of the schedule, in sim time ----------
+// Rolled per run on the bot's own dice, so a run replays exactly. Sim time 0 is startHour on day 1.
+const SCHEDULE = {
+  startHour: 9, // o'clock the run starts, on a fresh install
+  firstSession: 45, // minutes: a new game holds the very first sitting longer
+  sleepHour: 23, // bedtime, around here...
+  wakeHour: 7, // ...and up again around here
+  nightJitter: 30, // minutes either way, rolled each night for each end
+  minNight: 7, // hours: a night away is never shorter than this
+  sessionMin: 10, // minutes at the console per sitting during the day...
+  sessionMax: 40,
+  gapMin: 20, // ...and minutes away between sittings
+  gapMax: 180,
+  gapSkew: 2, // above 1 makes short gaps commoner than long ones
+  bedtimeCheck: 15, // minutes: the day always ends on a sitting at least this long, the night routine
+};
+
+// ---------- on the way out ----------
+const PREP_ODDS = 0.75; // the wall goes up until the likeliest raid of the absence looks this survivable
+const PREP_SHARE = 0.6; // walling up (Power for an operation on the road included) takes no more of the bank than this
+const PREP_OP_ODDS = 0.85; // an operation left to land while nobody watches has to be this safe
+const PREP_TRIBUTE = 0.9; // a threat is paid off on the way out unless its siege looks at least this holdable
+const PREP_COMMIT = 0.5; // share of what the absence will produce that the queue may already count on
+const SAVE_BEFORE = 10; // minutes before putting the phone down with the builder short of work: the shop waits, the scrip goes on builds
 
 const HOURS = Number(process.argv[2] || 24);
 const RUNS = Number(process.argv[3] || 5);
@@ -33,6 +73,59 @@ function dice(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+/** The run's whole timeline as alternating stretches at the console and away, in whole sim seconds. */
+function schedule(roll) {
+  const end = HOURS * 3600;
+  const M = 60;
+  const H = 3600;
+  const between = (a, b) => a + (b - a) * roll();
+  const out = [];
+  const push = (from, to, active) => {
+    from = Math.round(Math.max(0, from));
+    to = Math.round(Math.min(end, to));
+    if (to <= from) return;
+    const last = out[out.length - 1];
+    if (last && last.active === active && last.to === from) last.to = to;
+    else out.push({ from, to, active });
+  };
+  const clock0 = SCHEDULE.startHour * H;
+  const jitter = () => between(-1, 1) * SCHEDULE.nightJitter * M;
+  let t = 0;
+  let first = true;
+  for (let day = 0; t < end; day++) {
+    const bed = day * 86400 + SCHEDULE.sleepHour * H + jitter() - clock0;
+    const wake = Math.max((day + 1) * 86400 + SCHEDULE.wakeHour * H + jitter() - clock0, bed + SCHEDULE.minNight * H);
+    while (t < bed) {
+      const stop = Math.min(bed, t + (first ? SCHEDULE.firstSession : between(SCHEDULE.sessionMin, SCHEDULE.sessionMax)) * M);
+      first = false;
+      const gap = (SCHEDULE.gapMin + (SCHEDULE.gapMax - SCHEDULE.gapMin) * Math.pow(roll(), SCHEDULE.gapSkew)) * M;
+      const last = bed - SCHEDULE.bedtimeCheck * M; // where the night routine has to start by
+      if (stop + gap <= last) {
+        push(t, stop, true);
+        push(stop, stop + gap, false);
+        t = stop + gap;
+      } else if (last - stop >= SCHEDULE.gapMin * M) {
+        // Not a whole gap left before bed: a shorter one, then the bedtime sitting.
+        push(t, stop, true);
+        push(stop, last, false);
+        push(last, bed, true);
+        t = bed;
+      } else {
+        push(t, bed, true); // too little day left to put the phone down at all
+        t = bed;
+      }
+    }
+    push(t, wake, false);
+    t = wake;
+  }
+  return out;
+}
+
+// What this player's absences look like, for pricing the Watch Daemon: set per run by play().
+let PLAN = { absences: [], active: 1, total: 1 };
+// How far ahead a store filling up counts as spilling: longer on the way out (set by prepare()).
+let spillWindow = 0;
 
 // ---------- what things are worth to this player, right now ----------
 
@@ -90,7 +183,7 @@ function storagePayback(s, b) {
   let saved = 0;
   for (const k of Object.keys(b.storage || {})) {
     const rate = r[k] || 0;
-    if (rate <= 0 || !Number.isFinite(c[k]) || (c[k] - s.res[k]) / rate > SPILL_SOON) {
+    if (rate <= 0 || !Number.isFinite(c[k]) || (c[k] - s.res[k]) / rate > Math.max(SPILL_SOON, spillWindow)) {
       continue;
     }
     saved += worth({ [k]: rate });
@@ -109,6 +202,28 @@ function unlockerPayback(s, b) {
   const top = unlocked[unlocked.length - 1];
   const saturated = unlocked.length < mine.length && E.owned(s, top.id) >= TIER_DONE;
   return costSeconds(s, b) * (saturated ? 0.6 : 4);
+}
+
+/** Seconds of production at full rate that this player's absences come to, with the Daemon at `lvl`. */
+function awayWork(s, lvl) {
+  const lim = E.offlineLimits(s, lvl);
+  return PLAN.absences.reduce((a, away) => {
+    const ran = E.awaySeconds(s, away);
+    const grace = Math.min(ran, BALANCE.offline.graceSeconds);
+    return a + grace + Math.max(0, Math.min(ran, lim.seconds) - grace) * lim.efficiency;
+  }, 0);
+}
+
+/** The Watch Daemon pays back on what its next level adds to the absences this player actually
+ *  takes, against everything the base already makes over the same days. */
+function daemonPayback(s, b) {
+  const lvl = E.level(s, b.id);
+  const now = awayWork(s, lvl);
+  const lift = awayWork(s, lvl + 1) - now;
+  if (lift <= 0) return Infinity;
+  // A producer's payback is counted in seconds at the console; the Daemon's share is scaled to match.
+  const share = lift / (PLAN.active + now);
+  return price(E.buildingCost(s, b)) / (Math.max(1, income(s)) * share);
 }
 
 /** A resource is choking when the stores are full and something is still trying to fill them. */
@@ -137,10 +252,10 @@ function goal(s, b = BY_ID.core, seen = new Set()) {
 }
 
 /** What to build next, by what it is actually for. Nothing is built just because it is cheap. */
-function nextBuild(s) {
+function nextBuild(s, skip = new Set()) {
   const keep = coreReserve(s);
   const ready = BUILDINGS.filter((b) => {
-    if (E.buildingStatus(s, b) !== 'ready') {
+    if (skip.has(b.id) || E.buildingStatus(s, b) !== 'ready') {
       return false;
     }
     // The base buildings the Core's gate waits on are never held back by the reserve, and neither is
@@ -180,7 +295,7 @@ function nextBuild(s) {
     let score = b.kind === 'converter' ? converterPayback(s, b)
       : b.kind === 'storage' ? storagePayback(s, b)
         : b.kind === 'unlocker' ? unlockerPayback(s, b)
-          : b.kind === 'offline' ? costSeconds(s, b) * 1.5
+          : b.kind === 'offline' ? daemonPayback(s, b)
             : payback(s, b);
     const counts = b.kind === 'producer' || b.kind === 'storage';
     if (gated && counts) {
@@ -199,25 +314,80 @@ function nextBuild(s) {
   return best;
 }
 
+// ---------- the build queue: line up what the stores can pay for ----------
+
+/** What the waiting builds will cost when their turn comes (nothing is paid until they start). */
+function owed(s) {
+  const lv = { ...s.levels };
+  if (s.build) lv[s.build.id] = (lv[s.build.id] || 0) + 1;
+  const out = {};
+  for (const id of s.queue) {
+    for (const [k, v] of Object.entries(E.buildingCost(s, BY_ID[id], lv[id] || 0))) out[k] = (out[k] || 0) + v;
+    lv[id] = (lv[id] || 0) + 1;
+  }
+  return out;
+}
+
+/** The base as it will stand once everything under way and waiting is up, with what that costs
+ *  already gone from the stores and `ahead` seconds of income in them. The ranking above runs on
+ *  this, so the next slot goes to what is worth having after the builds already lined up. */
+function planned(s, ahead = 0) {
+  const levels = { ...s.levels };
+  for (const id of [s.build && s.build.id, ...s.queue].filter(Boolean)) levels[id] = (levels[id] || 0) + 1;
+  const res = { ...s.res };
+  const due = owed(s);
+  const r = E.netRates(s);
+  const c = E.caps(s);
+  for (const k of Object.keys(res)) {
+    res[k] = Math.min(Math.max(res[k], c[k]), res[k] + Math.max(0, r[k] || 0) * ahead) - (due[k] || 0);
+  }
+  return { ...s, levels, res, build: null, queue: [] };
+}
+
+/** What has to stay in the stores for the waiting builds, past what comes in before they start. */
+function hold(s, ahead = 0) {
+  const due = owed(s);
+  const r = E.netRates(s);
+  const out = {};
+  for (const [k, v] of Object.entries(due)) out[k] = Math.max(0, v - Math.max(0, r[k] || 0) * ahead);
+  return out;
+}
+
+/** Starts a build, then fills every free slot behind it with the next best thing the stores cover.
+ *  `ahead` lets the queue count on that many seconds of income (on the way out). */
+function fillQueue(s, ahead = 0) {
+  const skip = new Set();
+  for (let n = 0; n < 8; n++) {
+    if (s.build && s.queue.length >= E.queueSlots(s)) return;
+    const b = nextBuild(planned(s, ahead), skip);
+    if (!b) return;
+    if (!E.startBuild(s, b.id)) skip.add(b.id); // the real builder says no (a gate, a slot): next best
+  }
+}
+
 // ---------- converters: run them only while they are worth running ----------
 
 // Every conversion loses a share of what goes in, so one is only ever worth running on a resource
 // that is going spare: a store near its brim, or scrip over what the next build is being saved for.
-function runsAtAProfit(s, b) {
+// On the way out the bars are read as they will stand after `ahead` seconds of production: a store
+// that will brim overnight is going spare already.
+function runsAtAProfit(s, b, ahead = 0, r = {}) {
   const c = E.caps(s);
   const keep = coreReserve(s);
-  const spare = (k) => (Number.isFinite(c[k]) ? s.res[k] > c[k] * RUN_ABOVE : s.res[k] > (keep[k] || 0));
+  const at = (k) => s.res[k] + Math.max(0, r[k] || 0) * ahead;
+  const spare = (k) => (Number.isFinite(c[k]) ? at(k) > c[k] * RUN_ABOVE : s.res[k] > (keep[k] || 0));
   const room = (k) => !Number.isFinite(c[k]) || s.res[k] < c[k] * 0.95;
   return Object.keys(b.consumes || {}).every(spare) && Object.keys(b.produces || {}).every(room);
 }
 
 /** Turns each converter on or off to match that, the way a player watches the bars. */
-function tendConverters(s) {
+function tendConverters(s, ahead = 0) {
+  const r = ahead ? E.netRates(s) : {};
   for (const b of BUILDINGS) {
     if (b.kind !== 'converter' || !E.level(s, b.id)) {
       continue;
     }
-    if (runsAtAProfit(s, b) === !!s.paused[b.id]) {
+    if (runsAtAProfit(s, b, ahead, r) === !!s.paused[b.id]) {
       E.togglePause(s, b.id);
     }
   }
@@ -284,7 +454,7 @@ function coreReserve(s) {
 // One shopping trip. The wall first and only as far as it has to go, then whatever is over the next
 // Core level goes on whatever is holding the player back: Power when the map is out of reach,
 // Defense when the next attack is not, and the best value going when neither is pressing.
-function shop(s, atk) {
+function shop(s, atk, held = {}) {
   // The wall is topped up as the attack comes in, not the whole time it is on the clock: scrip spent
   // early is scrip the base never got, and the raiders only grow with what we are holding.
   const close = atk && atk.remaining <= PANIC_WINDOW;
@@ -295,7 +465,9 @@ function shop(s, atk) {
     E.buyItem(s, buy.id);
   }
   const want = wantsMost(s, atk);
-  const keep = coreReserve(s);
+  // What the next Core is being saved for, and on top of it what the queued builds will be paid with.
+  const keep = { ...coreReserve(s) };
+  for (const [k, v] of Object.entries(held)) keep[k] = (keep[k] || 0) + v;
   for (let n = 0; n < 12; n++) {
     const buy = bestBuy(s, want);
     if (!buy) break;
@@ -305,9 +477,24 @@ function shop(s, atk) {
   }
 }
 
+/** The likeliest raid of an absence: the strongest clan that can march, at an average roll. */
+function likelyRaid(s) {
+  let top = 0;
+  for (const f of E.activeRaiders(s)) top = Math.max(top, E.raidSize(s, f) * E.clanProfile(s, f).raid);
+  return top * (RAIDS.spreadMin + RAIDS.spreadMax) / 2;
+}
+
+/** The odds the wall holds that raid. */
+const wallOdds = (s) => E.odds(E.factors(s).defense, likelyRaid(s), RAIDS.winSharpness);
+
 /** Power, Defense, or anything: whichever is the thing standing in the way this minute. */
 function wantsMost(s, atk) {
   if (atk && E.raidChance(s, atk) < 0.97) {
+    return 'defense';
+  }
+  // Most raids land while nobody is watching, so the wall is built for the likeliest one, not just
+  // for whatever happens to be on the clock.
+  if (E.level(s, 'core') >= RAIDS.startAtCore && wallOdds(s) < PREP_ODDS) {
     return 'defense';
   }
   // Nothing on the map within reach means the offensive has stalled, and that is what to fix.
@@ -318,9 +505,9 @@ function wantsMost(s, atk) {
 // ---------- the map: take the ground worth taking ----------
 
 /** What a sector is worth having, against what the attempt risks. */
-function opScore(s, sec) {
+function opScore(s, sec, least = OP_ODDS) {
   const odds = E.opChance(s, sec);
-  if (odds < OP_ODDS || !E.canLaunch(s, sec)) {
+  if (odds < least || !E.canLaunch(s, sec)) {
     return 0;
   }
   const first = !s.taken.includes(sec.id);
@@ -334,12 +521,12 @@ function opScore(s, sec) {
 }
 
 /** The best target on the board, or null when nothing is worth the troops. */
-function bestTarget(s) {
+function bestTarget(s, least = OP_ODDS) {
   let best = null;
   let top = 0;
   for (const sec of SECTORS) {
     if (E.sectorStatus(s, sec) !== 'target') continue;
-    const v = opScore(s, sec);
+    const v = opScore(s, sec, least);
     if (v > top) {
       top = v;
       best = sec;
@@ -407,42 +594,27 @@ function answer(s, inst) {
 function play(seed) {
   const s = E.newState(seed);
   s.name = 'bot';
-  const roll = dice(seed * 7919);
+  const roll = dice(seed * 7919); // the bot's own dice: they roll its day
   const marks = {};
   const snap = {}; // AI Defense the first second each Core level was reached
   const mark = (key, t) => {
     if (marks[key] === undefined) marks[key] = t;
   };
-  const tally = { byClan: {}, dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [] };
+  const tally = { byClan: {}, dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [],
+    away: { seconds: 0, sessions: 0, held: 0, lost: 0, decided: 0 } };
   const ignored = new Set(); // threats the bot decided to take on the chin, counted once each
 
-  for (let t = 0; t < HOURS * 3600; t++) {
-    // The engine has no clock, so the host deals the daily board; here a day of play is a day.
-    E.rollDaily(s, Math.floor(t / 86400) + 1);
-    if (t % THINK_EVERY === 0) E.claimDaily(s, 'all'); // finished orders are collected when the player looks in
-    E.step(s, 1, false, true);
+  const plan = schedule(roll);
+  PLAN = {
+    absences: plan.filter((x) => !x.active).map((x) => x.to - x.from),
+    active: plan.filter((x) => x.active).reduce((a, x) => a + x.to - x.from, 0) || 1,
+  };
+  // The engine has no clock, so the host deals the daily board by the calendar: here the day turns at
+  // midnight of the schedule's clock, which is in the middle of the night.
+  const dayOf = (t) => Math.floor((t + SCHEDULE.startHour * 3600) / 86400) + 1;
 
-    const atk = E.nextAttack(s);
-
-    // The slow decisions are not made every second: what to build, what to leave running, where to go.
-    if (t % THINK_EVERY === 0) {
-      tendConverters(s);
-      if (!s.build) {
-        const b = nextBuild(s);
-        if (b) E.startBuild(s, b.id);
-      }
-      // An operation takes nothing off the wall, so the only question is whether the target is worth it.
-      const target = !s.op && bestTarget(s);
-      if (target) {
-        E.launchOp(s, target.id);
-        tally.ops++;
-      }
-    }
-    // Shopping, the way a player shops: not every second, and not the cheapest thing on the shelf.
-    if (t % SHOP_EVERY === 0) {
-      shop(s, atk);
-    }
-
+  /** Answers what is waiting. A threat is paid off below `payBelow` odds of holding its siege. */
+  function answerAll(payBelow) {
     for (const inst of s.events.slice()) {
       const ev = E.eventById(inst.id);
       const ok = ev.choices.map((c, i) => i).filter((i) => E.canChoose(s, inst, ev.choices[i]));
@@ -452,7 +624,7 @@ function play(seed) {
         // only when the force coming is one we would not hold: otherwise the tribute buys nothing.
         const pay = ev.choices.findIndex((c) => c.cost);
         const siege = s.sieges.find((x) => x.uid === inst.uid);
-        const worthPaying = siege && E.raidChance(s, siege) < 0.8;
+        const worthPaying = siege && E.raidChance(s, siege) < payBelow;
         if (!ok.includes(pay) || !worthPaying) {
           if (!ignored.has(inst.uid)) {
             ignored.add(inst.uid);
@@ -460,6 +632,7 @@ function play(seed) {
           }
           continue;
         }
+        if (ignored.delete(inst.uid)) tally.sieges--; // let ride earlier, paid off on the way out
         idx = pay;
         tally.tributes++;
       } else {
@@ -472,7 +645,10 @@ function play(seed) {
       if (ok.length < ev.choices.length) tally.pricedOut += ev.choices.length - ok.length;
       E.resolveEvent(s, inst.uid, idx);
     }
+  }
 
+  /** Reads what came in: the battle reports, the captures, the cut scenes. */
+  function readInbox(t) {
     const inc = Math.max(1, E.grossRate(s, 'money')) * 60;
     for (const m of s.inbox.splice(0)) {
       if (m.kind === 'op' && m.win && !m.retaken) tally.lootMin.push((m.loot.money || 0) / inc);
@@ -486,11 +662,104 @@ function play(seed) {
       if (m.kind === 'op' && m.win) mark('op:' + m.sector, t);
       if (m.kind === 'ending') mark('ending', t);
     }
+    // A long absence can push the oldest reports out of the inbox, so the map itself is read too.
+    for (const x of SECTORS) if (x.boss && s.taken.includes(x.id)) mark('op:' + x.id, t);
+    if (s.ending) mark('ending', t);
     tally.dailies = s.daily.tasks.filter((o) => o.done).length;
     const lvl = E.level(s, 'core');
     if (snap['core' + lvl] === undefined) snap['core' + lvl] = Math.round(E.factors(s).defense);
     mark('core' + lvl, t);
     mark('rank' + s.rank, t);
+  }
+
+  /** One second at the console. `fresh` is the first look after coming back: everything at once. */
+  function live(t, fresh, leaving) {
+    E.rollDaily(s, dayOf(t));
+    const look = fresh || t % THINK_EVERY === 0;
+    if (look) E.claimDaily(s, 'all'); // finished orders are collected when the player looks in
+    E.step(s, 1, false, true);
+
+    const atk = E.nextAttack(s);
+
+    // The slow decisions are not made every second: what to build, what to leave running, where to go.
+    if (look) {
+      tendConverters(s);
+      fillQueue(s);
+      // An operation takes nothing off the wall, so the only question is whether the target is worth it.
+      const target = !s.op && bestTarget(s);
+      if (target) {
+        E.launchOp(s, target.id);
+        tally.ops++;
+      }
+    }
+    // Shopping, the way a player shops: not every second, and not the cheapest thing on the shelf.
+    // In the last minutes before putting the phone down with the builder short of work, the shelf
+    // waits (bar a wall that has to go up now) and the scrip is kept for what to leave building.
+    if (fresh || t % SHOP_EVERY === 0) {
+      const idle = !s.build || s.queue.length < E.queueSlots(s);
+      shop(s, atk, leaving - t <= SAVE_BEFORE * 60 && idle ? { money: Infinity } : hold(s, s.build ? s.build.remaining : 0));
+    }
+    answerAll(0.8);
+    readInbox(t);
+  }
+
+  /** Buys `want` until `good` says enough, the bank drops to `floor`, or nothing helps. */
+  function reinforce(want, good, floor) {
+    for (let n = 0; n < PANIC_BUYS * 2 && s.res.money > floor && !good(); n++) {
+      const buy = bestBuy(s, want);
+      if (!buy || !E.buyItem(s, buy.id)) break;
+    }
+  }
+
+  /** The routine on the way out, for an absence of `away` seconds. */
+  function prepare(t, away) {
+    E.rollDaily(s, dayOf(t));
+    E.claimDaily(s, 'all');
+    const ran = E.awaySeconds(s, away); // how much of it the world will actually run
+    const lim = E.offlineLimits(s);
+    const working = Math.min(ran, lim.seconds) * (lim.dark ? 0 : lim.efficiency); // seconds of full output it brings
+    const floor = s.res.money * (1 - PREP_SHARE);
+    // Whatever is already on the road lands with nobody there to top the wall up as it closes.
+    const inbound = E.attacks(s).filter((a) => a.remaining <= ran);
+    reinforce('defense', () => inbound.every((a) => E.raidChance(s, a) >= SAFE_ODDS), floor);
+    answerAll(PREP_TRIBUTE);
+    // An operation on the road is decided on the Power it finds when it gets there: lift it if it would be lost.
+    const sec = s.op && E.sectorById(s.op.sector);
+    if (sec && s.op.remaining <= ran) reinforce('power', () => E.opChance(s, sec) >= OP_ODDS, floor);
+    // And the next raid, if one can be spotted and land before we are back.
+    const next = s.raid ? s.raid.remaining + s.raid.total * RAIDS.restShare : s.raidTimer;
+    const raids = E.level(s, 'core') >= RAIDS.startAtCore && next + RAIDS.minWarning < ran;
+    if (raids) reinforce('defense', () => wallOdds(s) >= PREP_ODDS, floor);
+    const target = !s.op && bestTarget(s, PREP_OP_ODDS);
+    if (target) {
+      E.launchOp(s, target.id);
+      tally.ops++;
+    }
+    tendConverters(s, working);
+    spillWindow = working;
+    fillQueue(s, working * PREP_COMMIT);
+    spillWindow = 0;
+    shop(s, E.nextAttack(s), hold(s, working * PREP_COMMIT));
+    readInbox(t);
+  }
+
+  let t = 0;
+  for (const seg of plan) {
+    if (seg.active) {
+      for (t = seg.from; t < seg.to; t++) live(t, t === seg.from, seg.to);
+      continue;
+    }
+    const away = seg.to - seg.from;
+    prepare(seg.from, away);
+    // Handed to the engine in one piece, the way the page does it when the player comes back.
+    const rep = E.catchUp(s, away);
+    t = seg.to;
+    tally.away.seconds += away;
+    tally.away.sessions++;
+    tally.away.held += rep.happened.held || 0;
+    tally.away.lost += rep.happened.breached || 0;
+    tally.away.decided += rep.happened.decided || 0;
+    readInbox(t);
   }
   const f = E.factors(s);
   return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels }, snap };
@@ -551,4 +820,5 @@ console.log(`  Humanity from choices ${mean((r) => r.tally.align).toFixed(0)} ov
 console.log('  levels ' + JSON.stringify(runs[0].levels));
 console.log('  defense at each Core ' + JSON.stringify(Object.fromEntries(Object.keys(runs[0].snap).map((k) => [k, Math.round(mean((r) => r.snap[k] || 0))]))));
 console.log(`  Daily orders cleared ${mean((r) => r.tally.dailies).toFixed(1)} of the day's board`);
+console.log(`  Offline ${mean((r) => r.tally.away.seconds / 3600).toFixed(1)}h over ${mean((r) => r.tally.away.sessions).toFixed(1)} absences  attacks while away held ${mean((r) => r.tally.away.held).toFixed(1)}  lost ${mean((r) => r.tally.away.lost).toFixed(1)}  (${share(mean((r) => r.tally.away.held), mean((r) => r.tally.away.lost))})  transmissions answered in my place ${mean((r) => r.tally.away.decided).toFixed(1)}`);
 console.log(`  Events ${mean((r) => r.stats.events).toFixed(0)}  threats paid ${mean((r) => r.tally.tributes).toFixed(1)}  sieges taken ${mean((r) => r.tally.sieges).toFixed(1)}  grudges ${mean((r) => r.tally.grudges).toFixed(1)}  missed deadlines ${mean((r) => r.stats.expired || 0).toFixed(1)}`);
