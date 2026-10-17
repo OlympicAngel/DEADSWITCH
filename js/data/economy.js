@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.50.0';
+export const VERSION = '1.50.1';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -197,35 +197,35 @@ export const ITEMS = [
   // per tab (crossbows, ramparts, tunnel rats) is near-indestructible and weak for its price.
   { id: 'rifles', tab: 'weapons', name: 'Scrap Rifles', req: { armory: 1 }, cost: { money: 60 }, growth: 1.05, gives: { power: 3 } },
   { id: 'trucks', tab: 'weapons', name: 'Gun Trucks', req: { armory: 2 }, cost: { money: 300, energy: 40 }, growth: 1.13, gives: { power: 14 } },
-  { id: 'crossbows', tab: 'weapons', name: 'Rebar Crossbows', req: { armory: 3 }, cost: { money: 650 }, growth: 1.11, gives: { power: 13 }, durability: 0.88 },
   { id: 'artillery', tab: 'weapons', name: 'Artillery Battery', req: { armory: 4 }, cost: { money: 1500, energy: 400 }, growth: 1.14, gives: { power: 60 }, durability: 0.4 },
   { id: 'drones', tab: 'weapons', name: 'Strike Drone Swarm', req: { armory: 6 }, cost: { money: 9000, energy: 3000 }, growth: 1.14, gives: { power: 320 } },
-  { id: 'tanks', tab: 'weapons', name: 'Patchwork Tanks', req: { armory: 7 }, cost: { money: 24000, energy: 8500 }, growth: 1.14, gives: { power: 820 }, durability: 0.3 },
+  { id: 'crossbows', tab: 'weapons', name: 'Rebar Crossbows', req: { armory: 8 }, cost: { money: 30000 }, growth: 1.08, gives: { power: 400 }, durability: 0.88 },
   { id: 'railgun', tab: 'weapons', name: 'Railgun Emplacement', req: { armory: 9 }, cost: { money: 70000, energy: 25000 }, growth: 1.15, gives: { power: 2000 }, durability: 0.55 },
-  { id: 'dirtybomb', tab: 'weapons', name: 'Dirty Bomb Silo', req: { armory: 11 }, cost: { money: 240000, energy: 90000 }, growth: 1.15, gives: { power: 5600 }, durability: 0.5 },
   { id: 'lance', tab: 'weapons', name: 'Orbital Lance Uplink', req: { armory: 13 }, cost: { money: 800000, energy: 300000 }, growth: 1.15, gives: { power: 15000 }, durability: 0.7 },
+  { id: 'tanks', tab: 'weapons', name: 'Patchwork Tanks', req: { armory: 15 }, cost: { money: 2400000, energy: 900000 }, growth: 1.15, gives: { power: 40000 }, durability: 0.3 },
+  { id: 'dirtybomb', tab: 'weapons', name: 'Dirty Bomb Silo', req: { armory: 18 }, cost: { money: 7200000, energy: 2700000 }, growth: 1.15, gives: { power: 105000 }, durability: 0.5 },
   // Defenses
   { id: 'barricades', tab: 'defenses', name: 'Barricades', req: { works: 1 }, cost: { money: 50 }, growth: 1.05, gives: { defense: 3 } },
   { id: 'pillboxes', tab: 'defenses', name: 'Concrete Pillboxes', req: { works: 2 }, cost: { money: 280, energy: 20 }, growth: 1.13, gives: { defense: 13 } },
-  { id: 'ramparts', tab: 'defenses', name: 'Rubble Ramparts', req: { works: 3 }, cost: { money: 600 }, growth: 1.11, gives: { defense: 13 }, durability: 0.9 },
   { id: 'turrets', tab: 'defenses', name: 'Auto-Turrets', req: { works: 4 }, cost: { money: 1400, energy: 500 }, growth: 1.14, gives: { defense: 60 }, durability: 0.2 },
   { id: 'emp', tab: 'defenses', name: 'EMP Hardening', req: { works: 6 }, cost: { money: 8500, energy: 3500 }, growth: 1.14, gives: { defense: 320 }, durability: 0.5 },
-  { id: 'wire', tab: 'defenses', name: 'Razor Wire Belts', req: { works: 7 }, cost: { money: 23000, energy: 9000 }, growth: 1.14, gives: { defense: 800 } },
+  { id: 'ramparts', tab: 'defenses', name: 'Rubble Ramparts', req: { works: 8 }, cost: { money: 28000 }, growth: 1.08, gives: { defense: 400 }, durability: 0.9 },
   { id: 'interceptors', tab: 'defenses', name: 'Interceptor Grid', req: { works: 9 }, cost: { money: 65000, energy: 30000 }, growth: 1.15, gives: { defense: 2000 }, durability: 0.15 },
-  { id: 'bunkers', tab: 'defenses', name: 'Deep Bunker Complex', req: { works: 11 }, cost: { money: 220000, energy: 100000 }, growth: 1.15, gives: { defense: 5300 }, durability: 0.6 },
   { id: 'aegis', tab: 'defenses', name: 'Aegis Dome', req: { works: 13 }, cost: { money: 750000, energy: 350000 }, growth: 1.15, gives: { defense: 15000 }, durability: 0.65 },
+  { id: 'wire', tab: 'defenses', name: 'Razor Wire Belts', req: { works: 15 }, cost: { money: 2250000, energy: 1050000 }, growth: 1.15, gives: { defense: 40000 } },
+  { id: 'bunkers', tab: 'defenses', name: 'Deep Bunker Complex', req: { works: 18 }, cost: { money: 6800000, energy: 3200000 }, growth: 1.15, gives: { defense: 105000 }, durability: 0.6 },
   // Military staff (paid partly in people). People are worth more than scrip and they march: a
   // soldier counts for both Power and Defense, at a better rate per scrip than either specialist
   // tab, and none of them hold the wall while an operation is out (sim/economy.js, rawFactors).
   { id: 'militia', tab: 'staff', name: 'Militia', req: { barracks: 1 }, cost: { money: 26, pop: 5 }, growth: 1.1, gives: { power: 1, defense: 2 } },
   { id: 'snipers', tab: 'staff', name: 'Scout Snipers', req: { barracks: 2 }, cost: { money: 170, pop: 9 }, growth: 1.12, gives: { power: 7, defense: 10 }, durability: 0.1 },
   { id: 'garrison', tab: 'staff', name: 'Garrison Troops', req: { barracks: 3 }, cost: { money: 380, pop: 15 }, growth: 1.12, gives: { power: 7, defense: 50 }, durability: 0.25 },
-  { id: 'rats', tab: 'staff', name: 'Tunnel Rats', req: { barracks: 4 }, cost: { money: 900, pop: 28 }, growth: 1.11, gives: { power: 18, defense: 27 }, durability: 0.86 },
   { id: 'commandos', tab: 'staff', name: 'Commandos', req: { barracks: 5 }, cost: { money: 2550, pop: 38 }, growth: 1.13, gives: { power: 130, defense: 80 }, durability: 0.35 },
-  { id: 'outriders', tab: 'staff', name: 'Raider Outriders', req: { barracks: 6 }, cost: { money: 5700, energy: 1200, pop: 53 }, growth: 1.13, gives: { power: 320, defense: 180 }, durability: 0.2 },
   { id: 'operators', tab: 'staff', name: 'Drone Operators', req: { barracks: 7 }, cost: { money: 12750, energy: 4000, pop: 75 }, growth: 1.14, gives: { power: 470, defense: 740 }, durability: 0.6 },
-  { id: 'wardens', tab: 'staff', name: 'Exo-Suit Wardens', req: { barracks: 8 }, cost: { money: 34000, energy: 12000, pop: 130 }, growth: 1.14, gives: { power: 1300, defense: 1500 }, durability: 0.4 },
+  { id: 'rats', tab: 'staff', name: 'Tunnel Rats', req: { barracks: 8 }, cost: { money: 12000, pop: 60 }, growth: 1.08, gives: { power: 200, defense: 320 }, durability: 0.86 },
   { id: 'legion', tab: 'staff', name: 'Augmented Legion', req: { barracks: 10 }, cost: { money: 102000, energy: 40000, pop: 225 }, growth: 1.15, gives: { power: 3800, defense: 3800 }, durability: 0.45 },
+  { id: 'outriders', tab: 'staff', name: 'Raider Outriders', req: { barracks: 12 }, cost: { money: 306000, energy: 120000, pop: 450 }, growth: 1.15, gives: { power: 10000, defense: 7000 }, durability: 0.2 },
+  { id: 'wardens', tab: 'staff', name: 'Exo-Suit Wardens', req: { barracks: 15 }, cost: { money: 920000, energy: 360000, pop: 800 }, growth: 1.15, gives: { power: 26000, defense: 30000 }, durability: 0.4 },
   // Experts
   { id: 'engineers', tab: 'experts', name: 'Field Engineers', req: { thinktank: 1 }, cost: { money: 250, pop: 8 }, growth: 1.14, gives: { experts: 1 } },
   { id: 'hackers', tab: 'experts', name: 'Hackers', req: { thinktank: 2 }, cost: { money: 1200, energy: 300, pop: 15 }, growth: 1.15, gives: { experts: 4 } },
