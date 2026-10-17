@@ -341,6 +341,7 @@ export function catchUp(s, seconds, already = 0) {
   const seq = s.attackSeq || 0;
   const evSeq = s.eventSeq || 0;
   const floor = BALANCE.offline.minWarning;
+  const warnedOrders = new Set();
   // Anything spotted or sent while away gives at least `floor` seconds to notice and come back.
   const stretch = () => {
     for (const a of attacks(s)) {
@@ -353,9 +354,12 @@ export function catchUp(s, seconds, already = 0) {
       }
     }
     for (const e of s.events) {
-      if (e.uid > evSeq && e.left < floor) {
-        e.total += floor - e.left;
-        e.left = floor;
+      if (e.uid > evSeq && !warnedOrders.has(e.uid)) {
+        warnedOrders.add(e.uid);
+        if (e.left < floor) {
+          e.total += floor - e.left;
+          e.left = floor;
+        }
       }
     }
   };
