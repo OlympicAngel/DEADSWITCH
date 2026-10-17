@@ -15,11 +15,14 @@ export const ICONS = {
   thinktank: 'bulb', lab: 'flask-2', daemon: 'moon-stars',
   // weapons
   rifles: 'target-arrow', trucks: 'truck', artillery: 'bomb', drones: 'drone', railgun: 'rocket', lance: 'satellite',
+  crossbows: 'bow', tanks: 'tank', dirtybomb: 'biohazard',
   // defenses
   barricades: 'barrier-block', pillboxes: 'building-castle', turrets: 'focus-2', emp: 'wave-sine', interceptors: 'shield-bolt', aegis: 'umbrella',
+  ramparts: 'mountain', wire: 'fence', bunkers: 'building-tunnel',
   // staff
   durability: 'shield-check',
   militia: 'user', snipers: 'eye', garrison: 'shield-half', commandos: 'skull', operators: 'device-gamepad-2', legion: 'robot',
+  rats: 'helmet', outriders: 'motorbike', wardens: 'military-rank',
   // experts
   engineers: 'tool', hackers: 'terminal-2', analysts: 'chart-line', physicists: 'atom', architects: 'compass',
   // tech
