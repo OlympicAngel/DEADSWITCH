@@ -99,7 +99,9 @@ export function createTips(game) {
     const val = E.factors(s)[k];
     const extra = k === 'experts' ? row('Production bonus', '+' + pct(val * BALANCE.expertProductionBonus)) : '';
     const what = { power: 'Attack strength in operations.', defense: 'Strength against raids.', experts: `+${pct(BALANCE.expertProductionBonus)} production each.` }[k];
-    return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw)) + extra
+    const away = k === 'defense' ? E.troopsOut(s) : 0;
+    return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw))
+      + (away ? row(`${icon('power')}Troops on the operation`, '\u2212' + num(away), 'neg') : '') + extra
       + (val !== raw ? `<div class="tip-sec">Bonuses</div>${bonusRows(s, k)}` : '');
   }
 

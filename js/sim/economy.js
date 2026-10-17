@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG,
+  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG, OPS,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -116,7 +116,16 @@ export function bonusMult(s, key, f = null, buffs = true) {
   return parts.reduce((m, p) => (p.amount < 0 ? m * Math.max(0, 1 + p.amount) : m), 1 + up);
 }
 
-export function rawFactors(s) {
+/** Defense the Troops tab holds, before bonuses. */
+export function troopDefense(s) {
+  return ITEMS.reduce((sum, i) => sum + (i.tab === 'staff' ? ((i.gives || {}).defense || 0) * owned(s, i.id) : 0), 0);
+}
+
+/** The Defense (before bonuses) that marches out with an operation: OPS.troopsMarch of the Troops tab's. */
+export const troopsOut = (s) => (s.op ? troopDefense(s) * OPS.troopsMarch : 0);
+
+/** What our units give, before bonuses. `out` takes away the troops on an operation. */
+export function rawFactors(s, out = false) {
   const raw = { power: 0, defense: 0, experts: 0 };
   for (const item of ITEMS) {
     const n = owned(s, item.id);
@@ -126,11 +135,13 @@ export function rawFactors(s) {
       }
     }
   }
+  if (out) raw.defense -= troopsOut(s);
   return raw;
 }
 
+// Threat (buffs = false) is counted on the whole army; what fights is the army that is home.
 export function factors(s, buffs = true) {
-  const raw = rawFactors(s);
+  const raw = rawFactors(s, buffs);
   const out = {};
   for (const k of FACTOR_KEYS) {
     out[k] = Math.max(0, Math.floor(raw[k] * bonusMult(s, k, null, buffs)));
