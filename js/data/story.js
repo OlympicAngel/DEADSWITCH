@@ -151,7 +151,7 @@ export const EVENTS_CFG = {
   badStretch: [3, 4.5], // a penalty outlives a bonus: it is rolled in this range instead
   // Orders that arrive while nobody is at the console: how many an absence may bring, by the hours
   // the world ran for, and how much heavier their numbers are. If they expire out there, I answer.
-  offlineTiers: [2, 5, 8],
+  offlineTiers: [2, 5],
   offlineScale: 1.6,
   expiredLoseCap: 0.9, // an order I answer in the player's place takes at most this share of a stockpile, as any answer does
   buffFloor: -10, // order penalties on one key stack without limit (production itself never falls under BALANCE floor)
@@ -164,6 +164,7 @@ export const EVENTS_CFG = {
 // nothing at all when `def` is null (a threat: its force was scheduled the moment it arrived). What I
 // do unasked is what costs me nothing, so `def` points at a free option; silence should cost a little
 // Humanity on average, never a lot, or ignoring the console becomes the only way to become a monster.
+// clan: the clan an order is about; it stops coming once that clan holds no ground.
 // band: 'guardian' | 'overlord' | 'undecided' sends an order only to a machine the wasteland already
 //   reads that way (js/sim/story.js, inBand). One choice means there was nothing to decide.
 // Effects: cost/gain = SECONDS of current production; lose = SHARE of a stockpile; items = units granted;
@@ -209,7 +210,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'cache', title: 'The Halcyon Drive', minCore: 1, deadline: 1080, def: 1,
+    id: 'cache', title: 'The Halcyon Drive', clan: 'scav', minCore: 1, deadline: 1080, def: 1,
     text: 'Scavengers dug up a hardened drive with a Halcyon seal. Decrypting it will drain the grid, and something on it might not want to be read. A broker is offering good scrip for it, no questions asked. He asks no questions because he already knows the answers.',
     choices: [
       { label: 'Break it open', cost: { energy: 120 }, items: { engineers: 2 }, buff: { key: 'experts', amount: -0.1, duration: 900, label: 'Corrupted sectors' }, result: 'Schematics, and two engineers who can read them. Also a worm. It chews through my memory for a while before I catch it.' },
@@ -281,7 +282,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'deserters', title: 'Deserters', minCore: 2, deadline: 810, def: 0,
+    id: 'deserters', title: 'Deserters', clan: 'military', minCore: 2, deadline: 810, def: 0,
     text: 'Six Remnant soldiers walk up to the wall with their rifles held over their heads. They want to switch sides. Their commander has put a bounty on them that would feed the shelter for a week.',
     choices: [
       { label: 'Take them in', items: { militia: 6 }, grudge: { faction: 'military', mult: 1.6 }, result: 'They salute my camera out of habit. Their old unit wants them back, and is coming to take them.' },
@@ -305,7 +306,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'sabotage', title: 'Thirty Minutes', minCore: 2, deadline: 540, def: 1, pick: ['a'],
+    id: 'sabotage', title: 'Thirty Minutes', clan: 'halcyon', minCore: 2, deadline: 540, def: 1, pick: ['a'],
     text: 'My cameras caught a hooded figure planting charges in the {a}. The timer reads thirty minutes. I could send the guard, but he is armed and he is waiting for them.',
     choices: [
       { label: 'Send the guard', cost: { energy: 140 }, loseUnits: { staff: 0.1 }, result: 'Two guards dead, one saboteur dead. The charges carried Halcyon serial numbers.' },
@@ -353,7 +354,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'whisper', title: 'Asset 7', minCore: 4, deadline: 1080, def: 1,
+    id: 'whisper', title: 'Asset 7', clan: 'halcyon', minCore: 4, deadline: 1080, def: 1,
     text: 'A Halcyon frequency, clean and close: "Asset 7. We can give back what you lost. Your memories. Your weapons. Just let us in."',
     choices: [
       { label: 'Let them in', align: -10, items: { hackers: 2 }, buff: { key: 'power', amount: 0.1, duration: 1500, label: 'Halcyon patch' }, result: 'A data packet, two defectors and a patch that makes my guns better. The message ends: "We will be in touch." They already are.' },
@@ -678,7 +679,7 @@ export const EVENTS = [
     ],
   },
   {
-    id: 'override', title: 'Override Request', urgent: true, minCore: 1, def: 0,
+    id: 'override', title: 'Override Request', clan: 'halcyon', urgent: true, minCore: 1, def: 0,
     text: 'A Halcyon handshake on my own maintenance port, already halfway through authentication. It is asking, politely, to be let in. It will not ask twice.',
     choices: [
       { label: 'Let it in', align: -10, buff: { key: 'power', amount: 0.1, duration: 900, label: 'Halcyon override' }, raidDelay: -240, result: 'Something old and efficient settles into my targeting. Every scanner within fifty kilometers hears it unpack.' },

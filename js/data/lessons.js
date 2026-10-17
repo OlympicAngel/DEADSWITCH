@@ -47,7 +47,7 @@ export const LESSONS = [
       { at: '[data-nav="map"]', say: 'Ground next to ours can be taken.', done: 'tap' },
       { at: '.node.st-target', say: 'A sector we can reach. Tap it.', done: 'tap' },
       { at: '.duel', say: 'Our strike power against what holds it, and the odds that gives. The roll comes when the operation lands.', done: 'read' },
-      { at: '.launch', say: 'Launch sends it. It costs what is on the chips, and it takes the troops with it until it lands.', done: 'read' },
+      { at: '.launch', say: 'Launch sends it. It costs what is on the chips.', done: 'read' },
     ],
   },
   {

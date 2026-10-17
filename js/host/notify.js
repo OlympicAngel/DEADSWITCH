@@ -133,16 +133,26 @@ function promised(s, limit) {
   // One already on the board does not stop the clock: the next one is timed from where that one
   // lands. Bailing here was why a nine-hour absence queued a single alert and then went quiet.
   const after = (live, timer, gap) => (live ? live.remaining + gap : Math.max(0, timer || 0)) + soonest(gap);
+  const due = [];
   for (let at = after(s.raid, s.raidTimer, RAIDS.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
-    out.push({ at, kind: 'attack', title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
+    due.push({ at, title: 'A raid is due', body: 'Something is walking in. I will hold what I can.' });
     at += RAIDS.intervalMin;
   }
   // Assaults run off their own clock, which is null until the first one is armed.
   if (s.assault || s.assaultTimer !== null) {
     for (let at = after(s.assault, s.assaultTimer, NODES.intervalMin), n = 0; at <= limit && n < AHEAD; n++) {
-      out.push({ at, kind: 'attack', title: 'A clan is moving on us', body: 'One of our sectors is about to be hit.' });
+      due.push({ at, title: 'A clan is moving on us', body: 'One of our sectors is about to be hit.' });
       at += NODES.intervalMin;
     }
+  }
+  // An absence lands no more than BALANCE.offline.maxAttacks, the shortest spacing apart.
+  const o = BALANCE.offline;
+  let last = -Infinity;
+  for (const d of due.sort((x, y) => x.at - y.at)) {
+    if (out.length >= o.maxAttacks) break;
+    if (d.at - last < o.gapHours[0] * 3600) continue;
+    out.push({ at: d.at, kind: 'attack', title: d.title, body: d.body });
+    last = d.at;
   }
   return out;
 }

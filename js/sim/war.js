@@ -1,6 +1,6 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
 import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
-import { spawnAftermath } from './story.js';
+import { spawnAftermath, dropClan } from './story.js';
 import {
   level, factors, threatFactors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
 } from './economy.js';
@@ -38,6 +38,9 @@ export function factionOf(s, id) {
 
 /** Every sector a clan holds right now, captured ground included. */
 export const clanSectors = (s, faction) => SECTORS.filter((x) => factionOf(s, x.id) === faction);
+
+/** A clan still on the board: it holds ground that is not ours. */
+export const clanStanding = (s, faction) => clanSectors(s, faction).some((x) => !s.sectors.includes(x.id));
 
 /** What a sector is worth under whoever holds it. Ground taken off another clan is rebuilt to that
  *  clan's own standard (NODES.foreignShare of what they hold at home), never weaker than it was and
@@ -333,6 +336,8 @@ export function advanceOp(s, dt) {
     if (held && !clanSectors(s, held).some((x) => !s.sectors.includes(x.id)) && !s.scripted['wipe:' + held]) {
       s.scripted['wipe:' + held] = 1;
       say(s, 'clanWiped', { faction: FACTIONS[held].name }, 'rank');
+      // Nothing is left to speak for them: their orders and grudges go with them.
+      dropClan(s, held);
       s.inbox.push({ kind: 'wipe', faction: held });
     }
     if (held) {
@@ -405,6 +410,20 @@ export function activeRaiders(s) {
 // player can see, and the keenest of those. A faction with no ground left attacks from nowhere.
 /** True once a sector's last attack has stood down: NODES.cooldownShare of the time it took to reach us. */
 export const rested = (s, id) => !(s.nodes[id] && s.nodes[id].until > s.playTime);
+
+/** While away the gate is shut once the absence has had its attacks, or until the spacing after the
+ *  last one that counted has run out. An attack marked `free` (inbound when the player left, and
+ *  likely held) walks through it and is not counted. */
+export const gateShut = (s, offline, atk = null) => offline && !(atk && atk.free)
+  && (s.offlineRaids >= s.offlineRaidCap || s.playTime < (s.offlineNextAt || 0));
+
+/** An attack resolved while away: counted against the absence, and the next one waits BALANCE.offline.gapHours. */
+function countOffline(s, atk) {
+  if (atk.free) return;
+  s.offlineRaids++;
+  const [lo, hi] = BALANCE.offline.gapHours;
+  s.offlineNextAt = s.playTime + range(s, lo, hi, 'offline') * 3600;
+}
 
 /** Puts a sector that just attacked on its cooldown. */
 function standDown(s, id, t) {
@@ -534,7 +553,7 @@ export function advanceSieges(s, dt, offline) {
   for (const sg of s.sieges.slice()) {
     // A siege is an attack like any other, so an absence that has had its share of them holds it at
     // the gate until someone is back.
-    if (offline && s.offlineRaids >= s.offlineRaidCap) {
+    if (gateShut(s, offline, sg)) {
       continue;
     }
     if (s.sectors.includes(sg.from)) {
@@ -548,7 +567,7 @@ export function advanceSieges(s, dt, offline) {
     if (sg.remaining <= 1e-9) {
       s.sieges = s.sieges.filter((x) => x !== sg);
       resolveAttack(s, sg, offline);
-      if (offline) s.offlineRaids++;
+      if (offline) countOffline(s, sg);
     }
   }
 }
@@ -643,7 +662,8 @@ export function startReinforce(s, id) {
   if (reinforceBlock(s, id)) return false;
   const t = reinforceTime(id);
   const from = reinforcers(s, id);
-  s.reinforce = [...(s.reinforce || []), { target: id, from, phase: 'going', remaining: t, total: t }];
+  // Tied to the attack it answers: once that one is decided they turn for home, whatever comes next.
+  s.reinforce = [...(s.reinforce || []), { target: id, from, phase: 'going', remaining: t, total: t, atk: attackOn(s, id).id }];
   say(s, 'reinforceSent', { n: from.length, target: SECTOR_BY_ID[id].name });
   return true;
 }
@@ -653,7 +673,10 @@ export function advanceReinforce(s, dt) {
   for (const r of s.reinforce) {
     // The fight is over (decided or called off), or the ground is gone: they turn for home, from
     // wherever they have got to.
-    if (r.phase !== 'back' && (!attackOn(s, r.target) || !s.sectors.includes(r.target))) {
+    // Help sent before it was tied to its attack is tied to the one on its sector now.
+    if (!r.atk && r.phase !== 'back' && attackOn(s, r.target) && attackOn(s, r.target).id) r.atk = attackOn(s, r.target).id;
+    const over = r.atk ? !attacks(s).some((a) => a.id === r.atk) : !attackOn(s, r.target);
+    if (r.phase !== 'back' && (over || !s.sectors.includes(r.target))) {
       r.remaining = r.phase === 'going' ? r.total - r.remaining : r.total;
       r.phase = 'back';
     }
@@ -749,7 +772,7 @@ export function advanceRaids(s, dt, offline) {
   if (level(s, 'core') < RAIDS.startAtCore) {
     return;
   }
-  if (offline && s.offlineRaids >= s.offlineRaidCap) {
+  if (gateShut(s, offline, s.raid)) {
     return;
   }
   if (!s.raid) {
@@ -783,9 +806,7 @@ function resolveRaid(s, offline) {
   const raid = s.raid;
   s.raid = null;
   resolveAttack(s, raid, offline);
-  if (offline) {
-    s.offlineRaids++;
-  }
+  if (offline) countOffline(s, raid);
   // A quiet spell before the next one is even spotted, as long as this one took to come (RAIDS.restShare
   // of its march and warning): the far end of the map rests longer than the Scavengers' back yard.
   s.raidTimer = raid.total * RAIDS.restShare;
@@ -956,7 +977,7 @@ export function advanceAssaults(s, dt, offline) {
     s.assault = null; // the border it used no longer exists
   }
   if (!s.assault) {
-    if (offline && s.offlineRaids >= s.offlineRaidCap) return;
+    if (gateShut(s, offline)) return;
     if (s.assaultTimer === null) s.assaultTimer = NODES.firstDelay;
     s.assaultTimer -= dt;
     if (s.assaultTimer <= 0) {
@@ -965,13 +986,13 @@ export function advanceAssaults(s, dt, offline) {
     }
     return;
   }
-  if (offline && s.offlineRaids >= s.offlineRaidCap) return;
+  if (gateShut(s, offline, s.assault)) return;
   s.assault.remaining -= dt;
   if (s.assault.remaining > 1e-9) return;
   const atk = s.assault;
   s.assault = null;
   resolveAttack(s, atk, offline);
-  if (offline) s.offlineRaids++;
+  if (offline) countOffline(s, atk);
   // The next one waits out its interval plus a rest scaled to how long this one marched.
   s.assaultTimer = Math.max(s.assaultTimer || 0, 0) + atk.total * NODES.restShare;
 }

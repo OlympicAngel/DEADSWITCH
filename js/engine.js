@@ -1,7 +1,7 @@
 // Engine entry point: state lifecycle and the simulation step. Pure: the host passes elapsed seconds in.
 import { BALANCE, MAP, EVENTS_CFG, BY_ID, FACTIONS, LESSONS, TUTORIAL, RESOURCE_KEYS, ALIGNMENT, BUILDINGS, ENDINGS } from './data.js';
 import { produce, advanceBuild, unlockedKeys, say, offlineLimits, maxLevel, awaySeconds, offlineAttacks, offlineOrders, LOG_LIMIT, factors } from './sim/economy.js';
-import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, advanceReinforce, sectorById } from './sim/war.js';
+import { advanceOp, advanceRaids, advanceSieges, advanceAssaults, advanceNodes, advanceReinforce, sectorById, attacks, raidChance } from './sim/war.js';
 import { advanceEvents, advanceBuffs, checkDirectives, checkChapters, checkDaily, dailyTask, eventById, reached } from './sim/story.js';
 import { advanceClans, clan } from './sim/clans.js';
 
@@ -65,6 +65,7 @@ export function newState(seed = 1) {
     offlineRaidCap: 1, // how many attacks and orders this absence may bring (set by catchUp)
     offlineEvents: 0,
     offlineEventCap: 0,
+    offlineNextAt: 0, // while away: no counted attack lands before this play time (set by catchUp)
     events: [],
     eventSeq: 0,
     eventTimer: EVENTS_CFG.firstDelay,
@@ -81,7 +82,7 @@ export function newState(seed = 1) {
     daily: { day: 0, tasks: [], streak: 0, best: 0, paid: false, cleared: false }, // paid: the board's bonus collected
     taught: [], // lessons already given (data/lessons.js)
     lessonAt: null, // { id, at }: the step a running lesson had reached
-    reinforce: [], // help on the road between our sectors: { target, from[], phase going|there|back, remaining, total }
+    reinforce: [], // help on the road between our sectors: { target, from[], phase going|there|back, remaining, total, atk (the attack it answers) }
     scripted: {}, // one-off scripted moments that have already played (js/sim/war.js)
     inbox: [{ kind: 'boot' }],
     fx: [],
@@ -211,7 +212,8 @@ export function migrate(raw) {
     : LESSONS.filter((l) => reached(s, l.when)).map((l) => l.id);
   s.reinforce = (Array.isArray(raw.reinforce) ? raw.reinforce : []).filter((r) => r && typeof r.target === 'string' && Array.isArray(r.from)
     && ['going', 'there', 'back'].includes(r.phase) && Number.isFinite(r.remaining) && Number.isFinite(r.total))
-    .map((r) => ({ target: r.target, from: r.from.filter((x) => typeof x === 'string'), phase: r.phase, remaining: r.remaining, total: r.total }));
+    .map((r) => ({ target: r.target, from: r.from.filter((x) => typeof x === 'string'), phase: r.phase, remaining: r.remaining, total: r.total,
+      ...(Number.isFinite(r.atk) ? { atk: r.atk } : {}) }));
   const la = raw.lessonAt;
   s.lessonAt = la && typeof la.id === 'string' && Number.isInteger(la.at) && la.at >= 0 ? { id: la.id, at: la.at } : null;
   // A run already past the opening is not owed the scripted loss; it would read as a random mugging.
@@ -252,6 +254,7 @@ export function migrate(raw) {
   s.offlineRaidCap = 1;
   s.offlineEvents = 0;
   s.offlineEventCap = 0;
+  s.offlineNextAt = 0;
   // Captured ground keeps its new clan; a save from before that only knows the map's own factions.
   s.owner = {};
   for (const [id, f] of Object.entries((raw.owner && typeof raw.owner === 'object') ? raw.owner : {})) {
@@ -329,6 +332,33 @@ export function catchUp(s, seconds, already = 0) {
   s.offlineEvents = 0;
   s.offlineRaidCap = offlineAttacks(s, total);
   s.offlineEventCap = offlineOrders(s, total);
+  s.offlineNextAt = s.playTime;
+  // Inbound when the player left: one they would likely hold lands without counting against the
+  // absence; one they would likely lose counts like any other.
+  for (const a of attacks(s)) {
+    if (raidChance(s, a) >= 0.5) a.free = true;
+  }
+  const seq = s.attackSeq || 0;
+  const evSeq = s.eventSeq || 0;
+  const floor = BALANCE.offline.minWarning;
+  // Anything spotted or sent while away gives at least `floor` seconds to notice and come back.
+  const stretch = () => {
+    for (const a of attacks(s)) {
+      if (a.id > seq && !a.warned) {
+        a.warned = true;
+        if (a.remaining < floor) {
+          a.total += floor - a.remaining;
+          a.remaining = floor;
+        }
+      }
+    }
+    for (const e of s.events) {
+      if (e.uid > evSeq && e.left < floor) {
+        e.total += floor - e.left;
+        e.left = floor;
+      }
+    }
+  };
   while (left > EPS) {
     let dt = Math.min(stepSize, left);
     const done = total - left;
@@ -341,9 +371,20 @@ export function catchUp(s, seconds, already = 0) {
       }
     }
     flows = step(s, dt, true, false, done < grace ? 1 : (done < paid ? limits.efficiency : 0));
+    stretch();
     left -= dt;
   }
+  for (const a of attacks(s)) {
+    delete a.free;
+    delete a.warned;
+    // Spotted while away and held at the gate: the player gets the same notice coming back.
+    if (a.id > seq && a.remaining < floor) {
+      a.total += floor - a.remaining;
+      a.remaining = floor;
+    }
+  }
   s.offlineRaids = 0;
+  s.offlineNextAt = 0;
   const orders = s.offlineEvents;
   s.offlineEvents = 0;
   const gained = {};

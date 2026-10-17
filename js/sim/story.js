@@ -6,7 +6,7 @@ import {
   level, factors, threatFactors, rawFactors, threat, grossRate, canAfford, grant, giveItems, owned, say, caps, loseLevel, loseUnits, unitsLost, lossPlan, lossValue, projectDefense,
   buildingStatus,
 } from './economy.js';
-import { delayRaid, reinforceBlock, attacks, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
+import { gateShut, clanStanding, delayRaid, reinforceBlock, attacks, activeRaiders, startSiege, addGrudge, borders, shiftStrength, stirAggression, spawnAssault, loseSector, sectorById, factionOf, breaches, opLoot, resetPush, sectorStatus } from './war.js';
 import { stirClan } from './clans.js';
 import { range, pick, rand, mix } from './rng.js';
 
@@ -150,6 +150,9 @@ const hasUnits = (s, tab) => ITEMS.some((i) => i.tab === tab && owned(s, i.id) >
 // income the player does not have, no loss of stock or units they do not own, no grudge from a faction
 // that is not raiding, no raid delay before raids start. Otherwise another event fires instead.
 export function applicable(s, ev) {
+  if (ev.clan && !clanStanding(s, ev.clan)) {
+    return false;
+  }
   if (ev.border) {
     const heals = ev.choices.some((c) => c.clearMarks);
     if (!borders(s, true).some((b) => !heals || breaches(s, b.target) > 0)) {
@@ -172,12 +175,25 @@ export function applicable(s, ev) {
   });
 }
 
-// Creates a pending event instance; returns false when the event cannot take effect or its picks are impossible.
+/** The clan an order in play is about, if any: its own tag, the force it names, or the border it sits on. */
+function orderClan(s, inst) {
+  const ev = EVENT_BY_ID[inst.id];
+  const p = inst.params || {};
+  return (ev && ev.clan) || p.faction || (p.node ? factionOf(s, p.node) : null);
+}
+
+/** A clan wiped off the board: orders about it are withdrawn and its grudges end. */
+export function dropClan(s, faction) {
+  s.events = s.events.filter((x) => orderClan(s, x) !== faction || EVENT_BY_ID[x.id].threat);
+  s.grudges = (s.grudges || []).filter((g) => g.faction !== faction);
+}
+
 /** Some transmissions only reach a machine the wasteland already has an opinion about. */
 export function inBand(s, ev) {
   return !ev.band || ev.band === alignmentLabel(s.align).toLowerCase();
 }
 
+// Creates a pending event instance; returns false when the event cannot take effect or its picks are impossible.
 function spawn(s, ev, front, big = false) {
   if (!applicable(s, ev)) {
     return false;
@@ -278,7 +294,7 @@ export function advanceEvents(s, dt, offline, active = false) {
     if (offline && EVENT_BY_ID[inst.id].urgent) continue;
     // A threat's bill waits as long as its attack does: an absence that has had its share of attacks
     // holds the siege at the gate, and the order to pay it off stays open with it.
-    if (offline && EVENT_BY_ID[inst.id].threat && s.offlineRaids >= s.offlineRaidCap) continue;
+    if (EVENT_BY_ID[inst.id].threat && gateShut(s, offline)) continue;
     inst.left -= dt;
     if (inst.left <= 0) {
       const ev = EVENT_BY_ID[inst.id];

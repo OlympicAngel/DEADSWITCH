@@ -549,9 +549,8 @@ export function offlineLimits(s, lvl = level(s, 'daemon')) {
 export const awaySeconds = (s, seconds) => Math.max(0, Math.min(seconds, BALANCE.offline.warHours * 3600));
 
 /** How many attacks may land in one absence: half an attack an hour run, never more than maxAttacks. */
-export function offlineAttacks(s, ran = BALANCE.offline.warHours * 3600) {
-  const o = BALANCE.offline;
-  return Math.max(1, Math.min(o.maxAttacks, Math.round((ran / 3600) * o.attacksPerHour)));
+export function offlineAttacks() {
+  return BALANCE.offline.maxAttacks;
 }
 
 /** How many orders may come in while nobody is at the console: one at two hours, two at five,

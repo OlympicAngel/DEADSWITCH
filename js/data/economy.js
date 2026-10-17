@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.46.0';
+export const VERSION = '1.47.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -41,7 +41,7 @@ export const BALANCE = {
   // Per-resource share of the per-level climb (growth' - 1). Scrip climbs slower than the raw growth,
   // and energy and people slower again: Scrip is what a run is paced by, not the stores that hold them.
   resourceGrowth: { money: 0.8, energy: 0.62, pop: 0.58 },
-  coreGateShare: 0.575, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
+  coreGateShare: 0.604, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
   unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 takes a flat 5 points off its shop prices...
   unlockerDiscountMax: 0.75, // ...up to this much off
@@ -54,8 +54,10 @@ export const BALANCE = {
   // The first graceSeconds of any absence count in full (tab switches, short locks).
   // The Daemon governs production only. warHours is how much of any absence the world itself runs
   // for, Daemon or not: attacks land, orders arrive, and you come back to what happened.
-  // attacksPerHour x the hours counted is how many attacks may land, up to maxAttacks.
-  offline: { graceSeconds: 120, warHours: 8, attacksPerHour: 0.5, maxAttacks: 4,
+  // An absence lands at most maxAttacks attacks, each at least gapHours (rolled) after the last one
+  // that counted; an attack still inbound when the player left counts only if it was likely lost.
+  // Anything spotted or sent while away gives at least minWarning seconds.
+  offline: { graceSeconds: 120, warHours: 8, maxAttacks: 3, gapHours: [2, 5], minWarning: 900,
     baseHours: 0, hoursPerStep: 1, baseEfficiency: 0.5, efficiencyPerStep: 0.05, maxEfficiency: 0.8 },
   // Builds waiting behind the one under way, by AI Core level: [from this Core level, this many].
   // Each is paid for when it starts, not when it is queued, and starts the moment the builder is free
