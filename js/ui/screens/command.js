@@ -125,6 +125,10 @@ export function updateCommand(s, ui, refs) {
   refs.alignArc.classList.toggle('mach', a < 0);
   put(refs.sats.power, num(f.power));
   put(refs.sats.defense, num(f.defense));
+  // Troops out on an operation are off the wall: the number drops, and the label says by how much.
+  const away = Math.round(E.troopsOut(s) * E.bonusMult(s, 'defense'));
+  put(refs.satNames.defense, away ? `Defense \u2212${num(away)}` : 'Defense');
+  refs.sats.defense.closest('.sat').classList.toggle('away', !!away);
   put(refs.sats.experts, num(f.experts));
   put(refs.sats.align, `${a > 0 ? '+' : ''}${Math.round(a)}`);
 
@@ -159,7 +163,7 @@ function raidPanel(s, refs) {
   const sub = raid.assault
     ? `On ${esc(E.sectorById(raid.target).name)} · ${E.breaches(s, raid.target)}/${NODES.breachesToFall} breaches`
     : place ? `${fac.name} · out of ${esc(E.sectorById(place[0]).name)}` : fac.name;
-  const el = slot(refs, 'raid', [raid.faction, raid.target, raid.uid || '', raid.assault ? 'a' : raid.siege ? 's' : 'r', (place || []).join(), place ? E.factionOf(s, place[0]) : '', raid.assault ? E.breaches(s, raid.target) : ''].join('|'), () => `
+  const el = slot(refs, 'raid', [raid.faction, raid.target, raid.uid || '', raid.assault ? 'a' : raid.siege ? 's' : 'r', (place || []).join(), place ? E.factionOf(s, place[0]) : '', !!s.op, raid.assault ? E.breaches(s, raid.target) : ''].join('|'), () => `
     <header>${icon('alert')}Incoming attack<span class="blink-dot"></span></header>
     ${place ? mapBackdrop(s, [place[1], place[0]], { beam: place, cls: 'panel', faction: raid.faction }) : ''}
     <div class="inc-main">
@@ -168,7 +172,7 @@ function raidPanel(s, refs) {
       <div class="count" data-count></div>
     </div>
     <div class="bars">
-      <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
+      <div class="vs-row you" data-tip="factor:defense"><span>${icon('defense')}Your defense${E.troopsOut(s) ? ' <em class="away-tag">troops out</em>' : ''}</span><div class="vbar"><i data-dbar></i></div><b data-dval></b></div>
       <div class="vs-row them" data-tip="attack"><span>${icon('power')}Raid strength</span><div class="vbar"><i data-sbar></i></div><b data-sval></b></div>
     </div>
     <div class="inc-foot"><span class="hold" data-hold data-tip="text" data-tip-text="The chance our Defense holds it, from Defense against its strength."></span>
@@ -249,9 +253,11 @@ function opPanel(s, refs) {
   }
   const sec = E.sectorById(s.op.sector);
   const fac = FACTIONS[E.factionOf(s, sec.id)];
-  const el = slot(refs, 'op', s.op.sector, `
+  const away = Math.round(E.troopsOut(s) * E.bonusMult(s, 'defense')); // the troops marched out with it
+  const el = slot(refs, 'op', s.op.sector + ':' + away, `
     <header>${icon('power')}Outgoing</header>
     <div class="mini"><span class="fac-ico sm" style="--fc:${fac.color}">${icon(fac.icon)}</span><b>${sec.name}</b></div>
+    ${away ? `<small class="op-away" data-tip="factor:defense">${icon('defense')}\u2212${num(away)} Defense with them</small>` : ''}
     <div class="mini-stats"><span data-t></span><span data-c></span></div>
     <div class="timebar"><i data-b></i></div>`);
   const p = E.opChance(s, sec);

@@ -481,6 +481,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     if (r.assault && w.stance && w.stance > 1) lines.push('Their clan was in a mood to hit hard.');
     if (w.grudge) lines.push('Vengeance: they came heavier.');
     if (w.rushed) lines.push('Met early: they arrived heavier for the forced march.');
+    if (w.troops) lines.push(`Troops were out on an operation: \u2212${num(w.troops)} Defense.`);
     return lines.map((l) => `<li>${esc(l)}</li>`).join('');
   }
 
@@ -892,6 +893,24 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     wireRows(items, () => showOffline(report, then));
   }
 
+  /** Launching would leave the wall short while attacks land: each one, with its hold chance now and with the troops out. */
+  function confirmLaunch(id, risks, go) {
+    const sec = E.sectorById(id);
+    setFocus('screen', 'launch-confirm');
+    const rows = risks.map((r) => `<div class="r"><span>${icon('alert')}${esc(E.attackName(r.atk))} \u00b7 ${clock(r.atk.remaining)}</span>
+      <b><span class="chance-${chanceClass(r.home)}">${pct(r.home)}</span> \u2192 <span class="chance-${chanceClass(r.out)}">${pct(r.out)}</span></b></div>`).join('');
+    open(`
+      <span class="kicker">${icon('power')}Operation \u00b7 lands in ${time(E.opTime(sec))}</span>
+      <h2 tabindex="-1" autofocus>${esc(sec.name)}</h2>
+      <div class="rows"><div class="r"><span>${icon('defense')}Our Defense while out</span><b class="warn-t">${num(E.factors(game.state).defense)} \u2192 ${num(E.defenseWhileOut(game.state))}</b></div>
+      <div class="r"><span class="muted">Hold chance</span><b class="muted">now \u2192 while out</b></div>${rows}</div>
+      <div class="menu-actions pair"><button class="btn" data-close>Cancel</button><button class="btn danger" id="lGo">${icon('power')}<span>Launch</span></button></div>`);
+    dialog.querySelector('#lGo').onclick = () => {
+      close();
+      go();
+    };
+  }
+
   // Something threw where it should not have. Say so plainly and keep the save within reach.
   function showCrash(detail) {
     open(`
@@ -1103,5 +1122,5 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     return true;
   }
 
-  return { open, close, pump, showEvent, showOffline, showBatch, showArchive, showCrash, showRetired, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
+  return { open, close, pump, showEvent, showOffline, showBatch, confirmLaunch, showArchive, showCrash, showRetired, openMenu, isOpen: () => dialog.open, coversTop: () => dialog.open && !dialog.classList.contains('event-modal') };
 }

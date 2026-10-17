@@ -344,7 +344,7 @@ export const OPS = {
   // Sector defense is authored on the scale its loot, price and march time are sized from; what it
   // holds against our Power (one for one, no multiplier on either side) is this share of it.
   defenseScale: 0.5,
-  troopsMarch: 0.25, // share of the Troops tab's Defense that leaves the wall while an operation is out
+  troopsMarch: 1, // share of the Troops tab's Defense that leaves the wall while an operation is out
   flankBonus: 0.75, // a sector gets up to +50% defense from linked sectors of its own faction, until you take them
   costMoneyPerDefense: 2,
   costEnergyPerDefense: 0.7,

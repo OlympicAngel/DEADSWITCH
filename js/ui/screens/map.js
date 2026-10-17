@@ -514,6 +514,7 @@ function briefing(s, sec) {
       ${postureRow(s, sec)}
       ${fortRow(s, sec)}
       <div class="r" data-tip="text" data-tip-text="Time from launch until the operation lands and the roll is made."><span>${icon('clock')}Duration</span><b>${time(E.opTime(sec))}</b></div>
+      ${!s.op && E.troopDefense(s) > 0 ? `<div class="r" data-tip="factor:defense"><span>${icon('defense')}Our Defense while out</span><b class="warn-t" data-out></b></div>` : ''}
       ${strengthRow(s, sec)}
       <div class="r"><span>${icon('spark')}Spoils</span><b>${s.taken.includes(sec.id) ? '<span class="muted">Taken before</span>' : tags(E.opLoot(sec), '+')}</b></div>
       <div class="perm"><span>${icon('trend')}Permanent bonus</span>${bonusChips(sec.bonus)}</div>
@@ -536,7 +537,7 @@ export function bindMapScreen(panel) {
     nodeOdds: [...panel.querySelectorAll('[data-odds-for]')],
     power: q('[data-power]'), loss: q('[data-loss]'), chance: q('[data-chance]'), odds: q('[data-odds]'),
     here: q('[data-here]'), reinf: q('.sheet [data-reinf]'),
-    def: q('[data-def]'), asl: q('[data-asl]'), str: q('[data-str]'), flank: q('[data-flank]'),
+    def: q('[data-def]'), out: q('[data-out]'), asl: q('[data-asl]'), str: q('[data-str]'), flank: q('[data-flank]'),
     defLabels: [...panel.querySelectorAll('[data-def-for]')],
     chips: [...panel.querySelectorAll('.sheet .chip')], btn: q('.launch'), label: q('.launch [data-l]'), opbar: q('[data-opbar]'),
     optimer: q('[data-optimer]'), asltimer: q('[data-asltimer]'), opbanner: q('[data-opbanner]'), opbannerbar: q('[data-opbannerbar]'),
@@ -579,6 +580,7 @@ export function updateMapScreen(s, ui, refs) {
   const p = E.opChance(s, sec);
   // Every number in the briefing is read again each frame, not frozen at the moment it opened.
   if (refs.def) put(refs.def, num(E.sectorDefense(s, sec)));
+  if (refs.out) put(refs.out, `${num(f.defense)} \u2192 ${num(E.defenseWhileOut(s))}`);
   if (refs.asl) put(refs.asl, `~${num(E.assaultStrength(s, sec.id))}`);
   const d = E.defenseParts(s, sec);
   if (refs.str) {

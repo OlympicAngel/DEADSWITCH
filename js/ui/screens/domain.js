@@ -176,6 +176,7 @@ function shopList(s, ui, tab) {
       <h3>${shopName}</h3>
       ${open.length ? `<div class="modes">${modes}</div>` : ''}
     </div>
+    ${tab.shop === 'staff' && E.troopsOut(s) ? `<p class="shop-note on" data-tip="factor:defense">${icon('defense')}Out on the operation: \u2212${num(Math.round(E.troopsOut(s) * E.bonusMult(s, 'defense')))} Defense</p>` : ''}
     ${open.map((i) => itemRow(s, i)).join('')}
     ${next ? lockedCard(next.id, next.name, next.req) : ''}`;
 }
@@ -255,6 +256,7 @@ export function updateDomain(s, ui, refs, flows) {
   for (const el of refs.factors) {
     put(el, num(f[el.dataset.factor]));
     // Defense here is short by whatever marched out; the tooltip says how much.
+    el.parentElement.classList.toggle('away', el.dataset.factor === 'defense' && !!E.troopsOut(s));
   }
   if (refs.raid) {
     const atk = E.nextAttack(s);

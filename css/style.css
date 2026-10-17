@@ -7314,3 +7314,11 @@ h2[autofocus] {
   font: 700 10px var(--font-num);
   color: var(--hud-2);
 }
+
+.menu-actions.pair .btn {
+  justify-content: center;
+}
+
+.menu-actions.pair .btn.danger:not(:disabled) {
+  grid-column: auto;
+}

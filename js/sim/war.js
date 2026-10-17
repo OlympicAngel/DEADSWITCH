@@ -2,7 +2,7 @@
 import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
 import { spawnAftermath, dropClan } from './story.js';
 import {
-  level, factors, threatFactors, threat, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
+  level, factors, threatFactors, threat, troopsOut, bonusMult, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
 } from './economy.js';
 import { clanProfile, clanProfiles, stirClan } from './clans.js';
 import { rand, range, pick, odds } from './rng.js';
@@ -275,6 +275,23 @@ export function sectorStatus(s, sec) {
 
 export function canLaunch(s, sec) {
   return !s.op && factors(s).power > 0 && sectorStatus(s, sec) === 'target' && canAfford(s, opCost(sec)) && !Object.keys(opCost(sec)).some((k) => opCost(sec)[k] > caps(s)[k]);
+}
+
+/** The state as it would stand with an operation out: the troops off the wall. A query, nothing changes. */
+const withOpOut = (s) => (s.op ? s : { ...s, op: { sector: null, remaining: 1, total: 1 } });
+
+/** Our Defense while an operation is out. */
+export const defenseWhileOut = (s) => factors(withOpOut(s)).defense;
+
+/** The attacks that would land while an operation to `id` is still on its way, and what holding each
+ *  comes to with the troops out against with them home. */
+export function launchRisk(s, id) {
+  const sec = SECTOR_BY_ID[id];
+  if (!sec || s.op) return [];
+  const t = opTime(sec);
+  const out = withOpOut(s);
+  return attacks(s).filter((a) => a.remaining < t)
+    .map((a) => ({ atk: a, home: raidChance(s, a), out: raidChance(out, a) }));
 }
 
 export function launchOp(s, id) {
@@ -1093,6 +1110,7 @@ function resolveAttack(s, raid, offline) {
     stance: Math.round(prof.strength * 100) / 100, // the clan's mood on their strength (assaults)
     grudge: !!raid.grudge,
     rushed: !!raid.rush,
+    troops: Math.round(troopsOut(s) * bonusMult(s, 'defense')), // Defense that was out on an operation
   };
   // Both sides bleed. Holding the line still costs people, and their dead stay dead.
   takeLosses(s, report, report.win ? RAIDS.winLoss : RAIDS.unitLoss, defense, raid.strength);

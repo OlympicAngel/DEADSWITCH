@@ -362,11 +362,17 @@ export function createUI(root, game) {
         break;
       }
       case 'launch': {
-        if (game.act.launch(id)) {
-          sfx.launch();
-          vibrate([30, 40, 60]);
-          ui.sheet = false;
-        }
+        const go = () => {
+          if (game.act.launch(id)) {
+            sfx.launch();
+            vibrate([30, 40, 60]);
+            ui.sheet = false;
+          }
+        };
+        // An attack that lands while the troops are out, and that the troops leaving would likely lose: ask first.
+        const risks = E.launchRisk(game.state, id);
+        if (risks.some((r) => r.out < 0.5 && r.out < r.home - 0.005)) modals.confirmLaunch(id, risks, go);
+        else go();
         break;
       }
       case 'reinforce':
