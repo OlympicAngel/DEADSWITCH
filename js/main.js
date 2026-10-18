@@ -393,6 +393,12 @@ async function start() {
     for (const t of ['pointerup', 'click', 'keydown']) removeEventListener(t, unlock);
   };
   for (const t of ['pointerup', 'click', 'keydown']) addEventListener(t, unlock);
+  // An absence ends when the player touches the game, not when a locked phone wakes the page for a
+  // few frames: until then every piece of time away is counted as one (E.catchUp, s.absence).
+  const back = () => {
+    if (game.state.absence) E.endAbsence(game.state);
+  };
+  for (const t of ['pointerdown', 'keydown']) addEventListener(t, back, { capture: true, passive: true });
   // Chrome grants periodic background sync on its own schedule, so ask on the way in as well as out.
   askForBackground();
   // Exposed for debugging from the browser console.

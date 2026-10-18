@@ -753,6 +753,7 @@ function play(seed) {
     prepare(seg.from, away);
     // Handed to the engine in one piece, the way the page does it when the player comes back.
     const rep = E.catchUp(s, away);
+    E.endAbsence(s); // the player is back and touching the game
     t = seg.to;
     tally.away.seconds += away;
     tally.away.sessions++;

@@ -66,6 +66,7 @@ export function newState(seed = 1) {
     offlineEvents: 0,
     offlineEventCap: 0,
     offlineNextAt: 0, // while away: no counted attack lands before this play time (set by catchUp)
+    absence: null, // the absence under way, across catch-up pieces: { ran, raids, events, nextAt, free[] }
     events: [],
     eventSeq: 0,
     eventTimer: EVENTS_CFG.firstDelay,
@@ -255,6 +256,9 @@ export function migrate(raw) {
   s.offlineEvents = 0;
   s.offlineEventCap = 0;
   s.offlineNextAt = 0;
+  const ab = raw.absence;
+  s.absence = ab && Number.isFinite(ab.ran) && Number.isFinite(ab.raids) && Number.isFinite(ab.events) && Number.isFinite(ab.nextAt)
+    ? { ran: ab.ran, raids: ab.raids, events: ab.events, nextAt: ab.nextAt, free: Array.isArray(ab.free) ? ab.free.filter(Number.isFinite) : [] } : null;
   // Captured ground keeps its new clan; a save from before that only knows the map's own factions.
   s.owner = {};
   for (const [id, f] of Object.entries((raw.owner && typeof raw.owner === 'object') ? raw.owner : {})) {
@@ -311,12 +315,23 @@ export function step(s, dt, offline = false, active = false, speed = 1) {
 // Runs a stretch of time away in bounded steps so timers land mid-way. The world runs for
 // awaySeconds of it whatever the player built; production only runs for the first
 // offlineLimits(s).seconds of that, at offlineLimits(s).efficiency, and its first graceSeconds count
-// in full. `already` is time already counted in this same absence (a background tab catches up in
-// chunks).
-export function catchUp(s, seconds, already = 0) {
+// in full, all counted over the whole absence.
+// One absence can reach the engine in several pieces (a locked phone wakes the page for a few frames
+// now and then): `s.absence` carries what the pieces so far have used, the world time, the Daemon's
+// paid hours, the attacks and orders and their spacing, until the player is really back
+// (endAbsence, called by the host on the first touch).
+/** The player is back (a touch, not a glance at a locked screen): the next time away is a new absence. */
+export function endAbsence(s) {
+  s.absence = null;
+}
+
+export function catchUp(s, seconds) {
   seconds = Number.isFinite(seconds) ? seconds : 0;
+  const ab = s.absence || (s.absence = { ran: 0, raids: 0, events: 0, nextAt: s.playTime, free: [] });
+  const first = ab.ran === 0;
+  const already = ab.ran;
   const limits = offlineLimits(s);
-  const total = Math.max(0, awaySeconds(s, seconds) - already);
+  const total = Math.max(0, awaySeconds(s, already + seconds) - already);
   const paid = Math.max(0, limits.seconds - already); // how much of it the base is still working for
   const grace = Math.max(0, Math.min(total, BALANCE.offline.graceSeconds - already));
   const before = { ...s.res };
@@ -328,16 +343,18 @@ export function catchUp(s, seconds, already = 0) {
   const stepSize = Math.max(2, total / 3000);
   let left = total;
   let flows = null;
-  s.offlineRaids = 0;
-  s.offlineEvents = 0;
-  s.offlineRaidCap = offlineAttacks(s, total);
-  s.offlineEventCap = offlineOrders(s, total);
-  s.offlineNextAt = s.playTime;
+  s.offlineRaids = ab.raids;
+  s.offlineEvents = ab.events;
+  s.offlineRaidCap = offlineAttacks(s, already + total);
+  s.offlineEventCap = offlineOrders(s, already + total);
+  s.offlineNextAt = ab.nextAt;
   // Inbound when the player left: one they would likely hold lands without counting against the
   // absence; one they would likely lose counts like any other.
+  if (first) ab.free = attacks(s).filter((a) => a.id && raidChance(s, a) >= 0.5).map((a) => a.id);
   for (const a of attacks(s)) {
-    if (raidChance(s, a) >= 0.5) a.free = true;
+    if (ab.free.includes(a.id)) a.free = true;
   }
+  const ordersBefore = ab.events;
   const seq = s.attackSeq || 0;
   const evSeq = s.eventSeq || 0;
   const floor = BALANCE.offline.minWarning;
@@ -387,9 +404,13 @@ export function catchUp(s, seconds, already = 0) {
       a.remaining = floor;
     }
   }
+  ab.ran += total;
+  ab.raids = s.offlineRaids;
+  ab.events = s.offlineEvents;
+  ab.nextAt = s.offlineNextAt;
+  const orders = s.offlineEvents - ordersBefore;
   s.offlineRaids = 0;
   s.offlineNextAt = 0;
-  const orders = s.offlineEvents;
   s.offlineEvents = 0;
   const gained = {};
   for (const r of Object.keys(s.res)) {
