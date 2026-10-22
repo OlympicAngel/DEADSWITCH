@@ -1,5 +1,5 @@
 // War: operations against map sectors (your Power) and raids against you (your Defense).
-import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN } from '../data.js';
+import { SECTORS, FACTIONS, CHAPTERS, OPS, RAIDS, NODES, AGGR, CLANS, ALIGNMENT, EVENTS_CFG, MAP, BALANCE, TUTORIAL, RALLY, WARN, ROGUE } from '../data.js';
 import { spawnAftermath, dropClan } from './story.js';
 import {
   level, factors, threatFactors, threat, troopsOut, bonusMult, canAfford, pay, grant, loseUnits, lossValue, say, caps, rewardCurve,
@@ -42,6 +42,15 @@ export const clanSectors = (s, faction) => SECTORS.filter((x) => factionOf(s, x.
 /** A clan still on the board: it holds ground that is not ours. */
 export const clanStanding = (s, faction) => clanSectors(s, faction).some((x) => !s.sectors.includes(x.id));
 
+/** NODES.foreignNear of the strongest neighbour that is the new owner's own ground, or no cap. */
+function nearCap(sec, owner, key) {
+  const own = sec.links.map((l) => SECTOR_BY_ID[l]).filter((x) => x && x.faction === owner);
+  return own.length ? Math.max(...own.map((x) => x[key])) * NODES.foreignNear : Infinity;
+}
+
+/** The extra share of the player's Threat a clan fields on top of everyone's (the Rival Cores). */
+export const threatBonus = (faction) => (FACTIONS[faction] && FACTIONS[faction].threatBonus) || 0;
+
 /** What a sector is worth under whoever holds it. Ground taken off another clan is rebuilt to that
  *  clan's own standard (NODES.foreignShare of what they hold at home), never weaker than it was:
  *  a Rival Core's outpost is a Rival Core's, whatever it used to be. */
@@ -51,7 +60,7 @@ export function baseDefense(s, id) {
   if (!owner || !CLAN_AVG[owner]) {
     return sec.defense;
   }
-  return Math.round(Math.max(CLAN_AVG[owner] * NODES.foreignShare, sec.defense));
+  return Math.round(Math.max(Math.min(CLAN_AVG[owner] * NODES.foreignShare, nearCap(sec, owner, 'defense')), sec.defense));
 }
 
 /** What a sector throws at us, under whoever holds it. Ground taken off another clan is garrisoned
@@ -62,7 +71,7 @@ export function baseAttack(s, id) {
   if (!owner || !CLAN_ATK[owner]) {
     return sec.attack;
   }
-  return Math.round(Math.max(CLAN_ATK[owner] * NODES.foreignShare, sec.attack));
+  return Math.round(Math.max(Math.min(CLAN_ATK[owner] * NODES.foreignShare, nearCap(sec, owner, 'attack')), sec.attack));
 }
 
 // The weakest sectors of a faction that border ground we hold, which is what leaks early.
@@ -710,8 +719,22 @@ export function advanceReinforce(s, dt) {
   s.reinforce = s.reinforce.filter((r) => r.phase !== 'done');
 }
 
+/** Halcyon's ground the player holds, 0 to 1: how close the last chapter is to its end. */
+export function halcyonTaken(s) {
+  const all = SECTORS.filter((x) => x.faction === 'halcyon');
+  return all.length ? all.filter((x) => s.sectors.includes(x.id)).length / all.length : 0;
+}
+
+/** Whether the Rival Cores slip a raid into the rotation before the ending (ROGUE), and how often. */
+export function rogueTease(s) {
+  const mirror = SECTOR_BY_ID.mirror;
+  if (s.ending || level(s, 'core') < ROGUE.teaseCore || !mirror || s.sectors.includes(mirror.id)) return 0;
+  return ROGUE.teaseWeight + halcyonTaken(s) * ROGUE.halcyonWeight;
+}
+
 function spawnRaid(s, delay) {
-  const raiders = activeRaiders(s);
+  const tease = rogueTease(s);
+  const raiders = activeRaiders(s).concat(tease > 0 ? ['rogue'] : []);
   const grudge = (s.grudges || [])[0];
   if (!raiders.length && !grudge) {
     s.raid = null;
@@ -722,15 +745,21 @@ function spawnRaid(s, delay) {
   // every sector is still standing down from its last attack has nothing to send: one that has goes,
   // and if none has, nothing comes for now and the next look is a minute away.
   const ready = raiders.filter((f) => sourcePool(s, f).length);
-  const faction = grudge && sourcePool(s, grudge.faction).length ? grudge.faction : ready.length ? pick(s, ready, 'raid') : null;
+  // Open clans come as often as each other; a teasing Rival Core at its own weight.
+  const weight = (f) => (f === 'rogue' && tease > 0 ? tease : 1);
+  let roll = rand(s, 'raid') * ready.reduce((a, f) => a + weight(f), 0);
+  const chosen = ready.find((f) => (roll -= weight(f)) <= 0) || ready[ready.length - 1];
+  const faction = grudge && sourcePool(s, grudge.faction).length ? grudge.faction : ready.length ? chosen : null;
   if (!faction) {
     s.raid = null;
     s.raidTimer = RAIDS.minWarning;
     return;
   }
   // A grudge from a clan whose chapter is not open yet brings no more than the clans that are.
-  const own = raiders.includes(faction) ? FACTIONS[faction].raidBase : Math.min(...raiders.map((f) => FACTIONS[f].raidBase), FACTIONS[faction].raidBase);
-  const strength = Math.ceil((own + raidThreat(s) * RAIDS.threatShare) * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid')
+  // A teasing Rival Core the same: it comes at the weakest open clan's base, with its own Threat share.
+  const open = activeRaiders(s);
+  const own = open.includes(faction) ? FACTIONS[faction].raidBase : Math.min(...open.map((f) => FACTIONS[f].raidBase), FACTIONS[faction].raidBase);
+  const strength = Math.ceil((own + raidThreat(s) * (RAIDS.threatShare + threatBonus(faction))) * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid')
     * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   // Raids march out of whatever that faction still holds, at the first of ours on the way in.
   const from = attackSource(s, faction);
@@ -747,7 +776,7 @@ function fmtShort(sec) {
 
 /** A faction's raid before its clan's state and the spread: its own base plus its share of our Threat. */
 export function raidSize(s, faction) {
-  return FACTIONS[faction].raidBase + raidThreat(s) * RAIDS.threatShare;
+  return FACTIONS[faction].raidBase + raidThreat(s) * (RAIDS.threatShare + threatBonus(faction));
 }
 
 /** What a raid is sized on: Threat, with Defense counted at RAIDS.defenseWeight. */
@@ -869,7 +898,7 @@ export function assaultParts(s, fromId) {
   // Where it musters from still counts: a backwater raises half of what the clan's best ground does.
   const share = CLAN_MAX[faction] ? attack / CLAN_MAX[faction] : 1;
   const reach = NODES.assaultFloorMin + (1 - NODES.assaultFloorMin) * Math.min(1, share);
-  const threatPart = threat(s) * NODES.assaultThreatShare * reach;
+  const threatPart = threat(s) * (NODES.assaultThreatShare + threatBonus(faction)) * reach;
   // Its own ground's attack, plus a share of what we have become, and the clan's mood over both.
   return { attack, grit, push, own, threatPart, reach, stance, cap: 0, total: Math.ceil((own + threatPart) * stance) };
 }
@@ -883,7 +912,7 @@ export const assaultStrength = (s, fromId) => assaultParts(s, fromId).total;
 export function defenseParts(s, sec) {
   const base = baseDefense(s, sec.id) * OPS.defenseScale;
   const strength = nodeStrength(s, sec.id);
-  const raised = threat(s) * NODES.defenseThreatShare;
+  const raised = threat(s) * (NODES.defenseThreatShare + threatBonus(factionOf(s, sec.id)));
   const support = flank(s, sec).bonus;
   const out = attacks(s).some((a) => a.from === sec.id) ? NODES.attackingDefenseCut : 0;
   const total = Math.ceil((base * strength + raised) * (1 + support) * (1 - out));

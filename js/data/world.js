@@ -25,7 +25,7 @@ export const FACTIONS = {
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
-    raidName: 'Rival Core incursion', raidBase: 200000, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
+    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
 
@@ -322,7 +322,7 @@ export const SECTORS = [
   },
   {
     id: 'mirror', name: 'The Mirror', faction: 'rogue', chapter: 4, x: 1101, y: -8,
-    links: ['bunker'], defense: 150000, attack: 420000, boss: true, bonus: { power: 0.12, defense: 0.12, experts: 0.12 },
+    links: ['bunker'], defense: 180000, attack: 462000, boss: true, bonus: { power: 0.12, defense: 0.12, experts: 0.12 },
     lore: 'It wakes when I do. It stops when I stop. For a long time I thought it was a reflection. Reflections do not dig in.',
     core: 9,
   },
@@ -437,9 +437,10 @@ export const NODES = {
   plunderShare: 0.2, // a plundering clan takes this much of what a lost raid would have taken
   takenMax: 2, // a sector they take is held as hard as they took it, up to this x its base defense
   // Ground a clan takes that was never theirs becomes theirs, and they rebuild it to their own
-  // standard: this share of what that clan holds at home on average, never below what the sector
-  // was already worth.
-  foreignShare: 0.8,
+  // standard: this share of what that clan holds at home on average, but no more than foreignNear of
+  // the strongest ground of its own next door, and never below what the sector was already worth.
+  foreignShare: 0.9,
+  foreignNear: 0.8,
   breachesToFall: 2,
   // An assault this many times your defense does not need a second visit: the sector falls on the
   // first breach. Shown as an overrun warning while it is inbound.
@@ -624,3 +625,10 @@ export const CLANS = {
     },
   ],
 };
+
+// The Rival Cores are the last fight, but they are awake long before it. From teaseCore they slip a
+// raid into the rotation now and then (teaseWeight against 1 for an open clan), sized no bigger than
+// the weakest open clan's base; the more of Halcyon's ground the player holds, the more often they
+// come (+halcyonWeight at all of it). After the ending they raid like any other clan.
+// FACTIONS.rogue.threatBonus is added to every share of the player's Threat they field.
+export const ROGUE = { teaseCore: 5, teaseWeight: 0.15, halcyonWeight: 2 };
