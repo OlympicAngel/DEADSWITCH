@@ -485,12 +485,21 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
     return lines.map((l) => `<li>${esc(l)}</li>`).join('');
   }
 
+  /** What a defence came to, in one word: a breach only when the walls actually took one. */
+  function lossWord(r) {
+    if (r.win) return 'Held';
+    if (r.overrun) return 'Overrun';
+    if (r.fell) return 'Lost';
+    if (r.plundered) return 'Plundered';
+    return r.breaches ? 'Breached' : 'Looted';
+  }
+
   function showRaid(r, then) {
     const f = FACTIONS[r.faction];
     setFocus(r.assault && E.sectorById(r.target) ? 'sector' : 'screen', r.assault && E.sectorById(r.target) ? r.target : 'command');
-    const place = r.assault && E.sectorById(r.target) ? esc(E.sectorById(r.target).name) : '';
+    const place = E.sectorById(r.target) ? esc(E.sectorById(r.target).name) : '';
     battle({
-      mode: 'def', stamp: r.win ? 'Held' : r.overrun ? 'Overrun' : r.plundered ? 'Plundered' : 'Breached',
+      mode: 'def', stamp: lossWord(r),
       stampCls: r.overrun ? 'overrun' : '',
       kicker: r.offline ? 'Attacked while away' : 'Under attack', title: r.name || f.raidName,
       shot: r.assault ? mapBackdrop(game.state, [r.target, r.from], { beam: [r.from, r.target], faction: r.faction }) : '',
@@ -499,7 +508,7 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
       chance: r.chance, roll: r.roll, win: r.win, quick: r.quick, back: r.back,
       spoils: `${r.win ? `<div class="r"><span>${icon('spark')}Salvage</span><b>${tags(r.loot, '+')}</b></div>` : ''}
         ${r.assault && r.strengthAfter ? dugIn(r.from, r.strengthAfter, r.win ? 'good-t' : 'bad-t') : ''}
-        ${!r.win && r.assault && !r.plundered ? `<div class="r"><span>${icon('map')}${place}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}
+        ${!r.win && r.breaches ? `<div class="r"><span>${icon('map')}${place}</span><b class="bad-t">${r.fell ? 'Lost' : `Breach ${r.breaches} / ${NODES.breachesToFall}`}</b></div>` : ''}
         ${lossRows(r, 'strength')}`,
       note: r.win ? '' : r.overrun
         ? `${icon('skull')}${place} fell at once: they came with ${(r.strength / Math.max(1, r.defense)).toFixed(1)}× your Defense, and from ${NODES.overrunRatio}× a sector falls on the first breach.`
@@ -753,7 +762,8 @@ export function createModals(dialog, game, onChange, notify = () => {}) {
         const where = E.sectorById(m.target);
         ic = f.icon || 'alert'; color = f.color || ''; title = esc(m.name || f.raidName || 'Attack');
         sub = `${where ? `${esc(where.name)} · ` : ''}${num(m.strength)} vs ${num(m.defense)}`;
-        chip = m.win ? 'Held' : m.overrun ? 'Overrun' : m.fell ? 'Lost' : m.plundered ? 'Plundered' : 'Breached'; good = m.win;
+        chip = lossWord(m); good = m.win;
+        if (!m.win && m.breaches && !m.fell) sub += ` \u00b7 breach ${m.breaches}/${NODES.breachesToFall}`;
       }
       const lost = m.kind === 'expired' ? '' : losses(m);
       return `<button class="ar ${good ? 'ok' : 'bad'}" data-ar="${i}">
