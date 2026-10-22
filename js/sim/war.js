@@ -43,15 +43,15 @@ export const clanSectors = (s, faction) => SECTORS.filter((x) => factionOf(s, x.
 export const clanStanding = (s, faction) => clanSectors(s, faction).some((x) => !s.sectors.includes(x.id));
 
 /** What a sector is worth under whoever holds it. Ground taken off another clan is rebuilt to that
- *  clan's own standard (NODES.foreignShare of what they hold at home), never weaker than it was and
- *  never more than NODES.foreignCap x, so a prize is harder without belonging to another chapter. */
+ *  clan's own standard (NODES.foreignShare of what they hold at home), never weaker than it was:
+ *  a Rival Core's outpost is a Rival Core's, whatever it used to be. */
 export function baseDefense(s, id) {
   const sec = SECTOR_BY_ID[id];
   const owner = s.owner && s.owner[id];
   if (!owner || !CLAN_AVG[owner]) {
     return sec.defense;
   }
-  return Math.round(clamp(CLAN_AVG[owner] * NODES.foreignShare, sec.defense, sec.defense * NODES.foreignCap));
+  return Math.round(Math.max(CLAN_AVG[owner] * NODES.foreignShare, sec.defense));
 }
 
 /** What a sector throws at us, under whoever holds it. Ground taken off another clan is garrisoned
@@ -62,7 +62,7 @@ export function baseAttack(s, id) {
   if (!owner || !CLAN_ATK[owner]) {
     return sec.attack;
   }
-  return Math.round(clamp(CLAN_ATK[owner] * NODES.foreignShare, sec.attack, sec.attack * NODES.foreignCap));
+  return Math.round(Math.max(CLAN_ATK[owner] * NODES.foreignShare, sec.attack));
 }
 
 // The weakest sectors of a faction that border ground we hold, which is what leaks early.

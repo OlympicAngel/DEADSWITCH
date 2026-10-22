@@ -438,9 +438,8 @@ export const NODES = {
   takenMax: 2, // a sector they take is held as hard as they took it, up to this x its base defense
   // Ground a clan takes that was never theirs becomes theirs, and they rebuild it to their own
   // standard: this share of what that clan holds at home on average, never below what the sector
-  // was already worth and never more than foreignCap x it.
+  // was already worth.
   foreignShare: 0.8,
-  foreignCap: 4,
   breachesToFall: 2,
   // An assault this many times your defense does not need a second visit: the sector falls on the
   // first breach. Shown as an overrun warning while it is inbound.

@@ -129,7 +129,6 @@ export const GLOSSARY = {
     what: 'Ground a clan takes that was never theirs is rebuilt to their own standard: this share of what that clan is worth at home on average.',
     feel: 'It is why a sector changing hands can become a much harder prize than it was.',
   },
-  'NODES.foreignCap': { what: 'Ceiling on that rebuild: never more than this many times what the sector was already worth.' },
   'NODES.breachesToFall': { what: 'Breached assaults a sector of yours can take before it is lost.' },
   'NODES.overrunRatio': {
     what: 'An assault this many times your Defense takes the sector on the FIRST breach, with no second visit.',
