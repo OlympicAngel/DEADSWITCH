@@ -66,6 +66,7 @@ export function newState(seed = 1) {
     offlineEvents: 0,
     offlineEventCap: 0,
     offlineNextAt: 0, // while away: no counted attack lands before this play time (set by catchUp)
+    rogueTimer: 0, // seconds until the Rival Cores next look to spread (ROGUE.creep)
     absence: null, // the absence under way, across catch-up pieces: { ran, raids, events, nextAt, free[] }
     events: [],
     eventSeq: 0,
@@ -256,6 +257,7 @@ export function migrate(raw) {
   s.offlineEvents = 0;
   s.offlineEventCap = 0;
   s.offlineNextAt = 0;
+  s.rogueTimer = Number.isFinite(raw.rogueTimer) ? raw.rogueTimer : 0;
   const ab = raw.absence;
   s.absence = ab && Number.isFinite(ab.ran) && Number.isFinite(ab.raids) && Number.isFinite(ab.events) && Number.isFinite(ab.nextAt)
     ? { ran: ab.ran, raids: ab.raids, events: ab.events, nextAt: ab.nextAt, free: Array.isArray(ab.free) ? ab.free.filter(Number.isFinite) : [] } : null;

@@ -307,7 +307,7 @@ function screen(s, id) {
       ['browser last woke us', () => { if (!diag.at) return 'reading...'; const w = diag.at.wake; if (!w) return 'never: the browser has not run the worker in the background yet'; return `${secs((Date.now() - w.at) / 1000)} ago \u00b7 ${w.why} \u00b7 ${w.fired ? 'alert shown' : 'nothing was due'} \u00b7 ${w.count} in all`; }],
       ['alerts queued', () => { const u = upcoming(s); return u.length ? `${u.length} \u00b7 ${u.slice(0, 3).map((x) => `${Math.round(x.at / 60)}m ${x.title}`).join(' | ')}` : 'nothing in the window'; }],
       ['clan surges', () => Object.keys(FACTIONS).map((f) => { const sg = E.surge(s, f); return `${FACTIONS[f].short} ${sg ? `x${sg.mult} aggr x${sg.aggr}${sg.breach ? ' breach' : ''}` : 'off'}`; }).join(' \u00b7 ')],
-      ['rival cores', () => `raid weight ${E.rogueTease(s).toFixed(2)} (open clans 1) \u00b7 Halcyon taken ${Math.round(E.halcyonTaken(s) * 100)}% \u00b7 raid size ${Math.round(E.raidSize(s, 'rogue'))}`],
+      ['rival cores', () => `approach ${Math.round(E.rogueApproach(s) * 100)}% \u00b7 raid weight ${E.rogueTease(s).toFixed(2)} (open clans 1) \u00b7 Halcyon taken ${Math.round(E.halcyonTaken(s) * 100)}% \u00b7 tease size ${Math.round(E.rogueTeaseSize(s))} \u00b7 holds ${E.rogueHeld(s).length} \u00b7 next spread ${secs(s.rogueTimer || 0)}`],
       ['launch risk (first target)', () => { const tg = SECTORS.find((x) => E.sectorStatus(s, x) === 'target'); if (!tg) return 'no target'; const r = E.launchRisk(s, tg.id); return r.length ? r.map((x) => `${E.attackName(x.atk)} ${Math.round(x.home * 100)}% -> ${Math.round(x.out * 100)}%`).join(' \u00b7 ') : 'nothing lands in time'; }],
       ['troops out', () => (s.op ? `${Math.round(E.troopsOut(s))} of ${Math.round(E.troopDefense(s))} troop Defense on the operation (${OPS.troopsMarch * 100}%)` : 'none')],
       ['offline attacks', () => { const o = BALANCE.offline; return `max ${o.maxAttacks} \u00b7 ${o.gapHours[0]}-${o.gapHours[1]}h apart \u00b7 warning \u2265 ${o.minWarning / 60}m \u00b7 orders \u2264 ${E.offlineOrders(s, 1e9)} \u00b7 inbound now counted: ${E.attacks(s).filter((a) => E.raidChance(s, a) < 0.5).length}`; }],
@@ -334,6 +334,7 @@ function screen(s, id) {
         gained: Object.fromEntries(Object.keys(g.state.res).map((r) => [r, 1234])), happened: { held: 2, breached: 1, taken: 0, lost: 1 },
         reports: sampleReports(g.state) } })],
       ['reports burst on return', (g) => g.state.inbox.push(...sampleReports(g.state))],
+      ['rival cores spread now', (g) => { g.state.rogueTimer = 0.001; }],
       ['send troops out / recall', (g) => {
         // Fakes an operation, which is what takes the Troops tab off the wall.
         g.state.op = g.state.op ? null : { sector: SECTORS.find((x) => !g.state.sectors.includes(x.id)).id, remaining: 600, total: 600 };

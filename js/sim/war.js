@@ -207,6 +207,7 @@ function sealSafe(s) {
 
 export function advanceNodes(s, dt) {
   sealSafe(s);
+  advanceRogue(s, dt);
   const grow = (NODES.growthPerHour * dt) / 3600;
   const profiles = clanProfiles(s);
   for (const sec of SECTORS) {
@@ -228,7 +229,10 @@ export function aggression(s, id) {
   const sec = SECTOR_BY_ID[id];
   if (!sec) return 0;
   const stored = (s.nodes[id] && s.nodes[id].a) || 0;
-  return clamp(stored + pressure(s, sec), AGGR.min, AGGR.max);
+  // The Rival Cores grow angrier the nearer we come to their gate; any sector we could launch on a little.
+  const lean = (factionOf(s, id) === 'rogue' ? ROGUE.approachAggr * rogueApproach(s) : 0)
+    + (sectorStatus(s, sec) === 'target' ? AGGR.target : 0);
+  return clamp(stored + pressure(s, sec) + lean, AGGR.min, AGGR.max);
 }
 
 // A sector watches you gain on it: nothing while you are far below its defense, full tension once you match it.
@@ -751,6 +755,39 @@ export function advanceReinforce(s, dt) {
   s.reinforce = s.reinforce.filter((r) => r.phase !== 'done');
 }
 
+/** How near the AI Core is to The Mirror's gate, 0 to 1 (ROGUE.approachFrom to approachTo). */
+export const rogueApproach = (s) => clamp((level(s, 'core') - ROGUE.approachFrom) / (ROGUE.approachTo - ROGUE.approachFrom), 0, 1);
+
+/** What a Rival Core raid or assault is held to before the ending: the strongest open clan's raid, with their own Threat share. */
+export function rogueTeaseSize(s) {
+  const open = activeRaiders(s).filter((f) => f !== 'rogue');
+  const base = open.length ? Math.max(...open.map((f) => FACTIONS[f].raidBase)) : FACTIONS.rogue.raidBase;
+  return base + raidThreat(s) * (RAIDS.threatShare + threatBonus('rogue'));
+}
+
+/** Captured sectors the Rival Cores hold (not The Mirror itself). */
+export const rogueHeld = (s) => SECTORS.filter((x) => x.faction !== 'rogue' && factionOf(s, x.id) === 'rogue' && !s.sectors.includes(x.id));
+
+/** Before the ending the Rival Cores spread on a schedule (ROGUE.creep): the weakest sector next to their ground that is neither ours nor a capital. */
+function advanceRogue(s, dt) {
+  const mirror = SECTOR_BY_ID.mirror;
+  if (s.ending || !mirror || s.sectors.includes(mirror.id)) return;
+  const want = ROGUE.creep[Math.min(level(s, 'core'), Math.max(...Object.keys(ROGUE.creep).map(Number)))] || 0;
+  if (rogueHeld(s).length >= want) return;
+  s.rogueTimer = (s.rogueTimer || 0) - dt;
+  if (s.rogueTimer > 0) return;
+  s.rogueTimer = ROGUE.creepEvery;
+  const theirs = clanSectors(s, 'rogue').filter((x) => !s.sectors.includes(x.id));
+  const edge = SECTORS.filter((x) => !x.boss && !s.sectors.includes(x.id) && factionOf(s, x.id) && factionOf(s, x.id) !== 'rogue'
+    && x.links.some((l) => theirs.some((t) => t.id === l)));
+  if (!edge.length) return;
+  const take = edge.sort((a, b) => baseDefense(s, a.id) - baseDefense(s, b.id) || (a.id < b.id ? -1 : 1))[0];
+  const from = FACTIONS[factionOf(s, take.id)];
+  s.owner[take.id] = 'rogue';
+  s.nodes[take.id] = { m: 1, marks: 0, a: 0, seen: 0 };
+  say(s, 'rogueSeize', { sector: take.name, from: from ? `the ${from.short}` : 'nobody' }, 'bad');
+}
+
 /** Halcyon's ground the player holds, 0 to 1: how close the last chapter is to its end. */
 export function halcyonTaken(s) {
   const all = SECTORS.filter((x) => x.faction === 'halcyon');
@@ -761,7 +798,8 @@ export function halcyonTaken(s) {
 export function rogueTease(s) {
   const mirror = SECTOR_BY_ID.mirror;
   if (s.ending || level(s, 'core') < ROGUE.teaseCore || !mirror || s.sectors.includes(mirror.id)) return 0;
-  return ROGUE.teaseWeight + halcyonTaken(s) * ROGUE.halcyonWeight;
+  const [lo, hi] = ROGUE.teaseWeight;
+  return lo + (hi - lo) * rogueApproach(s) + halcyonTaken(s) * ROGUE.halcyonWeight;
 }
 
 function spawnRaid(s, delay) {
@@ -788,10 +826,11 @@ function spawnRaid(s, delay) {
     return;
   }
   // A grudge from a clan whose chapter is not open yet brings no more than the clans that are.
-  // A teasing Rival Core the same: it comes at the weakest open clan's base, with its own Threat share.
+  // A teasing Rival Core is held to the strongest open clan's raid (rogueTeaseSize).
   const open = activeRaiders(s);
   const own = open.includes(faction) ? FACTIONS[faction].raidBase : Math.min(...open.map((f) => FACTIONS[f].raidBase), FACTIONS[faction].raidBase);
-  const strength = Math.ceil((own + raidThreat(s) * (RAIDS.threatShare + threatBonus(faction))) * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid')
+  const sized = faction === 'rogue' && !s.ending ? rogueTeaseSize(s) : own + raidThreat(s) * (RAIDS.threatShare + threatBonus(faction));
+  const strength = Math.ceil(sized * range(s, RAIDS.spreadMin, RAIDS.spreadMax, 'raid')
     * (grudge ? grudge.mult : 1) * clanProfile(s, faction).raid);
   // Raids march out of whatever that faction still holds, at the first of ours on the way in.
   const from = attackSource(s, faction);
@@ -919,6 +958,11 @@ export function assaultParts(s, fromId) {
   const push = nodePush(s, fromId);
   const attack = baseAttack(s, fromId);
   const own = attack * NODES.assaultMult * grit * push;
+  if (faction === 'rogue' && !s.ending) {
+    // Before the ending a Rival Core assault is held near their raids: a nuisance, never the end.
+    const cap = rogueTeaseSize(s) * NODES.lockedCap * push;
+    return { attack, grit, push, own, threatPart: 0, reach: 0, stance, cap, total: Math.ceil(Math.min(own * stance, cap)) };
+  }
   if (!sectorOpen(s, sec)) {
     // A clan whose chapter has not opened yet cannot field what its ground is really worth, so it is
     // held near the raid strength the player is already facing. The push rides on top of that cap:

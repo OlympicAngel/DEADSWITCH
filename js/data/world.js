@@ -31,7 +31,7 @@ export const FACTIONS = {
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
-    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, reach: [2, 3], surge: { mult: 2.5, aggr: 2, debuff: { power: -0.2, pop: -0.9 } }, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
+    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, reach: [2, 3], surge: { mult: 2.5, aggr: 2, debuff: { power: -0.2, pop: -0.9 } }, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.15 },
   },
 };
 
@@ -534,6 +534,7 @@ export const AGGR = {
   onOp: { node: 0.5, clan: 0.2, near: 0.1 }, // launching an operation against it
   onInspect: 0.1, // opening its briefing; each look after the first counts for less
   onFall: { node: 0.3, clan: 0.4, near: 0.25 }, // a sector of mine falling emboldens the front around it
+  target: 0.05, // a sector we could launch on watches us a little harder
 };
 
 // Clan profiles: four traits per faction, moved by everything that happens between us, and a matrix
@@ -633,9 +634,18 @@ export const CLANS = {
   ],
 };
 
-// The Rival Cores are the last fight, but they are awake long before it. From teaseCore they slip a
-// raid into the rotation now and then (teaseWeight against 1 for an open clan), sized no bigger than
-// the weakest open clan's base; the more of Halcyon's ground the player holds, the more often they
-// come (+halcyonWeight at all of it). After the ending they raid like any other clan.
-// FACTIONS.rogue.threatBonus is added to every share of the player's Threat they field.
-export const ROGUE = { teaseCore: 5, teaseWeight: 0.15, halcyonWeight: 2 };
+// The Rival Cores are the last fight, but they are awake long before it. `approach` runs 0 to 1 as
+// the AI Core climbs from approachFrom (the Remnant's chapter) to approachTo (The Mirror's gate).
+// From teaseCore they slip a raid into the rotation (teaseWeight[0] easing to [1] with the approach,
+// against 1 for an open clan, +halcyonWeight with all of Halcyon's ground held), and before the
+// ending their raids and assaults are sized like the strongest open clan's raid; their walls
+// are not. Their ground grows angrier with the approach (+approachAggr), and they spread: while they
+// hold fewer captured sectors than `creep[core]`, every creepEvery seconds they take the weakest
+// sector next to their ground that is neither ours nor a capital. After the ending they raid like
+// any other clan. FACTIONS.rogue.threatBonus is added to every share of the player's Threat they field.
+export const ROGUE = {
+  approachFrom: 4, approachTo: 9,
+  teaseCore: 4, teaseWeight: [0.06, 0.3], halcyonWeight: 2,
+  approachAggr: 0.8,
+  creep: { 5: 1, 6: 2, 7: 3, 8: 5, 9: 7 }, creepEvery: 1200,
+};
