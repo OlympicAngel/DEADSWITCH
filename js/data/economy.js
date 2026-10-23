@@ -1,7 +1,7 @@
 // Economy content and balance: resources, buildings, arsenal items, ranks.
 
 // Shown in Settings so a player can say which build they are on. Bump it with anything players see.
-export const VERSION = '1.51.1';
+export const VERSION = '1.52.0';
 
 export const RESOURCES = {
   money: { name: 'Scrip', short: 'Scrip', color: 'money', desc: 'Wasteland currency. No storage limit.' },
@@ -32,6 +32,9 @@ export const BALANCE = {
   economyPriceMult: { money: 1.5 }, // extra multiplier on one resource's share of Economy building prices
   buildingPriceMult: { money: 1.3 }, // and on every building's Scrip price, Economy or not
   corePriceMult: { money: 2.25 }, // the AI Core is dearer again: the ladder is what the run is paced by
+  // From level `from` on, each Core level costs 1 + k x (level - from)^2 times more again: Core 7 to 8
+  // is about 30M Scrip; Energy and Population climb less.
+  coreLate: { from: 5, money: 2.65, energy: 0.8, pop: 0.5 },
   // Scrip price of everything built outside the Storage tab and the Core: producers, converters, facilities.
   workPriceMult: { money: 1.5 },
   buildTimeMult: 1.5, // every build takes this much longer...

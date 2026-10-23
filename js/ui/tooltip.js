@@ -18,7 +18,7 @@ export function createTips(game) {
   const head = (ic, title, sub = '') => `<div class="tip-head">${icon(ic)}<div><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div></div>`;
 
   // Every % source on a key, each its own multiplier, then what they come to together.
-  const BONUS_ICON = { experts: 'experts', tech: 'research', sectors: 'map', alignment: 'heart', effects: 'spark' };
+  const BONUS_ICON = { experts: 'experts', tech: 'research', sectors: 'map', alignment: 'heart', effects: 'spark', clan: 'rogue' };
   function bonusRows(s, key) {
     const parts = E.bonusParts(s, key);
     const sign = (v) => (v > 0 ? '+' : '−') + pct(Math.abs(v));

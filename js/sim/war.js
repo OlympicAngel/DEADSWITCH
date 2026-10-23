@@ -19,16 +19,47 @@ export function chapterOpen(s, chapterId) {
 /** The AI Core level a sector needs: its own hard gate, or its chapter's (data/world.js). */
 export const sectorGate = (sec) => sec.core ?? chapterOf(sec.chapter).core;
 
+// FACTIONS[f].reach: the end-game clans' own ground is worth more the nearer it is to their capital,
+// from reach[0] x at the capital to reach[1] x at the far edge (steps over the map's links).
+const REACH = {};
+for (const [f, fac] of Object.entries(FACTIONS)) {
+  if (!fac.reach) continue;
+  const capital = SECTORS.find((x) => x.faction === f && x.boss);
+  if (!capital) continue;
+  const dist = { [capital.id]: 0 };
+  for (let edge = [capital.id]; edge.length;) {
+    edge = edge.flatMap((id) => SECTOR_BY_ID[id].links.filter((l) => SECTOR_BY_ID[l] && dist[l] === undefined).map((l) => { dist[l] = dist[id] + 1; return l; }));
+  }
+  const own = SECTORS.filter((x) => x.faction === f);
+  const far = Math.max(1, ...own.map((x) => dist[x.id] || 0));
+  for (const x of own) REACH[x.id] = fac.reach[0] + (fac.reach[1] - fac.reach[0]) * ((dist[x.id] || 0) / far);
+}
+
+/** A sector's own defense and attack, before anyone takes it: the map's numbers with its clan's reach. */
+export const nativeDefense = (sec) => sec.defense * (REACH[sec.id] || 1);
+export const nativeAttack = (sec) => sec.attack * (REACH[sec.id] || 1);
+
 // What each clan's ground is worth on average, which is the standard it rebuilds anything it takes to.
 const CLAN_AVG = {};
 const CLAN_ATK = {};
 const CLAN_MAX = {};
 for (const f of new Set(SECTORS.map((x) => x.faction).filter(Boolean))) {
   const own = SECTORS.filter((x) => x.faction === f);
-  CLAN_AVG[f] = own.reduce((a, x) => a + x.defense, 0) / own.length;
-  CLAN_ATK[f] = own.reduce((a, x) => a + x.attack, 0) / own.length;
-  CLAN_MAX[f] = Math.max(...own.map((x) => x.attack));
+  CLAN_AVG[f] = own.reduce((a, x) => a + nativeDefense(x), 0) / own.length;
+  CLAN_ATK[f] = own.reduce((a, x) => a + nativeAttack(x), 0) / own.length;
+  CLAN_MAX[f] = Math.max(...own.map((x) => nativeAttack(x)));
 }
+
+/** A clan's surge (FACTIONS[f].surge) once it is live: its chapter open, or for the Rival Cores the ending. */
+export function surge(s, faction) {
+  const sg = FACTIONS[faction] && FACTIONS[faction].surge;
+  if (!sg) return null;
+  if (faction === 'rogue') return s.ending ? sg : null;
+  const ch = CHAPTERS.find((c) => c.faction === faction);
+  return ch && chapterOpen(s, ch.id) ? sg : null;
+}
+const surgeMult = (s, faction) => (surge(s, faction) || {}).mult || 1;
+export const surgeAggr = (s, faction) => (surge(s, faction) || {}).aggr || 1;
 
 /** Who holds a sector now. The map says where a sector started; a clan that takes it off us when it
  *  was never theirs keeps it, with its own colour, stances and raids. */
@@ -45,7 +76,8 @@ export const clanStanding = (s, faction) => clanSectors(s, faction).some((x) => 
 /** NODES.foreignNear of the strongest neighbour that is the new owner's own ground, or no cap. */
 function nearCap(sec, owner, key) {
   const own = sec.links.map((l) => SECTOR_BY_ID[l]).filter((x) => x && x.faction === owner);
-  return own.length ? Math.max(...own.map((x) => x[key])) * NODES.foreignNear : Infinity;
+  const of = key === 'defense' ? nativeDefense : nativeAttack;
+  return own.length ? Math.max(...own.map(of)) * NODES.foreignNear : Infinity;
 }
 
 /** The extra share of the player's Threat a clan fields on top of everyone's (the Rival Cores). */
@@ -57,10 +89,10 @@ export const threatBonus = (faction) => (FACTIONS[faction] && FACTIONS[faction].
 export function baseDefense(s, id) {
   const sec = SECTOR_BY_ID[id];
   const owner = s.owner && s.owner[id];
-  if (!owner || !CLAN_AVG[owner]) {
-    return sec.defense;
-  }
-  return Math.round(Math.max(Math.min(CLAN_AVG[owner] * NODES.foreignShare, nearCap(sec, owner, 'defense')), sec.defense));
+  const v = !owner || !CLAN_AVG[owner] ? nativeDefense(sec)
+    : Math.max(Math.min(CLAN_AVG[owner] * NODES.foreignShare, nearCap(sec, owner, 'defense')), nativeDefense(sec));
+  // A clan whose surge is live holds everything it has that much harder, captured ground included.
+  return Math.round(v * surgeMult(s, factionOf(s, id)));
 }
 
 /** What a sector throws at us, under whoever holds it. Ground taken off another clan is garrisoned
@@ -68,10 +100,9 @@ export function baseDefense(s, id) {
 export function baseAttack(s, id) {
   const sec = SECTOR_BY_ID[id];
   const owner = s.owner && s.owner[id];
-  if (!owner || !CLAN_ATK[owner]) {
-    return sec.attack;
-  }
-  return Math.round(Math.max(Math.min(CLAN_ATK[owner] * NODES.foreignShare, nearCap(sec, owner, 'attack')), sec.attack));
+  const v = !owner || !CLAN_ATK[owner] ? nativeAttack(sec)
+    : Math.max(Math.min(CLAN_ATK[owner] * NODES.foreignShare, nearCap(sec, owner, 'attack')), nativeAttack(sec));
+  return Math.round(v * surgeMult(s, factionOf(s, id)));
 }
 
 // The weakest sectors of a faction that border ground we hold, which is what leaks early.
@@ -746,7 +777,7 @@ function spawnRaid(s, delay) {
   // and if none has, nothing comes for now and the next look is a minute away.
   const ready = raiders.filter((f) => sourcePool(s, f).length);
   // Open clans come as often as each other; a teasing Rival Core at its own weight.
-  const weight = (f) => (f === 'rogue' && tease > 0 ? tease : 1);
+  const weight = (f) => (f === 'rogue' && tease > 0 ? tease : 1) * surgeAggr(s, f);
   let roll = rand(s, 'raid') * ready.reduce((a, f) => a + weight(f), 0);
   const chosen = ready.find((f) => (roll -= weight(f)) <= 0) || ready[ready.length - 1];
   const faction = grudge && sourcePool(s, grudge.faction).length ? grudge.faction : ready.length ? chosen : null;
@@ -962,7 +993,7 @@ export function spawnAssault(s, pair = null, delay = null, force = 0) {
       const back = SECTOR_BY_ID[b.target].faction === factionOf(s, b.from) ? prof.retake : 1;
       // Ground of ours thinned by sending help elsewhere draws them like blood.
       const thin = defenseShift(s, b.target) < 0 ? NODES.thinPull : 1;
-      return Math.max(0, base) * prof.weight * back * thin;
+      return Math.max(0, base) * prof.weight * back * thin * surgeAggr(s, factionOf(s, b.from));
     };
     const total = pool.reduce((a, b) => a + w(b), 0);
     if (!total) return null;
@@ -1167,7 +1198,7 @@ function resolveAttack(s, raid, offline) {
   } else if (raid.assault) {
     s.stats.raidsLost++;
     // The scripted retake has to take the ground, whatever mood the clan is in, or the lesson after it never comes.
-    if (prof.plunder && !(s.scripted.retake === 1 && raid.target === TUTORIAL.target)) {
+    if (prof.plunder && !(surge(s, raid.faction) || {}).breach && !(s.scripted.retake === 1 && raid.target === TUTORIAL.target)) {
       // Plunderers want the stores, not the ground: they empty what they can carry and leave the walls.
       report.lost = takeStock(s, chance, NODES.plunderShare);
       report.plundered = true;
@@ -1188,11 +1219,13 @@ function resolveAttack(s, raid, offline) {
       }
     }
   } else {
-    report.lost = takeStock(s, chance);
+    // A clan that attacks to breach takes less and cracks the wall whatever the margin.
+    const breaker = !!(surge(s, raid.faction) || {}).breach;
+    report.lost = takeStock(s, chance, breaker ? NODES.breachLoot : 1);
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name, target: SECTOR_BY_ID[raid.target].name }, 'bad');
     // A raid that far over our Defense does not just rob the place, it cracks it. The Nest never falls.
-    if (raid.target !== MAP.home && s.sectors.includes(raid.target) && raid.strength >= defense * RAIDS.breachRatio) {
+    if (raid.target !== MAP.home && s.sectors.includes(raid.target) && (breaker || raid.strength >= defense * RAIDS.breachRatio)) {
       const n = node(s, raid.target);
       n.marks = Math.min(n.marks + 1, NODES.breachesToFall);
       report.breaches = n.marks;

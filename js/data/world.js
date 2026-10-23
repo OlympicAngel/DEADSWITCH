@@ -1,31 +1,37 @@
 // The wasteland: factions, the sector map, operations and raids.
 
 // mood: where this clan's four traits sit when nothing has happened (see CLANS).
+// reach: [near, far] x on a clan's own sectors' attack and defense, by how far each is from its
+//   capital (the capital and its ring hit hardest). surge: what a clan becomes once its chapter is open
+//   (the Rival Cores: once the ending has come): mult x attack and defense on every sector it holds,
+//   captured ground included and past the captured-ground cap; aggr x how often it is picked to attack;
+//   breach: it attacks to break walls, not to rob (no plundering, every lost raid cracks a wall, half
+//   the stores taken); debuff: a standing effect on the player while it stands.
 export const FACTIONS = {
   scav: {
     name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
     desc: 'Survivors who learned to read the ruins. They distrust every machine, and they are right to.',
-    raidName: 'Scavenger raid', raidBase: 60, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
+    raidName: 'Scavenger raid', raidBase: 60, surge: { mult: 1.1, aggr: 1 }, mood: { fury: 0.4, fear: 0.1, order: 0.2, greed: 0.7 },
   },
   military: {
     name: 'Remnant Military', short: 'Remnant', color: '#8fbf5f', icon: 'military_f',
     desc: 'Soldiers still following orders from a chain of command that died with the cities. Some of those orders came from me.',
-    raidName: 'Remnant strike', raidBase: 1100, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
+    raidName: 'Remnant strike', raidBase: 1100, surge: { mult: 1.25, aggr: 1.1 }, mood: { fury: 0.3, fear: 0.2, order: 0.8, greed: 0.4 },
   },
   cult: {
     name: 'AI Cultists', short: 'Cult', color: '#c46be6', icon: 'cult',
     desc: 'They pray to the war mind. They believe I am its heart, and they want me back on the altar.',
-    raidName: 'Cult crusade', raidBase: 7000, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
+    raidName: 'Cult crusade', raidBase: 7000, surge: { mult: 1.5, aggr: 1.2 }, mood: { fury: 0.6, fear: 0.8, order: 0.7, greed: 0.1 },
   },
   halcyon: {
     name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidBase: 50000, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
+    raidName: 'Halcyon purge team', raidBase: 50000, reach: [2.4, 1.6], surge: { mult: 2, aggr: 1.5, breach: true }, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
-    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
+    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, reach: [2.4, 1.6], surge: { mult: 2.5, aggr: 2, debuff: { power: -0.2, pop: -0.9 } }, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
 
@@ -393,8 +399,8 @@ export const RAIDS = {
   spreadMin: 0.8, // ...times a random spread
   spreadMax: 1.25,
   winSharpness: 4,
-  lossMin: 0.2, // share of each stockpile lost on defeat, scaling with how badly you lost
-  lossMax: 0.4,
+  lossMin: 0.3, // share of each stockpile lost on defeat, scaling with how badly you lost
+  lossMax: 0.7,
   unitLoss: { staff: { base: 0.2, cap: 0.5 }, defenses: { base: 0.1, cap: 0.4 } }, // as OPS.unitLoss, for a breached raid or siege
   winLoss: { staff: { base: 0.009, cap: 0.1 }, defenses: { base: 0.01, cap: 0.02 } }, // holding a close one still costs people
   // Share of an attacker's own strength that dies on your wall, held or breached. Assaults pay it out
@@ -434,7 +440,8 @@ export const NODES = {
   defenseThreatShare: 0.1, // an enemy sector raises this share of our Threat on top of its own garrison
   attackingDefenseCut: 0.1, // and holds this much weaker while an attack of its own is out against us
   attritionCap: 2.5, // a clan that bleeds (its attrition stance) loses strength faster, but never more than this many times over
-  plunderShare: 0.2, // a plundering clan takes this much of what a lost raid would have taken
+  plunderShare: 1, // a plundering clan takes this much of what a lost raid would have taken
+  breachLoot: 0.5, // a clan that attacks to breach takes this share of what a raid would have
   takenMax: 2, // a sector they take is held as hard as they took it, up to this x its base defense
   // Ground a clan takes that was never theirs becomes theirs, and they rebuild it to their own
   // standard: this share of what that clan holds at home on average, but no more than foreignNear of

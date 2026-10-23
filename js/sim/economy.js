@@ -1,7 +1,7 @@
 // Economy: resources, buildings, arsenal, modifiers. Pure: no DOM, storage or clock.
 import {
   BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, RANKS, LINES, RESOURCE_KEYS, FACTOR_KEYS,
-  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG, OPS,
+  SECTORS, ALIGNMENT, CORE_MEMORIES, CONVERSION, EVENTS_CFG, OPS, FACTIONS, CHAPTERS,
 } from '../data.js';
 
 export const LOG_LIMIT = 80;
@@ -88,6 +88,15 @@ export function bonusBreakdown(s, key) {
   };
 }
 
+/** A clan's surge is live: its chapter open (the Rival Cores: the ending come) and its capital not ours. */
+function clanSurging(s, f) {
+  const capital = SECTORS.find((x) => x.faction === f && x.boss);
+  if (capital && s.sectors.includes(capital.id)) return false;
+  if (f === 'rogue') return !!s.ending;
+  const ch = CHAPTERS.find((c) => c.faction === f);
+  return !!ch && level(s, 'core') >= ch.core;
+}
+
 /** Every % source on one key, each its own multiplier: experts (production only), tech, territory,
  *  alignment, then every effect running on it. `buffs = false` leaves the effects out, which is what
  *  Threat is counted on: a passing boost is not something the clans muster against. */
@@ -100,6 +109,11 @@ export function bonusParts(s, key, f = null, buffs = true) {
   add('tech', 'Tech', techBonus(s, key));
   add('sectors', 'Territory', sectorBonus(s, key));
   add('alignment', 'Alignment', alignBonus(s, key));
+  // A clan whose surge carries a standing effect on us (the Rival Cores) weighs on us while it stands.
+  for (const [f, fac] of Object.entries(FACTIONS)) {
+    const d = fac.surge && fac.surge.debuff;
+    if (d && d[key] && clanSurging(s, f)) add('clan', fac.short, d[key]);
+  }
   if (buffs) {
     for (const b of s.buffs) {
       if (b.key === key) add('effects', b.label, b.amount);
@@ -247,6 +261,9 @@ const STORE_KINDS = ['storage', 'offline'];
 // Extra per-resource multiplier for Economy-tab buildings only.
 export const econMult = (b, k) => (ECONOMY_KINDS.includes(b.kind) && BALANCE.economyPriceMult[k]) || 1;
 
+/** The late AI Core's extra climb (BALANCE.coreLate) for the level after `n`. */
+const coreLate = (n, k) => 1 + (BALANCE.coreLate[k] || 0) * Math.pow(Math.max(0, n - BALANCE.coreLate.from), 2);
+
 export function priceFactor(growth, n, k) {
   return BALANCE.priceMult * Math.pow(priceGrowth(growth, k), n) * Math.pow(n + 1, BALANCE.pricePower);
 }
@@ -256,7 +273,7 @@ export function buildingCost(s, b, n = level(s, b.id)) {
   const out = {};
   for (const [k, v] of Object.entries(b.cost)) {
     out[k] = Math.ceil(v * econMult(b, k) * (BALANCE.buildingPriceMult[k] || 1)
-      * (b.id === 'core' ? BALANCE.corePriceMult[k] || 1 : STORE_KINDS.includes(b.kind) ? 1 : BALANCE.workPriceMult[k] || 1)
+      * (b.id === 'core' ? (BALANCE.corePriceMult[k] || 1) * coreLate(n, k) : STORE_KINDS.includes(b.kind) ? 1 : BALANCE.workPriceMult[k] || 1)
       * priceFactor(b.growth, n, k));
   }
   return out;
