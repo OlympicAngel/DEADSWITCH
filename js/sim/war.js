@@ -762,7 +762,7 @@ export const rogueApproach = (s) => clamp((level(s, 'core') - ROGUE.approachFrom
 export function rogueTeaseSize(s) {
   const open = activeRaiders(s).filter((f) => f !== 'rogue');
   const base = open.length ? Math.max(...open.map((f) => FACTIONS[f].raidBase)) : FACTIONS.rogue.raidBase;
-  return base + raidThreat(s) * (RAIDS.threatShare + threatBonus('rogue'));
+  return (base + raidThreat(s) * (RAIDS.threatShare + threatBonus('rogue'))) * ROGUE.teaseScale;
 }
 
 /** Captured sectors the Rival Cores hold (not The Mirror itself). */
@@ -1264,13 +1264,13 @@ function resolveAttack(s, raid, offline) {
       }
     }
   } else {
-    // A clan that attacks to breach takes less and cracks the wall whatever the margin.
+    // A clan that attacks to breach takes less, and cracks the wall from an even fight up.
     const breaker = !!(surge(s, raid.faction) || {}).breach;
     report.lost = takeStock(s, chance, breaker ? NODES.breachLoot : 1);
     s.stats.raidsLost++;
     say(s, 'raidLost', { raid: name, target: SECTOR_BY_ID[raid.target].name }, 'bad');
     // A raid that far over our Defense does not just rob the place, it cracks it. The Nest never falls.
-    if (raid.target !== MAP.home && s.sectors.includes(raid.target) && (breaker || raid.strength >= defense * RAIDS.breachRatio)) {
+    if (raid.target !== MAP.home && s.sectors.includes(raid.target) && raid.strength >= defense * (breaker ? 1 : RAIDS.breachRatio)) {
       const n = node(s, raid.target);
       n.marks = Math.min(n.marks + 1, NODES.breachesToFall);
       report.breaches = n.marks;

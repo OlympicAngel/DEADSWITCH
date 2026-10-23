@@ -30,6 +30,7 @@
 // happened and picks up where it left off.
 // It does not play towards the daily board: the orders are cleared or not by how it plays anyway,
 // which is what they are for, and chasing them would measure the bot rather than the game.
+import { readFileSync } from 'node:fs';
 import { BALANCE, BUILDINGS, BY_ID, ITEMS, ITEM_BY_ID, SHOP_TABS, SECTORS, RANKS, RESOURCE_KEYS, FACTOR_KEYS, CONVERSION, ALIGNMENT, RAIDS } from '../js/data.js';
 import * as E from '../js/engine.js';
 
@@ -58,8 +59,13 @@ const PREP_TRIBUTE = 0.9; // a threat is paid off on the way out unless its sieg
 const PREP_COMMIT = 0.5; // share of what the absence will produce that the queue may already count on
 const SAVE_BEFORE = 10; // minutes before putting the phone down with the builder short of work: the shop waits, the scrip goes on builds
 
-const HOURS = Number(process.argv[2] || 24);
-const RUNS = Number(process.argv[3] || 5);
+// `--from save.json` (an exported save, decoded) plays every run on from that state instead of a new
+// game, each on its own dice, so a real run can be carried forward and its next hours read.
+const ARGS = process.argv.slice(2).filter((a, i, all) => a !== '--from' && all[i - 1] !== '--from');
+const FROM_AT = process.argv.indexOf('--from');
+const FROM = FROM_AT > 0 ? JSON.parse(readFileSync(process.argv[FROM_AT + 1], 'utf8')) : null;
+const HOURS = Number(ARGS[0] || 24);
+const RUNS = Number(ARGS[1] || 5);
 const sum = (c) => Object.values(c).reduce((a, b) => a + b, 0);
 const fmt = (t) => (t == null ? '   -   ' : `${Math.floor(t / 3600)}h${String(Math.floor((t % 3600) / 60)).padStart(2, '0')}m`.padStart(7));
 
@@ -592,7 +598,13 @@ function answer(s, inst) {
 }
 
 function play(seed) {
-  const s = E.newState(seed);
+  const s = FROM ? E.migrate(JSON.parse(JSON.stringify(FROM.state || FROM))) : E.newState(seed);
+  if (FROM) {
+    s.rng = (s.rng + seed) >>> 0; // same base, its own future
+    s.inbox = [];
+    s.absence = null;
+  }
+  const start = FROM ? { rates: E.netRates(s), factors: E.factors(s), levels: { ...s.levels }, sectors: s.sectors.length } : null;
   s.name = 'bot';
   const roll = dice(seed * 7919); // the bot's own dice: they roll its day
   const marks = {};
@@ -600,7 +612,7 @@ function play(seed) {
   const mark = (key, t) => {
     if (marks[key] === undefined) marks[key] = t;
   };
-  const tally = { byClan: {}, dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [],
+  const tally = { byClan: {}, outcome: {}, dailies: 0, rushed: 0, ops: 0, align: 0, picked: 0, pricedOut: 0, sieges: 0, grudges: 0, tributes: 0, assaultsHeld: 0, assaultsBreached: 0, raidBreaches: 0, sectorsLost: 0, lootMin: [], salvageMin: [],
     away: { seconds: 0, sessions: 0, held: 0, lost: 0, decided: 0 } };
   const ignored = new Set(); // threats the bot decided to take on the chin, counted once each
 
@@ -657,7 +669,13 @@ function play(seed) {
         if (m.win) tally.assaultsHeld++; else tally.assaultsBreached++;
       }
       if (m.kind === 'raid' && !m.assault && m.breaches) tally.raidBreaches++;
-      if (m.kind === 'raid') tally.byClan[m.faction] = (tally.byClan[m.faction] || 0) + 1;
+      if (m.kind === 'raid') {
+        tally.byClan[m.faction] = (tally.byClan[m.faction] || 0) + 1;
+        const k = m.faction + (m.assault ? ' assault' : ' raid');
+        const o = (tally.outcome[k] = tally.outcome[k] || { held: 0, lost: 0, fell: 0 });
+        if (m.win) o.held++; else o.lost++;
+        if (m.fell) o.fell++;
+      }
       if (m.fell) tally.sectorsLost++;
       if (m.kind === 'op' && m.win) mark('op:' + m.sector, t);
       if (m.kind === 'ending') mark('ending', t);
@@ -763,7 +781,8 @@ function play(seed) {
     readInbox(t);
   }
   const f = E.factors(s);
-  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels }, snap };
+  return { marks, tally, stats: s.stats, factors: f, threat: E.threat(s), align: s.align, sectors: s.sectors.length - 1, levels: { ...s.levels }, snap,
+    start, rates: E.netRates(s), res: { ...s.res }, rogue: E.rogueHeld(s).length };
 }
 
 const runs = [];
@@ -823,3 +842,25 @@ console.log('  defense at each Core ' + JSON.stringify(Object.fromEntries(Object
 console.log(`  Daily orders cleared ${mean((r) => r.tally.dailies).toFixed(1)} of the day's board`);
 console.log(`  Offline ${mean((r) => r.tally.away.seconds / 3600).toFixed(1)}h over ${mean((r) => r.tally.away.sessions).toFixed(1)} absences  attacks while away held ${mean((r) => r.tally.away.held).toFixed(1)}  lost ${mean((r) => r.tally.away.lost).toFixed(1)}  (${share(mean((r) => r.tally.away.held), mean((r) => r.tally.away.lost))})  transmissions answered in my place ${mean((r) => r.tally.away.decided).toFixed(1)}`);
 console.log(`  Events ${mean((r) => r.stats.events).toFixed(0)}  threats paid ${mean((r) => r.tally.tributes).toFixed(1)}  sieges taken ${mean((r) => r.tally.sieges).toFixed(1)}  grudges ${mean((r) => r.tally.grudges).toFixed(1)}  missed deadlines ${mean((r) => r.stats.expired || 0).toFixed(1)}`);
+
+if (FROM) {
+  const r0 = runs[0].start;
+  const fx = (o) => Object.entries(o).map(([k, v]) => `${k} ${n(v)}`).join('  ');
+  console.log(`\nFrom the save (start -> end, averages)`);
+  console.log(`  net rates /s   start ${fx(r0.rates)}`);
+  console.log(`                 end   ${fx({ money: mean((r) => r.rates.money), energy: mean((r) => r.rates.energy), pop: mean((r) => r.rates.pop) })}`);
+  console.log(`  forces         start ${fx(r0.factors)}   end ${fx({ power: mean((r) => r.factors.power), defense: mean((r) => r.factors.defense), experts: mean((r) => r.factors.experts) })}`);
+  console.log(`  stock at end   ${fx({ money: mean((r) => r.res.money), energy: mean((r) => r.res.energy), pop: mean((r) => r.res.pop) })}`);
+  console.log(`  sectors        start ${r0.sectors - 1}   end ${mean((r) => r.sectors).toFixed(1)}   Rival Core holdings at end ${mean((r) => r.rogue).toFixed(1)}`);
+  console.log(`  levels at end  ${JSON.stringify(runs[0].levels)}`);
+}
+
+{
+  const all = {};
+  for (const r of runs) for (const [k, o] of Object.entries(r.tally.outcome)) {
+    const a = (all[k] = all[k] || { held: 0, lost: 0, fell: 0 });
+    a.held += o.held; a.lost += o.lost; a.fell += o.fell;
+  }
+  console.log('\nAttacks per run by clan and kind (held / lost / sectors taken)');
+  for (const [k, a] of Object.entries(all).sort()) console.log(`  ${k.padEnd(18)} ${(a.held / runs.length).toFixed(1)} / ${(a.lost / runs.length).toFixed(1)} / ${(a.fell / runs.length).toFixed(1)}`);
+}

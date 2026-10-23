@@ -97,8 +97,10 @@ export function createTips(game) {
   function factorTip(s, k) {
     const raw = E.rawFactors(s)[k];
     const val = E.factors(s)[k];
-    const extra = k === 'experts' ? row('Production bonus', '+' + pct(val * BALANCE.expertProductionBonus)) : '';
-    const what = { power: 'Attack strength in operations.', defense: 'Strength against raids.', experts: `+${pct(BALANCE.expertProductionBonus)} production each.` }[k];
+    const share = (r) => BALANCE.expertProductionBonus * (BALANCE.expertShare[r] ?? 1);
+    const extra = k === 'experts' ? Object.keys(RESOURCES).map((r) => row(`${icon(r)}${RESOURCES[r].short}`, '+' + pct(val * share(r)))).join('') : '';
+    const what = { power: 'Attack strength in operations.', defense: 'Strength against raids.',
+      experts: `Each: +${pct(share('money'))} Scrip, +${pct(share('energy'))} Energy, +${pct(share('pop'))} Population.` }[k];
     const away = k === 'defense' ? E.troopsOut(s) : 0;
     return head(k, FACTORS[k].name, num(val)) + `<p>${what}</p>` + row('From units', num(raw))
       + (away ? row(`${icon('power')}Troops on the operation`, '\u2212' + num(away), 'neg') : '') + extra

@@ -5,8 +5,8 @@
 //   out over the map's links. surge: what a clan becomes once its chapter is open
 //   (the Rival Cores: once the ending has come): mult x attack and defense on every sector it holds,
 //   captured ground included and past the captured-ground cap; aggr x how often it is picked to attack;
-//   breach: it attacks to break walls, not to rob (no plundering, every lost raid cracks a wall, half
-//   the stores taken); debuff: a standing effect on the player while it stands.
+//   breach: it attacks to break walls, not to rob (no plundering, a lost raid cracks a wall from an
+//   even fight up rather than 1.4x, half the stores taken); debuff: a standing effect on the player while it stands.
 export const FACTIONS = {
   scav: {
     name: 'Scavenger Clans', short: 'Scavengers', color: '#e0a948', icon: 'scav',
@@ -646,6 +646,7 @@ export const CLANS = {
 export const ROGUE = {
   approachFrom: 4, approachTo: 9,
   teaseCore: 4, teaseWeight: [0.06, 0.3], halcyonWeight: 2,
+  teaseScale: 0.55, // x the strongest open clan's raid: what their raids and assaults are held to before the ending
   approachAggr: 0.8,
   creep: { 5: 1, 6: 2, 7: 3, 8: 5, 9: 7 }, creepEvery: 1200,
 };

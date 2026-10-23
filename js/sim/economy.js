@@ -105,7 +105,7 @@ export function bonusParts(s, key, f = null, buffs = true) {
   const add = (src, label, amount) => {
     if (amount) out.push({ src, label, amount });
   };
-  if (RESOURCE_KEYS.includes(key)) add('experts', 'Experts', (f || factors(s)).experts * BALANCE.expertProductionBonus);
+  if (RESOURCE_KEYS.includes(key)) add('experts', 'Experts', (f || factors(s)).experts * BALANCE.expertProductionBonus * (BALANCE.expertShare[key] ?? 1));
   add('tech', 'Tech', techBonus(s, key));
   add('sectors', 'Territory', sectorBonus(s, key));
   add('alignment', 'Alignment', alignBonus(s, key));

@@ -46,6 +46,7 @@ export const BALANCE = {
   resourceGrowth: { money: 0.8, energy: 0.62, pop: 0.58 },
   coreGateShare: 0.604, // AI Core upgrades need the average unlocked production + storage building at this share of the level cap
   expertProductionBonus: 0.005, // +0.5% all production per expert
+  expertShare: { energy: 0.6, pop: 0.6 }, // Experts lift Energy and Population at this share of what they do for Scrip
   unlockerDiscountPerLevel: 0.05, // each level of an unlocker building above 1 takes a flat 5 points off its shop prices...
   unlockerDiscountMax: 0.75, // ...up to this much off
   threatExpertWeight: 5,
