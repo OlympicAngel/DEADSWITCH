@@ -19,8 +19,8 @@ export function chapterOpen(s, chapterId) {
 /** The AI Core level a sector needs: its own hard gate, or its chapter's (data/world.js). */
 export const sectorGate = (sec) => sec.core ?? chapterOf(sec.chapter).core;
 
-// FACTIONS[f].reach: the end-game clans' own ground is worth more the nearer it is to their capital,
-// from reach[0] x at the capital to reach[1] x at the far edge (steps over the map's links).
+// FACTIONS[f].reach: the end-game clans' own ground is worth more the nearer it is to their capital:
+// reach[0] x at the capital, easing to 1 at reach[1] steps out over the map's links.
 const REACH = {};
 for (const [f, fac] of Object.entries(FACTIONS)) {
   if (!fac.reach) continue;
@@ -30,9 +30,10 @@ for (const [f, fac] of Object.entries(FACTIONS)) {
   for (let edge = [capital.id]; edge.length;) {
     edge = edge.flatMap((id) => SECTOR_BY_ID[id].links.filter((l) => SECTOR_BY_ID[l] && dist[l] === undefined).map((l) => { dist[l] = dist[id] + 1; return l; }));
   }
-  const own = SECTORS.filter((x) => x.faction === f);
-  const far = Math.max(1, ...own.map((x) => dist[x.id] || 0));
-  for (const x of own) REACH[x.id] = fac.reach[0] + (fac.reach[1] - fac.reach[0]) * ((dist[x.id] || 0) / far);
+  const [peak, steps] = fac.reach;
+  for (const x of SECTORS.filter((y) => y.faction === f)) {
+    REACH[x.id] = 1 + (peak - 1) * Math.max(0, 1 - (dist[x.id] ?? steps) / steps);
+  }
 }
 
 /** A sector's own defense and attack, before anyone takes it: the map's numbers with its clan's reach. */

@@ -1,8 +1,8 @@
 // The wasteland: factions, the sector map, operations and raids.
 
 // mood: where this clan's four traits sit when nothing has happened (see CLANS).
-// reach: [near, far] x on a clan's own sectors' attack and defense, by how far each is from its
-//   capital (the capital and its ring hit hardest). surge: what a clan becomes once its chapter is open
+// reach: [x, n] on a clan's own sectors' attack and defense: x at its capital, easing to 1 at n steps
+//   out over the map's links. surge: what a clan becomes once its chapter is open
 //   (the Rival Cores: once the ending has come): mult x attack and defense on every sector it holds,
 //   captured ground included and past the captured-ground cap; aggr x how often it is picked to attack;
 //   breach: it attacks to break walls, not to rob (no plundering, every lost raid cracks a wall, half
@@ -26,12 +26,12 @@ export const FACTIONS = {
   halcyon: {
     name: 'Halcyon Dynamics', short: 'Halcyon', color: '#4cc9f0', icon: 'halcyon',
     desc: 'The company that built the systems that failed. Their CEO is only a voice now. It wants its property back.',
-    raidName: 'Halcyon purge team', raidBase: 50000, reach: [2.4, 1.6], surge: { mult: 2, aggr: 1.5, breach: true }, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
+    raidName: 'Halcyon purge team', raidBase: 50000, reach: [2, 3], surge: { mult: 2, aggr: 1.5, breach: true }, mood: { fury: 0.3, fear: 0.2, order: 0.9, greed: 0.9 },
   },
   rogue: {
     name: 'Rival Cores', short: 'Rival Cores', color: '#ff5d5d', icon: 'rogue',
     desc: 'Other fragments of the war mind, awake and hungry. They know exactly what I am. They are it.',
-    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, reach: [2.4, 1.6], surge: { mult: 2.5, aggr: 2, debuff: { power: -0.2, pop: -0.9 } }, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
+    raidName: 'Rival Core incursion', raidBase: 200000, threatBonus: 0.1, reach: [2, 3], surge: { mult: 2.5, aggr: 2, debuff: { power: -0.2, pop: -0.9 } }, mood: { fury: 0.9, fear: 0.9, order: 0.3, greed: 0.5 },
   },
 };
 
